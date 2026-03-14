@@ -25,6 +25,9 @@ export const metadata: Metadata = {
   },
   description:
     "Floristería en Lima con 32 años de experiencia en arreglos florales y orquídeas. Encargos para celebraciones, homenajes y regalos.",
+  icons: {
+    icon: "/favicon.png",
+  },
 };
 
 export default function RootLayout({
