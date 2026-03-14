@@ -1,13 +1,7 @@
-import type { Metadata } from "next";
-
 import AboutSection from "@/components/sections/AboutSection";
 import CatalogSection from "@/components/sections/CatalogSection";
 import ContactSection from "@/components/sections/ContactSection";
 import HeroSection from "@/components/sections/HeroSection";
-
-export const metadata: Metadata = {
-  title: "Inicio",
-};
 
 export default function Home() {
   return (
