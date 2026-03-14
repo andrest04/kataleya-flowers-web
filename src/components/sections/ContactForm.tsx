@@ -130,9 +130,9 @@ export default function ContactForm() {
   const getFieldStyles = (fieldName: keyof FormValues) => ({
     borderColor: errors[fieldName]
       ? "var(--color-primary)"
-      : "color-mix(in srgb, var(--color-dark) 14%, transparent)",
+      : "color-mix(in srgb, var(--color-dark) 20%, transparent)",
     color: "var(--color-dark)",
-    backgroundColor: "var(--color-cream)",
+    backgroundColor: "#fdfcfa",
     boxShadow: errors[fieldName]
       ? "0 0 0 3px color-mix(in srgb, var(--color-primary) 14%, transparent)"
       : "none",
@@ -143,17 +143,26 @@ export default function ContactForm() {
   return (
     <form
       noValidate
-      className="space-y-5 rounded-[2rem] border p-6 sm:p-8"
+      className="space-y-5 rounded-[20px] border bg-white p-6 sm:p-8"
       style={{
-        backgroundColor: "var(--color-cream)",
-        borderColor: "color-mix(in srgb, var(--color-primary) 16%, transparent)",
+        borderColor: "color-mix(in srgb, var(--color-primary) 12%, transparent)",
         boxShadow:
-          "0 20px 50px color-mix(in srgb, var(--color-dark) 8%, transparent)",
+          "0 10px 40px color-mix(in srgb, var(--color-dark) 6%, transparent)",
       }}
       onSubmit={handleSubmit}
     >
-      <div className="space-y-2">
-        <label htmlFor="nombre" className="text-sm font-semibold">
+      <h3
+        className="text-2xl font-normal"
+        style={{
+          color: "var(--color-primary)",
+          fontFamily: "var(--font-heading)",
+        }}
+      >
+        Envíanos un mensaje
+      </h3>
+
+      <div className="space-y-1.5">
+        <label htmlFor="nombre" className="text-xs font-medium uppercase tracking-wider" style={{ color: "var(--color-dark)" }}>
           Nombre
         </label>
         <input
@@ -165,7 +174,7 @@ export default function ContactForm() {
           value={values.nombre}
           aria-invalid={errors.nombre ? "true" : "false"}
           aria-describedby={errors.nombre ? getErrorId("nombre") : undefined}
-          className="w-full rounded-full border px-4 py-3 outline-none transition-all duration-300"
+          className="w-full rounded-[10px] border px-4 py-3 outline-none transition-all duration-300"
           style={getFieldStyles("nombre")}
           onBlur={handleFieldBlur}
           onChange={handleFieldChange}
@@ -181,8 +190,8 @@ export default function ContactForm() {
         ) : null}
       </div>
 
-      <div className="space-y-2">
-        <label htmlFor="telefono" className="text-sm font-semibold">
+      <div className="space-y-1.5">
+        <label htmlFor="telefono" className="text-xs font-medium uppercase tracking-wider" style={{ color: "var(--color-dark)" }}>
           Teléfono
         </label>
         <input
@@ -195,7 +204,7 @@ export default function ContactForm() {
           value={values.telefono}
           aria-invalid={errors.telefono ? "true" : "false"}
           aria-describedby={errors.telefono ? getErrorId("telefono") : undefined}
-          className="w-full rounded-full border px-4 py-3 outline-none transition-all duration-300"
+          className="w-full rounded-[10px] border px-4 py-3 outline-none transition-all duration-300"
           style={getFieldStyles("telefono")}
           onBlur={handleFieldBlur}
           onChange={handleFieldChange}
@@ -211,19 +220,19 @@ export default function ContactForm() {
         ) : null}
       </div>
 
-      <div className="space-y-2">
-        <label htmlFor="mensaje" className="text-sm font-semibold">
+      <div className="space-y-1.5">
+        <label htmlFor="mensaje" className="text-xs font-medium uppercase tracking-wider" style={{ color: "var(--color-dark)" }}>
           Mensaje
         </label>
         <textarea
           id="mensaje"
           name="mensaje"
-          rows={5}
+          rows={4}
           required
           value={values.mensaje}
           aria-invalid={errors.mensaje ? "true" : "false"}
           aria-describedby={errors.mensaje ? getErrorId("mensaje") : undefined}
-          className="w-full rounded-[1.5rem] border px-4 py-3 outline-none transition-all duration-300"
+          className="w-full rounded-[10px] border px-4 py-3 outline-none transition-all duration-300 resize-none"
           style={getFieldStyles("mensaje")}
           onBlur={handleFieldBlur}
           onChange={handleFieldChange}
@@ -241,14 +250,27 @@ export default function ContactForm() {
 
       <button
         type="submit"
-        className="rounded-full px-7 py-3 text-sm font-semibold tracking-[0.08em] uppercase transition-opacity hover:opacity-90"
+        className="w-full rounded-[10px] px-6 py-3.5 text-sm font-semibold tracking-[0.08em] uppercase transition-opacity hover:opacity-90"
         style={{
-          backgroundColor: "var(--color-primary)",
+          backgroundColor: "#c0392b",
           color: "var(--color-cream)",
         }}
       >
-        Enviar mensaje
+        ENVIAR MENSAJE
       </button>
+
+      <a
+        href="https://wa.me/51987654321"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex w-full items-center justify-center rounded-[10px] border-2 px-6 py-3.5 text-sm font-semibold transition-all duration-300 hover:bg-[#2d5a1b] hover:text-white"
+        style={{
+          borderColor: "#2d5a1b",
+          color: "#2d5a1b",
+        }}
+      >
+        Escribir por WhatsApp
+      </a>
     </form>
   );
 }
