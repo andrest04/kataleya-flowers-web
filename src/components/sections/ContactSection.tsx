@@ -51,6 +51,7 @@ export default function ContactSection() {
             width="100%"
             height="220"
             style={{ border: 0, borderRadius: "12px" }}
+            title="Mapa de ubicación de Kataleya Flawers"
             allowFullScreen
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"

@@ -1,9 +1,9 @@
 "use client";
 
-type HeroButtonsProps = {
+interface HeroButtonsProps {
   primaryTarget: string;
   secondaryTarget: string;
-};
+}
 
 export default function HeroButtons({
   primaryTarget,

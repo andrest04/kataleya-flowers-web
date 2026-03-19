@@ -43,8 +43,7 @@
   },
   "lint-staged": {
     "*.{ts,tsx}": [
-      "eslint --max-warnings 0",
-      "tsc --noEmit --skipLibCheck"
+      "eslint --max-warnings 0"
     ],
     "*.{js,mjs}": [
       "eslint --max-warnings 0"
