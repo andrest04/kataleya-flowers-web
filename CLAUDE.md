@@ -31,7 +31,7 @@ que transmita confianza y refleje la identidad visual de la marca.
   Plugins nativos: react, react-hooks, jsx-a11y, @next/eslint-plugin-next
   typescript-eslint en modo strict + stylistic para TS/TSX
 - **husky** + **lint-staged** — pre-commit hook que corre sobre archivos staged:
-  - \*.{ts,tsx}: eslint --max-warnings 0 + tsc --noEmit --skipLibCheck
+  - \*.{ts,tsx}: eslint --max-warnings 0
   - \*.{js,mjs}: eslint --max-warnings 0
 - **Baseline**: QA/eslint-baseline.txt documenta errores pre-existentes
 
@@ -108,6 +108,16 @@ Navegación por anchors: `#hero`, `#catalogo`, `#nosotros`, `#contacto`
 - Tipos estrictos en todo
 - Sin `any` — si no se sabe el tipo, usar `unknown` y narrowing
 - Props siempre tipadas con interfaces
+
+---
+
+## Commits
+
+- **Nunca agregar `Co-Authored-By`** ni metadata de autor
+- Usar [Conventional Commits](https://www.conventionalcommits.org/) en inglés
+- Mensajes cortos y concisos que expliquen la funcionalidad
+
+Ejemplos: `feat: add contact form validation`, `fix: resolve hydration error in Navbar`, `config: update ESLint rules`
 
 ---
 
