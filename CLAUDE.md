@@ -25,6 +25,18 @@ que transmita confianza y refleje la identidad visual de la marca.
 
 ---
 
+## Calidad de código
+
+- **ESLint 9** — flat config en `eslint.config.mjs` sin eslint-config-next.
+  Plugins nativos: react, react-hooks, jsx-a11y, @next/eslint-plugin-next
+  typescript-eslint en modo strict + stylistic para TS/TSX
+- **husky** + **lint-staged** — pre-commit hook que corre sobre archivos staged:
+  - \*.{ts,tsx}: eslint --max-warnings 0 + tsc --noEmit --skipLibCheck
+  - \*.{js,mjs}: eslint --max-warnings 0
+- **Baseline**: QA/eslint-baseline.txt documenta errores pre-existentes
+
+---
+
 ## Identidad visual — RESPETAR ESTRICTAMENTE
 
 La paleta de colores es fija. **No proponer variaciones ni reemplazos.**
@@ -117,6 +129,9 @@ Navegación por anchors: `#hero`, `#catalogo`, `#nosotros`, `#contacto`
 npm run dev          # Dev server en http://localhost:3000
 npm run build        # Build de producción
 npm run start        # Servidor de producción
+npm run lint          # eslint .
+npm run lint:fix      # eslint . --fix
+npm run lint:strict   # eslint . --max-warnings 0
 npx playwright test  # Tests e2e
 ```
 
