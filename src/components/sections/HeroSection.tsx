@@ -9,21 +9,21 @@ const slides = [
   {
     id: 1,
     image: "/hero-1.jpg",
-    bgColor: "#c0392b",
+    bgColor: "var(--color-primary)",
     label: "Arreglos florales",
     sublabel: "Diseños únicos para cada ocasión",
   },
   {
     id: 2,
     image: "/hero-2.jpg",
-    bgColor: "#2d5a1b",
+    bgColor: "var(--color-accent)",
     label: "Orquídeas premium",
     sublabel: "Las más finas variedades de Lima",
   },
   {
     id: 3,
     image: "/hero-3.jpg",
-    bgColor: "#e8b84b",
+    bgColor: "var(--color-secondary)",
     label: "Regalos especiales",
     sublabel: "Momentos únicos para personas únicas",
   },
@@ -31,7 +31,15 @@ const slides = [
 
 function ChevronLeftIcon({ className }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="M15 18l-6-6 6-6" />
     </svg>
   );
@@ -39,7 +47,15 @@ function ChevronLeftIcon({ className }: { className?: string }) {
 
 function ChevronRightIcon({ className }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="M9 18l6-6-6-6" />
     </svg>
   );
@@ -66,14 +82,20 @@ export default function HeroSection() {
 
   const slideIndex = ((page % slides.length) + slides.length) % slides.length;
 
-  const paginate = useCallback((newDirection: number) => {
-    setPage([page + newDirection, newDirection]);
-  }, [page]);
+  const paginate = useCallback(
+    (newDirection: number) => {
+      setPage([page + newDirection, newDirection]);
+    },
+    [page],
+  );
 
-  const goToSlide = useCallback((index: number) => {
-    const newDirection = index > slideIndex ? 1 : -1;
-    setPage([index, newDirection]);
-  }, [slideIndex]);
+  const goToSlide = useCallback(
+    (index: number) => {
+      const newDirection = index > slideIndex ? 1 : -1;
+      setPage([index, newDirection]);
+    },
+    [slideIndex],
+  );
 
   // Auto-play every 4 seconds
   useEffect(() => {
@@ -87,8 +109,10 @@ export default function HeroSection() {
   useEffect(() => {
     slides.forEach((slide) => {
       const img = new window.Image();
-      img.onload = () => setImageExists((prev) => ({ ...prev, [slide.id]: true }));
-      img.onerror = () => setImageExists((prev) => ({ ...prev, [slide.id]: false }));
+      img.onload = () =>
+        setImageExists((prev) => ({ ...prev, [slide.id]: true }));
+      img.onerror = () =>
+        setImageExists((prev) => ({ ...prev, [slide.id]: false }));
       img.src = slide.image;
     });
   }, []);
@@ -126,18 +150,24 @@ export default function HeroSection() {
             </p>
           </div>
 
-          <HeroButtons
-            primaryTarget="#catalogo"
-            secondaryTarget="#contacto"
-          />
+          <HeroButtons primaryTarget="#catalogo" secondaryTarget="#contacto" />
         </div>
 
         {/* Carrusel */}
-        <div className="relative overflow-hidden rounded-3xl" style={{ height: "440px" }}>
+        <div
+          className="relative overflow-hidden rounded-3xl"
+          style={{ height: "440px" }}
+        >
           {/* Badge "Flores frescas" */}
           <div className="absolute left-4 top-4 z-10 flex items-center gap-2 rounded-full bg-white/95 px-3 py-1.5 shadow-lg backdrop-blur-sm">
-            <span className="h-2 w-2 rounded-full" style={{ backgroundColor: "var(--color-accent)" }} />
-            <span className="text-xs font-semibold" style={{ color: "var(--color-dark)" }}>
+            <span
+              className="h-2 w-2 rounded-full"
+              style={{ backgroundColor: "var(--color-accent)" }}
+            />
+            <span
+              className="text-xs font-semibold"
+              style={{ color: "var(--color-dark)" }}
+            >
               Flores frescas
             </span>
           </div>
@@ -177,7 +207,8 @@ export default function HeroSection() {
               <div
                 className="absolute inset-0"
                 style={{
-                  background: "linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 40%, transparent 70%)",
+                  background:
+                    "linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 40%, transparent 70%)",
                 }}
               />
 
@@ -229,7 +260,8 @@ export default function HeroSection() {
                 className="h-2 rounded-full transition-all duration-300"
                 style={{
                   width: index === slideIndex ? "24px" : "8px",
-                  backgroundColor: index === slideIndex ? "white" : "rgba(255,255,255,0.5)",
+                  backgroundColor:
+                    index === slideIndex ? "white" : "rgba(255,255,255,0.5)",
                 }}
                 aria-label={`Ir a slide ${index + 1}`}
               />

@@ -84,7 +84,7 @@ export default function ContactSection() {
           >
             <div className="flex items-center gap-4">
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/20">
-                <FaWhatsapp size={24} color="#ffffff" className="text-white" />
+                <FaWhatsapp size={24} className="text-white" />
               </div>
               <div>
                 <p className="text-base font-semibold text-white">
@@ -102,11 +102,11 @@ export default function ContactSection() {
             target="_blank"
             rel="noopener noreferrer"
             className="group flex items-center justify-between rounded-2xl p-4 transition-all duration-300 hover:opacity-95"
-            style={{ backgroundColor: "#1a1a1a" }}
+            style={{ backgroundColor: "var(--color-dark)" }}
           >
             <div className="flex items-center gap-4">
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10">
-                <FaInstagram size={24} color="#ffffff" className="text-white" />
+                <FaInstagram size={24} className="text-white" />
               </div>
               <div>
                 <p className="text-base font-semibold text-white">

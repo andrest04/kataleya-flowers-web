@@ -3,7 +3,7 @@ export default function Footer() {
     <footer
       className="px-4 py-8 sm:px-6 lg:px-8"
       style={{
-        backgroundColor: "#2d5a1b",
+        backgroundColor: "var(--color-accent)",
         color: "var(--color-cream)",
       }}
     >
