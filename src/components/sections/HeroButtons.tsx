@@ -1,18 +1,22 @@
 "use client";
 
+import Link from "next/link";
+
 interface HeroButtonsProps {
   primaryTarget: string;
   secondaryTarget: string;
 }
 
 export default function HeroButtons({
-  primaryTarget,
   secondaryTarget,
 }: HeroButtonsProps) {
   const handleScroll = (targetId: string) => {
-    const target = document.querySelector<HTMLElement>(targetId);
+    // Extraer el ID si viene con # (ej: "#contacto" -> "contacto")
+    const cleanId = targetId.startsWith("#") ? targetId.slice(1) : targetId;
+    const target = document.getElementById(cleanId);
 
     if (!target) {
+      console.warn(`[HeroButtons] Target element with id "${cleanId}" not found`);
       return;
     }
 
@@ -24,17 +28,16 @@ export default function HeroButtons({
 
   return (
     <div className="flex flex-col gap-4 sm:flex-row">
-      <button
-        type="button"
-        className="rounded-full px-7 py-3 text-sm font-semibold tracking-[0.08em] uppercase transition-opacity hover:opacity-90"
+      <Link
+        href="/catalogo"
+        className="rounded-full px-7 py-3 text-sm font-semibold tracking-[0.08em] uppercase transition-opacity hover:opacity-90 text-center"
         style={{
           backgroundColor: "var(--color-primary)",
           color: "var(--color-cream)",
         }}
-        onClick={() => handleScroll(primaryTarget)}
       >
         Ver catálogo
-      </button>
+      </Link>
       <button
         type="button"
         className="rounded-full border px-7 py-3 text-sm font-semibold tracking-[0.08em] uppercase transition-opacity hover:opacity-80"
