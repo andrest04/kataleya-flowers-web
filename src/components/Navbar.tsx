@@ -1,17 +1,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 const navLinks = [
-  { label: "Inicio", href: "#hero" },
-  { label: "Catalogo", href: "#catalogo" },
-  { label: "Nosotros", href: "#nosotros" },
-  { label: "Contacto", href: "#contacto" },
+  { label: "Inicio", href: "#hero", isRoute: false },
+  { label: "Catalogo", href: "#catalogo", isRoute: false },
+  { label: "Nosotros", href: "#nosotros", isRoute: false },
+  { label: "Contacto", href: "#contacto", isRoute: false },
 ] as const;
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const pathname = usePathname();
+  const isLandingPage = pathname === "/";
 
   useEffect(() => {
     const handleScroll = () => {
@@ -35,9 +39,25 @@ export default function Navbar() {
   }, [isMenuOpen]);
 
   const handleNavigate = (href: string) => {
-    const target = document.querySelector<HTMLElement>(href);
+    // Extraer el ID del anchor (ej: "#hero" -> "hero")
+    const targetId = href.startsWith("#") ? href.slice(1) : href.split("#")[1];
+    if (!targetId) {
+      setIsMenuOpen(false);
+      return;
+    }
+
+    // Si no estamos en la landing page, navegar a /#target
+    if (!isLandingPage) {
+      setIsMenuOpen(false);
+      window.location.href = `/#${targetId}`;
+      return;
+    }
+
+    // Estamos en la landing page, hacer scroll suave
+    const target = document.getElementById(targetId);
 
     if (!target) {
+      console.warn(`[Navbar] Target element with id "${targetId}" not found`);
       setIsMenuOpen(false);
       return;
     }
@@ -95,23 +115,36 @@ export default function Navbar() {
                     ·
                   </span>
                 ) : null}
-                <button
-                  type="button"
-                  className="cursor-pointer text-[0.8rem] font-normal tracking-[0.08em] uppercase transition-all duration-300"
-                  onClick={() => handleNavigate(link.href)}
-                  style={{
-                    color: "var(--color-dark)",
-                    fontFamily: "var(--font-body)",
-                  }}
-                  onMouseEnter={(event) => {
-                    event.currentTarget.style.color = "var(--color-accent)";
-                  }}
-                  onMouseLeave={(event) => {
-                    event.currentTarget.style.color = "var(--color-dark)";
-                  }}
-                >
-                  {link.label}
-                </button>
+                {link.isRoute ? (
+                  <Link
+                    href={link.href}
+                    className="text-[0.8rem] font-normal tracking-[0.08em] uppercase transition-all duration-300"
+                    style={{
+                      color: "var(--color-dark)",
+                      fontFamily: "var(--font-body)",
+                    }}
+                  >
+                    {link.label}
+                  </Link>
+                ) : (
+                  <button
+                    type="button"
+                    className="cursor-pointer text-[0.8rem] font-normal tracking-[0.08em] uppercase transition-all duration-300"
+                    onClick={() => handleNavigate(link.href)}
+                    style={{
+                      color: "var(--color-dark)",
+                      fontFamily: "var(--font-body)",
+                    }}
+                    onMouseEnter={(event) => {
+                      event.currentTarget.style.color = "var(--color-accent)";
+                    }}
+                    onMouseLeave={(event) => {
+                      event.currentTarget.style.color = "var(--color-dark)";
+                    }}
+                  >
+                    {link.label}
+                  </button>
+                )}
               </div>
             ))}
           </div>
@@ -187,26 +220,41 @@ export default function Navbar() {
         }}
       >
         <div className="flex flex-col items-center gap-8 text-center">
-          {navLinks.map((link) => (
-            <button
-              key={link.href}
-              type="button"
-              className="cursor-pointer text-3xl transition-all duration-300"
-              onClick={() => handleNavigate(link.href)}
-              style={{
-                color: "var(--color-primary)",
-                fontFamily: "var(--font-display)",
-              }}
-              onMouseEnter={(event) => {
-                event.currentTarget.style.color = "var(--color-accent)";
-              }}
-              onMouseLeave={(event) => {
-                event.currentTarget.style.color = "var(--color-primary)";
-              }}
-            >
-              {link.label}
-            </button>
-          ))}
+          {navLinks.map((link) =>
+            link.isRoute ? (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="text-3xl transition-all duration-300"
+                onClick={() => setIsMenuOpen(false)}
+                style={{
+                  color: "var(--color-primary)",
+                  fontFamily: "var(--font-display)",
+                }}
+              >
+                {link.label}
+              </Link>
+            ) : (
+              <button
+                key={link.href}
+                type="button"
+                className="cursor-pointer text-3xl transition-all duration-300"
+                onClick={() => handleNavigate(link.href)}
+                style={{
+                  color: "var(--color-primary)",
+                  fontFamily: "var(--font-display)",
+                }}
+                onMouseEnter={(event) => {
+                  event.currentTarget.style.color = "var(--color-accent)";
+                }}
+                onMouseLeave={(event) => {
+                  event.currentTarget.style.color = "var(--color-primary)";
+                }}
+              >
+                {link.label}
+              </button>
+            )
+          )}
           <button
             type="button"
             className="cursor-pointer rounded-full border px-8 py-3 text-[0.8rem] tracking-[0.08em] uppercase transition-all duration-300"

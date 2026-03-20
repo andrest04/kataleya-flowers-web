@@ -10,7 +10,7 @@ export default function AboutSection() {
   return (
     <section
       id="nosotros"
-      className="scroll-mt-32 px-4 py-24 sm:px-6 lg:px-8"
+      className="flex min-h-screen items-center justify-center px-4 py-12 sm:px-6 lg:px-8"
       style={{
         backgroundColor:
           "color-mix(in srgb, var(--color-secondary) 10%, var(--color-cream))",
