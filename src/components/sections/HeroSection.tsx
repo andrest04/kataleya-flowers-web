@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { LazyMotion, domAnimation, m, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import HeroButtons from "@/components/sections/HeroButtons";
+import TrustBar from "@/components/sections/TrustBar";
 
 // Campaign mode: 'contact' prioritizes contacting, 'catalog' prioritizes browsing
 type CampaignMode = "contact" | "catalog";
@@ -147,9 +148,9 @@ export default function HeroSection() {
     <LazyMotion features={domAnimation}>
       <section
         id="hero"
-        className="flex min-h-screen items-center px-4 py-28 sm:px-6 lg:px-8"
+        className="flex min-h-screen flex-col"
       >
-        <div className="mx-auto grid w-full max-w-7xl gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
+        <div className="mx-auto grid w-full max-w-7xl flex-1 gap-12 px-4 py-28 sm:px-6 lg:px-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
           {/* Texto Hero */}
           <div className="space-y-8">
             <div className="space-y-5">
@@ -311,6 +312,7 @@ export default function HeroSection() {
             </div>
           </div>
         </div>
+        <TrustBar />
       </section>
     </LazyMotion>
   );
