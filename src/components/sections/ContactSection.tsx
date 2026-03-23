@@ -22,7 +22,7 @@ export default function ContactSection() {
   return (
     <section
       id="contacto"
-      className="flex items-center justify-center px-4 py-20 sm:px-6 lg:px-8 lg:py-28"
+      className="scroll-mt-20 flex items-center justify-center px-4 py-20 sm:px-6 lg:px-8 lg:py-28"
     >
       <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
         {/* Lado izquierdo - Mapa */}

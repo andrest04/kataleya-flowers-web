@@ -41,7 +41,7 @@ export default function TestimonialsSection() {
   return (
     <section
       id="testimonios"
-      className="scroll-mt-32 px-4 pt-8 pb-24 sm:px-6 lg:px-8"
+      className="scroll-mt-20 px-4 pt-8 pb-24 sm:px-6 lg:px-8"
       style={{ backgroundColor: "var(--color-cream)" }}
     >
       <div className="mx-auto max-w-7xl space-y-10">

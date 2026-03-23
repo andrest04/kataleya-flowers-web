@@ -9,7 +9,7 @@ export default function CatalogSection() {
   return (
     <section
       id="catalogo"
-      className="scroll-mt-32 px-4 pt-8 pb-24 sm:px-6 lg:px-8"
+      className="scroll-mt-20 px-4 pt-8 pb-24 sm:px-6 lg:px-8"
     >
       <div className="mx-auto max-w-7xl space-y-10">
         <div className="space-y-4 text-center">
