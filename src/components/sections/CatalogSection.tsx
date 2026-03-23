@@ -78,6 +78,14 @@ export default function CatalogSection() {
                 <p className="text-sm leading-6" style={{ color: "var(--color-dark)" }}>
                   {category.description}
                 </p>
+                {category.priceFrom !== undefined && (
+                  <p
+                    className="text-sm font-semibold"
+                    style={{ color: "var(--color-secondary)" }}
+                  >
+                    Desde S/{category.priceFrom.toFixed(2)}
+                  </p>
+                )}
                 <p
                   className="text-xs font-semibold tracking-[0.15em] uppercase mt-3"
                   style={{ color: "var(--color-accent)" }}

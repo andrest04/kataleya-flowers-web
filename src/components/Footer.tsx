@@ -1,7 +1,9 @@
 import { FaInstagram, FaWhatsapp } from "react-icons/fa";
+import { BUSINESS } from "@/lib/constants";
 
-const WHATSAPP_LINK =
-  "https://wa.me/51990051041?text=Hola%20Kataleya%20Flawers%2C%20quiero%20hacer%20un%20pedido.";
+const WHATSAPP_LINK = BUSINESS.whatsappWithMessage(
+  "Hola Kataleya Flawers, quiero hacer un pedido.",
+);
 
 const NAV_LINKS = [
   { href: "#hero", label: "Inicio" },
@@ -46,7 +48,7 @@ export default function Footer() {
               aria-label="Escribir a Kataleya Flawers por WhatsApp"
               className="inline-flex w-full items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-semibold transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 sm:w-auto"
               style={{
-                backgroundColor: "#25d366",
+                backgroundColor: "var(--color-whatsapp)",
                 color: "var(--color-cream)",
                 outlineColor: "var(--color-secondary)",
               }}
@@ -56,7 +58,7 @@ export default function Footer() {
             </a>
 
             <a
-              href="https://instagram.com/kataleyaflawers12"
+              href={BUSINESS.instagram}
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Seguir a Kataleya Flawers en Instagram"
@@ -106,7 +108,7 @@ export default function Footer() {
             <p className="opacity-90">
               Atencion en Lima, Peru para entregas y recojo.
             </p>
-            <p className="opacity-80">WhatsApp: +51 990 051 041</p>
+            <p className="opacity-80">WhatsApp: +{BUSINESS.phone}</p>
             <a
               href="#contacto"
               className="inline-block rounded-sm font-semibold text-[var(--color-secondary)] transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2"

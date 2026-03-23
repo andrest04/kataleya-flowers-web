@@ -1,3 +1,4 @@
+import React from "react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -51,10 +52,34 @@ export default async function CategoriaPage({
   return (
     <main className="min-h-screen bg-cream pt-28 pb-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
+        <nav aria-label="Breadcrumb" className="mb-6">
+          <ol className="flex items-center gap-2 text-sm font-body" style={{ color: "var(--color-muted)" }}>
+            <li>
+              <Link href="/" className="hover:text-primary transition-colors">
+                Inicio
+              </Link>
+            </li>
+            <li aria-hidden="true">/</li>
+            <li>
+              <Link
+                href="/catalogo"
+                className="hover:text-primary transition-colors"
+              >
+                Catálogo
+              </Link>
+            </li>
+            <li aria-hidden="true">/</li>
+            <li aria-current="page" className="text-dark/70">
+              {category.name}
+            </li>
+          </ol>
+        </nav>
+
         <div className="mb-8">
           <Link
             href="/catalogo"
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-white border border-dark/10 rounded-lg font-body text-dark/70 hover:text-primary hover:border-primary/30 hover:bg-primary/5 transition-all duration-200 shadow-sm"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg font-body text-dark/70 hover:text-primary hover:border-primary/30 hover:bg-primary/5 transition-all duration-200 shadow-sm"
+              style={{ backgroundColor: "var(--color-white)", border: "1px solid color-mix(in srgb, var(--color-dark) 10%, transparent)" }}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -86,9 +111,10 @@ export default async function CategoriaPage({
             <Link
               key={product.id}
               href={`/catalogo/${category.slug}/${product.slug}`}
-              className="group block bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300"
+              className="group block rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300"
+                style={{ backgroundColor: "var(--color-white)" }}
             >
-              <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
+              <div className="relative aspect-[4/3] overflow-hidden" style={{ backgroundColor: "var(--color-surface)" }}>
                 <Image
                   src={product.imageUrl}
                   alt={product.name}

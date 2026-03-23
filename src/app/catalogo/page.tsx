@@ -3,6 +3,24 @@ import React from "react";
 import type { Metadata } from "next";
 import { categories } from "@/data/products";
 
+function Breadcrumb(): React.ReactElement {
+  return (
+    <nav aria-label="Breadcrumb" className="mb-6">
+      <ol className="flex items-center gap-2 text-sm font-body" style={{ color: "var(--color-muted)" }}>
+        <li>
+          <Link href="/" className="hover:text-primary transition-colors">
+            Inicio
+          </Link>
+        </li>
+        <li aria-hidden="true">/</li>
+        <li aria-current="page" className="text-dark/70">
+          Catálogo
+        </li>
+      </ol>
+    </nav>
+  );
+}
+
 export const metadata: Metadata = {
   title: "Catalogo de Flores | Kataleya Flawers",
   description:
@@ -13,6 +31,7 @@ export default function CatalogoPage(): React.ReactElement {
   return (
     <main className="min-h-screen bg-cream pt-28 pb-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
+        <Breadcrumb />
         <h1 className="font-heading text-4xl md:text-5xl text-primary text-center mb-12">
           Nuestro Catálogo
         </h1>
@@ -22,7 +41,8 @@ export default function CatalogoPage(): React.ReactElement {
             <Link
               key={category.id}
               href={`/catalogo/${category.slug}`}
-              className="group block bg-white border border-gray-200 rounded-lg p-8 transition-all duration-300 hover:shadow-lg hover:border-primary/30"
+              className="group block rounded-lg p-8 transition-all duration-300 hover:shadow-lg"
+              style={{ backgroundColor: "var(--color-white)", borderWidth: "1px", borderStyle: "solid", borderColor: "var(--color-border)" }}
             >
               <h2 className="font-heading text-2xl text-primary mb-3 group-hover:text-primary/80">
                 {category.name}
