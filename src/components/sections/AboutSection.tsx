@@ -1,10 +1,15 @@
 import Image from "next/image";
 
-const highlights = [
+interface Highlight {
+  readonly value: string;
+  readonly label: string;
+}
+
+const highlights: readonly Highlight[] = [
   { value: "32", label: "Años de experiencia" },
   { value: "500+", label: "Arreglos al mes" },
   { value: "100%", label: "Dedicación y amor" },
-] as const;
+];
 
 export default function AboutSection() {
   return (
@@ -12,13 +17,12 @@ export default function AboutSection() {
       id="nosotros"
       className="flex min-h-screen items-center justify-center px-4 py-12 sm:px-6 lg:px-8"
       style={{
-        backgroundColor:
-          "color-mix(in srgb, var(--color-secondary) 10%, var(--color-cream))",
+        backgroundColor: "var(--bg-about)",
       }}
     >
       <div className="mx-auto grid max-w-7xl gap-14 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
         <div className="space-y-8">
-          <div className="space-y-4">
+          <header className="space-y-4">
             <p
               className="text-sm font-semibold tracking-[0.2em] uppercase"
               style={{ color: "var(--color-accent)" }}
@@ -42,35 +46,37 @@ export default function AboutSection() {
             </p>
             <p className="max-w-2xl text-lg leading-8">
               Desde nuestra ubicación en Lima acompañamos celebraciones,
-              homenajes y momentos cotidianos con propuestas hechas para emocionar
-              y perdurar en la memoria.
+              homenajes y momentos cotidianos con propuestas hechas para
+              emocionar y perdurar en la memoria.
             </p>
-          </div>
+          </header>
 
-          <div className="grid gap-5 sm:grid-cols-3">
-            {highlights.map((highlight) => (
-              <div
-                key={highlight.label}
-                className="rounded-[1.5rem] border px-5 py-6"
-                style={{
-                  backgroundColor: "var(--color-cream)",
-                  borderColor:
-                    "color-mix(in srgb, var(--color-accent) 16%, transparent)",
-                }}
-              >
-                <p
-                  className="text-4xl leading-none"
+          <article>
+            <dl className="grid gap-5 sm:grid-cols-3">
+              {highlights.map((highlight) => (
+                <div
+                  key={highlight.label}
+                  className="rounded-[1.5rem] border px-5 py-6"
                   style={{
-                    color: "var(--color-accent)",
-                    fontFamily: "var(--font-heading)",
+                    backgroundColor: "var(--color-cream)",
+                    borderColor:
+                      "color-mix(in srgb, var(--color-accent) 16%, transparent)",
                   }}
                 >
-                  {highlight.value}
-                </p>
-                <p className="mt-3 text-sm leading-6">{highlight.label}</p>
-              </div>
-            ))}
-          </div>
+                  <dt
+                    className="text-4xl leading-none"
+                    style={{
+                      color: "var(--color-accent)",
+                      fontFamily: "var(--font-heading)",
+                    }}
+                  >
+                    {highlight.value}
+                  </dt>
+                  <dd className="mt-3 text-sm leading-6">{highlight.label}</dd>
+                </div>
+              ))}
+            </dl>
+          </article>
         </div>
 
         <div className="relative overflow-hidden rounded-[2rem]">
