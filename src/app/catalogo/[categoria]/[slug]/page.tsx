@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
 import { categories, products } from "@/data/products";
+import { BUSINESS } from "@/lib/constants";
 
 interface ProductoPageProps {
   params: Promise<{ categoria: string; slug: string }>;
@@ -76,19 +77,51 @@ export default async function ProductoPage({
     notFound();
   }
 
-  const whatsappMessage = encodeURIComponent(
+  const whatsappUrl = BUSINESS.whatsappWithMessage(
     `Hola, me interesa el producto: ${product.name}`,
   );
-  const whatsappUrl = `https://wa.me/123456789?text=${whatsappMessage}`;
 
   return (
     <main className="min-h-screen bg-cream pt-28 pb-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
+        <nav aria-label="Breadcrumb" className="mb-6">
+          <ol className="flex items-center gap-2 text-sm font-body" style={{ color: "var(--color-muted)" }}>
+            <li>
+              <Link href="/" className="hover:text-primary transition-colors">
+                Inicio
+              </Link>
+            </li>
+            <li aria-hidden="true">/</li>
+            <li>
+              <Link
+                href="/catalogo"
+                className="hover:text-primary transition-colors"
+              >
+                Catálogo
+              </Link>
+            </li>
+            <li aria-hidden="true">/</li>
+            <li>
+              <Link
+                href={`/catalogo/${category.slug}`}
+                className="hover:text-primary transition-colors"
+              >
+                {category.name}
+              </Link>
+            </li>
+            <li aria-hidden="true">/</li>
+            <li aria-current="page" className="text-dark/70">
+              {product.name}
+            </li>
+          </ol>
+        </nav>
+
         <div className="mb-8">
           <Link
             href={`/catalogo/${category.slug}`}
             prefetch={false}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-white border border-dark/10 rounded-lg font-body text-dark/70 hover:text-primary hover:border-primary/30 hover:bg-primary/5 transition-all duration-200 shadow-sm"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg font-body text-dark/70 hover:text-primary hover:border-primary/30 hover:bg-primary/5 transition-all duration-200 shadow-sm"
+              style={{ backgroundColor: "var(--color-white)", border: "1px solid color-mix(in srgb, var(--color-dark) 10%, transparent)" }}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -110,7 +143,7 @@ export default async function ProductoPage({
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Imagen del producto */}
-          <div className="relative aspect-[4/3] lg:aspect-square rounded-lg overflow-hidden bg-gray-100">
+          <div className="relative aspect-[4/3] lg:aspect-square rounded-lg overflow-hidden" style={{ backgroundColor: "var(--color-surface)" }}>
             <Image
               src={product.imageUrl}
               alt={product.name}
@@ -137,7 +170,7 @@ export default async function ProductoPage({
               </p>
             </div>
 
-            <div className="mt-auto pt-8 border-t border-gray-200">
+            <div className="mt-auto pt-8 border-t" style={{ borderColor: "var(--color-border)" }}>
               <a
                 href={whatsappUrl}
                 target="_blank"

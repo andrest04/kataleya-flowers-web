@@ -9,7 +9,7 @@ export default function CatalogSection() {
   return (
     <section
       id="catalogo"
-      className="scroll-mt-32 px-4 pt-8 pb-24 sm:px-6 lg:px-8"
+      className="scroll-mt-20 px-4 pt-8 pb-24 sm:px-6 lg:px-8"
     >
       <div className="mx-auto max-w-7xl space-y-10">
         <div className="space-y-4 text-center">
@@ -78,6 +78,14 @@ export default function CatalogSection() {
                 <p className="text-sm leading-6" style={{ color: "var(--color-dark)" }}>
                   {category.description}
                 </p>
+                {category.priceFrom !== undefined && (
+                  <p
+                    className="text-sm font-semibold"
+                    style={{ color: "var(--color-secondary)" }}
+                  >
+                    Desde S/{category.priceFrom.toFixed(2)}
+                  </p>
+                )}
                 <p
                   className="text-xs font-semibold tracking-[0.15em] uppercase mt-3"
                   style={{ color: "var(--color-accent)" }}

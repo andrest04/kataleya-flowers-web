@@ -1,4 +1,6 @@
 import { FaInstagram, FaWhatsapp } from "react-icons/fa";
+import { BUSINESS } from "@/lib/constants";
+import BusinessHoursBadge from "@/components/BusinessHoursBadge";
 
 function ArrowRightIcon({ className }: { className?: string }) {
   return (
@@ -20,7 +22,7 @@ export default function ContactSection() {
   return (
     <section
       id="contacto"
-      className="flex min-h-screen items-center justify-center px-4 py-12 sm:px-6 lg:px-8"
+      className="scroll-mt-20 flex items-center justify-center px-4 py-20 sm:px-6 lg:px-8 lg:py-28"
     >
       <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
         {/* Lado izquierdo - Mapa */}
@@ -77,11 +79,11 @@ export default function ContactSection() {
 
           {/* Botón WhatsApp */}
           <a
-            href="https://wa.me/51990051041"
+            href={BUSINESS.whatsapp}
             target="_blank"
             rel="noopener noreferrer"
             className="group flex items-center justify-between rounded-2xl p-4 transition-all duration-300 hover:opacity-95"
-            style={{ backgroundColor: "#25d366" }}
+            style={{ backgroundColor: "var(--color-whatsapp)" }}
           >
             <div className="flex items-center gap-4">
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/20">
@@ -91,7 +93,7 @@ export default function ContactSection() {
                 <p className="text-base font-semibold text-white">
                   Escribir por WhatsApp
                 </p>
-                <p className="text-sm text-white/80">+51 990 051 041</p>
+                <p className="text-sm text-white/80">+{BUSINESS.phone}</p>
               </div>
             </div>
             <ArrowRightIcon className="h-6 w-6 text-white transition-transform duration-300 group-hover:translate-x-1" />
@@ -99,7 +101,7 @@ export default function ContactSection() {
 
           {/* Botón Instagram */}
           <a
-            href="https://instagram.com/kataleyaflawers12"
+            href={BUSINESS.instagram}
             target="_blank"
             rel="noopener noreferrer"
             className="group flex items-center justify-between rounded-2xl p-4 transition-all duration-300 hover:opacity-95"
@@ -113,7 +115,7 @@ export default function ContactSection() {
                 <p className="text-base font-semibold text-white">
                   Seguirnos en Instagram
                 </p>
-                <p className="text-sm text-white/80">@kataleyaflawers12</p>
+                <p className="text-sm text-white/80">{BUSINESS.instagramHandle}</p>
               </div>
             </div>
             <ArrowRightIcon className="h-6 w-6 text-white transition-transform duration-300 group-hover:translate-x-1" />
@@ -147,15 +149,7 @@ export default function ContactSection() {
                 Lunes a Sábado · 8:00am — 7:00pm
               </span>
             </div>
-            <span
-              className="rounded-full px-3 py-1 text-xs font-semibold"
-              style={{
-                backgroundColor: "var(--color-accent)",
-                color: "var(--color-cream)",
-              }}
-            >
-              ABIERTO
-            </span>
+            <BusinessHoursBadge />
           </div>
         </div>
       </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { BUSINESS } from "@/lib/constants";
 
 type CampaignMode = "contact" | "catalog";
 
@@ -37,17 +38,18 @@ export default function HeroButtons({
       {isPrimaryContact ? (
         // Primary: Contact
         <>
-          <button
-            type="button"
+          <a
+            href={BUSINESS.whatsapp}
+            target="_blank"
+            rel="noopener noreferrer"
             className="rounded-full px-7 py-3 text-sm font-semibold tracking-[0.08em] uppercase transition-opacity hover:opacity-90 text-center"
             style={{
               backgroundColor: "var(--color-primary)",
               color: "var(--color-cream)",
             }}
-            onClick={() => handleScroll("#contacto")}
           >
-            Contactar Ahora
-          </button>
+            Pedir por WhatsApp
+          </a>
           <Link
             href="/catalogo"
             className="rounded-full border px-7 py-3 text-sm font-semibold tracking-[0.08em] uppercase transition-opacity hover:opacity-80 text-center"

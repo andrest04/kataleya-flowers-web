@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { LazyMotion, domAnimation, m, AnimatePresence } from "framer-motion";
 import Image from "next/image";
-import HeroButtons from "./HeroButtons";
+import HeroButtons from "@/components/sections/HeroButtons";
+import TrustBar from "@/components/sections/TrustBar";
 
 // Campaign mode: 'contact' prioritizes contacting, 'catalog' prioritizes browsing
 type CampaignMode = "contact" | "catalog";
@@ -102,6 +103,24 @@ export default function HeroSection() {
     [slideIndex],
   );
 
+  // Touch / swipe support
+  const touchStartX = useRef<number | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (touchStartX.current === null) return;
+    const delta = touchStartX.current - e.changedTouches[0].clientX;
+    touchStartX.current = null;
+    if (delta > 50) {
+      paginate(1); // swipe left → next
+    } else if (delta < -50) {
+      paginate(-1); // swipe right → prev
+    }
+  };
+
   // Auto-play every AUTOPLAY_INTERVAL milliseconds
   useEffect(() => {
     const timer = setInterval(() => {
@@ -129,9 +148,9 @@ export default function HeroSection() {
     <LazyMotion features={domAnimation}>
       <section
         id="hero"
-        className="flex min-h-screen items-center px-4 py-28 sm:px-6 lg:px-8"
+        className="flex min-h-screen flex-col"
       >
-        <div className="mx-auto grid w-full max-w-7xl gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
+        <div className="mx-auto grid w-full max-w-7xl flex-1 gap-12 px-4 py-28 sm:px-6 lg:px-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
           {/* Texto Hero */}
           <div className="space-y-8">
             <div className="space-y-5">
@@ -161,9 +180,13 @@ export default function HeroSection() {
           </div>
 
           {/* Carrusel */}
-          <div className="relative overflow-hidden rounded-3xl h-64 sm:h-80 lg:h-[440px]">
+          <div
+            className="relative overflow-hidden rounded-3xl h-64 sm:h-80 lg:h-[440px]"
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+          >
             {/* Badge: Certificado de frescura */}
-            <div className="absolute left-4 top-4 z-10 flex items-center gap-2 rounded-full bg-white/95 px-3 py-1.5 shadow-lg backdrop-blur-sm">
+            <div className="absolute left-4 top-4 z-10 flex items-center gap-2 rounded-full px-3 py-1.5 shadow-lg backdrop-blur-sm" style={{ backgroundColor: "color-mix(in srgb, var(--color-white) 95%, transparent)" }}>
               <span
                 className="h-2 w-2 rounded-full animate-pulse"
                 style={{ backgroundColor: "var(--color-accent)" }}
@@ -219,7 +242,7 @@ export default function HeroSection() {
                   className="absolute inset-0"
                   style={{
                     background:
-                      "linear-gradient(to top, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.25) 40%, transparent 70%)",
+                      "linear-gradient(to top, color-mix(in srgb, var(--color-dark) 50%, transparent) 0%, color-mix(in srgb, var(--color-dark) 25%, transparent) 40%, transparent 70%)",
                   }}
                 />
 
@@ -249,14 +272,16 @@ export default function HeroSection() {
             {/* Flechas de navegación */}
             <button
               onClick={() => paginate(-1)}
-              className="absolute left-3 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-gray-800 shadow-lg transition-all hover:bg-white hover:scale-105"
+              className="absolute left-3 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full shadow-lg transition-all hover:scale-105"
+              style={{ backgroundColor: "color-mix(in srgb, var(--color-white) 90%, transparent)", color: "var(--color-dark)" }}
               aria-label="Slide anterior"
             >
               <ChevronLeftIcon className="h-5 w-5" />
             </button>
             <button
               onClick={() => paginate(1)}
-              className="absolute right-3 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-gray-800 shadow-lg transition-all hover:bg-white hover:scale-105"
+              className="absolute right-3 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full shadow-lg transition-all hover:scale-105"
+              style={{ backgroundColor: "color-mix(in srgb, var(--color-white) 90%, transparent)", color: "var(--color-dark)" }}
               aria-label="Siguiente slide"
             >
               <ChevronRightIcon className="h-5 w-5" />
@@ -279,7 +304,7 @@ export default function HeroSection() {
                   style={{
                     width: index === slideIndex ? "24px" : "8px",
                     backgroundColor:
-                      index === slideIndex ? "white" : "rgba(255,255,255,0.5)",
+                      index === slideIndex ? "var(--color-white)" : "color-mix(in srgb, var(--color-white) 50%, transparent)",
                   }}
                   aria-label={`Ir a slide ${index + 1}`}
                 />
@@ -287,6 +312,7 @@ export default function HeroSection() {
             </div>
           </div>
         </div>
+        <TrustBar />
       </section>
     </LazyMotion>
   );
