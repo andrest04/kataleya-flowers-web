@@ -1,6 +1,13 @@
-import Link from 'next/link';
-import React from 'react';
-import { categories } from '@/data/products';
+import Link from "next/link";
+import React from "react";
+import type { Metadata } from "next";
+import { categories } from "@/data/products";
+
+export const metadata: Metadata = {
+  title: "Catalogo de Flores | Kataleya Flawers",
+  description:
+    "Explora nuestro catalogo de arreglos florales, orquideas y regalos premium disponibles en Lima.",
+};
 
 export default function CatalogoPage(): React.ReactElement {
   return (

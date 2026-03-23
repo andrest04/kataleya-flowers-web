@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 
+type CampaignMode = "contact" | "catalog";
+
 interface HeroButtonsProps {
-  primaryTarget: string;
-  secondaryTarget: string;
+  campaignMode?: CampaignMode;
 }
 
 export default function HeroButtons({
-  secondaryTarget,
+  campaignMode = "contact",
 }: HeroButtonsProps) {
   const handleScroll = (targetId: string) => {
     // Extraer el ID si viene con # (ej: "#contacto" -> "contacto")
@@ -16,7 +17,9 @@ export default function HeroButtons({
     const target = document.getElementById(cleanId);
 
     if (!target) {
-      console.warn(`[HeroButtons] Target element with id "${cleanId}" not found`);
+      console.warn(
+        `[HeroButtons] Target element with id "${cleanId}" not found`,
+      );
       return;
     }
 
@@ -26,29 +29,62 @@ export default function HeroButtons({
     });
   };
 
+  // Determine primary and secondary CTAs based on campaign mode
+  const isPrimaryContact = campaignMode === "contact";
+
   return (
     <div className="flex flex-col gap-4 sm:flex-row">
-      <Link
-        href="/catalogo"
-        className="rounded-full px-7 py-3 text-sm font-semibold tracking-[0.08em] uppercase transition-opacity hover:opacity-90 text-center"
-        style={{
-          backgroundColor: "var(--color-primary)",
-          color: "var(--color-cream)",
-        }}
-      >
-        Ver catálogo
-      </Link>
-      <button
-        type="button"
-        className="rounded-full border px-7 py-3 text-sm font-semibold tracking-[0.08em] uppercase transition-opacity hover:opacity-80"
-        style={{
-          borderColor: "var(--color-accent)",
-          color: "var(--color-accent)",
-        }}
-        onClick={() => handleScroll(secondaryTarget)}
-      >
-        Contáctanos
-      </button>
+      {isPrimaryContact ? (
+        // Primary: Contact
+        <>
+          <button
+            type="button"
+            className="rounded-full px-7 py-3 text-sm font-semibold tracking-[0.08em] uppercase transition-opacity hover:opacity-90 text-center"
+            style={{
+              backgroundColor: "var(--color-primary)",
+              color: "var(--color-cream)",
+            }}
+            onClick={() => handleScroll("#contacto")}
+          >
+            Contactar Ahora
+          </button>
+          <Link
+            href="/catalogo"
+            className="rounded-full border px-7 py-3 text-sm font-semibold tracking-[0.08em] uppercase transition-opacity hover:opacity-80 text-center"
+            style={{
+              borderColor: "var(--color-accent)",
+              color: "var(--color-accent)",
+            }}
+          >
+            Explorar Catálogo
+          </Link>
+        </>
+      ) : (
+        // Primary: Catalog
+        <>
+          <Link
+            href="/catalogo"
+            className="rounded-full px-7 py-3 text-sm font-semibold tracking-[0.08em] uppercase transition-opacity hover:opacity-90 text-center"
+            style={{
+              backgroundColor: "var(--color-primary)",
+              color: "var(--color-cream)",
+            }}
+          >
+            Ver Catálogo
+          </Link>
+          <button
+            type="button"
+            className="rounded-full border px-7 py-3 text-sm font-semibold tracking-[0.08em] uppercase transition-opacity hover:opacity-80"
+            style={{
+              borderColor: "var(--color-accent)",
+              color: "var(--color-accent)",
+            }}
+            onClick={() => handleScroll("#contacto")}
+          >
+            Contáctanos
+          </button>
+        </>
+      )}
     </div>
   );
 }

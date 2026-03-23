@@ -10,6 +10,11 @@
   --font-display: "Playfair Display", serif;
   --font-heading: "Playfair Display", serif;
   --font-body: "Lato", sans-serif;
+  --bg-about: color-mix(
+    in srgb,
+    var(--color-secondary) 10%,
+    var(--color-cream)
+  );
 }
 
 @theme inline {
