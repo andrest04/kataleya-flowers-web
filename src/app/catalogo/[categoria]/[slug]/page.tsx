@@ -1,8 +1,9 @@
-import React from 'react';
-import { notFound } from 'next/navigation';
-import Link from 'next/link';
-import Image from 'next/image';
-import { categories, products } from '@/data/products';
+import React from "react";
+import { notFound } from "next/navigation";
+import Link from "next/link";
+import Image from "next/image";
+import type { Metadata } from "next";
+import { categories, products } from "@/data/products";
 
 interface ProductoPageProps {
   params: Promise<{ categoria: string; slug: string }>;
@@ -26,6 +27,36 @@ export async function generateStaticParams(): Promise<
   return params;
 }
 
+export async function generateMetadata({
+  params,
+}: ProductoPageProps): Promise<Metadata> {
+  const { categoria, slug } = await params;
+  const product = products.find((p) => p.slug === slug);
+
+  if (!product) {
+    return {
+      title: "Producto no encontrado | Kataleya Flawers",
+      description: "El producto solicitado no esta disponible en el catalogo.",
+    };
+  }
+
+  const category = categories.find(
+    (cat) => cat.slug === categoria && cat.id === product.categoryId,
+  );
+
+  if (!category) {
+    return {
+      title: `${product.name} | Kataleya Flawers`,
+      description: product.description,
+    };
+  }
+
+  return {
+    title: `${product.name} | ${category.name} | Kataleya Flawers`,
+    description: product.description,
+  };
+}
+
 export default async function ProductoPage({
   params,
 }: ProductoPageProps): Promise<React.ReactElement> {
@@ -38,7 +69,7 @@ export default async function ProductoPage({
   }
 
   const category = categories.find(
-    (cat) => cat.slug === categoria && cat.id === product.categoryId
+    (cat) => cat.slug === categoria && cat.id === product.categoryId,
   );
 
   if (!category) {
@@ -46,7 +77,7 @@ export default async function ProductoPage({
   }
 
   const whatsappMessage = encodeURIComponent(
-    `Hola, me interesa el producto: ${product.name}`
+    `Hola, me interesa el producto: ${product.name}`,
   );
   const whatsappUrl = `https://wa.me/123456789?text=${whatsappMessage}`;
 
@@ -124,7 +155,8 @@ export default async function ProductoPage({
               </a>
 
               <p className="mt-4 font-body text-dark/50 text-sm">
-                Te responderemos a la brevedad con disponibilidad y opciones de entrega.
+                Te responderemos a la brevedad con disponibilidad y opciones de
+                entrega.
               </p>
             </div>
           </div>

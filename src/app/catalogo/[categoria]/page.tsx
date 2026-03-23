@@ -1,7 +1,8 @@
-import { notFound } from 'next/navigation';
-import Link from 'next/link';
-import Image from 'next/image';
-import { categories, products } from '@/data/products';
+import { notFound } from "next/navigation";
+import Link from "next/link";
+import Image from "next/image";
+import type { Metadata } from "next";
+import { categories, products } from "@/data/products";
 
 interface CategoriaPageProps {
   params: Promise<{ categoria: string }>;
@@ -11,6 +12,25 @@ export async function generateStaticParams(): Promise<{ categoria: string }[]> {
   return categories.map((category) => ({
     categoria: category.slug,
   }));
+}
+
+export async function generateMetadata({
+  params,
+}: CategoriaPageProps): Promise<Metadata> {
+  const { categoria } = await params;
+  const category = categories.find((cat) => cat.slug === categoria);
+
+  if (!category) {
+    return {
+      title: "Categoria no encontrada | Kataleya Flawers",
+      description: "La categoria solicitada no existe en nuestro catalogo.",
+    };
+  }
+
+  return {
+    title: `${category.name} | Catalogo Kataleya Flawers`,
+    description: category.description,
+  };
 }
 
 export default async function CategoriaPage({
@@ -25,7 +45,7 @@ export default async function CategoriaPage({
   }
 
   const categoryProducts = products.filter(
-    (product) => product.categoryId === category.id
+    (product) => product.categoryId === category.id,
   );
 
   return (
