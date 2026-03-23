@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useState } from "react";
+
 function isBusinessOpen(): boolean {
   const now = new Date();
   // Peru time is UTC-5
@@ -15,7 +17,24 @@ function isBusinessOpen(): boolean {
 }
 
 export default function BusinessHoursBadge() {
-  const open = isBusinessOpen();
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    const updateOpenState = () => {
+      setOpen(isBusinessOpen());
+    };
+
+    // Run right after mount without synchronous setState in effect body.
+    const timeoutId = window.setTimeout(updateOpenState, 0);
+
+    // Keep badge state in sync when hour/day changes.
+    const intervalId = window.setInterval(updateOpenState, 60_000);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+      window.clearInterval(intervalId);
+    };
+  }, []);
 
   return (
     <span
