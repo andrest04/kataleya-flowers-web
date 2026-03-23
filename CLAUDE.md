@@ -92,11 +92,18 @@ Los tipos `Product` y `Category` están en `src/features/catalog/types/index.ts`
 La paleta de colores es fija. **No proponer variaciones ni reemplazos.**
 
 ```css
---color-primary: #c0392b; /* Rojo — títulos principales */
+/* Core palette */
+--color-primary: #c0392b;   /* Rojo — títulos principales */
 --color-secondary: #e8b84b; /* Dorado — acentos y detalles */
---color-accent: #2d5a1b; /* Verde — highlights */
---color-cream: #fdfcfa; /* Crema — fondo general */
---color-dark: #1a1a1a; /* Oscuro — texto */
+--color-accent: #2d5a1b;    /* Verde — highlights */
+--color-cream: #fdfcfa;     /* Crema — fondo general */
+--color-dark: #1a1a1a;      /* Oscuro — texto */
+
+/* Extended palette — definidas en globals.css, válidas para usar */
+--color-white: #ffffff;     /* Blanco puro — fondos de tarjetas */
+--color-muted: color-mix(in srgb, var(--color-dark) 50%, transparent); /* Texto atenuado */
+--color-surface: color-mix(in srgb, var(--color-dark) 6%, var(--color-cream));  /* Superficies sutiles */
+--color-border: color-mix(in srgb, var(--color-dark) 12%, var(--color-cream));  /* Bordes */
 ```
 
 Tipografías: **Playfair Display** (serif, títulos) · **Lato** (sans-serif, cuerpo)
