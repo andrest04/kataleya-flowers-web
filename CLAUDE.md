@@ -1,16 +1,8 @@
-# CLAUDE.md — Kataleya Flawers
+# CLAUDE.md
 
-Guía para Claude Code al trabajar en este repositorio.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
----
-
-## Contexto del proyecto
-
-Landing page para **Kataleya Flawers**, florería real ubicada en Lima, Perú.
-Proyecto en desarrollo activo. El objetivo es una página elegante, cálida y profesional
-que transmita confianza y refleje la identidad visual de la marca.
-
-**No es un proyecto demo ni de práctica** — los cambios afectan a un negocio real.
+Landing page para **Kataleya Flawers**, florería real ubicada en Lima, Perú. Proyecto en desarrollo activo — los cambios afectan a un negocio real.
 
 ---
 
@@ -20,20 +12,78 @@ que transmita confianza y refleje la identidad visual de la marca.
 - **React 19.2.3**
 - **TypeScript 5** — tipos estrictos, sin `any`
 - **Tailwind CSS v4** — configuración basada en CSS, sin `tailwind.config`
+- **Framer Motion** — instalado, usando `LazyMotion` + `domAnimation` para reducir bundle size
 - **Playwright** para e2e testing
 - **Vercel Analytics** y **Speed Insights** ya integrados
+
+---
+
+## Comandos
+
+```bash
+npm run dev          # Dev server en http://localhost:3000
+npm run build        # Build de producción
+npm run start        # Servidor de producción
+npm run lint         # eslint .
+npm run lint:fix     # eslint . --fix
+npm run lint:strict  # eslint . --max-warnings 0
+npx playwright test  # Tests e2e
+```
 
 ---
 
 ## Calidad de código
 
 - **ESLint 9** — flat config en `eslint.config.mjs` sin eslint-config-next.
-  Plugins nativos: react, react-hooks, jsx-a11y, @next/eslint-plugin-next
-  typescript-eslint en modo strict + stylistic para TS/TSX
-- **husky** + **lint-staged** — pre-commit hook que corre sobre archivos staged:
-  - \*.{ts,tsx}: eslint --max-warnings 0
-  - \*.{js,mjs}: eslint --max-warnings 0
-- **Baseline**: QA/eslint-baseline.txt documenta errores pre-existentes
+  Plugins: react, react-hooks, jsx-a11y, @next/eslint-plugin-next, typescript-eslint (strict + stylistic)
+- **husky** + **lint-staged** — pre-commit hook corre ESLint con `--max-warnings 0` sobre archivos staged
+- **Baseline**: `QA/eslint-baseline.txt` documenta errores pre-existentes
+
+---
+
+## Arquitectura del proyecto
+
+```
+src/
+├── app/
+│   ├── layout.tsx                          # Root layout — Navbar, Footer, Analytics
+│   ├── page.tsx                            # Landing page — compone todas las secciones
+│   ├── globals.css                         # Tailwind v4 + CSS custom properties
+│   └── catalogo/
+│       ├── page.tsx                        # /catalogo — grid de categorías
+│       ├── [categoria]/
+│       │   ├── page.tsx                    # /catalogo/[categoria] — productos por categoría
+│       │   └── [slug]/
+│       │       └── page.tsx                # /catalogo/[categoria]/[slug] — detalle de producto
+├── components/
+│   ├── Navbar.tsx                          # Fijo, menú mobile, scroll behavior, cross-page nav
+│   ├── Footer.tsx
+│   └── sections/                           # Secciones de la landing page
+│       ├── HeroSection.tsx                 # Carousel con Framer Motion, CAMPAIGN_MODE toggle
+│       ├── HeroButtons.tsx
+│       ├── CatalogSection.tsx
+│       ├── AboutSection.tsx
+│       ├── ContactSection.tsx
+│       └── ContactForm.tsx
+├── data/
+│   └── products.ts                         # Datos estáticos de categorías y productos
+└── features/
+    └── catalog/
+        └── types/
+            └── index.ts                    # Interfaces Product y Category
+```
+
+### Navegación
+
+- Landing page: anchors `#hero`, `#catalogo`, `#nosotros`, `#contacto`
+- Catálogo: rutas `/catalogo`, `/catalogo/[categoria]`, `/catalogo/[categoria]/[slug]`
+- Las rutas dinámicas usan `generateStaticParams` para static generation
+
+### Capa de datos
+
+Los datos de productos y categorías están en `src/data/products.ts` como arrays estáticos.
+Los tipos `Product` y `Category` están en `src/features/catalog/types/index.ts`.
+**No hay base de datos ni API** — es contenido hardcodeado por ahora.
 
 ---
 
@@ -49,75 +99,44 @@ La paleta de colores es fija. **No proponer variaciones ni reemplazos.**
 --color-dark: #1a1a1a; /* Oscuro — texto */
 ```
 
-Tipografías:
-
-- **Playfair Display** — serif, para títulos y display
-- **Lato** — sans-serif, para cuerpo de texto
-
----
-
-## Estructura del proyecto
-
-```
-src/
-├── app/
-│   ├── layout.tsx          # Root layout — Navbar, Footer, Analytics
-│   ├── page.tsx            # Landing page — compone todas las secciones
-│   └── globals.css         # Tailwind v4 + CSS custom properties
-└── components/
-    ├── Navbar.tsx           # Fijo, menú mobile, scroll behavior
-    ├── Footer.tsx
-    └── sections/
-        ├── HeroSection.tsx
-        ├── HeroButtons.tsx
-        ├── CatalogSection.tsx
-        ├── AboutSection.tsx
-        ├── ContactSection.tsx
-        └── ContactForm.tsx
-```
-
-Navegación por anchors: `#hero`, `#catalogo`, `#nosotros`, `#contacto`
+Tipografías: **Playfair Display** (serif, títulos) · **Lato** (sans-serif, cuerpo)
 
 ---
 
 ## Reglas de desarrollo
 
+### Next.js 16
+
+- `params` y `searchParams` en Server Components son **async** — siempre tipar como `Promise<{...}>` y usar `await`
+- Imágenes con `next/image`, nunca `<img>` nativo
+- Rutas dinámicas deben exportar `generateStaticParams` para static generation
+
 ### Componentes
 
-- Server Components por defecto — solo agregar `'use client'` cuando sea estrictamente necesario
-- Componentes con hooks (`useState`, `useEffect`) o eventos del browser **deben** tener `'use client'`
-- Nuevas secciones van en `src/components/sections/` siguiendo el patrón existente
-- Usar alias `@/*` para imports, nunca rutas relativas largas
+- Server Components por defecto — `'use client'` solo cuando hay hooks o eventos del browser
+- Nuevas secciones van en `src/components/sections/`
+- Usar alias `@/*` para imports
 
 ### Tailwind v4
 
-- Los estilos van en `globals.css` como CSS custom properties, **no** en `tailwind.config`
-- Usar las variables CSS definidas (`--color-primary`, etc.) en vez de colores hardcodeados
-- No instalar ni sugerir `tailwind.config.js/ts` — está deprecado en v4
+- Estilos en `globals.css` como CSS custom properties — no en `tailwind.config`
+- Usar variables CSS definidas (`--color-primary`, etc.), nunca colores hardcodeados
 
-### Next.js 16
+### HeroSection — CAMPAIGN_MODE
 
-- `params` y `searchParams` son **async** — siempre usar `await`
-- `cookies()` y `headers()` también son async
-- No usar `middleware.ts` — está deprecado, usar `proxy.ts` si se necesita
-- Imágenes con `next/image`, nunca `<img>` nativo
-- `next/legacy/image` está eliminado en Next.js 16
+Hay un toggle `CAMPAIGN_MODE: 'contact' | 'catalog'` al tope del archivo que cambia el CTA principal. Antes de modificar el hero, entender este mecanismo.
 
-### TypeScript
+### Framer Motion
 
-- Tipos estrictos en todo
-- Sin `any` — si no se sabe el tipo, usar `unknown` y narrowing
-- Props siempre tipadas con interfaces
+Usar siempre `LazyMotion` + `domAnimation` en vez de importar `motion` directamente — reduce el bundle size significativamente.
 
 ---
 
 ## Commits
 
-- **Nunca agregar `Co-Authored-By`** ni metadata de autor
-- Usar [Conventional Commits](https://www.conventionalcommits.org/) en inglés
-- Mensajes cortos y concisos que expliquen la funcionalidad
-
-Ejemplos: `feat: add contact form validation`, `fix: resolve hydration error in Navbar`, `config: update ESLint rules`
+- Nunca agregar `Co-Authored-By` ni metadata de autor
+- [Conventional Commits](https://www.conventionalcommits.org/) en inglés
+- Mensajes cortos: `feat: add contact form validation`, `fix: resolve hydration error in Navbar`
 
 ---
 
@@ -128,44 +147,17 @@ Ejemplos: `feat: add contact form validation`, `fix: resolve hydration error in 
 - ❌ No reemplazar Tailwind v4 por v3 ni agregar `tailwind.config`
 - ❌ No usar `<img>` nativo — siempre `next/image`
 - ❌ No crear rutas API innecesarias para una landing page estática
-- ❌ No agregar librerías de animación pesadas (framer-motion, etc.) sin consultar
 - ❌ No modificar `layout.tsx` sin entender que afecta toda la app
-
----
-
-## Comandos
-
-```bash
-npm run dev          # Dev server en http://localhost:3000
-npm run build        # Build de producción
-npm run start        # Servidor de producción
-npm run lint          # eslint .
-npm run lint:fix      # eslint . --fix
-npm run lint:strict   # eslint . --max-warnings 0
-npx playwright test  # Tests e2e
-```
+- ❌ No usar `any` en TypeScript — usar `unknown` con narrowing si el tipo es incierto
 
 ---
 
 ## Al iniciar una sesión
 
-1. Revisar qué archivos existen actualmente en `src/components/sections/`
-2. No asumir que el código es igual a sesiones anteriores — leer los archivos antes de modificar
+1. Llamar `mem_context` con `project: kataleya-flawers-web` para recuperar contexto previo
+2. Leer los archivos antes de modificar — no asumir que el código es igual a sesiones anteriores
 3. Ante cualquier duda sobre diseño o comportamiento, preguntar antes de implementar
 
-## Memoria (Engram)
+## Al terminar una sesión
 
-Tienes acceso a memoria persistente via Engram MCP.
-
-**Al iniciar cada sesión:**
-
-- Llama `mem_context` con `project: kataleya-flawers-web` para recuperar contexto previo
-
-**Durante la sesión:**
-
-- Llama `mem_save` después de cualquier decisión importante, cambio de arquitectura o bug resuelto
-
-**Al terminar la sesión:**
-
-- Llama `mem_session_summary` con un resumen de: qué se hizo, qué archivos se tocaron, qué decisiones se tomaron
-- Esto NO es opcional — sin este resumen la próxima sesión empieza sin contexto
+Llamar `mem_session_summary` con: qué se hizo, qué archivos se tocaron, qué decisiones se tomaron. **Esto NO es opcional.**
