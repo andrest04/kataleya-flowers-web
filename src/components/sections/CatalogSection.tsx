@@ -56,13 +56,24 @@ export default function CatalogSection() {
                     "color-mix(in srgb, var(--color-secondary) 18%, var(--color-cream))",
                 }}
               >
-                <Image
-                  src="/catalog-placeholder.svg"
-                  alt={category.name}
-                  fill
-                  sizes="(max-width: 639px) 100vw, (max-width: 1279px) 50vw, 25vw"
-                  className="object-cover transition-transform duration-300 group-hover:scale-105"
-                />
+                {category.imageUrl ? (
+                  <Image
+                    src={category.imageUrl}
+                    alt={category.name}
+                    fill
+                    sizes="(max-width: 639px) 100vw, (max-width: 1279px) 50vw, 25vw"
+                    className="object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span
+                      className="text-4xl opacity-30"
+                      style={{ color: "var(--color-secondary)" }}
+                    >
+                      🌸
+                    </span>
+                  </div>
+                )}
               </div>
 
               <div className="space-y-2 px-6 py-6">

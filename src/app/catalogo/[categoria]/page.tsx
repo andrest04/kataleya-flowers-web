@@ -128,7 +128,9 @@ export default async function CategoriaPage({
                   {product.name}
                 </h2>
                 <p className="font-body text-primary font-bold text-lg">
-                  S/ {product.price.toFixed(2)}
+                  {product.priceTable
+                    ? `Desde S/ ${product.price}`
+                    : `S/ ${product.price.toFixed(2)}`}
                 </p>
               </div>
             </Link>
