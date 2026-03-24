@@ -57,7 +57,7 @@ export default function CatalogSection() {
                 }}
               >
                 <Image
-                  src="/catalog-placeholder.svg"
+                  src={category.imageUrl}
                   alt={category.name}
                   fill
                   sizes="(max-width: 639px) 100vw, (max-width: 1279px) 50vw, 25vw"

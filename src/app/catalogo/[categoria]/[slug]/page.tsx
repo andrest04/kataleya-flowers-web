@@ -1,10 +1,10 @@
 import React from "react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import type { Metadata } from "next";
 import { categories, products } from "@/data/products";
 import { BUSINESS } from "@/lib/constants";
+import { ProductGallery } from "@/components/catalog/ProductGallery";
 
 interface ProductoPageProps {
   params: Promise<{ categoria: string; slug: string }>;
@@ -142,17 +142,12 @@ export default async function ProductoPage({
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* Imagen del producto */}
-          <div className="relative aspect-[4/3] lg:aspect-square rounded-lg overflow-hidden" style={{ backgroundColor: "var(--color-surface)" }}>
-            <Image
-              src={product.imageUrl}
-              alt={product.name}
-              fill
-              priority
-              sizes="(max-width: 1024px) 100vw, 50vw"
-              className="object-cover"
-            />
-          </div>
+          {/* Imagen / galería del producto */}
+          <ProductGallery
+            imageUrl={product.imageUrl}
+            images={product.images}
+            name={product.name}
+          />
 
           {/* Información del producto */}
           <div className="flex flex-col">
@@ -160,9 +155,46 @@ export default async function ProductoPage({
               {product.name}
             </h1>
 
-            <p className="text-2xl font-body text-primary font-bold mb-6">
-              S/ {product.price.toFixed(2)}
-            </p>
+            {product.priceTable ? (
+              <div className="mb-6">
+                <p className="font-body text-primary font-bold text-2xl mb-3">
+                  Desde S/ {product.price}
+                </p>
+                <table className="w-full text-sm font-body border-collapse">
+                  <thead>
+                    <tr style={{ backgroundColor: 'var(--color-surface)' }}>
+                      <th className="text-left p-2 border font-semibold" style={{ borderColor: 'var(--color-border)' }}>
+                        Cantidad
+                      </th>
+                      <th className="text-right p-2 border font-semibold" style={{ borderColor: 'var(--color-border)' }}>
+                        Precio
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {product.priceTable.map((v) => (
+                      <tr key={v.label}>
+                        <td className="p-2 border" style={{ borderColor: 'var(--color-border)' }}>
+                          {v.label}
+                        </td>
+                        <td className="p-2 border text-right font-semibold text-primary" style={{ borderColor: 'var(--color-border)' }}>
+                          S/ {v.price}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {product.note && (
+                  <p className="mt-2 text-sm font-body font-semibold" style={{ color: 'var(--color-secondary)' }}>
+                    {product.note}
+                  </p>
+                )}
+              </div>
+            ) : (
+              <p className="text-2xl font-body text-primary font-bold mb-6">
+                S/ {product.price.toFixed(2)}
+              </p>
+            )}
 
             <div className="prose prose-lg mb-8">
               <p className="font-body text-dark/80 leading-relaxed">
