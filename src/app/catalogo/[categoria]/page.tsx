@@ -106,7 +106,7 @@ export default async function CategoriaPage({
           {category.description}
         </p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8">
           {categoryProducts.map((product) => (
             <Link
               key={product.id}
@@ -119,15 +119,15 @@ export default async function CategoriaPage({
                   src={product.imageUrl}
                   alt={product.name}
                   fill
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 50vw, 33vw"
                   className="object-cover transition-transform duration-300 group-hover:scale-105"
                 />
               </div>
-              <div className="p-6">
-                <h2 className="font-heading text-xl text-dark mb-2 group-hover:text-primary transition-colors">
+              <div className="p-3 sm:p-6">
+                <h2 className="font-heading text-sm sm:text-xl text-dark mb-1 sm:mb-2 group-hover:text-primary transition-colors leading-tight">
                   {product.name}
                 </h2>
-                <p className="font-body text-primary font-bold text-lg">
+                <p className="font-body text-primary font-bold text-sm sm:text-lg">
                   {product.priceTable
                     ? `Desde S/ ${product.price}`
                     : `S/ ${product.price.toFixed(2)}`}
