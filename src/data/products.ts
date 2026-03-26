@@ -4,6 +4,15 @@ const CDN = 'https://res.cloudinary.com/dbjm18dqg/image/upload';
 
 export const categories: Category[] = [
   {
+    id: 'cat-004',
+    name: 'Flores Amarillas',
+    slug: 'flores-amarillas',
+    description: 'Girasoles, rosas amarillas y astromelias envueltos en papel pergamino coreano impermeable. Desde ramos pequeños hasta buchones grandes.',
+    occasion: 'Amistad, gratitud y alegría',
+    imageUrl: `${CDN}/v1774299537/ramo-5-girasoles-siempreviva-papel-rosado_y3joov.jpg`,
+    priceFrom: 30,
+  },
+  {
     id: 'cat-001',
     name: 'Amor y Romance',
     slug: 'amor-y-romance',
@@ -29,15 +38,6 @@ export const categories: Category[] = [
     occasion: 'Elegancia y distinción',
     imageUrl: '/placeholder-product.jpg',
     priceFrom: 189.90,
-  },
-  {
-    id: 'cat-004',
-    name: 'Flores Amarillas',
-    slug: 'flores-amarillas',
-    description: 'Girasoles, rosas amarillas y astromelias envueltos en papel pergamino coreano impermeable. Desde ramos pequeños hasta buchones grandes.',
-    occasion: 'Amistad, gratitud y alegría',
-    imageUrl: `${CDN}/v1774299537/ramo-5-girasoles-siempreviva-papel-rosado_y3joov.jpg`,
-    priceFrom: 30,
   },
   {
     id: 'cat-005',
