@@ -57,24 +57,24 @@ export default function CatalogoPage(): React.ReactElement {
           Nuestro Catálogo
         </h1>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-2 md:grid-cols-2 gap-4 sm:gap-8">
           {categories.map((category) => (
             <Link
               key={category.id}
               href={`/catalogo/${category.slug}`}
-              className="group block rounded-lg p-8 transition-all duration-300 hover:shadow-lg"
+              className="group block rounded-lg p-4 sm:p-8 transition-all duration-300 hover:shadow-lg"
               style={{ backgroundColor: "var(--color-white)", borderWidth: "1px", borderStyle: "solid", borderColor: "var(--color-border)" }}
             >
-              <h2 className="font-heading text-2xl text-primary mb-3 group-hover:text-primary/80">
+              <h2 className="font-heading text-base sm:text-2xl text-primary mb-1 sm:mb-3 group-hover:text-primary/80 leading-tight">
                 {category.name}
               </h2>
-              <p className="font-body text-dark/70 leading-relaxed">
+              <p className="hidden sm:block font-body text-dark/70 leading-relaxed">
                 {category.description}
               </p>
-              <div className="mt-6 flex items-center text-secondary font-body font-semibold">
+              <div className="mt-3 sm:mt-6 flex items-center text-secondary font-body font-semibold text-sm sm:text-base">
                 <span>Ver productos</span>
                 <svg
-                  className="ml-2 w-5 h-5 transition-transform group-hover:translate-x-1"
+                  className="ml-2 w-4 h-4 sm:w-5 sm:h-5 transition-transform group-hover:translate-x-1"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
