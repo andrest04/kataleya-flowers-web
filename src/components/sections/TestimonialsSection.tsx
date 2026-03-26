@@ -77,23 +77,19 @@ export default function TestimonialsSection() {
         </div>
       </div>
 
-      <div className="mx-auto mt-12 max-w-4xl px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-wrap justify-center gap-6">
+      <div className="mx-auto mt-12 max-w-4xl overflow-hidden px-4 sm:px-6 md:overflow-visible lg:px-8">
+        <div className="scrollbar-hide flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4 md:flex-wrap md:justify-center md:gap-6 md:overflow-visible md:pb-0">
           {photos.map((photo) => (
             <div
               key={photo.id}
-              className="relative shrink-0 overflow-hidden rounded-sm border-4 border-white shadow-xl transition-transform duration-300 hover:scale-105 hover:shadow-2xl"
-              style={{
-                width: 200,
-                height: 280,
-                transform: `rotate(${photo.rotation}deg)`,
-              }}
+              className="relative h-[220px] w-[160px] shrink-0 snap-center overflow-hidden rounded-sm border-4 border-white shadow-xl transition-transform duration-300 hover:scale-105 hover:shadow-2xl md:h-[280px] md:w-[200px]"
+              style={{ transform: `rotate(${photo.rotation}deg)` }}
             >
               <Image
                 src={photo.src}
                 alt={photo.alt}
                 fill
-                sizes="200px"
+                sizes="(min-width: 768px) 200px, 160px"
                 className="object-cover"
               />
             </div>
