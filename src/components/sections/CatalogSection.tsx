@@ -35,12 +35,12 @@ export default function CatalogSection() {
           </div>
         </div>
 
-        <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="-mx-4 sm:mx-0 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-4 scrollbar-hide sm:grid sm:grid-cols-2 sm:gap-6 sm:overflow-visible sm:pb-0 sm:px-0 lg:grid-cols-4">
           {featuredCategories.map((category) => (
             <Link
               key={category.id}
               href={`/catalogo/${category.slug}`}
-              className="group overflow-hidden rounded-[1.75rem] border transition-all duration-300 hover:-translate-y-1"
+              className="group shrink-0 w-[46vw] sm:w-auto overflow-hidden rounded-[1.75rem] border transition-all duration-300 hover:-translate-y-1"
               style={{
                 backgroundColor: "var(--color-cream)",
                 borderColor:
@@ -61,7 +61,7 @@ export default function CatalogSection() {
                     src={category.imageUrl}
                     alt={category.name}
                     fill
-                    sizes="(max-width: 639px) 100vw, (max-width: 1279px) 50vw, 25vw"
+                    sizes="(max-width: 639px) 46vw, (max-width: 1279px) 50vw, 25vw"
                     className="object-cover transition-transform duration-300 group-hover:scale-105"
                   />
                 ) : (
@@ -86,7 +86,7 @@ export default function CatalogSection() {
                 >
                   {category.name}
                 </h3>
-                <p className="text-sm leading-6" style={{ color: "var(--color-dark)" }}>
+                <p className="hidden sm:block text-sm leading-6" style={{ color: "var(--color-dark)" }}>
                   {category.description}
                 </p>
                 {category.priceFrom !== undefined && (
