@@ -57,7 +57,7 @@ export default function CatalogoPage(): React.ReactElement {
           Nuestro Catálogo
         </h1>
 
-        <div className="grid grid-cols-2 md:grid-cols-2 gap-4 sm:gap-8">
+        <div className="grid grid-cols-2 gap-4 sm:gap-8">
           {categories.map((category) => (
             <Link
               key={category.id}
