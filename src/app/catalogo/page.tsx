@@ -1,7 +1,8 @@
 import Link from "next/link";
-import React from "react";
+import React, { Suspense } from "react";
 import type { Metadata } from "next";
-import { categories } from "@/data/products";
+import { categories, products } from "@/data/products";
+import CatalogSearch from "@/components/catalog/CatalogSearch";
 
 function Breadcrumb(): React.ReactElement {
   return (
@@ -18,6 +19,51 @@ function Breadcrumb(): React.ReactElement {
         </li>
       </ol>
     </nav>
+  );
+}
+
+// Static fallback: category grid rendered server-side while the client
+// component loads (needed because CatalogSearch uses useSearchParams)
+function CategoryGridFallback(): React.ReactElement {
+  return (
+    <div className="grid grid-cols-2 gap-4 sm:gap-8">
+      {categories.map((category) => (
+        <Link
+          key={category.id}
+          href={`/catalogo/${category.slug}`}
+          className="group block rounded-lg p-4 sm:p-8 transition-all duration-300 hover:shadow-lg"
+          style={{
+            backgroundColor: "var(--color-white)",
+            borderWidth: "1px",
+            borderStyle: "solid",
+            borderColor: "var(--color-border)",
+          }}
+        >
+          <h2 className="font-heading text-base sm:text-2xl text-primary mb-1 sm:mb-3 group-hover:text-primary/80 leading-tight">
+            {category.name}
+          </h2>
+          <p className="hidden sm:block font-body text-dark/70 leading-relaxed">
+            {category.description}
+          </p>
+          <div className="mt-3 sm:mt-6 flex items-center text-secondary font-body font-semibold text-sm sm:text-base">
+            <span>Ver productos</span>
+            <svg
+              className="ml-2 w-4 h-4 sm:w-5 sm:h-5 transition-transform group-hover:translate-x-1"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          </div>
+        </Link>
+      ))}
+    </div>
   );
 }
 
@@ -57,39 +103,9 @@ export default function CatalogoPage(): React.ReactElement {
           Nuestro Catálogo
         </h1>
 
-        <div className="grid grid-cols-2 gap-4 sm:gap-8">
-          {categories.map((category) => (
-            <Link
-              key={category.id}
-              href={`/catalogo/${category.slug}`}
-              className="group block rounded-lg p-4 sm:p-8 transition-all duration-300 hover:shadow-lg"
-              style={{ backgroundColor: "var(--color-white)", borderWidth: "1px", borderStyle: "solid", borderColor: "var(--color-border)" }}
-            >
-              <h2 className="font-heading text-base sm:text-2xl text-primary mb-1 sm:mb-3 group-hover:text-primary/80 leading-tight">
-                {category.name}
-              </h2>
-              <p className="hidden sm:block font-body text-dark/70 leading-relaxed">
-                {category.description}
-              </p>
-              <div className="mt-3 sm:mt-6 flex items-center text-secondary font-body font-semibold text-sm sm:text-base">
-                <span>Ver productos</span>
-                <svg
-                  className="ml-2 w-4 h-4 sm:w-5 sm:h-5 transition-transform group-hover:translate-x-1"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 5l7 7-7 7"
-                  />
-                </svg>
-              </div>
-            </Link>
-          ))}
-        </div>
+        <Suspense fallback={<CategoryGridFallback />}>
+          <CatalogSearch categories={categories} products={products} />
+        </Suspense>
       </div>
     </main>
   );
