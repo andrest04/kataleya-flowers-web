@@ -3,8 +3,8 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { LazyMotion, domAnimation, m, AnimatePresence } from "framer-motion";
 import Image from "next/image";
-import HeroButtons from "@/components/sections/HeroButtons";
-import TrustBar from "@/components/sections/TrustBar";
+import HeroButtons from "./HeroButtons";
+import TrustBar from "./TrustBar";
 
 // Campaign mode: 'contact' prioritizes contacting, 'catalog' prioritizes browsing
 type CampaignMode = "contact" | "catalog";

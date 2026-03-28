@@ -1,6 +1,6 @@
 import { FaInstagram, FaWhatsapp } from "react-icons/fa";
 import { BUSINESS } from "@/lib/constants";
-import BusinessHoursBadge from "@/components/BusinessHoursBadge";
+import BusinessHoursBadge from "@/components/shared/BusinessHoursBadge";
 
 function ArrowRightIcon({ className }: { className?: string }) {
   return (
