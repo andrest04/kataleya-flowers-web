@@ -3,8 +3,8 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { categories, products } from "@/data/products";
-import ProductGrid from "@/components/catalog/ProductGrid";
-import { BackButton } from "@/components/catalog/BackButton";
+import ProductGrid from "@/features/catalog/components/ProductGrid";
+import { BackButton } from "@/features/catalog/components/BackButton";
 
 interface CategoriaPageProps {
   params: Promise<{ categoria: string }>;

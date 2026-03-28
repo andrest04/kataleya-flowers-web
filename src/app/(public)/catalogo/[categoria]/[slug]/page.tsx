@@ -4,8 +4,8 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { categories, products } from "@/data/products";
 import { BUSINESS } from "@/lib/constants";
-import { ProductGallery } from "@/components/catalog/ProductGallery";
-import { BackButton } from "@/components/catalog/BackButton";
+import { ProductGallery } from "@/features/catalog/components/ProductGallery";
+import { BackButton } from "@/features/catalog/components/BackButton";
 
 interface ProductoPageProps {
   params: Promise<{ categoria: string; slug: string }>;

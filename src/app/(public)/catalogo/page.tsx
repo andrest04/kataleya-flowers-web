@@ -3,7 +3,7 @@ import Image from "next/image";
 import React, { Suspense } from "react";
 import type { Metadata } from "next";
 import { categories, products } from "@/data/products";
-import CatalogSearch from "@/components/catalog/CatalogSearch";
+import CatalogSearch from "@/features/catalog/components/CatalogSearch";
 
 function Breadcrumb(): React.ReactElement {
   return (
