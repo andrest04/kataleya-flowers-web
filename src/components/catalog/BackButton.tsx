@@ -16,7 +16,7 @@ export function BackButton({ label }: BackButtonProps) {
       className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg font-body text-dark/70 hover:text-primary hover:border-primary/30 hover:bg-primary/5 transition-all duration-200 shadow-sm"
       style={{
         backgroundColor: 'var(--color-white)',
-        border: '1px solid color-mix(in srgb, var(--color-dark) 10%, transparent)',
+        border: '1px solid var(--color-border)',
       }}
     >
       <svg
