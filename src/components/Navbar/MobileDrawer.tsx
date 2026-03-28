@@ -16,7 +16,7 @@ interface MobileDrawerProps {
   searchResults: SearchResult[];
   handleResultClick: (categorySlug: string, productSlug: string) => void;
   handleNavigate: (href: string) => void;
-  searchInputRef: RefObject<HTMLInputElement>;
+  searchInputRef: RefObject<HTMLInputElement | null>;
   clearSearch: () => void;
 }
 

@@ -12,7 +12,7 @@ interface DesktopSearchProps {
   searchResults: SearchResult[];
   handleResultClick: (categorySlug: string, productSlug: string) => void;
   isScrolled: boolean;
-  desktopSearchRef: RefObject<HTMLDivElement>;
+  desktopSearchRef: RefObject<HTMLDivElement | null>;
   clearSearch: () => void;
 }
 
