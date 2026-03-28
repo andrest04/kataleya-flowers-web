@@ -71,6 +71,8 @@ export const products: Product[] = [
     imageUrl: '/placeholder-product.jpg',
     includes: ['24 rosas rojas importadas', 'Caja negra premium', 'Lazo satinado', 'Tarjeta personalizada'],
     occasion: 'Perfecto para aniversarios y San Valentín',
+    colors: ['rojo'],
+    flowerTypes: ['rosas'],
   },
   {
     id: 'prod-002',
@@ -82,6 +84,8 @@ export const products: Product[] = [
     imageUrl: '/placeholder-product.jpg',
     includes: ['24 rosas rosadas', 'Caja blanca premium', 'Lazo satinado', 'Tarjeta personalizada'],
     occasion: 'Ideal para cumpleaños románticos y celebraciones',
+    colors: ['rosa'],
+    flowerTypes: ['rosas'],
   },
   {
     id: 'prod-003',
@@ -93,6 +97,8 @@ export const products: Product[] = [
     imageUrl: '/placeholder-product.jpg',
     includes: ['50 rosas rojas', 'Base decorativa', 'Papel kraft premium', 'Tarjeta personalizada'],
     occasion: 'El regalo definitivo para San Valentín y aniversarios especiales',
+    colors: ['rojo'],
+    flowerTypes: ['rosas'],
   },
 
   // Cumpleaños (cat-002)
@@ -106,6 +112,8 @@ export const products: Product[] = [
     imageUrl: '/placeholder-product.jpg',
     includes: ['Rosas multicolor', 'Gerberas', 'Flores tropicales', 'Follaje premium', 'Base elegante'],
     occasion: 'Perfecto para cumpleaños y celebraciones especiales',
+    colors: ['mixto'],
+    flowerTypes: ['rosas', 'gerberas', 'mixto'],
   },
   {
     id: 'prod-005',
@@ -117,6 +125,8 @@ export const products: Product[] = [
     imageUrl: '/placeholder-product.jpg',
     includes: ['Flores de temporada variadas', 'Follaje decorativo', 'Papel y lazo coordinado', 'Tarjeta'],
     occasion: 'Ideal para sorprender a esa persona especial en su cumpleaños',
+    colors: ['mixto'],
+    flowerTypes: ['mixto'],
   },
   {
     id: 'prod-006',
@@ -128,6 +138,8 @@ export const products: Product[] = [
     imageUrl: '/placeholder-product.jpg',
     includes: ['Flores de temporada', 'Cesta artesanal', 'Follaje y musgo decorativo', 'Lazo premium'],
     occasion: 'Una presentación única y especial para celebrar el cumpleaños',
+    colors: ['mixto'],
+    flowerTypes: ['mixto'],
   },
 
   // Orquídeas Premium (cat-003)
@@ -141,6 +153,8 @@ export const products: Product[] = [
     imageUrl: '/placeholder-product.jpg',
     includes: ['Orquídea Phalaenopsis blanca', 'Maceta cerámica premium', 'Sustrato especializado', 'Tarjeta de cuidados'],
     occasion: 'El regalo más elegante para directivos, graduaciones y eventos especiales',
+    colors: ['blanco'],
+    flowerTypes: ['orquídeas'],
   },
   {
     id: 'prod-008',
@@ -152,6 +166,8 @@ export const products: Product[] = [
     imageUrl: '/placeholder-product.jpg',
     includes: ['Orquídea Phalaenopsis morada', 'Maceta cerámica', 'Sustrato especializado', 'Guía de cuidados'],
     occasion: 'Perfecta para impresionar en cualquier ocasión especial o evento corporativo',
+    colors: ['morado'],
+    flowerTypes: ['orquídeas'],
   },
   {
     id: 'prod-009',
@@ -163,6 +179,8 @@ export const products: Product[] = [
     imageUrl: '/placeholder-product.jpg',
     includes: ['3 orquídeas de distintas variedades', 'Base decorativa de lujo', 'Sustrato y cuidados incluidos'],
     occasion: 'El regalo de lujo para las ocasiones más importantes de tu vida',
+    colors: ['mixto'],
+    flowerTypes: ['orquídeas'],
   },
 
   // Flores Amarillas (cat-004)
@@ -176,6 +194,8 @@ export const products: Product[] = [
     imageUrl: `${CDN}/v1774299567/ramo-girasoles-6-papel-coreano_wdbzuw.jpg`,
     includes: ['6 girasoles hipoalergénicos', 'Papel pergamino coreano impermeable'],
     occasion: 'Perfecto para amistad, gratitud y alegría',
+    colors: ['amarillo'],
+    flowerTypes: ['girasoles'],
   },
   {
     id: 'fa-002',
@@ -187,6 +207,8 @@ export const products: Product[] = [
     imageUrl: `${CDN}/v1774301162/WhatsApp_Image_2026-03-23_at_2.42.02_PM_6_zf9llb.jpg`,
     includes: ['12 rosas amarillas', 'Gypsófila', 'Papel pergamino coreano impermeable'],
     occasion: 'Ideal para cumpleaños, amistad y gratitud',
+    colors: ['amarillo'],
+    flowerTypes: ['rosas'],
   },
   {
     id: 'fa-003',
@@ -198,6 +220,8 @@ export const products: Product[] = [
     imageUrl: `${CDN}/v1774299536/ramo-3-girasoles-gypsofila-papel-blanco_tfkghf.jpg`,
     includes: ['3 girasoles hipoalergénicos', 'Papel pergamino coreano impermeable'],
     occasion: 'Un detalle especial para quien querés alegrar el día',
+    colors: ['amarillo'],
+    flowerTypes: ['girasoles'],
   },
   {
     id: 'fa-004',
@@ -209,6 +233,8 @@ export const products: Product[] = [
     imageUrl: `${CDN}/v1774299537/ramo-5-girasoles-siempreviva-papel-rosado_y3joov.jpg`,
     includes: ['Girasoles de vivero hipoalergénicos', 'Astromelia', 'Papel pergamino coreano impermeable'],
     occasion: 'Para transmitir alegría y energía positiva',
+    colors: ['amarillo'],
+    flowerTypes: ['girasoles', 'astromelias'],
   },
   {
     id: 'fa-005',
@@ -220,6 +246,8 @@ export const products: Product[] = [
     imageUrl: `${CDN}/v1774299542/ramo-astromelias-amarillas_fgwg2e.jpg`,
     includes: ['Astromelias frescas', 'Papel pergamino coreano impermeable'],
     occasion: 'Un detalle delicado y colorido para cualquier ocasión',
+    colors: ['amarillo'],
+    flowerTypes: ['astromelias'],
   },
   {
     id: 'fa-006',
@@ -231,6 +259,8 @@ export const products: Product[] = [
     imageUrl: `${CDN}/v1774299543/ramo-felicidad-amor-rosas-rojas-girasoles_q0gzfk.jpg`,
     includes: ['Rosas rojas', 'Girasoles hipoalergénicos', 'Papel pergamino coreano impermeable'],
     occasion: 'Ideal para aniversarios, cumpleaños y sorpresas románticas',
+    colors: ['rojo', 'amarillo'],
+    flowerTypes: ['rosas', 'girasoles'],
   },
   {
     id: 'fa-007',
@@ -242,6 +272,8 @@ export const products: Product[] = [
     imageUrl: `${CDN}/v1774299549/ramo-girasoles-con-siempreviva-morado_n2xbja.jpg`,
     includes: ['5 girasoles hipoalergénicos', 'Siempreviva morada', 'Papel pergamino coreano impermeable'],
     occasion: 'Para alegrar cualquier espacio con color y naturaleza',
+    colors: ['amarillo', 'morado'],
+    flowerTypes: ['girasoles'],
   },
   {
     id: 'fa-008',
@@ -253,6 +285,8 @@ export const products: Product[] = [
     imageUrl: `${CDN}/v1774300927/WhatsApp_Image_2026-03-23_at_2.42.11_PM_1_hcwhxj.jpg`,
     includes: ['9 girasoles hipoalergénicos de vivero', 'Papel pergamino coreano impermeable'],
     occasion: 'Perfecto para sorprender con un detalle grande o pequeño',
+    colors: ['amarillo'],
+    flowerTypes: ['girasoles'],
   },
   {
     id: 'fa-009',
@@ -264,6 +298,8 @@ export const products: Product[] = [
     imageUrl: `${CDN}/v1774299528/buchon-rosas-amarillas-mariposas_ll6mtf.jpg`,
     includes: ['Rosas amarillas premium', 'Papel pergamino coreano impermeable', 'Decoración especial'],
     occasion: 'Para impresionar en ocasiones especiales y celebraciones importantes',
+    colors: ['amarillo'],
+    flowerTypes: ['rosas'],
   },
   {
     id: 'fa-010',
@@ -275,6 +311,8 @@ export const products: Product[] = [
     imageUrl: `${CDN}/v1774299531/caja-box-girasoles-negra_gyxojx.jpg`,
     includes: ['Girasoles de vivero hipoalergénicos', 'Caja box decorativa'],
     occasion: 'Ideal para regalar en casa, oficina o cualquier ocasión especial',
+    colors: ['amarillo'],
+    flowerTypes: ['girasoles'],
   },
   {
     id: 'fa-011',
@@ -296,6 +334,8 @@ export const products: Product[] = [
     includes: ['Rosas frescas', 'Peluche Hello Kitty incluido', 'Papel pergamino coreano impermeable'],
     occasion: 'El regalo perfecto para niñas, cumpleaños y sorpresas especiales',
     note: 'Incluye peluche Hello Kitty',
+    colors: ['mixto'],
+    flowerTypes: ['rosas'],
   },
   {
     id: 'fa-012',
@@ -307,6 +347,8 @@ export const products: Product[] = [
     imageUrl: `${CDN}/v1774300659/WhatsApp_Image_2026-03-23_at_2.42.00_PM_3_vhalmv.jpg`,
     includes: ['Girasoles hipoalergénicos', 'Rosas rojas', 'Gypsófila', 'Papel pergamino coreano impermeable'],
     occasion: 'Para combinar amor y alegría en un solo regalo especial',
+    colors: ['amarillo', 'rojo'],
+    flowerTypes: ['girasoles', 'rosas'],
   },
   {
     id: 'fa-014',
@@ -318,6 +360,8 @@ export const products: Product[] = [
     imageUrl: `${CDN}/v1774299550/ramo-girasoles-rosas-rojas-pequeno_rziehm.jpg`,
     includes: ['Rosas rojas', 'Girasoles hipoalergénicos de vivero', 'Papel pergamino coreano impermeable'],
     occasion: 'Un detalle especial para alegrar el día de alguien querido',
+    colors: ['amarillo', 'rojo'],
+    flowerTypes: ['girasoles', 'rosas'],
   },
   {
     id: 'fa-015',
@@ -341,6 +385,8 @@ export const products: Product[] = [
     ],
     includes: ['Rosas frescas', 'Papel pergamino coreano impermeable'],
     occasion: 'El regalo perfecto en cualquier cantidad para cualquier ocasión especial',
+    colors: ['amarillo'],
+    flowerTypes: ['rosas'],
   },
   {
     id: 'fa-016',
@@ -352,6 +398,8 @@ export const products: Product[] = [
     imageUrl: `${CDN}/v1774299533/caja-girasoles-astromelias-naranja_mallrl.jpg`,
     includes: ['Girasoles de vivero hipoalergénicos', 'Astromelia naranja', 'Caja box decorativa'],
     occasion: 'Para regalar en casa, oficina y ocasiones que merecen un toque especial',
+    colors: ['amarillo', 'naranja'],
+    flowerTypes: ['girasoles', 'astromelias'],
   },
   {
     id: 'fa-017',
@@ -363,6 +411,8 @@ export const products: Product[] = [
     imageUrl: `${CDN}/v1774300813/WhatsApp_Image_2026-03-23_at_2.42.08_PM_2_kgl3la.jpg`,
     includes: ['9 girasoles hipoalergénicos', 'Siempreviva', 'Papel pergamino coreano impermeable'],
     occasion: 'Un ramo abundante para sorprender con toda la fuerza del color amarillo',
+    colors: ['amarillo'],
+    flowerTypes: ['girasoles'],
   },
   {
     id: 'fa-020',
@@ -374,6 +424,8 @@ export const products: Product[] = [
     imageUrl: `${CDN}/v1774299545/ramo-girasoles-con-astromelias_yspdju.jpg`,
     includes: ['Rosas amarillas estilo coreano', 'Papel pergamino coreano impermeable'],
     occasion: 'Perfecto para alegrar cualquier espacio y transmitir gratitud',
+    colors: ['amarillo'],
+    flowerTypes: ['rosas'],
   },
   {
     id: 'fa-021',
@@ -385,6 +437,8 @@ export const products: Product[] = [
     imageUrl: `${CDN}/v1774300981/WhatsApp_Image_2026-03-23_at_2.42.15_PM_u16nwz.jpg`,
     includes: ['Rosas amarillas frescas', 'Follaje eucalipto', 'Papel pergamino coreano impermeable'],
     occasion: 'Ideal para regalar con estilo en cumpleaños, aniversarios y celebraciones',
+    colors: ['amarillo'],
+    flowerTypes: ['rosas'],
   },
   {
     id: 'fa-022',
@@ -396,6 +450,8 @@ export const products: Product[] = [
     imageUrl: `${CDN}/v1774299525/buchon-astromelias-amarillas_fnyxsj.jpg`,
     includes: ['Astromelias amarillas frescas', 'Papel pergamino coreano impermeable'],
     occasion: 'Un regalo delicado y especial para cualquier momento del año',
+    colors: ['amarillo'],
+    flowerTypes: ['astromelias'],
   },
   {
     id: 'fa-023-024',
@@ -420,6 +476,8 @@ export const products: Product[] = [
     ],
     includes: ['Girasoles de vivero hipoalergénicos', 'Papel pergamino coreano impermeable'],
     occasion: 'El regalo perfecto en cualquier cantidad — desde un detalle hasta un gran sorpresa',
+    colors: ['amarillo'],
+    flowerTypes: ['girasoles'],
   },
   {
     id: 'fa-031',
@@ -431,6 +489,8 @@ export const products: Product[] = [
     imageUrl: `${CDN}/v1774300733/WhatsApp_Image_2026-03-23_at_2.42.13_PM_2_x9ulwl.jpg`,
     includes: ['5 girasoles hipoalergénicos', 'Siempreviva', 'Papel pergamino coreano impermeable'],
     occasion: 'Para alegrar cualquier espacio con color, textura y mucha naturaleza',
+    colors: ['amarillo'],
+    flowerTypes: ['girasoles'],
   },
   {
     id: 'fa-025',
@@ -445,6 +505,8 @@ export const products: Product[] = [
     ],
     includes: ['Rosas amarillas', 'Astromelias', 'Papel pergamino coreano impermeable'],
     occasion: 'Para sorprender con un arreglo elegante y lleno de color',
+    colors: ['amarillo'],
+    flowerTypes: ['rosas', 'astromelias'],
   },
   {
     id: 'fa-026',
@@ -456,6 +518,8 @@ export const products: Product[] = [
     imageUrl: `${CDN}/v1774299561/ramo-rosas-aromatico-papel-kraft_vqgw4h.jpg`,
     includes: ['Rosas amarillas aromáticas', 'Hipérico', 'Papel pergamino coreano impermeable'],
     occasion: 'Un regalo sensorial que combina belleza, aroma y un toque silvestre irresistible',
+    colors: ['amarillo'],
+    flowerTypes: ['rosas'],
   },
   {
     id: 'fa-027',
@@ -467,6 +531,8 @@ export const products: Product[] = [
     imageUrl: `${CDN}/v1774299534/ramo-3-girasoles-gypsofila-kraft_zugzr9.jpg`,
     includes: ['3 girasoles hipoalergénicos', 'Papel pergamino coreano impermeable'],
     occasion: 'Un pequeño detalle que transmite mucha alegría',
+    colors: ['amarillo'],
+    flowerTypes: ['girasoles'],
   },
   {
     id: 'fa-029-030',
@@ -489,6 +555,8 @@ export const products: Product[] = [
     ],
     includes: ['Rosas frescas de calidad', 'Papel pergamino coreano impermeable'],
     occasion: 'El regalo perfecto en cualquier cantidad para cualquier ocasión especial',
+    colors: ['mixto'],
+    flowerTypes: ['rosas'],
   },
 
   {
@@ -501,6 +569,8 @@ export const products: Product[] = [
     imageUrl: `${CDN}/v1774300634/WhatsApp_Image_2026-03-23_at_2.41.59_PM_1_fouxmu.jpg`,
     includes: ['Rosas amarillas frescas', 'Papel pergamino coreano impermeable'],
     occasion: 'Para ocasiones que merecen un regalo a la altura — cumpleaños, aniversarios y celebraciones especiales',
+    colors: ['amarillo'],
+    flowerTypes: ['rosas'],
   },
 
   // Corporativo y Eventos (cat-005)
@@ -514,6 +584,8 @@ export const products: Product[] = [
     imageUrl: '/placeholder-product.jpg',
     includes: ['Arreglo floral premium', 'Flores blancas y verdes', 'Base de cristal o cerámica', 'Follaje seleccionado'],
     occasion: 'Ideal para reuniones corporativas, lanzamientos y eventos empresariales en Lima',
+    colors: ['blanco', 'verde'],
+    flowerTypes: ['mixto'],
   },
   {
     id: 'prod-014',
@@ -525,6 +597,8 @@ export const products: Product[] = [
     imageUrl: '/placeholder-product.jpg',
     includes: ['Flores premium de importación', 'Follaje de lujo', 'Caja o base premium', 'Tarjeta corporativa'],
     occasion: 'El regalo perfecto para directivos, gerentes y ejecutivos de alto nivel',
+    colors: ['mixto'],
+    flowerTypes: ['mixto'],
   },
   {
     id: 'prod-015',
@@ -536,6 +610,8 @@ export const products: Product[] = [
     imageUrl: '/placeholder-product.jpg',
     includes: ['Consulta de diseño incluida', 'Flores frescas de temporada', 'Instalación y montaje', 'Retiro al finalizar'],
     occasion: 'Para conferencias, lanzamientos de productos, cenas corporativas y eventos en Lima',
+    colors: ['mixto'],
+    flowerTypes: ['mixto'],
   },
 
   // Condolencias (cat-006)
@@ -549,6 +625,8 @@ export const products: Product[] = [
     imageUrl: '/placeholder-product.jpg',
     includes: ['Flores blancas y verdes', 'Base circular premium', 'Cinta con dedicatoria', 'Entrega discreta'],
     occasion: 'Para velorios, funerarias y homenajes, con entrega discreta y respetuosa',
+    colors: ['blanco'],
+    flowerTypes: ['mixto'],
   },
   {
     id: 'prod-017',
@@ -560,6 +638,8 @@ export const products: Product[] = [
     imageUrl: '/placeholder-product.jpg',
     includes: ['Flores blancas de temporada', 'Follaje verde', 'Papel kraft natural', 'Tarjeta de condolencias'],
     occasion: 'El gesto más apropiado para acompañar a una familia en momentos de pérdida',
+    colors: ['blanco'],
+    flowerTypes: ['mixto'],
   },
   {
     id: 'prod-018',
@@ -571,5 +651,7 @@ export const products: Product[] = [
     imageUrl: '/placeholder-product.jpg',
     includes: ['Lirios blancos importados', 'Follaje verde oscuro', 'Base cerámica blanca', 'Tarjeta personalizada'],
     occasion: 'Una ofrenda floral de profundo significado para homenajes y conmemoraciones',
+    colors: ['blanco'],
+    flowerTypes: ['lirios'],
   },
 ];
