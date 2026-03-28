@@ -4,6 +4,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { categories, products } from "@/data/products";
 import ProductGrid from "@/components/catalog/ProductGrid";
+import { BackButton } from "@/components/catalog/BackButton";
 
 interface CategoriaPageProps {
   params: Promise<{ categoria: string }>;
@@ -76,27 +77,7 @@ export default async function CategoriaPage({
         </nav>
 
         <div className="mb-8">
-          <Link
-            href="/catalogo"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg font-body text-dark/70 hover:text-primary hover:border-primary/30 hover:bg-primary/5 transition-all duration-200 shadow-sm"
-              style={{ backgroundColor: "var(--color-white)", border: "1px solid color-mix(in srgb, var(--color-dark) 10%, transparent)" }}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-4 w-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M10 19l-7-7m0 0l7-7m-7 7h18"
-              />
-            </svg>
-            Volver al catálogo
-          </Link>
+          <BackButton label="Volver al catálogo" />
         </div>
 
         <h1 className="font-heading text-4xl md:text-5xl text-primary mb-4">
