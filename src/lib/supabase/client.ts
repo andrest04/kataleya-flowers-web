@@ -1,5 +1,15 @@
-// TODO: import { createBrowserClient } from '@supabase/ssr'
-// TODO: import type { Database } from './types'
+import { createBrowserClient } from '@supabase/ssr';
+import type { Database } from '@/lib/supabase/types';
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error(
+    'Missing Supabase environment variables: NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY are required.'
+  );
+}
+
 export function createClient() {
-  throw new Error('Supabase not configured yet — install @supabase/ssr first');
+  return createBrowserClient<Database>(supabaseUrl, supabaseAnonKey);
 }

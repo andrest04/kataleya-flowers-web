@@ -49,3 +49,6 @@ next-env.d.ts
 .atl/
 .gga
 .env*.local
+
+# Supabase local CLI artifacts
+supabase/.temp/
