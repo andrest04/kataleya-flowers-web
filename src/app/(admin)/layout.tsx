@@ -1,11 +1,25 @@
-import { Suspense } from "react";
+import { redirect } from 'next/navigation';
+import { createClient } from '@/lib/supabase/server';
+import AdminSidebar from '@/features/admin/components/AdminSidebar';
 
-// TODO: Layout del panel de administración con AdminSidebar
-// import AdminSidebar from "@/features/admin/components/AdminSidebar";
-export default function AdminLayout({
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <Suspense>{children}</Suspense>;
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect('/login');
+  }
+
+  return (
+    <div className="flex min-h-screen" style={{ background: 'var(--color-cream)' }}>
+      <AdminSidebar />
+      <main className="flex-1 p-8 overflow-auto">{children}</main>
+    </div>
+  );
 }

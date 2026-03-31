@@ -1,17 +1,26 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse, type NextRequest } from 'next/server';
+import { createClient } from '@/lib/supabase/middleware';
 
-export default function proxy(request: NextRequest) {
-  const { pathname } = request.nextUrl
+export async function proxy(request: NextRequest) {
+  const { supabase, response } = createClient(request);
 
-  if (pathname.startsWith('/admin')) {
-    // TODO: Verificar sesión de Supabase Auth
-    // const token = request.cookies.get('sb-access-token')
-    // if (!token) return NextResponse.redirect(new URL('/login', request.url))
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const { pathname } = request.nextUrl;
+
+  if (pathname.startsWith('/admin') && !user) {
+    return NextResponse.redirect(new URL('/login', request.url));
   }
 
-  return NextResponse.next()
+  if (pathname === '/login' && user) {
+    return NextResponse.redirect(new URL('/admin', request.url));
+  }
+
+  return response;
 }
 
 export const config = {
-  matcher: ['/admin/:path*'],
-}
+  matcher: ['/admin/:path*', '/login'],
+};
