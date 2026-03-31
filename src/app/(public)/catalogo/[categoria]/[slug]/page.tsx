@@ -157,7 +157,7 @@ export default async function ProductoPage({
 
           {/* Información del producto */}
           <div className="flex flex-col">
-            <h1 className="font-display text-3xl md:text-4xl text-primary mb-4">
+            <h1 className="font-heading text-3xl md:text-4xl text-primary mb-4">
               {product.name}
             </h1>
 
@@ -213,7 +213,8 @@ export default async function ProductoPage({
                 href={whatsappUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center bg-accent text-cream font-body font-bold py-3 px-8 rounded-md hover:opacity-90 transition-opacity"
+                className="inline-flex items-center justify-center font-body font-bold py-3 px-8 rounded-md hover:opacity-90 transition-opacity"
+                style={{ backgroundColor: 'var(--color-whatsapp)', color: 'var(--color-white)' }}
               >
                 <svg
                   className="w-5 h-5 mr-2"
