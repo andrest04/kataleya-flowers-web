@@ -2,7 +2,9 @@ import React from "react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { categories, products } from "@/data/products";
+import { getCategories } from "@/features/catalog/queries/getCategories";
+import { getProducts } from "@/features/catalog/queries/getProducts";
+import { getProductBySlug } from "@/features/catalog/queries/getProductBySlug";
 import { BUSINESS } from "@/lib/constants";
 import { ProductGallery } from "@/features/catalog/components/ProductGallery";
 import { BackButton } from "@/features/catalog/components/BackButton";
@@ -14,49 +16,70 @@ interface ProductoPageProps {
 export async function generateStaticParams(): Promise<
   { categoria: string; slug: string }[]
 > {
-  const params: { categoria: string; slug: string }[] = [];
+  try {
+    const [categories, products] = await Promise.all([
+      getCategories(),
+      getProducts(),
+    ]);
 
-  for (const product of products) {
-    const category = categories.find((cat) => cat.id === product.categoryId);
-    if (category) {
-      params.push({
-        categoria: category.slug,
-        slug: product.slug,
-      });
+    const categoryMap = new Map(categories.map((cat) => [cat.id, cat]));
+    const params: { categoria: string; slug: string }[] = [];
+
+    for (const product of products) {
+      const category = categoryMap.get(product.categoryId);
+      if (category) {
+        params.push({
+          categoria: category.slug,
+          slug: product.slug,
+        });
+      }
     }
-  }
 
-  return params;
+    return params;
+  } catch {
+    return [];
+  }
 }
 
 export async function generateMetadata({
   params,
 }: ProductoPageProps): Promise<Metadata> {
   const { categoria, slug } = await params;
-  const product = products.find((p) => p.slug === slug);
 
-  if (!product) {
+  try {
+    const [product, categories] = await Promise.all([
+      getProductBySlug(slug),
+      getCategories(),
+    ]);
+
+    if (!product) {
+      return {
+        title: "Producto no encontrado | Kataleya Flawers",
+        description: "El producto solicitado no esta disponible en el catalogo.",
+      };
+    }
+
+    const category = categories.find(
+      (cat) => cat.slug === categoria && cat.id === product.categoryId
+    );
+
+    if (!category) {
+      return {
+        title: `${product.name} | Kataleya Flawers`,
+        description: product.description,
+      };
+    }
+
     return {
-      title: "Producto no encontrado | Kataleya Flawers",
-      description: "El producto solicitado no esta disponible en el catalogo.",
-    };
-  }
-
-  const category = categories.find(
-    (cat) => cat.slug === categoria && cat.id === product.categoryId,
-  );
-
-  if (!category) {
-    return {
-      title: `${product.name} | Kataleya Flawers`,
+      title: `${product.name} | ${category.name} | Kataleya Flawers`,
       description: product.description,
     };
+  } catch {
+    return {
+      title: "Kataleya Flawers",
+      description: "Arreglos florales premium en Lima.",
+    };
   }
-
-  return {
-    title: `${product.name} | ${category.name} | Kataleya Flawers`,
-    description: product.description,
-  };
 }
 
 export default async function ProductoPage({
@@ -64,14 +87,17 @@ export default async function ProductoPage({
 }: ProductoPageProps): Promise<React.ReactElement> {
   const { categoria, slug } = await params;
 
-  const product = products.find((p) => p.slug === slug);
+  const [product, categories] = await Promise.all([
+    getProductBySlug(slug),
+    getCategories(),
+  ]);
 
   if (!product) {
     notFound();
   }
 
   const category = categories.find(
-    (cat) => cat.slug === categoria && cat.id === product.categoryId,
+    (cat) => cat.slug === categoria && cat.id === product.categoryId
   );
 
   if (!category) {
@@ -79,7 +105,7 @@ export default async function ProductoPage({
   }
 
   const whatsappUrl = BUSINESS.whatsappWithMessage(
-    `Hola, me interesa el producto: ${product.name}`,
+    `Hola, me interesa el producto: ${product.name}`
   );
 
   return (

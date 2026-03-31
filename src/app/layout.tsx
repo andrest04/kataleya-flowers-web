@@ -1,12 +1,8 @@
 import type { Metadata } from "next";
 import type React from "react";
-import { Suspense } from "react";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
-import Navbar from "@/components/shared/Navbar";
-import Footer from "@/components/shared/Footer";
-import WhatsAppFloat from "@/components/shared/WhatsAppFloat";
 import { BUSINESS } from "@/lib/constants";
 
 import "./globals.css";
@@ -78,12 +74,7 @@ export default function RootLayout({
             }),
           }}
         />
-        <Suspense fallback={<div className="h-16" />}>
-          <Navbar />
-        </Suspense>
         {children}
-        <WhatsAppFloat />
-        <Footer />
         <Analytics />
         <SpeedInsights />
       </body>

@@ -2,7 +2,9 @@ import Link from "next/link";
 import Image from "next/image";
 import React, { Suspense } from "react";
 import type { Metadata } from "next";
-import { categories, products } from "@/data/products";
+import type { Category } from "@/features/catalog/types";
+import { getCategories } from "@/features/catalog/queries/getCategories";
+import { getProducts } from "@/features/catalog/queries/getProducts";
 import CatalogSearch from "@/features/catalog/components/CatalogSearch";
 
 function Breadcrumb(): React.ReactElement {
@@ -25,7 +27,11 @@ function Breadcrumb(): React.ReactElement {
 
 // Static fallback: category grid rendered server-side while the client
 // component loads (needed because CatalogSearch uses useSearchParams)
-function CategoryGridFallback(): React.ReactElement {
+function CategoryGridFallback({
+  categories,
+}: {
+  categories: Category[];
+}): React.ReactElement {
   return (
     <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
       {categories.map((category) => (
@@ -85,7 +91,12 @@ export const metadata: Metadata = {
     "Explora nuestro catalogo de arreglos florales, orquideas y regalos premium disponibles en Lima.",
 };
 
-export default function CatalogoPage(): React.ReactElement {
+export default async function CatalogoPage(): Promise<React.ReactElement> {
+  const [categories, products] = await Promise.all([
+    getCategories(),
+    getProducts(),
+  ]);
+
   return (
     <main className="min-h-screen bg-cream pt-28 pb-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
@@ -95,7 +106,7 @@ export default function CatalogoPage(): React.ReactElement {
           Nuestro Catálogo
         </h1>
 
-        <Suspense fallback={<CategoryGridFallback />}>
+        <Suspense fallback={<CategoryGridFallback categories={categories} />}>
           <CatalogSearch categories={categories} products={products} />
         </Suspense>
       </div>
