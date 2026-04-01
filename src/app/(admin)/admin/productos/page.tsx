@@ -1,5 +1,6 @@
 import Link from 'next/link';
-import { getAdminProducts, getAdminCategories } from '@/features/admin/queries/products';
+import { getAdminProducts } from '@/features/admin/queries/products';
+import { getAdminCategories } from '@/features/admin/queries/categories';
 import ProductTable from '@/features/admin/components/ProductTable';
 
 export default async function AdminProductosPage() {

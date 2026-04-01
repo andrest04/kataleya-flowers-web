@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { getAdminCategories } from '@/features/admin/queries/products';
+import { getAdminCategories } from '@/features/admin/queries/categories';
 import ProductForm from '@/features/admin/components/ProductForm';
 
 export default async function NuevoProductoPage() {

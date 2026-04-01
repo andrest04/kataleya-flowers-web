@@ -4,19 +4,9 @@ import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import type { Database } from '@/lib/supabase/types';
 import type { ProductFormData } from '@/features/admin/types';
+import { slugify } from '@/features/admin/utils/slugify';
 
 type ProductInsert = Database['public']['Tables']['products']['Insert'];
-
-function slugify(text: string): string {
-  return text
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9\s-]/g, '')
-    .trim()
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-');
-}
 
 function toInsertPayload(data: ProductFormData, slug: string): ProductInsert {
   return {

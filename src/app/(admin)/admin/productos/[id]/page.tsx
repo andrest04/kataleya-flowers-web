@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { getAdminProductById, getAdminCategories } from '@/features/admin/queries/products';
+import { getAdminProductById } from '@/features/admin/queries/products';
+import { getAdminCategories } from '@/features/admin/queries/categories';
 import ProductForm from '@/features/admin/components/ProductForm';
 
 interface EditarProductoPageProps {
