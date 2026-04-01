@@ -65,6 +65,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       products: {
         Row: {
@@ -131,6 +132,15 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [
+          {
+            foreignKeyName: 'products_category_id_fkey';
+            columns: ['category_id'];
+            isOneToOne: false;
+            referencedRelation: 'categories';
+            referencedColumns: ['id'];
+          },
+        ];
       };
     };
     Views: {
@@ -139,11 +149,14 @@ export interface Database {
           category_id: string;
           price_from: number | null;
         };
+        Relationships: [];
       };
     };
+    Functions: Record<string, never>;
     Enums: {
       product_color: ProductColor;
       product_flower_type: ProductFlowerType;
     };
+    CompositeTypes: Record<string, never>;
   };
 }
