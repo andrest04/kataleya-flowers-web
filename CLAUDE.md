@@ -225,6 +225,7 @@ Excepción: `useMotionValue`, `animate`, `useInView` son standalone y no necesit
 - Nunca agregar `Co-Authored-By` ni metadata de autor
 - [Conventional Commits](https://www.conventionalcommits.org/) en inglés
 - Mensajes cortos: `feat: add contact form validation`, `fix: resolve hydration error in Navbar`
+- **Nunca commitear sin aprobación explícita del usuario.** El flujo es: implementar → lint limpio → el usuario prueba manualmente → el usuario pide commitear → recién entonces se hace el commit.
 
 ---
 
