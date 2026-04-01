@@ -48,6 +48,8 @@ next-env.d.ts
 # local tooling
 .atl/
 .gga
+.claude/
+skills-lock.json
 .env*.local
 
 # Supabase local CLI artifacts
