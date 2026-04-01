@@ -1,10 +1,32 @@
-// TODO: Interfaces para formularios del panel admin
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+import type { ProductColor, ProductFlowerType, PriceVariantRow } from '@/lib/supabase/types';
+
+export type { ProductColor, ProductFlowerType };
+
 export interface ProductFormData {
-  // name, description, price, categoryId, imageUrl, etc.
+  name: string;
+  slug: string;
+  description: string;
+  price: number;
+  categoryId: string;
+  imageUrl: string;
+  images: string[];
+  colors: ProductColor[];
+  flowerTypes: ProductFlowerType[];
+  includes: string[];
+  priceVariants: PriceVariantRow[] | null;
+  occasion: string;
+  note: string;
+  isActive: boolean;
+  isFeatured: boolean;
+  displayOrder: number;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface CategoryFormData {
-  // name, slug, description, imageUrl, etc.
+  name: string;
+  slug: string;
+  description: string;
+  occasion: string;
+  imageUrl: string;
+  displayOrder: number;
+  isActive: boolean;
 }
