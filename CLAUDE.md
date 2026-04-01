@@ -13,6 +13,7 @@ Landing page para **Kataleya Flawers**, florería real ubicada en Lima, Perú. P
 - **TypeScript 5** — tipos estrictos, sin `any`
 - **Tailwind CSS v4** — configuración basada en CSS, sin `tailwind.config`
 - **Framer Motion 12** — instalado, usando `LazyMotion` + `domAnimation` para reducir bundle size
+- **@dnd-kit/react** + **@dnd-kit/helpers** — drag and drop para reordenamiento
 - **react-icons 5** — librería de iconos
 - **Playwright** para e2e testing
 - **Vercel Analytics** y **Speed Insights** ya integrados
@@ -109,14 +110,20 @@ src/
 │   └── admin/
 │       ├── components/                     # Componentes del panel admin
 │       │   ├── AdminSidebar.tsx
-│       │   ├── ProductTable.tsx
-│       │   ├── ProductForm.tsx
-│       │   ├── CategoryList.tsx
-│       │   ├── CategoryForm.tsx
-│       │   └── ImageUploader.tsx
-│       ├── hooks/                          # ej: useImageUpload
+│       │   ├── ProductTable.tsx            # Tabla de productos con filtro por categoría
+│       │   ├── ProductForm.tsx             # Formulario create/edit con arrays dinámicos
+│       │   ├── CategoryList.tsx            # Lista con drag-and-drop reorder (@dnd-kit)
+│       │   ├── CategoryForm.tsx            # Formulario create/edit de categorías
+│       │   └── ImageUploader.tsx           # TODO: upload a Cloudinary
+│       ├── hooks/                          # ej: useImageUpload (TODO)
 │       ├── queries/                        # Queries Supabase para admin
+│       │   ├── products.ts                 # getAdminProducts, getAdminProductById
+│       │   └── categories.ts              # getAdminCategories, getAdminCategoryById
 │       ├── actions/                        # Server Actions de admin (CRUD)
+│       │   ├── products.ts                 # create, update, delete
+│       │   └── categories.ts              # create, update, delete, reorderCategories
+│       ├── utils/
+│       │   └── slugify.ts                  # Slugify compartido entre actions y forms
 │       └── types/
 ├── data/
 │   └── products.ts                         # 6 categorías + productos (datos estáticos legacy)
@@ -139,9 +146,10 @@ src/
 
 ### Capa de datos
 
-Los datos de productos y categorías están en `src/data/products.ts` como arrays estáticos (legacy).
+**Supabase** es la fuente de datos principal. Las 3 páginas del catálogo público y todo el admin CRUD leen/escriben desde Supabase.
 Los tipos `Product` y `Category` están en `src/features/catalog/types/index.ts`.
-**Supabase en progreso** — `src/lib/supabase/` tiene el cliente configurado pero la migración de datos aún no está completa.
+`src/data/products.ts` es legacy (datos estáticos) — no se usa en código activo.
+Los tipos generados de la DB están en `src/lib/supabase/types.ts` (manual, ver comentario para regenerar).
 
 **Categorías actuales (6):** Amor y Romance, Cumpleaños, Orquídeas Premium, Flores Amarillas, Corporativo y Eventos, Condolencias.
 
