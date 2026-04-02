@@ -7,7 +7,6 @@
   --color-accent: #2d5a1b;
   --color-cream: #fdfcfa;
   --color-dark: #1a1a1a;
-  --font-display: "Playfair Display", serif;
   --font-heading: "Playfair Display", serif;
   --font-body: "Lato", sans-serif;
   --bg-about: color-mix(
@@ -28,7 +27,6 @@
   --color-accent: var(--color-accent);
   --color-cream: var(--color-cream);
   --color-dark: var(--color-dark);
-  --font-display: var(--font-display);
   --font-heading: var(--font-heading);
   --font-body: var(--font-body);
   --color-whatsapp: var(--color-whatsapp);

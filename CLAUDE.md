@@ -13,6 +13,7 @@ Landing page para **Kataleya Flawers**, florería real ubicada en Lima, Perú. P
 - **TypeScript 5** — tipos estrictos, sin `any`
 - **Tailwind CSS v4** — configuración basada en CSS, sin `tailwind.config`
 - **Framer Motion 12** — instalado, usando `LazyMotion` + `domAnimation` para reducir bundle size
+- **@dnd-kit/react** + **@dnd-kit/helpers** — drag and drop para reordenamiento
 - **react-icons 5** — librería de iconos
 - **Playwright** para e2e testing
 - **Vercel Analytics** y **Speed Insights** ya integrados
@@ -45,65 +46,110 @@ npx playwright test  # Tests e2e
 
 ## Arquitectura del proyecto
 
+Feature Folders Architecture — cada dominio agrupa sus componentes, hooks, queries y acciones.
+
 ```
 src/
 ├── app/
 │   ├── layout.tsx                          # Root layout — Navbar, Footer, Analytics
 │   ├── page.tsx                            # Landing page — compone todas las secciones
 │   ├── globals.css                         # Tailwind v4 + CSS custom properties
-│   └── catalogo/
-│       ├── page.tsx                        # /catalogo — grid de categorías con búsqueda/filtros
-│       ├── [categoria]/
-│       │   ├── page.tsx                    # /catalogo/[categoria] — productos por categoría
-│       │   └── [slug]/
-│       │       └── page.tsx                # /catalogo/[categoria]/[slug] — detalle de producto
+│   ├── (public)/                           # Route group público (sin layout propio)
+│   │   ├── layout.tsx                      # Pass-through layout
+│   │   └── catalogo/
+│   │       ├── page.tsx                    # /catalogo — grid de categorías con búsqueda/filtros
+│   │       ├── loading.tsx                 # Loading UI para /catalogo
+│   │       ├── error.tsx                   # Error boundary para /catalogo
+│   │       ├── [categoria]/
+│   │       │   ├── page.tsx                # /catalogo/[categoria] — productos por categoría
+│   │       │   └── [slug]/
+│   │       │       └── page.tsx            # /catalogo/[categoria]/[slug] — detalle de producto
+│   ├── (admin)/                            # Route group admin (requiere auth)
+│   │   ├── layout.tsx                      # Admin layout con sidebar
+│   │   └── admin/
+│   │       ├── page.tsx                    # Dashboard admin
+│   │       ├── productos/                  # CRUD productos
+│   │       └── categorias/                 # CRUD categorías
+│   └── (auth)/
+│       └── login/
+│           └── page.tsx                    # Login con Supabase Auth
 ├── components/
-│   ├── Navbar/                             # Módulo Navbar (modularizado en 5 archivos)
-│   │   ├── index.tsx                       # Componente principal — fijo, scroll behavior, cross-page nav
-│   │   ├── DesktopSearch.tsx               # Barra de búsqueda con autocomplete (desktop)
-│   │   ├── MobileDrawer.tsx                # Drawer deslizable de navegación (mobile)
-│   │   ├── useNavbar.ts                    # Hook con la lógica del Navbar
-│   │   └── constants.ts                    # primaryLinks, secondaryLinks, interfaz SearchResult
-│   ├── Footer.tsx
-│   ├── WhatsAppFloat.tsx                   # Botón flotante de WhatsApp (z-50)
-│   ├── BusinessHoursBadge.tsx              # Badge de horario de atención
-│   ├── catalog/                            # Componentes del catálogo
-│   │   ├── BackButton.tsx                  # Botón de navegación hacia atrás
-│   │   ├── CatalogSearch.tsx               # Búsqueda y filtros client-side (sidebar)
-│   │   ├── ProductGallery.tsx              # Galería de imágenes con lightbox modal
-│   │   └── ProductGrid.tsx                 # Grilla de productos con ordenamiento
-│   └── sections/                           # Secciones de la landing page
-│       ├── HeroSection.tsx                 # Carousel con Framer Motion, CAMPAIGN_MODE toggle
-│       ├── HeroButtons.tsx
-│       ├── CatalogSection.tsx              # Vista previa del catálogo en landing
-│       ├── AboutSection.tsx
-│       ├── ContactSection.tsx
-│       ├── ContactForm.tsx                 # Formulario de contacto (sin backend aún)
-│       ├── TestimonialsSection.tsx         # Grid polaroid en desktop, carousel en mobile
-│       └── TrustBar.tsx                    # Indicadores de confianza con contadores animados
-├── data/
-│   └── products.ts                         # 6 categorías + todos los productos (datos estáticos)
+│   ├── shared/                             # Componentes globales reutilizables
+│   │   ├── Navbar/                         # Módulo Navbar (5 archivos)
+│   │   │   ├── index.tsx                   # Componente principal — fijo, scroll behavior
+│   │   │   ├── DesktopSearch.tsx           # Búsqueda con autocomplete (desktop)
+│   │   │   ├── MobileDrawer.tsx            # Drawer deslizable (mobile)
+│   │   │   ├── useNavbar.ts                # Hook con lógica del Navbar
+│   │   │   └── constants.ts               # primaryLinks, secondaryLinks, SearchResult
+│   │   ├── Footer.tsx
+│   │   ├── WhatsAppFloat.tsx               # Botón flotante WhatsApp (z-50)
+│   │   └── BusinessHoursBadge.tsx          # Badge de horario de atención
+│   └── ui/                                 # Design system — primitivos reutilizables
 ├── features/
-│   └── catalog/
-│       ├── types/
-│       │   └── index.ts                    # Interfaces Product, Category, PriceVariant + enums
-│       └── utils/
-│           └── filterProducts.ts           # Lógica de filtrado: texto, categoría, precio, colores, flores
-└── lib/
-    └── constants.ts                        # BUSINESS — datos de negocio (tel, WhatsApp, horarios, etc.)
+│   ├── landing/
+│   │   └── components/                     # Secciones de la landing page
+│   │       ├── HeroSection.tsx             # Carousel con Framer Motion, CAMPAIGN_MODE toggle
+│   │       ├── HeroButtons.tsx
+│   │       ├── CatalogSection.tsx          # Vista previa del catálogo en landing
+│   │       ├── AboutSection.tsx
+│   │       ├── ContactSection.tsx
+│   │       └── TestimonialsSection.tsx     # Grid polaroid (desktop) / carousel (mobile)
+│   ├── catalog/
+│   │   ├── components/                     # Componentes del catálogo
+│   │   │   ├── BackButton.tsx
+│   │   │   ├── CatalogSearch.tsx           # Búsqueda y filtros client-side (sidebar)
+│   │   │   ├── ProductGallery.tsx          # Galería con lightbox modal (z-[100])
+│   │   │   └── ProductGrid.tsx             # Grilla con ordenamiento
+│   │   ├── hooks/                          # Hooks de catálogo (ej: useProductFilter)
+│   │   ├── queries/                        # Server-side data fetching (Supabase)
+│   │   ├── actions/                        # Server Actions
+│   │   ├── types/
+│   │   │   └── index.ts                    # Product, Category, PriceVariant + enums
+│   │   └── utils/
+│   │       └── filterProducts.ts           # Filtrado: texto, categoría, precio, colores, flores
+│   └── admin/
+│       ├── components/                     # Componentes del panel admin
+│       │   ├── AdminSidebar.tsx
+│       │   ├── ProductTable.tsx            # Tabla de productos con filtro por categoría
+│       │   ├── ProductForm.tsx             # Formulario create/edit con arrays dinámicos
+│       │   ├── CategoryList.tsx            # Lista con drag-and-drop reorder (@dnd-kit)
+│       │   ├── CategoryForm.tsx            # Formulario create/edit de categorías
+│       │   └── ImageUploader.tsx           # TODO: upload a Cloudinary
+│       ├── hooks/                          # ej: useImageUpload (TODO)
+│       ├── queries/                        # Queries Supabase para admin
+│       │   ├── products.ts                 # getAdminProducts, getAdminProductById
+│       │   └── categories.ts              # getAdminCategories, getAdminCategoryById
+│       ├── actions/                        # Server Actions de admin (CRUD)
+│       │   ├── products.ts                 # create, update, delete
+│       │   └── categories.ts              # create, update, delete, reorderCategories
+│       ├── utils/
+│       │   └── slugify.ts                  # Slugify compartido entre actions y forms
+│       └── types/
+├── data/
+│   └── products.ts                         # 6 categorías + productos (datos estáticos legacy)
+├── lib/
+│   ├── constants.ts                        # BUSINESS — datos de negocio
+│   └── supabase/
+│       ├── client.ts                       # Supabase browser client
+│       ├── server.ts                       # Supabase server client (SSR)
+│       └── types.ts                        # Tipos generados de la DB
+└── types/
+    └── index.ts                            # Tipos globales compartidos
 ```
 
 ### Navegación
 
 - Landing page: anchors `#hero`, `#catalogo`, `#nosotros`, `#contacto`
 - Catálogo: rutas `/catalogo`, `/catalogo/[categoria]`, `/catalogo/[categoria]/[slug]`
+- Admin: rutas `/admin`, `/admin/productos`, `/admin/categorias` (requiere auth)
 - Las rutas dinámicas usan `generateStaticParams` para static generation
 
 ### Capa de datos
 
-Los datos de productos y categorías están en `src/data/products.ts` como arrays estáticos.
+**Supabase** es la fuente de datos principal. Las 3 páginas del catálogo público y todo el admin CRUD leen/escriben desde Supabase.
 Los tipos `Product` y `Category` están en `src/features/catalog/types/index.ts`.
-**No hay base de datos ni API** — es contenido hardcodeado.
+`src/data/products.ts` es legacy (datos estáticos) — no se usa en código activo.
+Los tipos generados de la DB están en `src/lib/supabase/types.ts` (manual, ver comentario para regenerar).
 
 **Categorías actuales (6):** Amor y Romance, Cumpleaños, Orquídeas Premium, Flores Amarillas, Corporativo y Eventos, Condolencias.
 
@@ -187,6 +233,7 @@ Excepción: `useMotionValue`, `animate`, `useInView` son standalone y no necesit
 - Nunca agregar `Co-Authored-By` ni metadata de autor
 - [Conventional Commits](https://www.conventionalcommits.org/) en inglés
 - Mensajes cortos: `feat: add contact form validation`, `fix: resolve hydration error in Navbar`
+- **Nunca commitear sin aprobación explícita del usuario.** El flujo es: implementar → lint limpio → el usuario prueba manualmente → el usuario pide commitear → recién entonces se hace el commit.
 
 ---
 

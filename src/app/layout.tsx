@@ -3,19 +3,18 @@ import type React from "react";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import WhatsAppFloat from "@/components/WhatsAppFloat";
+import { BUSINESS } from "@/lib/constants";
 
 import "./globals.css";
+
+const baseDescription = `Floristería en Lima con ${BUSINESS.experience} años de experiencia en arreglos florales y orquídeas. Encargos para celebraciones, homenajes y regalos.`;
 
 export const metadata: Metadata = {
   title: {
     default: "Kataleya Flawers",
     template: "%s | Kataleya Flawers",
   },
-  description:
-    "Floristería en Lima con 32 años de experiencia en arreglos florales y orquídeas. Encargos para celebraciones, homenajes y regalos.",
+  description: baseDescription,
   icons: {
     icon: "/favicon.png",
   },
@@ -24,14 +23,12 @@ export const metadata: Metadata = {
     locale: "es_PE",
     siteName: "Kataleya Flawers",
     title: "Kataleya Flawers — Floristería en Lima",
-    description:
-      "Floristería en Lima con 32 años de experiencia en arreglos florales y orquídeas. Encargos para celebraciones, homenajes y regalos.",
+    description: baseDescription,
   },
   twitter: {
     card: "summary",
     title: "Kataleya Flawers — Floristería en Lima",
-    description:
-      "Floristería en Lima con 32 años de experiencia en arreglos florales y orquídeas.",
+    description: `Floristería en Lima con ${BUSINESS.experience} años de experiencia en arreglos florales y orquídeas.`,
   },
 };
 
@@ -50,10 +47,9 @@ export default function RootLayout({
               "@context": "https://schema.org",
               "@type": "Florist",
               name: "Kataleya Flawers",
-              description:
-                "Floristería en Lima con 32 años de experiencia en arreglos florales y orquídeas.",
+              description: `Floristería en Lima con ${BUSINESS.experience} años de experiencia en arreglos florales y orquídeas.`,
               url: "https://kataleyaflawers.com",
-              telephone: "+51990051041",
+              telephone: `+${BUSINESS.phone}`,
               address: {
                 "@type": "PostalAddress",
                 addressLocality: "Lima",
@@ -74,14 +70,11 @@ export default function RootLayout({
                   closes: "19:00",
                 },
               ],
-              sameAs: ["https://instagram.com/kataleyaflawers12"],
+              sameAs: [BUSINESS.instagram],
             }),
           }}
         />
-        <Navbar />
         {children}
-        <WhatsAppFloat />
-        <Footer />
         <Analytics />
         <SpeedInsights />
       </body>
