@@ -1,4 +1,6 @@
 import Image from "next/image";
+import SectionHeader from "@/components/ui/SectionHeader";
+import { BUSINESS } from "@/lib/constants";
 
 const photos = [
   {
@@ -53,28 +55,11 @@ export default function TestimonialsSection() {
       style={{ backgroundColor: "var(--color-cream)" }}
     >
       <div className="mx-auto max-w-7xl space-y-10 px-4 sm:px-6 lg:px-8">
-        <div className="space-y-4 text-center">
-          <p
-            className="text-sm font-semibold tracking-[0.2em] uppercase"
-            style={{ color: "var(--color-accent)" }}
-          >
-            Momentos especiales
-          </p>
-          <div className="space-y-3">
-            <h2
-              className="text-4xl sm:text-5xl"
-              style={{
-                color: "var(--color-primary)",
-                fontFamily: "var(--font-heading)",
-              }}
-            >
-              Clientas felices
-            </h2>
-            <p className="mx-auto max-w-2xl text-lg leading-8">
-              Más de 32 años creando momentos especiales en Lima
-            </p>
-          </div>
-        </div>
+        <SectionHeader
+          subtitle="Momentos especiales"
+          title="Clientas felices"
+          description={`Más de ${BUSINESS.experience} años creando momentos especiales en ${BUSINESS.location}`}
+        />
       </div>
 
       <div className="mx-auto mt-12 max-w-4xl overflow-hidden px-4 sm:px-6 md:overflow-visible lg:px-8">

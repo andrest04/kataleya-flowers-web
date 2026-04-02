@@ -1,11 +1,11 @@
 import React from "react";
 import { notFound } from "next/navigation";
-import Link from "next/link";
 import type { Metadata } from "next";
 import { getCategories } from "@/features/catalog/queries/getCategories";
 import { getProductsByCategory } from "@/features/catalog/queries/getProductsByCategory";
 import ProductGrid from "@/features/catalog/components/ProductGrid";
 import { BackButton } from "@/features/catalog/components/BackButton";
+import Breadcrumb from "@/components/ui/Breadcrumb";
 
 interface CategoriaPageProps {
   params: Promise<{ categoria: string }>;
@@ -67,28 +67,11 @@ export default async function CategoriaPage({
   return (
     <main className="min-h-screen bg-cream pt-28 pb-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
-        <nav aria-label="Breadcrumb" className="mb-6">
-          <ol className="flex items-center gap-2 text-sm font-body" style={{ color: "var(--color-muted)" }}>
-            <li>
-              <Link href="/" className="hover:text-primary transition-colors">
-                Inicio
-              </Link>
-            </li>
-            <li aria-hidden="true">/</li>
-            <li>
-              <Link
-                href="/catalogo"
-                className="hover:text-primary transition-colors"
-              >
-                Catálogo
-              </Link>
-            </li>
-            <li aria-hidden="true">/</li>
-            <li aria-current="page" className="text-dark/70">
-              {category.name}
-            </li>
-          </ol>
-        </nav>
+        <Breadcrumb items={[
+          { label: 'Inicio', href: '/' },
+          { label: 'Catálogo', href: '/catalogo' },
+          { label: category.name },
+        ]} />
 
         <div className="mb-8">
           <BackButton label="Volver al catálogo" />

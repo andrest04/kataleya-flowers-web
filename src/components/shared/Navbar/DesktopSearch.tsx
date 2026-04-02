@@ -1,9 +1,9 @@
 "use client";
 
 import type { FormEvent, RefObject } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import type { SearchResult } from "./constants";
+import SearchResultItem from "@/components/shared/SearchResultItem";
 
 interface DesktopSearchProps {
   searchQuery: string;
@@ -82,60 +82,14 @@ export default function DesktopSearch({
           }}
         >
           {searchResults.map((result) => (
-            <button
+            <SearchResultItem
               key={`${result.categorySlug}/${result.slug}`}
-              type="button"
-              role="option"
-              aria-selected="false"
+              imageUrl={result.imageUrl}
+              name={result.name}
+              subtitle={result.categoryName}
+              price={`${result.hasVariants ? "Desde " : ""}S/${result.price}`}
               onClick={() => handleResultClick(result.categorySlug, result.slug)}
-              className="flex w-full cursor-pointer items-center gap-3 px-4 py-3 text-left transition-colors duration-150"
-              style={{ borderBottom: "1px solid var(--color-border)" }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "var(--color-surface)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "transparent";
-              }}
-            >
-              <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg">
-                <Image
-                  src={result.imageUrl}
-                  alt={result.name}
-                  fill
-                  sizes="40px"
-                  className="object-cover"
-                />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p
-                  className="truncate text-sm font-medium"
-                  style={{
-                    color: "var(--color-dark)",
-                    fontFamily: "var(--font-body)",
-                  }}
-                >
-                  {result.name}
-                </p>
-                <p
-                  className="truncate text-xs"
-                  style={{
-                    color: "var(--color-muted)",
-                    fontFamily: "var(--font-body)",
-                  }}
-                >
-                  {result.categoryName}
-                </p>
-              </div>
-              <span
-                className="shrink-0 text-sm font-medium"
-                style={{
-                  color: "var(--color-primary)",
-                  fontFamily: "var(--font-body)",
-                }}
-              >
-                {result.hasVariants ? "Desde " : ""}S/{result.price}
-              </span>
-            </button>
+            />
           ))}
           <Link
             href={`/catalogo?q=${encodeURIComponent(searchQuery)}`}

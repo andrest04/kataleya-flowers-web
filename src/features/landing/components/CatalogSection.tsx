@@ -1,39 +1,26 @@
 import Image from "next/image";
 import Link from "next/link";
-import { categories } from "@/data/products";
+import type { Category } from "@/features/catalog/types";
+import Button from "@/components/ui/Button";
+import SectionHeader from "@/components/ui/SectionHeader";
 
-// Mostrar máximo 4 categorías destacadas
-const featuredCategories = categories.slice(0, 4);
+interface CatalogSectionProps {
+  categories: Category[];
+}
 
-export default function CatalogSection() {
+export default function CatalogSection({ categories }: CatalogSectionProps) {
+  const featuredCategories = categories.slice(0, 4);
   return (
     <section
       id="catalogo"
       className="scroll-mt-20 px-4 pt-8 pb-24 sm:px-6 lg:px-8"
     >
       <div className="mx-auto max-w-7xl space-y-10">
-        <div className="space-y-4 text-center">
-          <p
-            className="text-sm font-semibold tracking-[0.2em] uppercase"
-            style={{ color: "var(--color-accent)" }}
-          >
-            Explora nuestras colecciones
-          </p>
-          <div className="space-y-3">
-            <h2
-              className="text-4xl sm:text-5xl"
-              style={{
-                color: "var(--color-primary)",
-                fontFamily: "var(--font-heading)",
-              }}
-            >
-              Categorías Destacadas
-            </h2>
-            <p className="mx-auto max-w-2xl text-lg leading-8">
-              Descubre nuestros arreglos florales pensados para cada momento especial
-            </p>
-          </div>
-        </div>
+        <SectionHeader
+          subtitle="Explora nuestras colecciones"
+          title="Categorías Destacadas"
+          description="Descubre nuestros arreglos florales pensados para cada momento especial"
+        />
 
         <div className="-mx-4 sm:mx-0 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-4 scrollbar-hide sm:grid sm:grid-cols-2 sm:gap-6 sm:overflow-visible sm:pb-0 sm:px-0 lg:grid-cols-4">
           {featuredCategories.map((category) => (
@@ -110,12 +97,12 @@ export default function CatalogSection() {
 
         {/* Botón Ver catálogo completo */}
         <div className="flex justify-center pt-8">
-          <Link
+          <Button
+            variant="primary"
+            size="lg"
             href="/catalogo"
-            className="inline-flex items-center gap-2 rounded-full px-10 py-4 text-base font-semibold tracking-[0.08em] uppercase transition-all duration-300 hover:opacity-90 hover:shadow-lg"
+            className="px-10 py-4 text-base hover:shadow-lg"
             style={{
-              backgroundColor: "var(--color-primary)",
-              color: "var(--color-cream)",
               fontFamily: "var(--font-body)",
               boxShadow: "0 8px 24px color-mix(in srgb, var(--color-primary) 30%, transparent)",
             }}
@@ -135,7 +122,7 @@ export default function CatalogSection() {
                 d="M17 8l4 4m0 0l-4 4m4-4H3"
               />
             </svg>
-          </Link>
+          </Button>
         </div>
       </div>
     </section>

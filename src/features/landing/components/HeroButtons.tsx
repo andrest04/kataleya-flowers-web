@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { BUSINESS } from "@/lib/constants";
+import Button from "@/components/ui/Button";
 
 type CampaignMode = "contact" | "catalog";
 
@@ -13,7 +13,6 @@ export default function HeroButtons({
   campaignMode = "contact",
 }: HeroButtonsProps) {
   const handleScroll = (targetId: string) => {
-    // Extraer el ID si viene con # (ej: "#contacto" -> "contacto")
     const cleanId = targetId.startsWith("#") ? targetId.slice(1) : targetId;
     const target = document.getElementById(cleanId);
 
@@ -30,61 +29,38 @@ export default function HeroButtons({
     });
   };
 
-  // Determine primary and secondary CTAs based on campaign mode
   const isPrimaryContact = campaignMode === "contact";
 
   return (
     <div className="flex flex-col gap-4 sm:flex-row">
       {isPrimaryContact ? (
-        // Primary: Contact
         <>
-          <a
-            href={BUSINESS.whatsapp}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="rounded-full px-7 py-3 text-sm font-semibold tracking-[0.08em] uppercase transition-opacity hover:opacity-90 text-center"
-            style={{
-              backgroundColor: "var(--color-primary)",
-              color: "var(--color-cream)",
-            }}
-          >
+          <Button variant="primary" size="lg" href={BUSINESS.whatsapp} external className="text-center">
             Pedir por WhatsApp
-          </a>
-          <Link
+          </Button>
+          <Button
+            variant="secondary"
+            size="lg"
             href="/catalogo"
-            className="rounded-full border px-7 py-3 text-sm font-semibold tracking-[0.08em] uppercase transition-opacity hover:opacity-80 text-center"
-            style={{
-              borderColor: "var(--color-accent)",
-              color: "var(--color-accent)",
-            }}
+            className="text-center"
+            style={{ borderColor: "var(--color-accent)", color: "var(--color-accent)" }}
           >
             Explorar Catálogo
-          </Link>
+          </Button>
         </>
       ) : (
-        // Primary: Catalog
         <>
-          <Link
-            href="/catalogo"
-            className="rounded-full px-7 py-3 text-sm font-semibold tracking-[0.08em] uppercase transition-opacity hover:opacity-90 text-center"
-            style={{
-              backgroundColor: "var(--color-primary)",
-              color: "var(--color-cream)",
-            }}
-          >
+          <Button variant="primary" size="lg" href="/catalogo" className="text-center">
             Ver Catálogo
-          </Link>
-          <button
-            type="button"
-            className="rounded-full border px-7 py-3 text-sm font-semibold tracking-[0.08em] uppercase transition-opacity hover:opacity-80"
-            style={{
-              borderColor: "var(--color-accent)",
-              color: "var(--color-accent)",
-            }}
+          </Button>
+          <Button
+            variant="secondary"
+            size="lg"
             onClick={() => handleScroll("#contacto")}
+            style={{ borderColor: "var(--color-accent)", color: "var(--color-accent)" }}
           >
             Contáctanos
-          </button>
+          </Button>
         </>
       )}
     </div>

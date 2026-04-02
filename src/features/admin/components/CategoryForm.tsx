@@ -6,6 +6,9 @@ import type { Database } from '@/lib/supabase/types';
 import type { CategoryFormData } from '@/features/admin/types';
 import { createCategory, updateCategory } from '@/features/admin/actions/categories';
 import { slugify } from '@/features/admin/utils/slugify';
+import Button from '@/components/ui/Button';
+import { Input, Textarea } from '@/components/ui/Input';
+import { FormField, FormError } from '@/components/ui/FormField';
 
 type CategoryRow = Database['public']['Tables']['categories']['Row'];
 
@@ -64,25 +67,11 @@ export default function CategoryForm({ category }: CategoryFormProps) {
 
   return (
     <form action={formAction} className="space-y-5">
-      {state.error && (
-        <div
-          className="rounded-lg px-4 py-3 text-sm"
-          style={{
-            background: 'color-mix(in srgb, var(--color-primary) 10%, transparent)',
-            color: 'var(--color-primary)',
-            border: '1px solid color-mix(in srgb, var(--color-primary) 30%, transparent)',
-          }}
-        >
-          {state.error}
-        </div>
-      )}
+      <FormError message={state.error} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        <div className="space-y-1.5">
-          <label htmlFor="name" className="block text-sm font-medium" style={{ color: 'var(--color-dark)' }}>
-            Nombre *
-          </label>
-          <input
+        <FormField label="Nombre" required htmlFor="name">
+          <Input
             id="name"
             name="name"
             type="text"
@@ -93,93 +82,51 @@ export default function CategoryForm({ category }: CategoryFormProps) {
                 slugRef.current.value = slugify(e.target.value);
               }
             }}
-            className="w-full rounded-lg px-3 py-2 text-sm outline-none transition-colors focus:ring-2"
-            style={{
-              background: 'var(--color-surface)',
-              color: 'var(--color-dark)',
-              border: '1px solid var(--color-border)',
-            }}
           />
-        </div>
+        </FormField>
 
-        <div className="space-y-1.5">
-          <label htmlFor="slug" className="block text-sm font-medium" style={{ color: 'var(--color-dark)' }}>
-            Slug
-          </label>
-          <input
+        <FormField label="Slug" htmlFor="slug">
+          <Input
             ref={slugRef}
             id="slug"
             name="slug"
             type="text"
             defaultValue={initial.slug}
             placeholder="se genera automáticamente"
-            className="w-full rounded-lg px-3 py-2 text-sm outline-none transition-colors focus:ring-2"
-            style={{
-              background: 'var(--color-surface)',
-              color: 'var(--color-dark)',
-              border: '1px solid var(--color-border)',
-            }}
           />
-        </div>
+        </FormField>
       </div>
 
-      <div className="space-y-1.5">
-        <label htmlFor="description" className="block text-sm font-medium" style={{ color: 'var(--color-dark)' }}>
-          Descripción *
-        </label>
-        <textarea
+      <FormField label="Descripción" required htmlFor="description">
+        <Textarea
           id="description"
           name="description"
           required
           rows={3}
           defaultValue={initial.description}
-          className="w-full rounded-lg px-3 py-2 text-sm outline-none transition-colors focus:ring-2 resize-y"
-          style={{
-            background: 'var(--color-surface)',
-            color: 'var(--color-dark)',
-            border: '1px solid var(--color-border)',
-          }}
         />
-      </div>
+      </FormField>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        <div className="space-y-1.5">
-          <label htmlFor="occasion" className="block text-sm font-medium" style={{ color: 'var(--color-dark)' }}>
-            Ocasión
-          </label>
-          <input
+        <FormField label="Ocasión" htmlFor="occasion">
+          <Input
             id="occasion"
             name="occasion"
             type="text"
             defaultValue={initial.occasion}
             placeholder="ej: cumpleaños, amor, condolencias"
-            className="w-full rounded-lg px-3 py-2 text-sm outline-none transition-colors focus:ring-2"
-            style={{
-              background: 'var(--color-surface)',
-              color: 'var(--color-dark)',
-              border: '1px solid var(--color-border)',
-            }}
           />
-        </div>
+        </FormField>
 
-        <div className="space-y-1.5">
-          <label htmlFor="imageUrl" className="block text-sm font-medium" style={{ color: 'var(--color-dark)' }}>
-            URL de imagen
-          </label>
-          <input
+        <FormField label="URL de imagen" htmlFor="imageUrl">
+          <Input
             id="imageUrl"
             name="imageUrl"
             type="url"
             defaultValue={initial.imageUrl}
             placeholder="https://res.cloudinary.com/..."
-            className="w-full rounded-lg px-3 py-2 text-sm outline-none transition-colors focus:ring-2"
-            style={{
-              background: 'var(--color-surface)',
-              color: 'var(--color-dark)',
-              border: '1px solid var(--color-border)',
-            }}
           />
-        </div>
+        </FormField>
       </div>
 
       <div>
@@ -198,31 +145,14 @@ export default function CategoryForm({ category }: CategoryFormProps) {
       </div>
 
       <div className="flex items-center gap-3 pt-2">
-        <button
-          type="submit"
-          disabled={isPending}
-          className="px-5 py-2.5 rounded-xl text-sm font-semibold transition-opacity hover:opacity-80 disabled:opacity-50"
-          style={{
-            background: 'var(--color-primary)',
-            color: 'var(--color-white)',
-          }}
-        >
+        <Button type="submit" variant="primary" size="md" loading={isPending}>
           {isPending
             ? (isEditing ? 'Guardando…' : 'Creando…')
             : (isEditing ? 'Guardar cambios' : 'Crear categoría')}
-        </button>
-        <button
-          type="button"
-          onClick={() => router.push('/admin/categorias')}
-          className="px-5 py-2.5 rounded-xl text-sm font-medium transition-opacity hover:opacity-70"
-          style={{
-            background: 'var(--color-surface)',
-            color: 'var(--color-dark)',
-            border: '1px solid var(--color-border)',
-          }}
-        >
+        </Button>
+        <Button variant="ghost" size="md" onClick={() => router.push('/admin/categorias')}>
           Cancelar
-        </button>
+        </Button>
       </div>
     </form>
   );

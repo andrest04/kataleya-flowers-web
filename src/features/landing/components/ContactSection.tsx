@@ -1,6 +1,8 @@
 import { FaInstagram, FaWhatsapp } from "react-icons/fa";
 import { BUSINESS } from "@/lib/constants";
 import BusinessHoursBadge from "@/components/shared/BusinessHoursBadge";
+import SectionHeader from "@/components/ui/SectionHeader";
+
 
 function ArrowRightIcon({ className }: { className?: string }) {
   return (
@@ -27,26 +29,12 @@ export default function ContactSection() {
       <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
         {/* Lado izquierdo - Mapa */}
         <div className="space-y-6">
-          <div className="space-y-4">
-            <p
-              className="text-sm font-semibold tracking-[0.2em] uppercase"
-              style={{ color: "var(--color-accent)" }}
-            >
-              Atención cercana
-            </p>
-            <h2
-              className="text-4xl sm:text-5xl"
-              style={{
-                color: "var(--color-primary)",
-                fontFamily: "var(--font-heading)",
-              }}
-            >
-              Contáctanos
-            </h2>
-            <p className="max-w-xl text-lg leading-8">
-              Estamos en Lima para crear el arreglo perfecto para ti
-            </p>
-          </div>
+          <SectionHeader
+            subtitle="Atención cercana"
+            title="Contáctanos"
+            description="Estamos en Lima para crear el arreglo perfecto para ti"
+            align="left"
+          />
 
           <iframe
             src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3900.667835343661!2d-77.0213840240266!3d-12.134864543549192!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9105b7fe8f580c29%3A0xf37f77a4ef274530!2sFlorer%C3%ADa%20Floritel!5e0!3m2!1sen!2spe!4v1773457299751!5m2!1sen!2spe"
@@ -146,7 +134,7 @@ export default function ContactSection() {
                 className="text-sm font-medium"
                 style={{ color: "var(--color-dark)" }}
               >
-                Lunes a Sábado · 8:00am — 7:00pm
+                {BUSINESS.hours.weekdays} · {BUSINESS.hours.time}
               </span>
             </div>
             <BusinessHoursBadge />

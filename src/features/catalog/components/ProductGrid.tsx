@@ -1,9 +1,9 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
 import type { Product } from '@/features/catalog/types';
+import EmptyState from '@/components/ui/EmptyState';
+import ProductCard from '@/features/catalog/components/ProductCard';
 
 interface ProductGridProps {
   initialProducts: Product[];
@@ -56,43 +56,15 @@ export default function ProductGrid({ initialProducts, categorySlug }: ProductGr
       {sortedProducts.length > 0 ? (
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8">
           {sortedProducts.map((product) => (
-            <Link
+            <ProductCard
               key={product.id}
-              href={`/catalogo/${categorySlug ?? ''}/${product.slug}`}
-              className="group block rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300"
-              style={{ backgroundColor: 'var(--color-white)' }}
-            >
-              <div
-                className="relative aspect-[4/3] overflow-hidden"
-                style={{ backgroundColor: 'var(--color-surface)' }}
-              >
-                <Image
-                  src={product.imageUrl}
-                  alt={product.name}
-                  fill
-                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 50vw, 33vw"
-                  className="object-cover transition-transform duration-300 group-hover:scale-105"
-                />
-              </div>
-              <div className="p-3 sm:p-6">
-                <h2 className="font-heading text-sm sm:text-xl text-dark mb-1 sm:mb-2 group-hover:text-primary transition-colors leading-tight">
-                  {product.name}
-                </h2>
-                <p className="font-body text-primary font-bold text-sm sm:text-lg">
-                  {product.priceTable
-                    ? `Desde S/ ${product.price}`
-                    : `S/ ${product.price.toFixed(2)}`}
-                </p>
-              </div>
-            </Link>
+              product={product}
+              categorySlug={categorySlug}
+            />
           ))}
         </div>
       ) : (
-        <div className="text-center py-16">
-          <p className="font-body text-dark/60 text-lg">
-            No hay productos disponibles en esta categoría.
-          </p>
-        </div>
+        <EmptyState message="No hay productos disponibles en esta categoría." />
       )}
     </div>
   );

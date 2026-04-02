@@ -1,4 +1,6 @@
 import Image from "next/image";
+import SectionHeader from "@/components/ui/SectionHeader";
+import { BUSINESS } from "@/lib/constants";
 
 interface Highlight {
   readonly value: string;
@@ -6,8 +8,8 @@ interface Highlight {
 }
 
 const highlights: readonly Highlight[] = [
-  { value: "32", label: "Años de experiencia" },
-  { value: "500+", label: "Arreglos al mes" },
+  { value: BUSINESS.experience, label: "Años de experiencia" },
+  { value: BUSINESS.monthlyOrders, label: "Arreglos al mes" },
   { value: "100%", label: "Dedicación y amor" },
 ];
 
@@ -22,24 +24,14 @@ export default function AboutSection() {
     >
       <div className="mx-auto grid max-w-7xl gap-14 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
         <div className="space-y-8">
-          <header className="space-y-4">
-            <p
-              className="text-sm font-semibold tracking-[0.2em] uppercase"
-              style={{ color: "var(--color-accent)" }}
-            >
-              Desde Lima para cada ocasión
-            </p>
-            <h2
-              className="text-4xl sm:text-5xl"
-              style={{
-                color: "var(--color-primary)",
-                fontFamily: "var(--font-heading)",
-              }}
-            >
-              Nuestra Historia
-            </h2>
+          <header>
+            <SectionHeader
+              subtitle="Desde Lima para cada ocasión"
+              title="Nuestra Historia"
+              align="left"
+            />
             <p className="max-w-2xl text-lg leading-8">
-              En Kataleya Flawers llevamos 32 años transformando flores en
+              En Kataleya Flawers llevamos {BUSINESS.experience} años transformando flores en
               gestos memorables. Nuestra pasión por los arreglos florales y las
               orquídeas nace del cuidado por cada detalle, desde la selección de
               cada tallo hasta la composición final.

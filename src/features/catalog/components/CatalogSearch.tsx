@@ -2,18 +2,18 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import Image from 'next/image';
-import Link from 'next/link';
 import type { Category, Product } from '@/features/catalog/types';
 import { PRODUCT_COLORS, PRODUCT_FLOWER_TYPES } from '@/features/catalog/types';
 import {
   filterProducts,
   hasActiveFilters,
-  getEffectivePrice,
   PRICE_MIN,
   PRICE_MAX,
   type ProductFilters,
 } from '@/features/catalog/utils/filterProducts';
+import CategoryCard from '@/features/catalog/components/CategoryCard';
+import ProductCardComponent from '@/features/catalog/components/ProductCard';
+import FilterChip from '@/components/ui/FilterChip';
 
 interface CatalogSearchProps {
   categories: Category[];
@@ -38,102 +38,9 @@ function CategoryGrid({ categories }: { categories: Category[] }) {
   return (
     <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
       {categories.map((category) => (
-        <Link
-          key={category.id}
-          href={`/catalogo/${category.slug}`}
-          className="group block rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5"
-          style={{
-            backgroundColor: 'var(--color-white)',
-            borderWidth: '1px',
-            borderStyle: 'solid',
-            borderColor: 'var(--color-border)',
-          }}
-        >
-          <div className="relative aspect-[4/3] overflow-hidden">
-            <Image
-              src={category.imageUrl ?? '/placeholder-product.jpg'}
-              alt={category.name}
-              fill
-              className="object-cover transition-transform duration-300 group-hover:scale-105"
-              sizes="(max-width: 640px) 50vw, 33vw"
-            />
-          </div>
-          <div className="p-4 sm:p-6">
-            <h2 className="font-heading text-base sm:text-xl text-primary mb-1 sm:mb-2 group-hover:text-primary/80 leading-tight">
-              {category.name}
-            </h2>
-            <p className="hidden sm:block font-body text-sm text-dark/70 leading-relaxed mb-3">
-              {category.description}
-            </p>
-            <div className="flex items-center text-secondary font-body font-semibold text-sm">
-              <span>Ver productos</span>
-              <svg
-                className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
-            </div>
-          </div>
-        </Link>
+        <CategoryCard key={category.id} category={category} />
       ))}
     </div>
-  );
-}
-
-// ─── Product Card ─────────────────────────────────────────────────────────────
-
-function ProductCard({
-  product,
-  category,
-}: {
-  product: Product;
-  category: Category | undefined;
-}) {
-  const effectivePrice = getEffectivePrice(product);
-  const hasVariants = Boolean(product.priceTable?.length);
-
-  return (
-    <Link
-      href={`/catalogo/${category?.slug ?? ''}/${product.slug}`}
-      className="group block rounded-lg overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5"
-      style={{
-        backgroundColor: 'var(--color-white)',
-        borderWidth: '1px',
-        borderStyle: 'solid',
-        borderColor: 'var(--color-border)',
-      }}
-    >
-      <div className="relative aspect-[4/3] overflow-hidden bg-surface">
-        <Image
-          src={product.imageUrl}
-          alt={product.name}
-          fill
-          className="object-cover transition-transform duration-500 group-hover:scale-105"
-          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-        />
-      </div>
-      <div className="p-3 sm:p-4">
-        <p className="font-body text-xs text-muted mb-1 truncate">{category?.name}</p>
-        <h3 className="font-heading text-sm sm:text-base text-dark leading-tight mb-2 line-clamp-2">
-          {product.name}
-        </h3>
-        <p className="font-body font-semibold text-secondary text-sm sm:text-base">
-          {hasVariants ? 'Desde ' : ''}S/{' '}
-          {effectivePrice.toLocaleString('es-PE', {
-            minimumFractionDigits: effectivePrice % 1 === 0 ? 0 : 2,
-            maximumFractionDigits: 2,
-          })}
-        </p>
-      </div>
-    </Link>
   );
 }
 
@@ -190,21 +97,7 @@ function ActiveFilterChips({
   return (
     <div className="flex flex-wrap items-center gap-2 mb-4">
       {chips.map((chip, i) => (
-        <button
-          key={i}
-          onClick={chip.onRemove}
-          className="inline-flex items-center gap-1 px-3 py-1 rounded-full font-body text-xs font-medium transition-colors"
-          style={{
-            backgroundColor: 'color-mix(in srgb, var(--color-primary) 10%, var(--color-cream))',
-            color: 'var(--color-primary)',
-            border: '1px solid color-mix(in srgb, var(--color-primary) 30%, transparent)',
-          }}
-        >
-          {chip.label}
-          <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
+        <FilterChip key={i} label={chip.label} onRemove={chip.onRemove} />
       ))}
       <button
         onClick={onClear}
@@ -675,7 +568,12 @@ export default function CatalogSearch({ categories, products }: CatalogSearchPro
                 {filteredProducts.map((product) => {
                   const category = categories.find((c) => c.id === product.categoryId);
                   return (
-                    <ProductCard key={product.id} product={product} category={category} />
+                    <ProductCardComponent
+                      key={product.id}
+                      product={product}
+                      categorySlug={category?.slug}
+                      categoryName={category?.name}
+                    />
                   );
                 })}
               </div>

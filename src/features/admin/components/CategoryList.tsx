@@ -2,12 +2,14 @@
 
 import { useState, useTransition } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
 import { DragDropProvider } from '@dnd-kit/react';
 import { useSortable } from '@dnd-kit/react/sortable';
 import { move } from '@dnd-kit/helpers';
 import type { Database } from '@/lib/supabase/types';
 import { deleteCategory, reorderCategories } from '@/features/admin/actions/categories';
+import Button from '@/components/ui/Button';
+import StatusBadge from '@/components/ui/StatusBadge';
+import EmptyState from '@/components/ui/EmptyState';
 
 type CategoryRow = Database['public']['Tables']['categories']['Row'];
 
@@ -91,47 +93,25 @@ function SortableRow({ category, index, deletingId, hasChanges, onDelete }: Sort
       </span>
 
       {/* Status */}
-      <span
-        className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium flex-shrink-0"
-        style={{
-          background: category.is_active
-            ? 'color-mix(in srgb, var(--color-accent) 15%, transparent)'
-            : 'color-mix(in srgb, var(--color-muted) 15%, transparent)',
-          color: category.is_active ? 'var(--color-accent)' : 'var(--color-muted)',
-        }}
-      >
-        {category.is_active ? 'Activa' : 'Inactiva'}
-      </span>
+      <StatusBadge active={category.is_active} activeLabel="Activa" inactiveLabel="Inactiva" />
 
       {/* Actions — hidden while pending changes */}
       {!hasChanges && (
         <div className="flex items-center gap-2 flex-shrink-0">
-          <Link
-            href={`/admin/categorias/${category.id}`}
-            className="px-3 py-1.5 rounded-lg text-xs font-medium transition-opacity hover:opacity-70"
-            style={{
-              background: 'var(--color-surface)',
-              color: 'var(--color-dark)',
-              border: '1px solid var(--color-border)',
-            }}
-          >
+          <Button variant="ghost" size="sm" href={`/admin/categorias/${category.id}`}>
             Editar
-          </Link>
-          <button
+          </Button>
+          <Button
+            variant="destructive"
+            size="sm"
             onClick={(e) => {
               e.stopPropagation();
               onDelete(category.id, category.name);
             }}
             disabled={deletingId === category.id}
-            className="px-3 py-1.5 rounded-lg text-xs font-medium transition-opacity hover:opacity-70 disabled:opacity-40"
-            style={{
-              background: 'color-mix(in srgb, var(--color-primary) 10%, transparent)',
-              color: 'var(--color-primary)',
-              border: '1px solid color-mix(in srgb, var(--color-primary) 30%, transparent)',
-            }}
           >
             {deletingId === category.id ? 'Eliminando…' : 'Eliminar'}
-          </button>
+          </Button>
         </div>
       )}
     </div>
@@ -184,16 +164,7 @@ export default function CategoryList({ categories: initialCategories }: Category
   }
 
   if (items.length === 0) {
-    return (
-      <div
-        className="rounded-xl p-12 text-center"
-        style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
-      >
-        <p className="text-sm" style={{ color: 'var(--color-muted)' }}>
-          No hay categorías aún. ¡Creá la primera!
-        </p>
-      </div>
-    );
+    return <EmptyState message="No hay categorías aún. ¡Creá la primera!" />;
   }
 
   return (
@@ -248,29 +219,12 @@ export default function CategoryList({ categories: initialCategories }: Category
             Orden modificado — ¿guardar cambios?
           </p>
           <div className="flex items-center gap-2">
-            <button
-              onClick={handleCancel}
-              disabled={isSaving}
-              className="px-4 py-1.5 rounded-lg text-xs font-medium transition-opacity hover:opacity-70 disabled:opacity-40"
-              style={{
-                background: 'var(--color-surface)',
-                color: 'var(--color-dark)',
-                border: '1px solid var(--color-border)',
-              }}
-            >
+            <Button variant="ghost" size="sm" onClick={handleCancel} disabled={isSaving}>
               Cancelar
-            </button>
-            <button
-              onClick={handleSave}
-              disabled={isSaving}
-              className="px-4 py-1.5 rounded-lg text-xs font-semibold transition-opacity hover:opacity-80 disabled:opacity-50"
-              style={{
-                background: 'var(--color-primary)',
-                color: 'var(--color-white)',
-              }}
-            >
+            </Button>
+            <Button variant="primary" size="sm" onClick={handleSave} loading={isSaving}>
               {isSaving ? 'Guardando…' : 'Guardar orden'}
-            </button>
+            </Button>
           </div>
         </div>
       )}

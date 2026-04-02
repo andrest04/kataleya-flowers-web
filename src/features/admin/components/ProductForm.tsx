@@ -5,6 +5,10 @@ import type { Database } from '@/lib/supabase/types';
 import type { ProductFormData } from '@/features/admin/types';
 import { PRODUCT_COLORS, PRODUCT_FLOWER_TYPES } from '@/features/catalog/types';
 import { createProduct, updateProduct } from '@/features/admin/actions/products';
+import Button from '@/components/ui/Button';
+import { Input, Textarea, Select } from '@/components/ui/Input';
+import { FormField, FormError } from '@/components/ui/FormField';
+import PillToggle from '@/components/ui/PillToggle';
 
 type ProductRow = Database['public']['Tables']['products']['Row'];
 type CategoryRow = Database['public']['Tables']['categories']['Row'];
@@ -55,31 +59,6 @@ function buildInitialState(product?: ProductRow): ProductFormData {
     displayOrder: product.display_order,
   };
 }
-
-// ── small sub-components ──────────────────────────────────────────────────────
-
-function FieldLabel({ children, required }: { children: React.ReactNode; required?: boolean }) {
-  return (
-    <label
-      className="block text-xs font-semibold mb-1"
-      style={{ color: 'var(--color-dark)' }}
-    >
-      {children}
-      {required && <span style={{ color: 'var(--color-primary)' }}> *</span>}
-    </label>
-  );
-}
-
-const inputBase: React.CSSProperties = {
-  width: '100%',
-  padding: '8px 12px',
-  borderRadius: '8px',
-  border: '1px solid var(--color-border)',
-  background: 'var(--color-white)',
-  color: 'var(--color-dark)',
-  fontSize: '14px',
-  outline: 'none',
-};
 
 // ── main component ────────────────────────────────────────────────────────────
 
@@ -177,51 +156,43 @@ export default function ProductForm({ product, categories, onSuccess }: ProductF
 
       {/* Nombre + Slug */}
       <div className="grid grid-cols-2 gap-4">
-        <div>
-          <FieldLabel required>Nombre</FieldLabel>
-          <input
+        <FormField label="Nombre" required>
+          <Input
             type="text"
             value={form.name}
             onChange={(e) => set('name', e.target.value)}
             required
             placeholder="Ramo de rosas rojas"
-            style={inputBase}
           />
-        </div>
-        <div>
-          <FieldLabel>Slug</FieldLabel>
-          <input
+        </FormField>
+        <FormField label="Slug">
+          <Input
             type="text"
             value={form.slug}
             onChange={(e) => set('slug', e.target.value)}
             placeholder="ramo-rosas-rojas (auto si vacío)"
-            style={inputBase}
           />
-        </div>
+        </FormField>
       </div>
 
       {/* Descripción */}
-      <div>
-        <FieldLabel required>Descripción</FieldLabel>
-        <textarea
+      <FormField label="Descripción" required>
+        <Textarea
           value={form.description}
           onChange={(e) => set('description', e.target.value)}
           required
           rows={3}
           placeholder="Descripción del producto…"
-          style={{ ...inputBase, resize: 'vertical' }}
         />
-      </div>
+      </FormField>
 
       {/* Categoría + Precio */}
       <div className="grid grid-cols-2 gap-4">
-        <div>
-          <FieldLabel required>Categoría</FieldLabel>
-          <select
+        <FormField label="Categoría" required>
+          <Select
             value={form.categoryId}
             onChange={(e) => set('categoryId', e.target.value)}
             required
-            style={inputBase}
           >
             <option value="">Seleccioná una categoría</option>
             {categories.map((cat) => (
@@ -229,225 +200,167 @@ export default function ProductForm({ product, categories, onSuccess }: ProductF
                 {cat.name}
               </option>
             ))}
-          </select>
-        </div>
-        <div>
-          <FieldLabel required>Precio base (S/)</FieldLabel>
-          <input
+          </Select>
+        </FormField>
+        <FormField label="Precio base (S/)" required>
+          <Input
             type="number"
             value={form.price}
             onChange={(e) => set('price', Number(e.target.value))}
             required
             min={0}
             step={0.01}
-            style={inputBase}
           />
-        </div>
+        </FormField>
       </div>
 
       {/* Imagen principal */}
-      <div>
-        <FieldLabel required>URL imagen principal</FieldLabel>
-        <input
+      <FormField label="URL imagen principal" required>
+        <Input
           type="url"
           value={form.imageUrl}
           onChange={(e) => set('imageUrl', e.target.value)}
           required
           placeholder="https://res.cloudinary.com/…"
-          style={inputBase}
         />
-      </div>
+      </FormField>
 
       {/* Colores */}
       <div>
-        <FieldLabel>Colores</FieldLabel>
-        <div className="flex flex-wrap gap-2 mt-1">
+        <FormField label="Colores">
+          <div className="flex flex-wrap gap-2">
           {PRODUCT_COLORS.map((c) => {
             const selected = form.colors.includes(c.value);
             return (
-              <button
+              <PillToggle
                 key={c.value}
-                type="button"
+                label={c.label}
+                active={selected}
                 onClick={() => set('colors', toggleArrayItem(form.colors, c.value))}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all"
-                style={{
-                  border: `1px solid ${selected ? 'var(--color-primary)' : 'var(--color-border)'}`,
-                  background: selected
-                    ? 'color-mix(in srgb, var(--color-primary) 10%, transparent)'
-                    : 'var(--color-white)',
-                  color: selected ? 'var(--color-primary)' : 'var(--color-dark)',
-                }}
-              >
-                {c.hex && (
+                activeColor="primary"
+                icon={c.hex ? (
                   <span
                     className="w-3 h-3 rounded-full inline-block border"
-                    style={{
-                      background: c.hex,
-                      borderColor: 'var(--color-border)',
-                    }}
+                    style={{ background: c.hex, borderColor: 'var(--color-border)' }}
                   />
-                )}
-                {c.label}
-              </button>
+                ) : undefined}
+              />
             );
           })}
-        </div>
+          </div>
+        </FormField>
       </div>
 
       {/* Tipos de flor */}
       <div>
-        <FieldLabel>Tipos de flor</FieldLabel>
-        <div className="flex flex-wrap gap-2 mt-1">
+        <FormField label="Tipos de flor">
+          <div className="flex flex-wrap gap-2">
           {PRODUCT_FLOWER_TYPES.map((ft) => {
             const selected = form.flowerTypes.includes(ft);
             return (
-              <button
+              <PillToggle
                 key={ft}
-                type="button"
+                label={ft}
+                active={selected}
                 onClick={() => set('flowerTypes', toggleArrayItem(form.flowerTypes, ft))}
-                className="px-3 py-1.5 rounded-full text-xs font-medium transition-all capitalize"
-                style={{
-                  border: `1px solid ${selected ? 'var(--color-accent)' : 'var(--color-border)'}`,
-                  background: selected
-                    ? 'color-mix(in srgb, var(--color-accent) 10%, transparent)'
-                    : 'var(--color-white)',
-                  color: selected ? 'var(--color-accent)' : 'var(--color-dark)',
-                }}
-              >
-                {ft}
-              </button>
+                activeColor="accent"
+                className="capitalize"
+              />
             );
           })}
-        </div>
+          </div>
+        </FormField>
       </div>
 
       {/* Incluye */}
       <div>
-        <FieldLabel>¿Qué incluye?</FieldLabel>
-        <div className="space-y-2 mt-1">
+        <FormField label="¿Qué incluye?">
+          <div className="space-y-2">
           {form.includes.map((item, i) => (
             <div key={includeKeys[i]} className="flex gap-2">
-              <input
+              <Input
                 type="text"
                 value={item}
                 onChange={(e) => updateInclude(i, e.target.value)}
                 placeholder="ej. 24 rosas rojas"
-                style={{ ...inputBase, flex: 1 }}
+                style={{ flex: 1 }}
               />
-              <button
-                type="button"
-                onClick={() => removeInclude(i)}
-                className="px-2 rounded-lg text-sm hover:opacity-70 transition-opacity"
-                style={{
-                  background: 'color-mix(in srgb, var(--color-primary) 10%, transparent)',
-                  color: 'var(--color-primary)',
-                  border: '1px solid color-mix(in srgb, var(--color-primary) 30%, transparent)',
-                }}
-              >
+              <Button variant="destructive" size="sm" onClick={() => removeInclude(i)} className="px-2">
                 ×
-              </button>
+              </Button>
             </div>
           ))}
-          <button
-            type="button"
-            onClick={addInclude}
-            className="text-xs px-3 py-1.5 rounded-lg transition-opacity hover:opacity-70"
-            style={{
-              background: 'var(--color-surface)',
-              color: 'var(--color-dark)',
-              border: '1px solid var(--color-border)',
-            }}
-          >
+          <Button variant="ghost" size="sm" onClick={addInclude}>
             + Agregar ítem
-          </button>
-        </div>
+          </Button>
+          </div>
+        </FormField>
       </div>
 
       {/* Variantes de precio */}
       <div>
-        <FieldLabel>Variantes de precio</FieldLabel>
-        <div className="space-y-2 mt-1">
+        <FormField label="Variantes de precio">
+          <div className="space-y-2">
           {(form.priceVariants ?? []).map((v, i) => (
             <div key={variantKeys[i]} className="flex gap-2 items-center">
-              <input
+              <Input
                 type="text"
                 value={v.label}
                 onChange={(e) => updateVariantField(i, 'label', e.target.value)}
                 placeholder="ej. 12 rosas"
-                style={{ ...inputBase, flex: 2 }}
+                style={{ flex: 2 }}
               />
-              <input
+              <Input
                 type="number"
                 value={v.price}
                 onChange={(e) => updateVariantField(i, 'price', e.target.value)}
                 placeholder="Precio"
                 min={0}
                 step={0.01}
-                style={{ ...inputBase, flex: 1 }}
+                style={{ flex: 1 }}
               />
-              <button
-                type="button"
-                onClick={() => removeVariant(i)}
-                className="px-2 rounded-lg text-sm hover:opacity-70 transition-opacity"
-                style={{
-                  background: 'color-mix(in srgb, var(--color-primary) 10%, transparent)',
-                  color: 'var(--color-primary)',
-                  border: '1px solid color-mix(in srgb, var(--color-primary) 30%, transparent)',
-                }}
-              >
+              <Button variant="destructive" size="sm" onClick={() => removeVariant(i)} className="px-2">
                 ×
-              </button>
+              </Button>
             </div>
           ))}
-          <button
-            type="button"
-            onClick={addPriceVariant}
-            className="text-xs px-3 py-1.5 rounded-lg transition-opacity hover:opacity-70"
-            style={{
-              background: 'var(--color-surface)',
-              color: 'var(--color-dark)',
-              border: '1px solid var(--color-border)',
-            }}
-          >
+          <Button variant="ghost" size="sm" onClick={addPriceVariant}>
             + Agregar variante
-          </button>
-        </div>
+          </Button>
+          </div>
+        </FormField>
       </div>
 
       {/* Ocasión + Nota */}
       <div className="grid grid-cols-2 gap-4">
-        <div>
-          <FieldLabel>Ocasión</FieldLabel>
-          <input
+        <FormField label="Ocasión">
+          <Input
             type="text"
             value={form.occasion}
             onChange={(e) => set('occasion', e.target.value)}
             placeholder="ej. Perfecto para aniversarios"
-            style={inputBase}
           />
-        </div>
-        <div>
-          <FieldLabel>Nota</FieldLabel>
-          <input
+        </FormField>
+        <FormField label="Nota">
+          <Input
             type="text"
             value={form.note}
             onChange={(e) => set('note', e.target.value)}
             placeholder="ej. Incluye peluche"
-            style={inputBase}
           />
-        </div>
+        </FormField>
       </div>
 
       {/* Orden de display */}
       <div className="w-40">
-        <FieldLabel>Orden de display</FieldLabel>
-        <input
-          type="number"
-          value={form.displayOrder}
-          onChange={(e) => set('displayOrder', Number(e.target.value))}
-          min={0}
-          style={inputBase}
-        />
+        <FormField label="Orden de display">
+          <Input
+            type="number"
+            value={form.displayOrder}
+            onChange={(e) => set('displayOrder', Number(e.target.value))}
+            min={0}
+          />
+        </FormField>
       </div>
 
       {/* Checkboxes */}
@@ -473,36 +386,17 @@ export default function ProductForm({ product, categories, onSuccess }: ProductF
       </div>
 
       {/* Error */}
-      {error && (
-        <div
-          className="px-4 py-3 rounded-lg text-sm"
-          style={{
-            background: 'color-mix(in srgb, var(--color-primary) 10%, transparent)',
-            color: 'var(--color-primary)',
-            border: '1px solid color-mix(in srgb, var(--color-primary) 30%, transparent)',
-          }}
-        >
-          {error}
-        </div>
-      )}
+      <FormError message={error} />
 
       {/* Submit */}
       <div>
-        <button
-          type="submit"
-          disabled={isPending}
-          className="px-6 py-2.5 rounded-xl font-semibold text-sm transition-opacity hover:opacity-80 disabled:opacity-50"
-          style={{
-            background: 'var(--color-primary)',
-            color: 'var(--color-white)',
-          }}
-        >
+        <Button type="submit" variant="primary" size="md" loading={isPending}>
           {isPending
             ? 'Guardando…'
             : product
               ? 'Guardar producto'
               : 'Crear producto'}
-        </button>
+        </Button>
       </div>
     </form>
   );

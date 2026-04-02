@@ -2,9 +2,11 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
 import type { Database } from '@/lib/supabase/types';
 import { deleteProduct } from '@/features/admin/actions/products';
+import Button from '@/components/ui/Button';
+import StatusBadge from '@/components/ui/StatusBadge';
+import EmptyState from '@/components/ui/EmptyState';
 
 type ProductRow = Database['public']['Tables']['products']['Row'];
 type CategoryRow = Database['public']['Tables']['categories']['Row'];
@@ -32,16 +34,7 @@ export default function ProductTable({ products, categories }: ProductTableProps
   }
 
   if (products.length === 0) {
-    return (
-      <div
-        className="rounded-xl p-12 text-center"
-        style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)' }}
-      >
-        <p className="text-sm" style={{ color: 'var(--color-muted)' }}>
-          No hay productos aún. ¡Creá el primero!
-        </p>
-      </div>
-    );
+    return <EmptyState message="No hay productos aún. ¡Creá el primero!" />;
   }
 
   return (
@@ -49,7 +42,7 @@ export default function ProductTable({ products, categories }: ProductTableProps
       className="rounded-xl overflow-hidden"
       style={{ border: '1px solid var(--color-border)' }}
     >
-      <table className="w-full text-sm" style={{ fontFamily: 'var(--font-lato, sans-serif)' }}>
+      <table className="w-full text-sm" style={{ fontFamily: 'var(--font-body)' }}>
         <thead>
           <tr style={{ background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)' }}>
             <th className="text-left px-4 py-3 font-semibold" style={{ color: 'var(--color-dark)' }}>
@@ -121,43 +114,21 @@ export default function ProductTable({ products, categories }: ProductTableProps
                 S/ {Number(product.price).toFixed(2)}
               </td>
               <td className="px-4 py-3">
-                <span
-                  className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
-                  style={{
-                    background: product.is_active
-                      ? 'color-mix(in srgb, var(--color-accent) 15%, transparent)'
-                      : 'color-mix(in srgb, var(--color-muted) 15%, transparent)',
-                    color: product.is_active ? 'var(--color-accent)' : 'var(--color-muted)',
-                  }}
-                >
-                  {product.is_active ? 'Activo' : 'Inactivo'}
-                </span>
+                <StatusBadge active={product.is_active} />
               </td>
               <td className="px-4 py-3">
                 <div className="flex items-center justify-end gap-2">
-                  <Link
-                    href={`/admin/productos/${product.id}`}
-                    className="px-3 py-1.5 rounded-lg text-xs font-medium transition-opacity hover:opacity-70"
-                    style={{
-                      background: 'var(--color-surface)',
-                      color: 'var(--color-dark)',
-                      border: '1px solid var(--color-border)',
-                    }}
-                  >
+                  <Button variant="ghost" size="sm" href={`/admin/productos/${product.id}`}>
                     Editar
-                  </Link>
-                  <button
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
                     onClick={() => void handleDelete(product.id, product.name)}
                     disabled={deletingId === product.id}
-                    className="px-3 py-1.5 rounded-lg text-xs font-medium transition-opacity hover:opacity-70 disabled:opacity-40"
-                    style={{
-                      background: 'color-mix(in srgb, var(--color-primary) 10%, transparent)',
-                      color: 'var(--color-primary)',
-                      border: '1px solid color-mix(in srgb, var(--color-primary) 30%, transparent)',
-                    }}
                   >
                     {deletingId === product.id ? 'Eliminando…' : 'Eliminar'}
-                  </button>
+                  </Button>
                 </div>
               </td>
             </tr>
