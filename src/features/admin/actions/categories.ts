@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/server';
 import type { Database } from '@/lib/supabase/types';
 import type { CategoryFormData } from '@/features/admin/types';
 import { slugify } from '@/features/admin/utils/slugify';
-import { destroyCloudinaryImage } from '@/lib/cloudinary';
+import { destroyCloudinaryImage, destroyCloudinaryImages } from '@/lib/cloudinary';
 
 type CategoryInsert = Database['public']['Tables']['categories']['Insert'];
 
@@ -111,13 +111,81 @@ export async function reorderCategories(
   }
 }
 
+export async function getCategoryProductCount(
+  categoryId: string
+): Promise<{ count: number; error?: string }> {
+  try {
+    const supabase = await createClient();
+    const { count, error } = await supabase
+      .from('products')
+      .select('*', { count: 'exact', head: true })
+      .eq('category_id', categoryId);
+
+    if (error) return { count: 0, error: error.message };
+    return { count: count ?? 0 };
+  } catch (err) {
+    return { count: 0, error: err instanceof Error ? err.message : 'Error desconocido' };
+  }
+}
+
 export async function deleteCategory(
-  id: string
+  id: string,
+  mode: 'reassign' | 'cascade',
+  reassignTo?: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const supabase = await createClient();
 
-    // Fetch image before deleting the row
+    // Count products in this category
+    const { count } = await supabase
+      .from('products')
+      .select('*', { count: 'exact', head: true })
+      .eq('category_id', id);
+
+    const productCount = count ?? 0;
+
+    if (productCount > 0 && mode === 'reassign' && !reassignTo) {
+      return {
+        success: false,
+        error: 'Seleccioná una categoría destino para reasignar los productos.',
+      };
+    }
+
+    // Reassign products before deleting
+    if (productCount > 0 && mode === 'reassign' && reassignTo) {
+      const { error: reassignError } = await supabase
+        .from('products')
+        .update({ category_id: reassignTo })
+        .eq('category_id', id);
+
+      if (reassignError) return { success: false, error: reassignError.message };
+    }
+
+    // Cascade: delete all products (and their Cloudinary images)
+    if (productCount > 0 && mode === 'cascade') {
+      const { data: products } = await supabase
+        .from('products')
+        .select('image_url, images')
+        .eq('category_id', id);
+
+      const { error: deleteProductsError } = await supabase
+        .from('products')
+        .delete()
+        .eq('category_id', id);
+
+      if (deleteProductsError) return { success: false, error: deleteProductsError.message };
+
+      // Cleanup product images from Cloudinary (best-effort)
+      if (products) {
+        const allUrls = products.flatMap((p) => [
+          p.image_url,
+          ...((p.images as string[]) ?? []),
+        ]);
+        void destroyCloudinaryImages(allUrls);
+      }
+    }
+
+    // Fetch category image before deleting the row
     const { data: category } = await supabase
       .from('categories')
       .select('image_url')
@@ -128,10 +196,32 @@ export async function deleteCategory(
 
     if (error) return { success: false, error: error.message };
 
-    // Cleanup image from Cloudinary (best-effort)
+    // Cleanup category image from Cloudinary (best-effort)
     if (category?.image_url) {
       void destroyCloudinaryImage(category.image_url);
     }
+
+    revalidatePath('/catalogo');
+    revalidatePath('/admin/categorias');
+    revalidatePath('/admin/productos');
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: err instanceof Error ? err.message : 'Error desconocido' };
+  }
+}
+
+export async function toggleCategoryStatus(
+  id: string,
+  isActive: boolean
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const supabase = await createClient();
+    const { error } = await supabase
+      .from('categories')
+      .update({ is_active: isActive })
+      .eq('id', id);
+
+    if (error) return { success: false, error: error.message };
 
     revalidatePath('/catalogo');
     revalidatePath('/admin/categorias');

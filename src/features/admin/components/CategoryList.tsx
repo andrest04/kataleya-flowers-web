@@ -6,9 +6,10 @@ import { DragDropProvider } from '@dnd-kit/react';
 import { useSortable } from '@dnd-kit/react/sortable';
 import { move } from '@dnd-kit/helpers';
 import type { Database } from '@/lib/supabase/types';
-import { deleteCategory, reorderCategories } from '@/features/admin/actions/categories';
+import { deleteCategory, getCategoryProductCount, reorderCategories, toggleCategoryStatus } from '@/features/admin/actions/categories';
 import Button from '@/components/ui/Button';
-import StatusBadge from '@/components/ui/StatusBadge';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
+import ToggleSwitch from '@/components/ui/ToggleSwitch';
 import EmptyState from '@/components/ui/EmptyState';
 
 type CategoryRow = Database['public']['Tables']['categories']['Row'];
@@ -23,9 +24,10 @@ interface SortableRowProps {
   deletingId: string | null;
   hasChanges: boolean;
   onDelete: (id: string, name: string) => void;
+  onToggleStatus: (id: string, isActive: boolean) => void;
 }
 
-function SortableRow({ category, index, deletingId, hasChanges, onDelete }: SortableRowProps) {
+function SortableRow({ category, index, deletingId, hasChanges, onDelete, onToggleStatus }: SortableRowProps) {
   const { ref, handleRef, isDragging } = useSortable({ id: category.id, index });
 
   return (
@@ -92,8 +94,12 @@ function SortableRow({ category, index, deletingId, hasChanges, onDelete }: Sort
         {category.occasion ?? '—'}
       </span>
 
-      {/* Status */}
-      <StatusBadge active={category.is_active} activeLabel="Activa" inactiveLabel="Inactiva" />
+      {/* Status toggle */}
+      <ToggleSwitch
+        checked={category.is_active}
+        label={`${category.is_active ? 'Desactivar' : 'Activar'} ${category.name}`}
+        onChange={(checked) => onToggleStatus(category.id, checked)}
+      />
 
       {/* Actions — hidden while pending changes */}
       {!hasChanges && (
@@ -121,21 +127,78 @@ function SortableRow({ category, index, deletingId, hasChanges, onDelete }: Sort
 export default function CategoryList({ categories: initialCategories }: CategoryListProps) {
   const [items, setItems] = useState(initialCategories);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string; productCount: number } | null>(null);
+  const [deleteMode, setDeleteMode] = useState<'reassign' | 'cascade'>('reassign');
+  const [reassignTo, setReassignTo] = useState<string>('');
+  const [showCascadeConfirm, setShowCascadeConfirm] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [isSaving, startTransition] = useTransition();
 
-  async function handleDelete(id: string, name: string) {
-    if (!window.confirm(`¿Eliminar la categoría "${name}"? Los productos asociados quedarán sin categoría.`)) {
+  async function handleDeleteRequest(id: string, name: string) {
+    const { count } = await getCategoryProductCount(id);
+    setReassignTo('');
+    setDeleteMode('reassign');
+    setShowCascadeConfirm(false);
+    setDeleteTarget({ id, name, productCount: count });
+  }
+
+  function handleDeleteConfirm() {
+    if (!deleteTarget) return;
+
+    // No products → delete directly
+    if (deleteTarget.productCount === 0) {
+      void executeDelete('reassign');
       return;
     }
-    setDeletingId(id);
-    const result = await deleteCategory(id);
+
+    // Reassign mode → needs a target category selected
+    if (deleteMode === 'reassign') {
+      if (!reassignTo) return;
+      void executeDelete('reassign');
+      return;
+    }
+
+    // Cascade mode → show second confirmation
+    setShowCascadeConfirm(true);
+  }
+
+  async function executeDelete(mode: 'reassign' | 'cascade') {
+    if (!deleteTarget) return;
+    setDeletingId(deleteTarget.id);
+    const result = await deleteCategory(
+      deleteTarget.id,
+      mode,
+      mode === 'reassign' && deleteTarget.productCount > 0 ? reassignTo : undefined,
+    );
     if (!result.success) {
       alert(`Error al eliminar: ${result.error ?? 'Error desconocido'}`);
     } else {
-      setItems((prev) => prev.filter((c) => c.id !== id));
+      setItems((prev) => prev.filter((c) => c.id !== deleteTarget.id));
     }
     setDeletingId(null);
+    setDeleteTarget(null);
+    setReassignTo('');
+    setDeleteMode('reassign');
+    setShowCascadeConfirm(false);
+  }
+
+  function handleDeleteCancel() {
+    setDeleteTarget(null);
+    setReassignTo('');
+    setDeleteMode('reassign');
+    setShowCascadeConfirm(false);
+  }
+
+  async function handleToggleStatus(id: string, isActive: boolean) {
+    setItems((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, is_active: isActive } : c)),
+    );
+    const result = await toggleCategoryStatus(id, isActive);
+    if (!result.success) {
+      setItems((prev) =>
+        prev.map((c) => (c.id === id ? { ...c, is_active: !isActive } : c)),
+      );
+    }
   }
 
   function handleDragEnd(event: Parameters<NonNullable<React.ComponentProps<typeof DragDropProvider>['onDragEnd']>>[0]) {
@@ -187,7 +250,7 @@ export default function CategoryList({ categories: initialCategories }: Category
           <span className="w-10 flex-shrink-0">Imagen</span>
           <span className="flex-1">Nombre</span>
           <span className="hidden md:block w-28">Ocasión</span>
-          <span className="w-16">Estado</span>
+          <span className="w-12">Estado</span>
           {!hasChanges && <span className="w-36 text-right">Acciones</span>}
         </div>
 
@@ -200,7 +263,8 @@ export default function CategoryList({ categories: initialCategories }: Category
               index={index}
               deletingId={deletingId}
               hasChanges={hasChanges}
-              onDelete={handleDelete}
+              onDelete={handleDeleteRequest}
+              onToggleStatus={(id, checked) => void handleToggleStatus(id, checked)}
             />
           ))}
         </DragDropProvider>
@@ -228,6 +292,132 @@ export default function CategoryList({ categories: initialCategories }: Category
           </div>
         </div>
       )}
+
+      {/* Primary delete dialog */}
+      <ConfirmDialog
+        open={deleteTarget !== null && !showCascadeConfirm}
+        title="Eliminar categoría"
+        description={
+          deleteTarget
+            ? deleteTarget.productCount > 0
+              ? `La categoría "${deleteTarget.name}" tiene ${deleteTarget.productCount} producto${deleteTarget.productCount !== 1 ? 's' : ''}.`
+              : `¿Eliminar la categoría "${deleteTarget.name}"?`
+            : ''
+        }
+        confirmLabel={
+          !deleteTarget || deleteTarget.productCount === 0
+            ? 'Eliminar'
+            : deleteMode === 'reassign'
+              ? 'Mover y eliminar'
+              : 'Eliminar todo'
+        }
+        confirmDisabled={
+          deleteTarget !== null &&
+          deleteTarget.productCount > 0 &&
+          deleteMode === 'reassign' &&
+          !reassignTo
+        }
+        loading={deletingId !== null}
+        onConfirm={handleDeleteConfirm}
+        onCancel={handleDeleteCancel}
+      >
+        {deleteTarget && deleteTarget.productCount > 0 && (
+          <div className="space-y-3">
+            {/* Option: Reassign */}
+            <label
+              aria-label="Mover productos a otra categoría"
+              className="flex items-start gap-3 rounded-lg p-3 cursor-pointer transition-colors"
+              style={{
+                border: `1px solid ${deleteMode === 'reassign' ? 'var(--color-primary)' : 'var(--color-border)'}`,
+                background: deleteMode === 'reassign' ? 'color-mix(in srgb, var(--color-primary) 5%, transparent)' : 'transparent',
+              }}
+            >
+              <input
+                type="radio"
+                name="delete-mode"
+                value="reassign"
+                checked={deleteMode === 'reassign'}
+                onChange={() => setDeleteMode('reassign')}
+                className="mt-0.5 accent-[var(--color-primary)]"
+              />
+              <div>
+                <p className="text-sm font-medium" style={{ color: 'var(--color-dark)' }}>
+                  Mover productos a otra categoría
+                </p>
+                <p className="text-xs mt-0.5" style={{ color: 'var(--color-muted)' }}>
+                  Los productos se reasignan antes de eliminar la categoría
+                </p>
+              </div>
+            </label>
+
+            {/* Reassign select (visible only when reassign is selected) */}
+            {deleteMode === 'reassign' && (
+              <select
+                id="reassign-category"
+                value={reassignTo}
+                onChange={(e) => setReassignTo(e.target.value)}
+                className="w-full rounded-lg px-3 py-2 text-sm"
+                style={{
+                  border: '1px solid var(--color-border)',
+                  background: 'var(--color-white)',
+                  color: 'var(--color-dark)',
+                }}
+              >
+                <option value="">Seleccionar categoría…</option>
+                {items
+                  .filter((c) => c.id !== deleteTarget.id)
+                  .map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+              </select>
+            )}
+
+            {/* Option: Cascade */}
+            <label
+              aria-label="Eliminar categoría y todos sus productos"
+              className="flex items-start gap-3 rounded-lg p-3 cursor-pointer transition-colors"
+              style={{
+                border: `1px solid ${deleteMode === 'cascade' ? 'var(--color-primary)' : 'var(--color-border)'}`,
+                background: deleteMode === 'cascade' ? 'color-mix(in srgb, var(--color-primary) 5%, transparent)' : 'transparent',
+              }}
+            >
+              <input
+                type="radio"
+                name="delete-mode"
+                value="cascade"
+                checked={deleteMode === 'cascade'}
+                onChange={() => setDeleteMode('cascade')}
+                className="mt-0.5 accent-[var(--color-primary)]"
+              />
+              <div>
+                <p className="text-sm font-medium" style={{ color: 'var(--color-primary)' }}>
+                  Eliminar categoría y todos sus productos
+                </p>
+                <p className="text-xs mt-0.5" style={{ color: 'var(--color-muted)' }}>
+                  Se eliminarán permanentemente {deleteTarget.productCount} producto{deleteTarget.productCount !== 1 ? 's' : ''}
+                </p>
+              </div>
+            </label>
+          </div>
+        )}
+      </ConfirmDialog>
+
+      {/* Second confirmation for cascade delete */}
+      <ConfirmDialog
+        open={showCascadeConfirm}
+        title="¿Estás seguro?"
+        description={
+          deleteTarget
+            ? `Se eliminará la categoría "${deleteTarget.name}" junto con ${deleteTarget.productCount} producto${deleteTarget.productCount !== 1 ? 's' : ''} de forma permanente. Esta acción no se puede deshacer.`
+            : ''
+        }
+        confirmLabel="Sí, eliminar todo"
+        loading={deletingId !== null}
+        onConfirm={() => void executeDelete('cascade')}
+        onCancel={() => setShowCascadeConfirm(false)}
+      />
     </div>
   );
 }
