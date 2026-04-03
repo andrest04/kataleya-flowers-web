@@ -127,3 +127,24 @@ export async function deleteProduct(
     return { success: false, error: err instanceof Error ? err.message : 'Error desconocido' };
   }
 }
+
+export async function toggleProductStatus(
+  id: string,
+  isActive: boolean
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const supabase = await createClient();
+    const { error } = await supabase
+      .from('products')
+      .update({ is_active: isActive })
+      .eq('id', id);
+
+    if (error) return { success: false, error: error.message };
+
+    revalidatePath('/catalogo');
+    revalidatePath('/admin/productos');
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: err instanceof Error ? err.message : 'Error desconocido' };
+  }
+}

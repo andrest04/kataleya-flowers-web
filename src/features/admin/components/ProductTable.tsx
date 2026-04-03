@@ -3,9 +3,10 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import type { Database } from '@/lib/supabase/types';
-import { deleteProduct } from '@/features/admin/actions/products';
+import { deleteProduct, toggleProductStatus } from '@/features/admin/actions/products';
 import Button from '@/components/ui/Button';
-import StatusBadge from '@/components/ui/StatusBadge';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
+import ToggleSwitch from '@/components/ui/ToggleSwitch';
 import EmptyState from '@/components/ui/EmptyState';
 
 type ProductRow = Database['public']['Tables']['products']['Row'];
@@ -17,23 +18,36 @@ interface ProductTableProps {
 }
 
 export default function ProductTable({ products, categories }: ProductTableProps) {
+  const [items, setItems] = useState(products);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
 
   const categoryMap = new Map(categories.map((c) => [c.id, c.name]));
 
-  async function handleDelete(id: string, name: string) {
-    if (!window.confirm(`¿Eliminar el producto "${name}"? Esta acción no se puede deshacer.`)) {
-      return;
+  async function handleToggleStatus(id: string, isActive: boolean) {
+    setItems((prev) =>
+      prev.map((p) => (p.id === id ? { ...p, is_active: isActive } : p)),
+    );
+    const result = await toggleProductStatus(id, isActive);
+    if (!result.success) {
+      setItems((prev) =>
+        prev.map((p) => (p.id === id ? { ...p, is_active: !isActive } : p)),
+      );
     }
-    setDeletingId(id);
-    const result = await deleteProduct(id);
+  }
+
+  async function handleDeleteConfirm() {
+    if (!deleteTarget) return;
+    setDeletingId(deleteTarget.id);
+    const result = await deleteProduct(deleteTarget.id);
     if (!result.success) {
       alert(`Error al eliminar: ${result.error ?? 'Error desconocido'}`);
     }
     setDeletingId(null);
+    setDeleteTarget(null);
   }
 
-  if (products.length === 0) {
+  if (items.length === 0) {
     return <EmptyState message="No hay productos aún. ¡Creá el primero!" />;
   }
 
@@ -66,7 +80,7 @@ export default function ProductTable({ products, categories }: ProductTableProps
           </tr>
         </thead>
         <tbody>
-          {products.map((product, i) => (
+          {items.map((product, i) => (
             <tr
               key={product.id}
               className="transition-colors"
@@ -114,7 +128,11 @@ export default function ProductTable({ products, categories }: ProductTableProps
                 S/ {Number(product.price).toFixed(2)}
               </td>
               <td className="px-4 py-3">
-                <StatusBadge active={product.is_active} />
+                <ToggleSwitch
+                  checked={product.is_active}
+                  label={`${product.is_active ? 'Desactivar' : 'Activar'} ${product.name}`}
+                  onChange={(checked) => void handleToggleStatus(product.id, checked)}
+                />
               </td>
               <td className="px-4 py-3">
                 <div className="flex items-center justify-end gap-2">
@@ -124,7 +142,7 @@ export default function ProductTable({ products, categories }: ProductTableProps
                   <Button
                     variant="destructive"
                     size="sm"
-                    onClick={() => void handleDelete(product.id, product.name)}
+                    onClick={() => setDeleteTarget({ id: product.id, name: product.name })}
                     disabled={deletingId === product.id}
                   >
                     {deletingId === product.id ? 'Eliminando…' : 'Eliminar'}
@@ -135,6 +153,20 @@ export default function ProductTable({ products, categories }: ProductTableProps
           ))}
         </tbody>
       </table>
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        title="Eliminar producto"
+        description={
+          deleteTarget
+            ? `¿Eliminar el producto "${deleteTarget.name}"? Esta acción no se puede deshacer.`
+            : ''
+        }
+        confirmLabel="Eliminar"
+        loading={deletingId !== null}
+        onConfirm={() => void handleDeleteConfirm()}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   );
 }
