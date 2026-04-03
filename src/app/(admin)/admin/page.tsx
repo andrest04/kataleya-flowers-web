@@ -1,51 +1,31 @@
-import { LuPackage, LuLayoutGrid, LuPlus, LuExternalLink } from 'react-icons/lu';
-import { getAdminProducts } from '@/features/admin/queries/products';
-import { getAdminCategories } from '@/features/admin/queries/categories';
+import { LuPlus, LuExternalLink } from 'react-icons/lu';
+import {
+  getProductsPerCategory,
+  getPriceDistribution,
+  getColorDistribution,
+  getFlowerTypeDistribution,
+  getInventoryStatus,
+  getRecentActivity,
+} from '@/features/admin/queries/dashboard';
+import { DashboardTabs } from '@/features/admin/components/dashboard';
 import { Button } from '@/components/ui';
 
-interface StatCardProps {
-  icon: React.ReactNode;
-  value: number;
-  label: string;
-}
-
-function StatCard({ icon, value, label }: StatCardProps) {
-  return (
-    <div
-      className="rounded-xl p-6 flex items-center gap-4"
-      style={{
-        background: 'var(--color-white)',
-        border: '1px solid var(--color-border)',
-      }}
-    >
-      <div
-        className="flex items-center justify-center w-12 h-12 rounded-lg"
-        style={{
-          background: 'color-mix(in srgb, var(--color-primary) 10%, transparent)',
-          color: 'var(--color-primary)',
-        }}
-      >
-        {icon}
-      </div>
-      <div>
-        <p className="text-3xl font-semibold" style={{ color: 'var(--color-dark)' }}>
-          {value}
-        </p>
-        <p className="text-sm" style={{ color: 'var(--color-muted)' }}>
-          {label}
-        </p>
-      </div>
-    </div>
-  );
-}
-
 export default async function AdminDashboardPage() {
-  const [products, categories] = await Promise.all([
-    getAdminProducts(),
-    getAdminCategories(),
+  const [
+    productsPerCategory,
+    priceDistribution,
+    colorDistribution,
+    flowerTypeDistribution,
+    inventory,
+    recentActivity,
+  ] = await Promise.all([
+    getProductsPerCategory(),
+    getPriceDistribution(),
+    getColorDistribution(),
+    getFlowerTypeDistribution(),
+    getInventoryStatus(),
+    getRecentActivity(),
   ]);
-
-  const activeProducts = products.filter((p) => p.is_active);
 
   return (
     <div className="space-y-8">
@@ -61,23 +41,15 @@ export default async function AdminDashboardPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        <StatCard
-          icon={<LuPackage size={24} />}
-          value={products.length}
-          label={`Producto${products.length !== 1 ? 's' : ''} en total`}
-        />
-        <StatCard
-          icon={<LuPackage size={24} />}
-          value={activeProducts.length}
-          label={`Producto${activeProducts.length !== 1 ? 's' : ''} activo${activeProducts.length !== 1 ? 's' : ''}`}
-        />
-        <StatCard
-          icon={<LuLayoutGrid size={24} />}
-          value={categories.length}
-          label={`Categoría${categories.length !== 1 ? 's' : ''}`}
-        />
-      </div>
+      <DashboardTabs
+        inventory={inventory}
+        categoryCount={productsPerCategory.length}
+        productsPerCategory={productsPerCategory}
+        priceDistribution={priceDistribution}
+        colorDistribution={colorDistribution}
+        flowerTypeDistribution={flowerTypeDistribution}
+        recentActivity={recentActivity}
+      />
 
       <div>
         <h2

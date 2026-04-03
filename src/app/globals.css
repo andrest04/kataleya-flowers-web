@@ -18,6 +18,16 @@
     var(--color-cream)
   );
   --color-whatsapp: #25d366;
+  --color-flower-rojo: #e74c3c;
+  --color-flower-rosa: #f8a5c2;
+  --color-flower-amarillo: #f1c40f;
+  --color-flower-blanco: #ecf0f1;
+  --color-flower-morado: #8e44ad;
+  --color-flower-naranja: #e67e22;
+  --color-flower-verde: #27ae60;
+  --color-flower-mixto: #95a5a6;
+  --color-status-created: #27ae60;
+  --color-status-updated: #2980b9;
   --color-white: #ffffff;
   --color-muted: color-mix(in srgb, var(--color-dark) 50%, transparent);
   --color-surface: color-mix(in srgb, var(--color-dark) 6%, var(--color-cream));
@@ -43,8 +53,8 @@
   --chart-1: #c0392b;
   --chart-2: #e8b84b;
   --chart-3: #2d5a1b;
-  --chart-4: #1a1a1a;
-  --chart-5: #fdfcfa;
+  --chart-4: #8e44ad;
+  --chart-5: #2980b9;
   --radius: 0.625rem;
   --sidebar: #fdfcfa;
   --sidebar-foreground: #1a1a1a;
