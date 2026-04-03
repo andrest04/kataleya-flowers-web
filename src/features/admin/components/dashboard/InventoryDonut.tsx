@@ -5,6 +5,8 @@ import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
+  ChartLegend,
+  ChartLegendContent,
 } from '@/components/ui/primitives/chart';
 import type { ChartConfig } from '@/components/ui/primitives/chart';
 
@@ -13,8 +15,8 @@ interface Props {
 }
 
 const chartConfig: ChartConfig = {
-  activos: { label: 'Activos', color: 'var(--chart-3)' },
-  inactivos: { label: 'Inactivos', color: 'var(--chart-1)' },
+  Activos: { label: 'Activos', color: 'var(--chart-3)' },
+  Inactivos: { label: 'Inactivos', color: 'var(--chart-1)' },
 } satisfies ChartConfig;
 
 export default function InventoryDonut({ data }: Props) {
@@ -66,6 +68,7 @@ export default function InventoryDonut({ data }: Props) {
             }}
           />
         </Pie>
+        <ChartLegend content={<ChartLegendContent nameKey="name" />} />
       </PieChart>
     </ChartContainer>
   );

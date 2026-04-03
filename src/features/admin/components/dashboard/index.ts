@@ -6,3 +6,7 @@ export { default as FlowerTypeRadar } from './FlowerTypeRadar';
 export { default as InventoryDonut } from './InventoryDonut';
 export { default as RecentActivityList } from './RecentActivityList';
 export { default as DashboardTabs } from './DashboardTabs';
+export { default as TopProductsChart } from './TopProductsChart';
+export { default as TopCategoriesChart } from './TopCategoriesChart';
+export { default as WhatsAppSourceChart } from './WhatsAppSourceChart';
+export { default as DailyViewsChart } from './DailyViewsChart';

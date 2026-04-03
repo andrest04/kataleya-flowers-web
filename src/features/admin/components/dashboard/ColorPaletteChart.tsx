@@ -5,11 +5,13 @@ import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
+  ChartLegend,
+  ChartLegendContent,
 } from '@/components/ui/primitives/chart';
 import type { ChartConfig } from '@/components/ui/primitives/chart';
 
 interface Props {
-  data: { color: string; count: number; fill: string }[];
+  data: { colorName: string; count: number; fill: string }[];
 }
 
 const chartConfig: ChartConfig = {
@@ -28,14 +30,15 @@ export default function ColorPaletteChart({ data }: Props) {
   return (
     <ChartContainer config={chartConfig} className="w-full">
       <PieChart>
-        <ChartTooltip content={<ChartTooltipContent nameKey="color" />} />
+        <ChartTooltip content={<ChartTooltipContent nameKey="colorName" />} />
         <Pie
           data={data}
           dataKey="count"
-          nameKey="color"
+          nameKey="colorName"
           innerRadius={60}
           outerRadius={90}
         />
+        <ChartLegend content={<ChartLegendContent nameKey="colorName" />} />
       </PieChart>
     </ChartContainer>
   );

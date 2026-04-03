@@ -6,7 +6,7 @@ type CategoryRow = Database['public']['Tables']['categories']['Row'];
 
 export interface ProductsPerCategory { category: string; count: number; active: number }
 export interface PriceDistribution { range: string; count: number }
-export interface ColorDistribution { color: string; count: number; fill: string }
+export interface ColorDistribution { colorName: string; count: number; fill: string }
 export interface FlowerTypeDistribution { type: string; count: number }
 export interface InventoryStatus { active: number; inactive: number; featured: number; total: number }
 export interface RecentActivityItem {
@@ -78,14 +78,14 @@ export async function getPriceDistribution(): Promise<PriceDistribution[]> {
 }
 
 const COLOR_FILLS: Record<string, string> = {
-  rojo: 'var(--color-flower-rojo)',
-  rosa: 'var(--color-flower-rosa)',
-  amarillo: 'var(--color-flower-amarillo)',
-  blanco: 'var(--color-flower-blanco)',
-  morado: 'var(--color-flower-morado)',
-  naranja: 'var(--color-flower-naranja)',
-  verde: 'var(--color-flower-verde)',
-  mixto: 'var(--color-flower-mixto)',
+  rojo: 'var(--color-rojo)',
+  rosa: 'var(--color-rosa)',
+  amarillo: 'var(--color-amarillo)',
+  blanco: 'var(--color-blanco)',
+  morado: 'var(--color-morado)',
+  naranja: 'var(--color-naranja)',
+  verde: 'var(--color-verde)',
+  mixto: 'var(--color-mixto)',
 };
 
 export async function getColorDistribution(): Promise<ColorDistribution[]> {
@@ -105,9 +105,9 @@ export async function getColorDistribution(): Promise<ColorDistribution[]> {
   }
 
   return Array.from(counts.entries()).map(([color, count]) => ({
-    color,
+    colorName: color,
     count,
-    fill: COLOR_FILLS[color] ?? '#cccccc',
+    fill: COLOR_FILLS[color] ?? 'var(--color-muted)',
   }));
 }
 

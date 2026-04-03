@@ -7,6 +7,13 @@ import {
   getInventoryStatus,
   getRecentActivity,
 } from '@/features/admin/queries/dashboard';
+import {
+  getAnalyticsSummary,
+  getTopProducts,
+  getTopCategories,
+  getWhatsAppBySource,
+  getDailyEventCounts,
+} from '@/features/admin/queries/analytics';
 import { DashboardTabs } from '@/features/admin/components/dashboard';
 import { Button } from '@/components/ui';
 
@@ -18,6 +25,11 @@ export default async function AdminDashboardPage() {
     flowerTypeDistribution,
     inventory,
     recentActivity,
+    analyticsSummary,
+    topProducts,
+    topCategories,
+    whatsAppBySource,
+    dailyEventCounts,
   ] = await Promise.all([
     getProductsPerCategory(),
     getPriceDistribution(),
@@ -25,6 +37,11 @@ export default async function AdminDashboardPage() {
     getFlowerTypeDistribution(),
     getInventoryStatus(),
     getRecentActivity(),
+    getAnalyticsSummary(),
+    getTopProducts(),
+    getTopCategories(),
+    getWhatsAppBySource(),
+    getDailyEventCounts(),
   ]);
 
   return (
@@ -49,6 +66,11 @@ export default async function AdminDashboardPage() {
         colorDistribution={colorDistribution}
         flowerTypeDistribution={flowerTypeDistribution}
         recentActivity={recentActivity}
+        analyticsSummary={analyticsSummary}
+        topProducts={topProducts}
+        topCategories={topCategories}
+        whatsAppBySource={whatsAppBySource}
+        dailyEventCounts={dailyEventCounts}
       />
 
       <div>

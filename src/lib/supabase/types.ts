@@ -142,6 +142,27 @@ export interface Database {
           },
         ];
       };
+      analytics_events: {
+        Row: {
+          id: number;
+          event_type: string;
+          entity_type: string | null;
+          entity_id: string | null;
+          entity_slug: string | null;
+          metadata: Record<string, string> | null;
+          created_at: string;
+        };
+        Insert: {
+          event_type: string;
+          entity_type?: string | null;
+          entity_id?: string | null;
+          entity_slug?: string | null;
+          metadata?: Record<string, string> | null;
+          created_at?: string;
+        };
+        Update: never;
+        Relationships: [];
+      };
     };
     Views: {
       category_price_summary: {

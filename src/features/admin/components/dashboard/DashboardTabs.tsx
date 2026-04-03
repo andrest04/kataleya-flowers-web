@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { LuPackage, LuLayoutGrid, LuStar } from 'react-icons/lu';
+import { LuPackage, LuLayoutGrid, LuStar, LuEye, LuMousePointerClick } from 'react-icons/lu';
+import { FaWhatsapp } from 'react-icons/fa';
 import type {
   ProductsPerCategory,
   PriceDistribution,
@@ -10,6 +11,13 @@ import type {
   InventoryStatus,
   RecentActivityItem,
 } from '@/features/admin/queries/dashboard';
+import type {
+  AnalyticsSummary,
+  TopProduct,
+  TopCategory,
+  WhatsAppBySource,
+  DailyEventCount,
+} from '@/features/admin/queries/analytics';
 import ChartCard from './ChartCard';
 import ProductsByCategoryChart from './ProductsByCategoryChart';
 import PriceDistributionChart from './PriceDistributionChart';
@@ -17,13 +25,18 @@ import ColorPaletteChart from './ColorPaletteChart';
 import FlowerTypeRadar from './FlowerTypeRadar';
 import InventoryDonut from './InventoryDonut';
 import RecentActivityList from './RecentActivityList';
+import TopProductsChart from './TopProductsChart';
+import TopCategoriesChart from './TopCategoriesChart';
+import WhatsAppSourceChart from './WhatsAppSourceChart';
+import DailyViewsChart from './DailyViewsChart';
 
-type Tab = 'resumen' | 'catalogo' | 'productos';
+type Tab = 'resumen' | 'catalogo' | 'productos' | 'analiticas';
 
 const TABS: { key: Tab; label: string }[] = [
   { key: 'resumen', label: 'Resumen' },
   { key: 'catalogo', label: 'Catálogo' },
   { key: 'productos', label: 'Productos' },
+  { key: 'analiticas', label: 'Analíticas' },
 ];
 
 interface StatCardProps {
@@ -70,6 +83,11 @@ interface Props {
   colorDistribution: ColorDistribution[];
   flowerTypeDistribution: FlowerTypeDistribution[];
   recentActivity: RecentActivityItem[];
+  analyticsSummary: AnalyticsSummary;
+  topProducts: TopProduct[];
+  topCategories: TopCategory[];
+  whatsAppBySource: WhatsAppBySource[];
+  dailyEventCounts: DailyEventCount[];
 }
 
 export default function DashboardTabs({
@@ -80,6 +98,11 @@ export default function DashboardTabs({
   colorDistribution,
   flowerTypeDistribution,
   recentActivity,
+  analyticsSummary,
+  topProducts,
+  topCategories,
+  whatsAppBySource,
+  dailyEventCounts,
 }: Props) {
   const [activeTab, setActiveTab] = useState<Tab>('resumen');
 
@@ -137,6 +160,23 @@ export default function DashboardTabs({
               label={`Destacado${inventory.featured !== 1 ? 's' : ''}`}
             />
           </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <StatCard
+              icon={<LuEye size={24} />}
+              value={analyticsSummary.totalProductViews}
+              label={`Vista${analyticsSummary.totalProductViews !== 1 ? 's' : ''} (${analyticsSummary.periodDays}d)`}
+            />
+            <StatCard
+              icon={<LuMousePointerClick size={24} />}
+              value={analyticsSummary.totalCategoryClicks}
+              label={`Clic${analyticsSummary.totalCategoryClicks !== 1 ? 's' : ''} categoría (${analyticsSummary.periodDays}d)`}
+            />
+            <StatCard
+              icon={<FaWhatsapp size={24} />}
+              value={analyticsSummary.totalWhatsAppClicks}
+              label={`Clic${analyticsSummary.totalWhatsAppClicks !== 1 ? 's' : ''} WhatsApp (${analyticsSummary.periodDays}d)`}
+            />
+          </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <ChartCard title="Estado del inventario" description="Productos activos vs inactivos">
               <InventoryDonut data={inventory} />
@@ -167,6 +207,27 @@ export default function DashboardTabs({
           <ChartCard title="Tipos de flor" description="Distribución por tipo de flor">
             <FlowerTypeRadar data={flowerTypeDistribution} />
           </ChartCard>
+        </div>
+      )}
+
+      {activeTab === 'analiticas' && (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <ChartCard title="Top productos más vistos" description={`Últimos ${analyticsSummary.periodDays} días`}>
+              <TopProductsChart data={topProducts} />
+            </ChartCard>
+            <ChartCard title="Clics en WhatsApp por fuente" description={`Últimos ${analyticsSummary.periodDays} días`}>
+              <WhatsAppSourceChart data={whatsAppBySource} />
+            </ChartCard>
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <ChartCard title="Top categorías" description={`Últimos ${analyticsSummary.periodDays} días`}>
+              <TopCategoriesChart data={topCategories} />
+            </ChartCard>
+            <ChartCard title="Actividad diaria" description={`Vistas y clics — últimos ${analyticsSummary.periodDays} días`}>
+              <DailyViewsChart data={dailyEventCounts} />
+            </ChartCard>
+          </div>
         </div>
       )}
     </>
