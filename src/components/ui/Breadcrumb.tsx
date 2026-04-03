@@ -1,33 +1,42 @@
+import React from 'react';
 import Link from 'next/link';
+import {
+  Breadcrumb as ShadcnBreadcrumb,
+  BreadcrumbList,
+  BreadcrumbItem as ShadcnBreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/primitives/breadcrumb';
 
-interface BreadcrumbItem {
+interface BreadcrumbItemType {
   label: string;
   href?: string;
 }
 
 interface BreadcrumbProps {
-  items: BreadcrumbItem[];
+  items: BreadcrumbItemType[];
 }
 
 export default function Breadcrumb({ items }: BreadcrumbProps) {
   return (
-    <nav aria-label="Breadcrumb" className="mb-6">
-      <ol className="flex items-center gap-2 text-sm font-body" style={{ color: 'var(--color-muted)' }}>
+    <ShadcnBreadcrumb className="mb-6">
+      <BreadcrumbList className="font-body">
         {items.map((item, i) => (
-          <li key={item.label} className="flex items-center gap-2">
-            {i > 0 && <span aria-hidden="true">/</span>}
-            {item.href ? (
-              <Link href={item.href} className="hover:text-primary transition-colors">
-                {item.label}
-              </Link>
-            ) : (
-              <span aria-current="page" className="text-dark/70">
-                {item.label}
-              </span>
-            )}
-          </li>
+          <React.Fragment key={item.label}>
+            {i > 0 && <BreadcrumbSeparator />}
+            <ShadcnBreadcrumbItem>
+              {item.href ? (
+                <BreadcrumbLink asChild>
+                  <Link href={item.href}>{item.label}</Link>
+                </BreadcrumbLink>
+              ) : (
+                <BreadcrumbPage>{item.label}</BreadcrumbPage>
+              )}
+            </ShadcnBreadcrumbItem>
+          </React.Fragment>
         ))}
-      </ol>
-    </nav>
+      </BreadcrumbList>
+    </ShadcnBreadcrumb>
   );
 }

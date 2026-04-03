@@ -51,6 +51,7 @@ next-env.d.ts
 .claude/
 skills-lock.json
 .env*.local
+.mcp.json
 
 # Supabase local CLI artifacts
 supabase/.temp/

@@ -1,3 +1,5 @@
+import { Label } from '@/components/ui/primitives/label';
+
 interface FormFieldProps {
   label: string;
   required?: boolean;
@@ -8,14 +10,10 @@ interface FormFieldProps {
 export function FormField({ label, required, htmlFor, children }: FormFieldProps) {
   return (
     <div className="space-y-1.5">
-      <label
-        htmlFor={htmlFor}
-        className="block text-sm font-medium"
-        style={{ color: 'var(--color-dark)' }}
-      >
+      <Label htmlFor={htmlFor}>
         {label}
-        {required && <span style={{ color: 'var(--color-primary)' }}> *</span>}
-      </label>
+        {required && <span className="text-primary"> *</span>}
+      </Label>
       {children}
     </div>
   );
@@ -29,14 +27,7 @@ export function FormError({ message }: FormErrorProps) {
   if (!message) return null;
 
   return (
-    <div
-      className="rounded-lg px-4 py-3 text-sm"
-      style={{
-        background: 'color-mix(in srgb, var(--color-primary) 10%, transparent)',
-        color: 'var(--color-primary)',
-        border: '1px solid color-mix(in srgb, var(--color-primary) 30%, transparent)',
-      }}
-    >
+    <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
       {message}
     </div>
   );

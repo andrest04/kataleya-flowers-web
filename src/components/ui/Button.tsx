@@ -1,6 +1,8 @@
 'use client';
 
 import Link from 'next/link';
+import { Button as ShadcnButton } from '@/components/ui/primitives/button';
+import { cn } from '@/lib/utils';
 
 type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'destructive' | 'whatsapp';
 type ButtonSize = 'sm' | 'md' | 'lg';
@@ -28,50 +30,28 @@ type ButtonAsLink = ButtonBaseProps &
 
 type ButtonProps = ButtonAsButton | ButtonAsLink;
 
-const variantStyles: Record<ButtonVariant, { base: string; style: React.CSSProperties }> = {
-  primary: {
-    base: 'rounded-full font-semibold transition-opacity hover:opacity-90 disabled:opacity-50',
-    style: {
-      backgroundColor: 'var(--color-primary)',
-      color: 'var(--color-cream)',
-    },
-  },
-  secondary: {
-    base: 'rounded-full font-semibold border transition-opacity hover:opacity-80 disabled:opacity-50',
-    style: {
-      borderColor: 'var(--color-primary)',
-      color: 'var(--color-primary)',
-    },
-  },
-  ghost: {
-    base: 'rounded-lg font-medium transition-opacity hover:opacity-70 disabled:opacity-40',
-    style: {
-      background: 'var(--color-surface)',
-      color: 'var(--color-dark)',
-      border: '1px solid var(--color-border)',
-    },
-  },
-  destructive: {
-    base: 'rounded-lg font-medium transition-opacity hover:opacity-70 disabled:opacity-40',
-    style: {
-      background: 'color-mix(in srgb, var(--color-primary) 10%, transparent)',
-      color: 'var(--color-primary)',
-      border: '1px solid color-mix(in srgb, var(--color-primary) 30%, transparent)',
-    },
-  },
-  whatsapp: {
-    base: 'rounded-full font-semibold transition-opacity hover:opacity-90 disabled:opacity-50',
-    style: {
-      backgroundColor: 'var(--color-whatsapp)',
-      color: 'var(--color-cream)',
-    },
-  },
+type ShadcnVariant = React.ComponentProps<typeof ShadcnButton>['variant'];
+
+const variantMap: Record<ButtonVariant, ShadcnVariant> = {
+  primary: 'default',
+  secondary: 'outline',
+  ghost: 'ghost',
+  destructive: 'destructive',
+  whatsapp: 'default',
 };
 
-const sizeStyles: Record<ButtonSize, string> = {
-  sm: 'px-3 py-1.5 text-xs',
-  md: 'px-5 py-2.5 text-sm',
-  lg: 'px-7 py-3 text-sm tracking-[0.08em] uppercase',
+const variantClasses: Record<ButtonVariant, string> = {
+  primary: 'rounded-full font-semibold hover:opacity-90',
+  secondary: 'rounded-full font-semibold border-primary text-primary bg-transparent hover:opacity-80',
+  ghost: 'rounded-lg font-medium',
+  destructive: 'rounded-lg font-medium',
+  whatsapp: 'rounded-full font-semibold bg-whatsapp text-primary-foreground hover:opacity-90',
+};
+
+const sizeClasses: Record<ButtonSize, string> = {
+  sm: 'h-auto px-3 py-1.5 text-xs',
+  md: 'h-auto px-5 py-2.5 text-sm',
+  lg: 'h-auto px-7 py-3 text-sm tracking-[0.08em] uppercase',
 };
 
 export default function Button(props: ButtonProps) {
@@ -80,61 +60,60 @@ export default function Button(props: ButtonProps) {
     size = 'md',
     loading = false,
     fullWidth = false,
-    className = '',
+    className,
     children,
     ...rest
   } = props;
 
-  const v = variantStyles[variant];
-  const s = sizeStyles[size];
-  const widthClass = fullWidth ? 'w-full' : '';
-  const classes = `${v.base} ${s} ${widthClass} ${className}`.trim();
+  const shadcnVariant: NonNullable<ShadcnVariant> = variantMap[variant] as NonNullable<ShadcnVariant>;
+  const combinedClassName = cn(
+    variantClasses[variant],
+    sizeClasses[size],
+    fullWidth && 'w-full',
+    'gap-2',
+    className,
+  );
 
   if ('href' in rest && rest.href) {
-    const { href, external, ...anchorProps } = rest as ButtonAsLink;
-
-    const { style: callerStyle, ...restAnchorProps } = anchorProps;
-    const mergedStyle = { ...v.style, ...callerStyle };
+    const { href, external, style, ...anchorProps } = rest as ButtonAsLink;
 
     if (external) {
       return (
-        <a
-          href={href}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={`inline-flex items-center justify-center gap-2 ${classes}`}
-          style={mergedStyle}
-          {...restAnchorProps}
-        >
-          {children}
-        </a>
+        <ShadcnButton variant={shadcnVariant} asChild className={combinedClassName}>
+          <a
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={style}
+            {...anchorProps}
+          >
+            {children}
+          </a>
+        </ShadcnButton>
       );
     }
 
     return (
-      <Link
-        href={href}
-        className={`inline-flex items-center justify-center gap-2 ${classes}`}
-        style={mergedStyle}
-        {...restAnchorProps}
-      >
-        {children}
-      </Link>
+      <ShadcnButton variant={shadcnVariant} asChild className={combinedClassName}>
+        <Link href={href} style={style} {...anchorProps}>
+          {children}
+        </Link>
+      </ShadcnButton>
     );
   }
 
-  const { style: callerBtnStyle, ...restButtonProps } = rest as Omit<ButtonAsButton, 'href' | 'external'>;
-  const mergedBtnStyle = { ...v.style, ...callerBtnStyle };
+  const { style, ...buttonProps } = rest as Omit<ButtonAsButton, 'href' | 'external' | 'variant' | 'size'>;
 
   return (
-    <button
-      type={restButtonProps.type ?? 'button'}
-      disabled={loading || restButtonProps.disabled}
-      className={`inline-flex items-center justify-center gap-2 ${classes}`}
-      style={mergedBtnStyle}
-      {...restButtonProps}
+    <ShadcnButton
+      variant={shadcnVariant}
+      type={buttonProps.type ?? 'button'}
+      disabled={loading || buttonProps.disabled}
+      className={combinedClassName}
+      style={style}
+      {...buttonProps}
     >
       {children}
-    </button>
+    </ShadcnButton>
   );
 }
