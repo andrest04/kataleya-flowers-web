@@ -93,6 +93,9 @@ export default function Button(props: ButtonProps) {
   if ('href' in rest && rest.href) {
     const { href, external, ...anchorProps } = rest as ButtonAsLink;
 
+    const { style: callerStyle, ...restAnchorProps } = anchorProps;
+    const mergedStyle = { ...v.style, ...callerStyle };
+
     if (external) {
       return (
         <a
@@ -100,8 +103,8 @@ export default function Button(props: ButtonProps) {
           target="_blank"
           rel="noopener noreferrer"
           className={`inline-flex items-center justify-center gap-2 ${classes}`}
-          style={v.style}
-          {...anchorProps}
+          style={mergedStyle}
+          {...restAnchorProps}
         >
           {children}
         </a>
@@ -112,23 +115,24 @@ export default function Button(props: ButtonProps) {
       <Link
         href={href}
         className={`inline-flex items-center justify-center gap-2 ${classes}`}
-        style={v.style}
-        {...anchorProps}
+        style={mergedStyle}
+        {...restAnchorProps}
       >
         {children}
       </Link>
     );
   }
 
-  const buttonProps = rest as Omit<ButtonAsButton, 'href' | 'external'>;
+  const { style: callerBtnStyle, ...restButtonProps } = rest as Omit<ButtonAsButton, 'href' | 'external'>;
+  const mergedBtnStyle = { ...v.style, ...callerBtnStyle };
 
   return (
     <button
-      type={buttonProps.type ?? 'button'}
-      disabled={loading || buttonProps.disabled}
+      type={restButtonProps.type ?? 'button'}
+      disabled={loading || restButtonProps.disabled}
       className={`inline-flex items-center justify-center gap-2 ${classes}`}
-      style={v.style}
-      {...buttonProps}
+      style={mergedBtnStyle}
+      {...restButtonProps}
     >
       {children}
     </button>
