@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test('landing page loads with hero section', async ({ page }) => {
   await page.goto('/');
 
-  await expect(page.locator('text=Kataleya')).toBeVisible();
+  await expect(page.locator('#hero h1')).toBeVisible();
   await expect(page.locator('#hero')).toBeVisible();
 });
 
