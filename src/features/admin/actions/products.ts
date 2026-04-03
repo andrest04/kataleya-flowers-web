@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server';
 import type { Database } from '@/lib/supabase/types';
 import type { ProductFormData } from '@/features/admin/types';
 import { slugify } from '@/features/admin/utils/slugify';
+import { destroyCloudinaryImage, destroyCloudinaryImages } from '@/lib/cloudinary';
 
 type ProductInsert = Database['public']['Tables']['products']['Insert'];
 
@@ -57,6 +58,14 @@ export async function updateProduct(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const supabase = await createClient();
+
+    // Fetch current images to detect replacements
+    const { data: current } = await supabase
+      .from('products')
+      .select('image_url, images')
+      .eq('id', id)
+      .single();
+
     const slug = data.slug.trim() !== '' ? data.slug : slugify(data.name);
     const payload = toInsertPayload(data, slug);
 
@@ -66,6 +75,16 @@ export async function updateProduct(
       .eq('id', id);
 
     if (error) return { success: false, error: error.message };
+
+    // Cleanup replaced images from Cloudinary (best-effort, after successful update)
+    if (current) {
+      if (current.image_url && current.image_url !== data.imageUrl) {
+        void destroyCloudinaryImage(current.image_url);
+      }
+      const oldImages = (current.images as string[]) ?? [];
+      const removed = oldImages.filter((url) => !data.images.includes(url));
+      if (removed.length > 0) void destroyCloudinaryImages(removed);
+    }
 
     revalidatePath('/catalogo');
     revalidatePath('/admin/productos');
@@ -81,12 +100,25 @@ export async function deleteProduct(
   try {
     const supabase = await createClient();
 
+    // Fetch images before deleting the row
+    const { data: product } = await supabase
+      .from('products')
+      .select('image_url, images')
+      .eq('id', id)
+      .single();
+
     const { error } = await supabase
       .from('products')
       .delete()
       .eq('id', id);
 
     if (error) return { success: false, error: error.message };
+
+    // Cleanup images from Cloudinary (best-effort, after successful delete)
+    if (product) {
+      const allUrls = [product.image_url, ...((product.images as string[]) ?? [])];
+      void destroyCloudinaryImages(allUrls);
+    }
 
     revalidatePath('/catalogo');
     revalidatePath('/admin/productos');

@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server';
 import type { Database } from '@/lib/supabase/types';
 import type { CategoryFormData } from '@/features/admin/types';
 import { slugify } from '@/features/admin/utils/slugify';
+import { destroyCloudinaryImage } from '@/lib/cloudinary';
 
 type CategoryInsert = Database['public']['Tables']['categories']['Insert'];
 
@@ -56,12 +57,25 @@ export async function updateCategory(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const supabase = await createClient();
+
+    // Fetch current image to detect replacement
+    const { data: current } = await supabase
+      .from('categories')
+      .select('image_url')
+      .eq('id', id)
+      .single();
+
     const slug = data.slug.trim() !== '' ? data.slug : slugify(data.name);
     const payload = toInsertPayload(data, slug);
 
     const { error } = await supabase.from('categories').update(payload).eq('id', id);
 
     if (error) return { success: false, error: error.message };
+
+    // Cleanup replaced image from Cloudinary (best-effort)
+    if (current?.image_url && current.image_url !== data.imageUrl) {
+      void destroyCloudinaryImage(current.image_url);
+    }
 
     revalidatePath('/catalogo');
     revalidatePath('/admin/categorias');
@@ -103,9 +117,21 @@ export async function deleteCategory(
   try {
     const supabase = await createClient();
 
+    // Fetch image before deleting the row
+    const { data: category } = await supabase
+      .from('categories')
+      .select('image_url')
+      .eq('id', id)
+      .single();
+
     const { error } = await supabase.from('categories').delete().eq('id', id);
 
     if (error) return { success: false, error: error.message };
+
+    // Cleanup image from Cloudinary (best-effort)
+    if (category?.image_url) {
+      void destroyCloudinaryImage(category.image_url);
+    }
 
     revalidatePath('/catalogo');
     revalidatePath('/admin/categorias');
