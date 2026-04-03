@@ -1,16 +1,16 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { products, categories } from "@/data/products";
+import { searchProducts } from "@/features/catalog/actions/searchProducts";
 import type { SearchResult } from "./constants";
 
 export function useNavbar() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const pathname = usePathname();
   const router = useRouter();
   const isLandingPage = pathname === "/";
@@ -53,7 +53,6 @@ export function useNavbar() {
         !desktopSearchRef.current.contains(e.target as Node)
       ) {
         setSearchQuery("");
-        setDebouncedQuery("");
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -65,7 +64,6 @@ export function useNavbar() {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         setSearchQuery("");
-        setDebouncedQuery("");
         setIsDrawerOpen(false);
       }
     };
@@ -73,38 +71,29 @@ export function useNavbar() {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  // Debounce: actualizar debouncedQuery 300ms después de que el usuario deja de escribir
+  // Autocomplete — debounce 300ms, luego busca en Supabase via server action
   useEffect(() => {
-    const timer = window.setTimeout(() => {
-      setDebouncedQuery(searchQuery);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
+    let stale = false;
+    const q = searchQuery.trim();
 
-  // Autocomplete — derivado de debouncedQuery, sin estado extra
-  const searchResults = useMemo<SearchResult[]>(() => {
-    const q = debouncedQuery.trim().toLowerCase();
-    if (!q) return [];
-    return products
-      .filter((p) => p.name.toLowerCase().includes(q))
-      .slice(0, 6)
-      .map((p) => {
-        const cat = categories.find((c) => c.id === p.categoryId);
-        return {
-          name: p.name,
-          slug: p.slug,
-          categorySlug: cat?.slug ?? "",
-          categoryName: cat?.name ?? "",
-          price: p.price,
-          hasVariants: Boolean(p.priceTable?.length),
-          imageUrl: p.imageUrl,
-        };
+    const timer = window.setTimeout(() => {
+      if (!q) {
+        if (!stale) setSearchResults([]);
+        return;
+      }
+      searchProducts(q).then((results) => {
+        if (!stale) setSearchResults(results);
       });
-  }, [debouncedQuery]);
+    }, q ? 300 : 0);
+
+    return () => {
+      stale = true;
+      clearTimeout(timer);
+    };
+  }, [searchQuery]);
 
   const clearSearch = () => {
     setSearchQuery("");
-    setDebouncedQuery("");
   };
 
   const openDrawer = () => {
