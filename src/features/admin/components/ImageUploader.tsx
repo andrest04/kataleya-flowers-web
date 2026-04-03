@@ -3,7 +3,6 @@
 import { useCallback, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useImageUpload } from '@/features/admin/hooks/useImageUpload';
-import Button from '@/components/ui/Button';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -31,7 +30,7 @@ type ImageUploaderProps = SingleProps | MultiProps;
 
 export default function ImageUploader(props: ImageUploaderProps) {
   const { folder, className = '' } = props;
-  const { uploadImage, isUploading, progress, error } = useImageUpload();
+  const { uploadImage, cancelUpload, isUploading, progress, error } = useImageUpload();
   const [isDragOver, setIsDragOver] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -208,9 +207,14 @@ export default function ImageUploader(props: ImageUploaderProps) {
             >
               Subiendo… {progress}%
             </span>
-            <Button variant="ghost" size="sm" onClick={() => inputRef.current?.click()}>
+            <button
+              type="button"
+              onClick={cancelUpload}
+              className="text-xs font-medium transition-opacity hover:opacity-70"
+              style={{ color: 'var(--color-primary)' }}
+            >
               Cancelar
-            </Button>
+            </button>
           </div>
         </div>
       )}
