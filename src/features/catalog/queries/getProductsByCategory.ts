@@ -1,11 +1,11 @@
-import { createClient } from '@/lib/supabase/server';
+import { createStaticClient } from '@/lib/supabase/static';
 import type { Product } from '@/features/catalog/types';
 import { mapProductRow } from '@/features/catalog/queries/mappers';
 
 export async function getProductsByCategory(
   categorySlug: string
 ): Promise<Product[]> {
-  const supabase = await createClient();
+  const supabase = createStaticClient();
 
   // First resolve the category id from slug
   const { data: category, error: categoryError } = await supabase

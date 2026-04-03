@@ -1,9 +1,9 @@
-import { createClient } from '@/lib/supabase/server';
+import { createStaticClient } from '@/lib/supabase/static';
 import type { Product } from '@/features/catalog/types';
 import { mapProductRow } from '@/features/catalog/queries/mappers';
 
 export async function getProductBySlug(slug: string): Promise<Product | null> {
-  const supabase = await createClient();
+  const supabase = createStaticClient();
 
   const { data, error } = await supabase
     .from('products')
