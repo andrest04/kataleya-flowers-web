@@ -27,6 +27,7 @@ export async function getCategories(): Promise<Category[]> {
     supabase
       .from('categories')
       .select('*')
+      .eq('is_active', true)
       .order('display_order', { ascending: true }),
     supabase.from('category_price_summary').select('*'),
   ]);

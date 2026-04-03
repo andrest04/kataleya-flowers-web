@@ -12,6 +12,7 @@ export async function getProductsByCategory(
     .from('categories')
     .select('id')
     .eq('slug', categorySlug)
+    .eq('is_active', true)
     .single();
 
   if (categoryError) {
@@ -31,6 +32,7 @@ export async function getProductsByCategory(
     .from('products')
     .select('*')
     .eq('category_id', category.id)
+    .eq('is_active', true)
     .order('display_order', { ascending: true });
 
   if (error) {
