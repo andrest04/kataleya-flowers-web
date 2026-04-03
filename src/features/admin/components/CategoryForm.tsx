@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useRef } from 'react';
+import { useActionState, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Database } from '@/lib/supabase/types';
 import type { CategoryFormData } from '@/features/admin/types';
@@ -9,6 +9,7 @@ import { slugify } from '@/features/admin/utils/slugify';
 import Button from '@/components/ui/Button';
 import { Input, Textarea } from '@/components/ui/Input';
 import { FormField, FormError } from '@/components/ui/FormField';
+import ImageUploader from '@/features/admin/components/ImageUploader';
 
 type CategoryRow = Database['public']['Tables']['categories']['Row'];
 
@@ -38,6 +39,7 @@ export default function CategoryForm({ category }: CategoryFormProps) {
   const initial = category
     ? rowToFormData(category)
     : { name: '', slug: '', description: '', occasion: '', imageUrl: '', isActive: true };
+  const [imageUrl, setImageUrl] = useState(initial.imageUrl);
 
   const [state, formAction, isPending] = useActionState<FormState, FormData>(
     async (_prev: FormState, formData: FormData) => {
@@ -118,13 +120,12 @@ export default function CategoryForm({ category }: CategoryFormProps) {
           />
         </FormField>
 
-        <FormField label="URL de imagen" htmlFor="imageUrl">
-          <Input
-            id="imageUrl"
-            name="imageUrl"
-            type="url"
-            defaultValue={initial.imageUrl}
-            placeholder="https://res.cloudinary.com/..."
+        <FormField label="Imagen" htmlFor="imageUrl">
+          <input type="hidden" name="imageUrl" value={imageUrl} />
+          <ImageUploader
+            value={imageUrl}
+            onChange={setImageUrl}
+            folder="categorias"
           />
         </FormField>
       </div>

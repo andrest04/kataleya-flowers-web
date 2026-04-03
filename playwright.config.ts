@@ -7,6 +7,7 @@ export default defineConfig({
   timeout: 60_000,
   reporter: "list",
   use: {
+    baseURL: "http://localhost:3000",
     actionTimeout: 10_000,
     navigationTimeout: 10_000,
     trace: "retain-on-failure",

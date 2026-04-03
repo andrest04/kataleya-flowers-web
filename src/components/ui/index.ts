@@ -7,3 +7,4 @@ export { default as SectionHeader } from './SectionHeader';
 export { default as Breadcrumb } from './Breadcrumb';
 export { default as PillToggle } from './PillToggle';
 export { default as FilterChip } from './FilterChip';
+export { default as Skeleton } from './Skeleton';

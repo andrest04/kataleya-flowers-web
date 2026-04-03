@@ -9,6 +9,7 @@ import Button from '@/components/ui/Button';
 import { Input, Textarea, Select } from '@/components/ui/Input';
 import { FormField, FormError } from '@/components/ui/FormField';
 import PillToggle from '@/components/ui/PillToggle';
+import ImageUploader from '@/features/admin/components/ImageUploader';
 
 type ProductRow = Database['public']['Tables']['products']['Row'];
 type CategoryRow = Database['public']['Tables']['categories']['Row'];
@@ -215,13 +216,21 @@ export default function ProductForm({ product, categories, onSuccess }: ProductF
       </div>
 
       {/* Imagen principal */}
-      <FormField label="URL imagen principal" required>
-        <Input
-          type="url"
+      <FormField label="Imagen principal" required>
+        <ImageUploader
           value={form.imageUrl}
-          onChange={(e) => set('imageUrl', e.target.value)}
-          required
-          placeholder="https://res.cloudinary.com/…"
+          onChange={(url) => set('imageUrl', url)}
+          folder="productos"
+        />
+      </FormField>
+
+      {/* Imágenes adicionales */}
+      <FormField label="Imágenes adicionales">
+        <ImageUploader
+          multiple
+          value={form.images}
+          onChange={(urls) => set('images', urls)}
+          folder="productos"
         />
       </FormField>
 
