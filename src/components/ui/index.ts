@@ -8,3 +8,5 @@ export { default as Breadcrumb } from './Breadcrumb';
 export { default as PillToggle } from './PillToggle';
 export { default as FilterChip } from './FilterChip';
 export { default as Skeleton } from './Skeleton';
+export { default as ToggleSwitch } from './ToggleSwitch';
+export { default as ConfirmDialog } from './ConfirmDialog';
