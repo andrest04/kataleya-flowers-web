@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import Image from 'next/image';
+import { toast } from 'sonner';
 import { DragDropProvider } from '@dnd-kit/react';
 import { useSortable } from '@dnd-kit/react/sortable';
 import { move } from '@dnd-kit/helpers';
@@ -171,7 +172,7 @@ export default function CategoryList({ categories: initialCategories }: Category
       mode === 'reassign' && deleteTarget.productCount > 0 ? reassignTo : undefined,
     );
     if (!result.success) {
-      alert(`Error al eliminar: ${result.error ?? 'Error desconocido'}`);
+      toast.error(`Error al eliminar: ${result.error ?? 'Error desconocido'}`);
     } else {
       setItems((prev) => prev.filter((c) => c.id !== deleteTarget.id));
     }
@@ -214,7 +215,7 @@ export default function CategoryList({ categories: initialCategories }: Category
     startTransition(async () => {
       const result = await reorderCategories(orderedIds);
       if (!result.success) {
-        alert(`Error al reordenar: ${result.error ?? 'Error desconocido'}`);
+        toast.error(`Error al reordenar: ${result.error ?? 'Error desconocido'}`);
         setItems(initialCategories);
       }
       setHasChanges(false);
@@ -405,19 +406,21 @@ export default function CategoryList({ categories: initialCategories }: Category
       </ConfirmDialog>
 
       {/* Second confirmation for cascade delete */}
-      <ConfirmDialog
-        open={showCascadeConfirm}
-        title="¿Estás seguro?"
-        description={
-          deleteTarget
-            ? `Se eliminará la categoría "${deleteTarget.name}" junto con ${deleteTarget.productCount} producto${deleteTarget.productCount !== 1 ? 's' : ''} de forma permanente. Esta acción no se puede deshacer.`
-            : ''
-        }
-        confirmLabel="Sí, eliminar todo"
-        loading={deletingId !== null}
-        onConfirm={() => void executeDelete('cascade')}
-        onCancel={() => setShowCascadeConfirm(false)}
-      />
+      {showCascadeConfirm && (
+        <ConfirmDialog
+          open
+          title="¿Estás seguro?"
+          description={
+            deleteTarget
+              ? `Se eliminará la categoría "${deleteTarget.name}" junto con ${deleteTarget.productCount} producto${deleteTarget.productCount !== 1 ? 's' : ''} de forma permanente. Esta acción no se puede deshacer.`
+              : ''
+          }
+          confirmLabel="Sí, eliminar todo"
+          loading={deletingId !== null}
+          onConfirm={() => void executeDelete('cascade')}
+          onCancel={() => setShowCascadeConfirm(false)}
+        />
+      )}
     </div>
   );
 }

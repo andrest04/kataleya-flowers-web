@@ -4,6 +4,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
 import { BUSINESS } from "@/lib/constants";
+import { Toaster } from "@/components/ui/primitives/sonner";
 
 import "./globals.css";
 
@@ -75,6 +76,7 @@ export default function RootLayout({
           }}
         />
         {children}
+        <Toaster />
         <Analytics />
         <SpeedInsights />
       </body>

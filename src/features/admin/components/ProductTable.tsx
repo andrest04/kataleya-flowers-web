@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
+import { toast } from 'sonner';
 import type { Database } from '@/lib/supabase/types';
 import { deleteProduct, toggleProductStatus } from '@/features/admin/actions/products';
 import Button from '@/components/ui/Button';
@@ -41,7 +42,9 @@ export default function ProductTable({ products, categories }: ProductTableProps
     setDeletingId(deleteTarget.id);
     const result = await deleteProduct(deleteTarget.id);
     if (!result.success) {
-      alert(`Error al eliminar: ${result.error ?? 'Error desconocido'}`);
+      toast.error(`Error al eliminar: ${result.error ?? 'Error desconocido'}`);
+    } else {
+      setItems((prev) => prev.filter((p) => p.id !== deleteTarget.id));
     }
     setDeletingId(null);
     setDeleteTarget(null);
