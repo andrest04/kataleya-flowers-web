@@ -120,7 +120,7 @@ export default async function ProductoPage({
         ]} />
 
         <div className="mb-8">
-          <BackButton label={`Volver a ${category.name}`} />
+          <BackButton label={`Volver a ${category.name}`} href={`/catalogo/${category.slug}`} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">

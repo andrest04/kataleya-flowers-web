@@ -74,7 +74,7 @@ export default async function CategoriaPage({
         ]} />
 
         <div className="mb-8">
-          <BackButton label="Volver al catálogo" />
+          <BackButton label="Volver al catálogo" href="/catalogo" />
         </div>
 
         <h1 className="font-heading text-4xl md:text-5xl text-primary mb-4">
