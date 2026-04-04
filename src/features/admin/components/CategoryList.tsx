@@ -96,34 +96,38 @@ function SortableRow({ category, index, deletingId, hasChanges, onDelete, onTogg
       </div>
 
       {/* Occasion */}
-      <span className="text-sm hidden md:block w-28 truncate" style={{ color: 'var(--color-dark)' }}>
+      <span className="text-sm hidden md:block w-28 flex-shrink-0 truncate" style={{ color: 'var(--color-dark)' }}>
         {category.occasion ?? '—'}
       </span>
 
       {/* Status toggle */}
-      <ToggleSwitch
-        checked={category.is_active}
-        label={`${category.is_active ? 'Desactivar' : 'Activar'} ${category.name}`}
-        onChange={(checked) => onToggleStatus(category.id, checked)}
-      />
+      <div className="w-12 flex-shrink-0 flex justify-center">
+        <ToggleSwitch
+          checked={category.is_active}
+          label={`${category.is_active ? 'Desactivar' : 'Activar'} ${category.name}`}
+          onChange={(checked) => onToggleStatus(category.id, checked)}
+        />
+      </div>
 
-      <ShadcnButton
-        variant="ghost"
-        size="icon"
-        onClick={() => onToggleFeatured(category.id, !category.is_featured)}
-        className="text-muted hover:text-secondary"
-        style={{
-          color: category.is_featured ? 'var(--color-secondary)' : undefined,
-        }}
-        aria-label={`${category.is_featured ? 'Quitar de destacadas' : 'Marcar como destacada'} ${category.name}`}
-        title={category.is_featured ? 'Categoría destacada' : 'Categoría normal'}
-      >
-        <StarIcon className="size-4" fill={category.is_featured ? 'currentColor' : 'none'} />
-      </ShadcnButton>
+      <div className="w-20 flex-shrink-0 flex justify-center">
+        <ShadcnButton
+          variant="ghost"
+          size="icon"
+          onClick={() => onToggleFeatured(category.id, !category.is_featured)}
+          className="text-muted hover:text-secondary"
+          style={{
+            color: category.is_featured ? 'var(--color-secondary)' : undefined,
+          }}
+          aria-label={`${category.is_featured ? 'Quitar de destacadas' : 'Marcar como destacada'} ${category.name}`}
+          title={category.is_featured ? 'Categoría destacada' : 'Categoría normal'}
+        >
+          <StarIcon className="size-4" fill={category.is_featured ? 'currentColor' : 'none'} />
+        </ShadcnButton>
+      </div>
 
       {/* Actions — hidden while pending changes */}
       {!hasChanges && (
-        <div className="flex items-center gap-2 flex-shrink-0">
+        <div className="flex items-center gap-2 flex-shrink-0 w-36 justify-end">
           <Button variant="ghost" size="sm" href={`/admin/categorias/${category.id}`}>
             Editar
           </Button>
@@ -297,9 +301,9 @@ export default function CategoryList({
           <span className="w-5 flex-shrink-0">#</span>
           <span className="w-10 flex-shrink-0">Imagen</span>
           <span className="flex-1">Nombre</span>
-          <span className="hidden md:block w-28">Ocasión</span>
-          <span className="w-12">Estado</span>
-          <span className="w-20 text-center">Destacado</span>
+          <span className="hidden md:block w-28 flex-shrink-0">Ocasión</span>
+          <span className="w-12 flex-shrink-0 text-center">Estado</span>
+          <span className="w-20 flex-shrink-0 text-center">Destacado</span>
           {!hasChanges && <span className="w-36 text-right">Acciones</span>}
         </div>
 
