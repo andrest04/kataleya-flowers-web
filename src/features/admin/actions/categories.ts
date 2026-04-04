@@ -92,17 +92,11 @@ export async function reorderCategories(
   try {
     const supabase = await createClient();
 
-    const updates = orderedIds.map((id, index) =>
-      supabase
-        .from('categories')
-        .update({ display_order: index + 1 })
-        .eq('id', id)
-    );
+    const { error } = await supabase.rpc('reorder_categories', {
+      p_ordered_ids: orderedIds,
+    });
 
-    const results = await Promise.all(updates);
-    const failed = results.find((r) => r.error);
-
-    if (failed?.error) return { success: false, error: failed.error.message };
+    if (error) return { success: false, error: error.message };
 
     revalidatePath('/catalogo');
     revalidatePath('/admin/categorias');
@@ -137,69 +131,32 @@ export async function deleteCategory(
   try {
     const supabase = await createClient();
 
-    // Count products in this category
-    const { count } = await supabase
-      .from('products')
-      .select('*', { count: 'exact', head: true })
-      .eq('category_id', id);
+    if (mode === 'cascade') {
+      const { data: imageUrls, error } = await supabase.rpc('delete_category_cascade', {
+        p_category_id: id,
+      });
 
-    const productCount = count ?? 0;
+      if (error) return { success: false, error: error.message };
 
-    if (productCount > 0 && mode === 'reassign' && !reassignTo) {
-      return {
-        success: false,
-        error: 'Seleccioná una categoría destino para reasignar los productos.',
-      };
-    }
-
-    // Reassign products before deleting
-    if (productCount > 0 && mode === 'reassign' && reassignTo) {
-      const { error: reassignError } = await supabase
-        .from('products')
-        .update({ category_id: reassignTo })
-        .eq('category_id', id);
-
-      if (reassignError) return { success: false, error: reassignError.message };
-    }
-
-    // Cascade: delete all products (and their Cloudinary images)
-    if (productCount > 0 && mode === 'cascade') {
-      const { data: products } = await supabase
-        .from('products')
-        .select('image_url, images')
-        .eq('category_id', id);
-
-      const { error: deleteProductsError } = await supabase
-        .from('products')
-        .delete()
-        .eq('category_id', id);
-
-      if (deleteProductsError) return { success: false, error: deleteProductsError.message };
-
-      // Cleanup product images from Cloudinary (best-effort)
-      if (products) {
-        const allUrls = products.flatMap((p) => [
-          p.image_url,
-          ...((p.images as string[]) ?? []),
-        ]);
-        void destroyCloudinaryImages(allUrls);
+      // Cloudinary cleanup (best-effort)
+      if (imageUrls?.length) void destroyCloudinaryImages(imageUrls);
+    } else {
+      if (!reassignTo) {
+        return {
+          success: false,
+          error: 'Seleccioná una categoría destino para reasignar los productos.',
+        };
       }
-    }
 
-    // Fetch category image before deleting the row
-    const { data: category } = await supabase
-      .from('categories')
-      .select('image_url')
-      .eq('id', id)
-      .single();
+      const { data: imageUrl, error } = await supabase.rpc('delete_category_reassign', {
+        p_category_id: id,
+        p_reassign_to: reassignTo,
+      });
 
-    const { error } = await supabase.from('categories').delete().eq('id', id);
+      if (error) return { success: false, error: error.message };
 
-    if (error) return { success: false, error: error.message };
-
-    // Cleanup category image from Cloudinary (best-effort)
-    if (category?.image_url) {
-      void destroyCloudinaryImage(category.image_url);
+      // Cloudinary cleanup (best-effort)
+      if (imageUrl) void destroyCloudinaryImage(imageUrl);
     }
 
     revalidatePath('/catalogo');
