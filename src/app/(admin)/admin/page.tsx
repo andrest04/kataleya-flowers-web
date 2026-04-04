@@ -23,6 +23,7 @@ import {
 import { getDashboardInsights } from '@/features/admin/queries/dashboardInsights';
 import { DashboardTabs } from '@/features/admin/components/dashboard';
 import { parseAnalyticsRange } from '@/features/admin/components/dashboard/analyticsRange';
+import { parseAnalyticsView } from '@/features/admin/components/dashboard/analyticsView';
 import { parseDashboardTab } from '@/features/admin/components/dashboard/dashboardTab';
 import { Button } from '@/components/ui';
 
@@ -36,6 +37,7 @@ export default async function AdminDashboardPage({
   const resolvedSearchParams = await searchParams;
   const analyticsRange = parseAnalyticsRange(resolvedSearchParams.range);
   const activeTab = parseDashboardTab(resolvedSearchParams.tab);
+  const analyticsView = parseAnalyticsView(resolvedSearchParams.analytics_view);
   const analyticsQueryParams = new URLSearchParams();
 
   for (const [key, value] of Object.entries(resolvedSearchParams)) {
@@ -131,6 +133,7 @@ export default async function AdminDashboardPage({
         lowProductConversions={lowProductConversions}
         analyticsRange={analyticsRange}
         initialActiveTab={activeTab}
+        initialAnalyticsView={analyticsView}
         analyticsQueryString={analyticsQueryString}
       />
 

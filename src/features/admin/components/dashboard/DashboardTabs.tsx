@@ -38,6 +38,7 @@ import DailyViewsChart from './DailyViewsChart';
 import AnalyticsRangeSelector from './AnalyticsRangeSelector';
 import ActionableKpiGrid from './ActionableKpiGrid';
 import type { AnalyticsRange } from './analyticsRange';
+import { ANALYTICS_VIEWS, type AnalyticsView } from './analyticsView';
 import type { DashboardInsight } from '@/features/admin/queries/dashboardInsights';
 import AutomaticInsightsPanel from './AutomaticInsightsPanel';
 import FunnelSummaryPanel from './FunnelSummaryPanel';
@@ -109,6 +110,7 @@ interface Props {
   lowProductConversions: ProductWhatsAppConversion[];
   analyticsRange: AnalyticsRange;
   initialActiveTab: DashboardTab;
+  initialAnalyticsView: AnalyticsView;
   analyticsQueryString?: string;
 }
 
@@ -133,16 +135,22 @@ export default function DashboardTabs({
   lowProductConversions,
   analyticsRange,
   initialActiveTab,
+  initialAnalyticsView,
   analyticsQueryString,
 }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
   const [activeTab, setActiveTab] = useState<DashboardTab>(initialActiveTab);
+  const [activeAnalyticsView, setActiveAnalyticsView] = useState<AnalyticsView>(initialAnalyticsView);
 
   useEffect(() => {
     setActiveTab(initialActiveTab);
   }, [initialActiveTab]);
+
+  useEffect(() => {
+    setActiveAnalyticsView(initialAnalyticsView);
+  }, [initialAnalyticsView]);
 
   const baseParams = useMemo(
     () => new URLSearchParams(analyticsQueryString),
@@ -156,6 +164,23 @@ export default function DashboardTabs({
 
     const nextParams = new URLSearchParams(baseParams);
     nextParams.set('tab', tab);
+
+    const nextQuery = nextParams.toString();
+    const nextUrl = nextQuery ? `${pathname}?${nextQuery}` : pathname;
+
+    startTransition(() => {
+      router.replace(nextUrl, { scroll: false });
+    });
+  };
+
+  const handleAnalyticsViewChange = (view: AnalyticsView) => {
+    if (!ANALYTICS_VIEWS.includes(view) || view === activeAnalyticsView) return;
+
+    setActiveAnalyticsView(view);
+
+    const nextParams = new URLSearchParams(baseParams);
+    nextParams.set('tab', 'analiticas');
+    nextParams.set('analytics_view', view);
 
     const nextQuery = nextParams.toString();
     const nextUrl = nextQuery ? `${pathname}?${nextQuery}` : pathname;
@@ -293,48 +318,127 @@ export default function DashboardTabs({
               Todas las métricas de esta vista son operacionales y se calculan con eventos agregados del catálogo público.
             </span>
           </div>
-          <ChartCard
-            title="Comparativa vs período anterior"
-            description={`Últimos ${analyticsSummary.periodDays} días vs los ${analyticsSummary.periodDays} días inmediatamente anteriores`}
-          >
-            <AnalyticsComparisonPanel data={analyticsComparison} />
-          </ChartCard>
-          <ChartCard
-            title="Funnel operativo de conversión"
-            description={`Últimos ${analyticsSummary.periodDays} días — lectura basada en eventos agregados`}
-          >
-            <FunnelSummaryPanel data={funnelMetrics} />
-          </ChartCard>
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+
+          <div className="flex flex-wrap gap-2">
+            {ANALYTICS_VIEWS.map((view) => {
+              const isActive = activeAnalyticsView === view;
+              const label =
+                view === 'resumen'
+                  ? 'Resumen'
+                  : view === 'conversion'
+                    ? 'Conversión'
+                    : 'Tráfico';
+
+              return (
+                <button
+                  key={view}
+                  type="button"
+                  onClick={() => handleAnalyticsViewChange(view)}
+                  disabled={isPending && !isActive}
+                  aria-pressed={isActive}
+                  className="px-4 py-2 rounded-full text-sm font-medium transition-all disabled:opacity-70 disabled:cursor-wait"
+                  style={
+                    isActive
+                      ? {
+                          backgroundColor: 'var(--color-dark)',
+                          color: 'var(--color-white)',
+                        }
+                      : {
+                          background: 'var(--color-white)',
+                          color: 'var(--color-dark)',
+                          border: '1px solid var(--color-border)',
+                        }
+                  }
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+
+          {activeAnalyticsView === 'resumen' && (
+            <section className="space-y-4">
+            <div>
+              <h2 className="text-lg font-serif font-semibold" style={{ color: 'var(--color-dark)' }}>
+                Estado del período
+              </h2>
+              <p className="text-sm mt-1" style={{ color: 'var(--color-muted)' }}>
+                Primero mirá si el rendimiento sube o baja y en qué parte del recorrido aparece la fricción.
+              </p>
+            </div>
+
             <ChartCard
-              title="Top productos por conversión a WhatsApp"
-              description={`Últimos ${analyticsSummary.periodDays} días — solo clicks a WhatsApp desde detalle de producto`}
+              title="Comparativa vs período anterior"
+              description={`Últimos ${analyticsSummary.periodDays} días vs los ${analyticsSummary.periodDays} días inmediatamente anteriores`}
             >
-              <ProductConversionRanking data={topProductConversions} variant="best" />
+              <AnalyticsComparisonPanel data={analyticsComparison} />
             </ChartCard>
             <ChartCard
-              title="Productos con más fricción"
-              description={`Últimos ${analyticsSummary.periodDays} días — solo productos con al menos ${MIN_FRICTION_PRODUCT_VIEWS} vistas y poco o nulo contacto desde detalle de producto`}
+              title="Funnel operativo de conversión"
+              description={`Últimos ${analyticsSummary.periodDays} días — lectura basada en eventos agregados`}
             >
-              <ProductConversionRanking data={lowProductConversions} variant="friction" />
+              <FunnelSummaryPanel data={funnelMetrics} />
             </ChartCard>
-          </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <ChartCard title="Top productos más vistos" description={`Últimos ${analyticsSummary.periodDays} días`}>
-              <TopProductsChart data={topProducts} />
-            </ChartCard>
-            <ChartCard title="Clics en WhatsApp por fuente" description={`Últimos ${analyticsSummary.periodDays} días`}>
-              <WhatsAppSourceChart data={whatsAppBySource} />
-            </ChartCard>
-          </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <ChartCard title="Top categorías" description={`Últimos ${analyticsSummary.periodDays} días`}>
-              <TopCategoriesChart data={topCategories} />
-            </ChartCard>
-            <ChartCard title="Actividad diaria" description={`Vistas y clics — últimos ${analyticsSummary.periodDays} días`}>
-              <DailyViewsChart data={dailyEventCounts} />
-            </ChartCard>
-          </div>
+            </section>
+          )}
+
+          {activeAnalyticsView === 'conversion' && (
+            <section className="space-y-4">
+            <div>
+              <h2 className="text-lg font-serif font-semibold" style={{ color: 'var(--color-dark)' }}>
+                Conversión y acción
+              </h2>
+              <p className="text-sm mt-1" style={{ color: 'var(--color-muted)' }}>
+                Detectá rápido qué productos están convirtiendo mejor y cuáles necesitan revisión inmediata.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+              <ChartCard
+                title="Top productos por conversión a WhatsApp"
+                description={`Últimos ${analyticsSummary.periodDays} días — solo clicks a WhatsApp desde detalle de producto`}
+              >
+                <ProductConversionRanking data={topProductConversions} variant="best" />
+              </ChartCard>
+              <ChartCard
+                title="Productos con más fricción"
+                description={`Últimos ${analyticsSummary.periodDays} días — solo productos con al menos ${MIN_FRICTION_PRODUCT_VIEWS} vistas y poco o nulo contacto desde detalle de producto`}
+              >
+                <ProductConversionRanking data={lowProductConversions} variant="friction" />
+              </ChartCard>
+            </div>
+            </section>
+          )}
+
+          {activeAnalyticsView === 'trafico' && (
+            <section className="space-y-4">
+            <div>
+              <h2 className="text-lg font-serif font-semibold" style={{ color: 'var(--color-dark)' }}>
+                Contexto detallado
+              </h2>
+              <p className="text-sm mt-1" style={{ color: 'var(--color-muted)' }}>
+                Acá queda el detalle de tráfico y origen para profundizar después del diagnóstico principal.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <ChartCard title="Top productos más vistos" description={`Últimos ${analyticsSummary.periodDays} días`}>
+                <TopProductsChart data={topProducts} />
+              </ChartCard>
+              <ChartCard title="Clics en WhatsApp por fuente" description={`Últimos ${analyticsSummary.periodDays} días`}>
+                <WhatsAppSourceChart data={whatsAppBySource} />
+              </ChartCard>
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <ChartCard title="Top categorías" description={`Últimos ${analyticsSummary.periodDays} días`}>
+                <TopCategoriesChart data={topCategories} />
+              </ChartCard>
+              <ChartCard title="Actividad diaria" description={`Vistas y clics — últimos ${analyticsSummary.periodDays} días`}>
+                <DailyViewsChart data={dailyEventCounts} />
+              </ChartCard>
+            </div>
+            </section>
+          )}
         </div>
       )}
     </>
