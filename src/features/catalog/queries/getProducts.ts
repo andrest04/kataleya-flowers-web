@@ -5,27 +5,17 @@ import { mapProductRow } from '@/features/catalog/queries/mappers';
 export async function getProducts(): Promise<Product[]> {
   const supabase = createStaticClient();
 
-  const [productsResult, activeCategoriesResult] = await Promise.all([
-    supabase
-      .from('products')
-      .select('*')
-      .eq('is_active', true)
-      .order('display_order', { ascending: true }),
-    supabase
-      .from('categories')
-      .select('id')
-      .eq('is_active', true),
-  ]);
+  // !inner join ensures only products with an active category are returned
+  const { data, error } = await supabase
+    .from('products')
+    .select('*, categories!inner(id)')
+    .eq('is_active', true)
+    .eq('categories.is_active', true)
+    .order('display_order', { ascending: true });
 
-  if (productsResult.error) {
-    throw new Error(`getProducts failed: ${productsResult.error.message}`);
+  if (error) {
+    throw new Error(`getProducts failed: ${error.message}`);
   }
 
-  const activeCategoryIds = new Set(
-    (activeCategoriesResult.data ?? []).map((c) => c.id),
-  );
-
-  return (productsResult.data ?? [])
-    .filter((row) => activeCategoryIds.has(row.category_id))
-    .map(mapProductRow);
+  return (data ?? []).map(mapProductRow);
 }

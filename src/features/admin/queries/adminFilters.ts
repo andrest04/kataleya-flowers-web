@@ -6,32 +6,22 @@ function getSinceDate(days: number): string {
 
 export async function getProductIdsWithViewsInRange(days: number): Promise<Set<string>> {
   const supabase = await createClient();
-  const since = getSinceDate(days);
 
-  const { data, error } = await supabase
-    .from('analytics_events')
-    .select('entity_id')
-    .eq('event_type', 'product_view')
-    .gte('created_at', since);
+  const { data, error } = await supabase.rpc('get_product_ids_with_views', {
+    p_since: getSinceDate(days),
+  });
 
   if (error) throw new Error(error.message);
 
-  return new Set(
-    (data ?? [])
-      .map((event) => event.entity_id)
-      .filter((entityId): entityId is string => entityId !== null),
-  );
+  return new Set((data ?? []).map((row) => row.entity_id));
 }
 
 export async function getCategoryIdsWithActiveProducts(): Promise<Set<string>> {
   const supabase = await createClient();
 
-  const { data, error } = await supabase
-    .from('products')
-    .select('category_id')
-    .eq('is_active', true);
+  const { data, error } = await supabase.rpc('get_active_category_ids');
 
   if (error) throw new Error(error.message);
 
-  return new Set((data ?? []).map((product) => product.category_id));
+  return new Set((data ?? []).map((row) => row.category_id));
 }
