@@ -10,3 +10,8 @@ export { default as TopProductsChart } from './TopProductsChart';
 export { default as TopCategoriesChart } from './TopCategoriesChart';
 export { default as WhatsAppSourceChart } from './WhatsAppSourceChart';
 export { default as DailyViewsChart } from './DailyViewsChart';
+export { default as ActionableKpiGrid } from './ActionableKpiGrid';
+export { default as AutomaticInsightsPanel } from './AutomaticInsightsPanel';
+export { default as FunnelSummaryPanel } from './FunnelSummaryPanel';
+export { default as ProductConversionRanking } from './ProductConversionRanking';
+export { default as AnalyticsComparisonPanel } from './AnalyticsComparisonPanel';
