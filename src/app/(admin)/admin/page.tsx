@@ -8,17 +8,25 @@ import {
   getRecentActivity,
   getActionableKpis,
 } from '@/features/admin/queries/dashboard';
+import type {
+  InventoryStatus,
+  ActionableKpis,
+} from '@/features/admin/queries/dashboard';
 import {
   getAnalyticsPeriodComparison,
-  getAnalyticsSummary,
-  getFunnelMetrics,
-  getLowProductWhatsAppConversions,
-  getZeroWhatsAppProductInsightSummary,
+  getAnalyticsSummaryAndFunnel,
+  getProductWhatsAppConversions,
+  deriveTopProductConversions,
+  deriveLowProductConversions,
+  deriveZeroWhatsAppInsight,
   getTopProducts,
   getTopCategories,
   getWhatsAppBySource,
   getDailyEventCounts,
-  getTopProductWhatsAppConversions,
+} from '@/features/admin/queries/analytics';
+import type {
+  AnalyticsSummaryAndFunnel,
+  AnalyticsPeriodComparison,
 } from '@/features/admin/queries/analytics';
 import { getDashboardInsights } from '@/features/admin/queries/dashboardInsights';
 import { DashboardTabs } from '@/features/admin/components/dashboard';
@@ -26,6 +34,18 @@ import { parseAnalyticsRange } from '@/features/admin/components/dashboard/analy
 import { parseAnalyticsView } from '@/features/admin/components/dashboard/analyticsView';
 import { parseDashboardTab } from '@/features/admin/components/dashboard/dashboardTab';
 import { Button } from '@/components/ui';
+
+const ZERO_METRIC = { current: 0, previous: 0, deltaAbsolute: 0, deltaPercentage: 0, trend: 'flat' as const };
+const EMPTY_INVENTORY: InventoryStatus = { active: 0, inactive: 0, featured: 0, total: 0 };
+const EMPTY_KPIS: ActionableKpis = { activeWithoutAdditionalImages: 0, categoriesWithoutActiveProducts: 0, featuredWithoutViews: 0, activeWithoutViews: 0, periodDays: 0 };
+const EMPTY_SUMMARY_AND_FUNNEL: AnalyticsSummaryAndFunnel = {
+  summary: { totalProductViews: 0, totalCategoryClicks: 0, totalWhatsAppClicks: 0, periodDays: 0 },
+  funnel: { categoryClicks: 0, productViews: 0, whatsAppClicks: 0, productDetailWhatsAppClicks: 0, categoryToProductRate: 0, productToWhatsAppRate: 0, periodDays: 0 },
+};
+const EMPTY_COMPARISON: AnalyticsPeriodComparison = {
+  productViews: ZERO_METRIC, categoryClicks: ZERO_METRIC, whatsAppClicks: ZERO_METRIC,
+  productDetailWhatsAppClicks: ZERO_METRIC, categoryToProductRate: ZERO_METRIC, productToWhatsAppRate: ZERO_METRIC, periodDays: 0,
+};
 
 interface AdminDashboardPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -55,6 +75,13 @@ export default async function AdminDashboardPage({
 
   const analyticsQueryString = analyticsQueryParams.toString();
 
+  // Conditional fetching: only query what the active tab needs
+  const isResumen = activeTab === 'resumen';
+  const isCatalogo = activeTab === 'catalogo';
+  const isProductos = activeTab === 'productos';
+  const isAnaliticas = activeTab === 'analiticas';
+  const needsAnalytics = isResumen || isAnaliticas;
+
   const [
     productsPerCategory,
     priceDistribution,
@@ -63,35 +90,35 @@ export default async function AdminDashboardPage({
     inventory,
     recentActivity,
     actionableKpis,
-    analyticsSummary,
+    summaryAndFunnel,
     analyticsComparison,
-    funnelMetrics,
     topProducts,
     topCategories,
     whatsAppBySource,
     dailyEventCounts,
-    topProductConversions,
-    lowProductConversions,
-    zeroWhatsAppProductInsight,
+    productConversions,
   ] = await Promise.all([
-    getProductsPerCategory(),
-    getPriceDistribution(),
-    getColorDistribution(),
-    getFlowerTypeDistribution(),
-    getInventoryStatus(),
-    getRecentActivity(),
-    getActionableKpis(analyticsRange),
-    getAnalyticsSummary(analyticsRange),
-    getAnalyticsPeriodComparison(analyticsRange),
-    getFunnelMetrics(analyticsRange),
-    getTopProducts(10, analyticsRange),
-    getTopCategories(10, analyticsRange),
-    getWhatsAppBySource(analyticsRange),
-    getDailyEventCounts(analyticsRange),
-    getTopProductWhatsAppConversions(5, analyticsRange),
-    getLowProductWhatsAppConversions(5, analyticsRange),
-    getZeroWhatsAppProductInsightSummary(analyticsRange),
+    isResumen || isCatalogo ? getProductsPerCategory() : Promise.resolve([]),
+    isCatalogo ? getPriceDistribution() : Promise.resolve([]),
+    isProductos ? getColorDistribution() : Promise.resolve([]),
+    isProductos ? getFlowerTypeDistribution() : Promise.resolve([]),
+    isResumen ? getInventoryStatus() : Promise.resolve(EMPTY_INVENTORY),
+    isResumen ? getRecentActivity() : Promise.resolve([]),
+    isResumen ? getActionableKpis(analyticsRange) : Promise.resolve(EMPTY_KPIS),
+    needsAnalytics ? getAnalyticsSummaryAndFunnel(analyticsRange) : Promise.resolve(EMPTY_SUMMARY_AND_FUNNEL),
+    isAnaliticas ? getAnalyticsPeriodComparison(analyticsRange) : Promise.resolve(EMPTY_COMPARISON),
+    isAnaliticas ? getTopProducts(10, analyticsRange) : Promise.resolve([]),
+    isAnaliticas ? getTopCategories(10, analyticsRange) : Promise.resolve([]),
+    isAnaliticas ? getWhatsAppBySource(analyticsRange) : Promise.resolve([]),
+    isAnaliticas ? getDailyEventCounts(analyticsRange) : Promise.resolve([]),
+    needsAnalytics ? getProductWhatsAppConversions(analyticsRange) : Promise.resolve([]),
   ]);
+
+  const { summary: analyticsSummary, funnel: funnelMetrics } = summaryAndFunnel;
+  const topProductConversions = deriveTopProductConversions(productConversions, 5);
+  const lowProductConversions = deriveLowProductConversions(productConversions, 5);
+  const zeroWhatsAppProductInsight = deriveZeroWhatsAppInsight(productConversions);
+
   const automaticInsights = getDashboardInsights({
     actionableKpis,
     analyticsSummary,
