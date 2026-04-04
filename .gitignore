@@ -28,6 +28,7 @@
 *.pem
 /output/
 /.playwright-cli/
+/.playwright-mcp/
 
 # debug
 npm-debug.log*
