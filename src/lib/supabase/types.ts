@@ -1,5 +1,5 @@
-// Generado manualmente a partir de supabase/migrations/20260328000001_initial_schema.sql
-// Para regenerar: SUPABASE_ACCESS_TOKEN=sbp_xxx npx supabase gen types typescript --project-id lhromzqzcssgdfguejje
+// Auto-generated — do not edit manually
+// Regenerate: npm run db:types (requires SUPABASE_ACCESS_TOKEN in env)
 
 export type ProductColor =
   | 'rojo'
@@ -204,6 +204,18 @@ export interface Database {
       get_active_category_ids: {
         Args: Record<string, never>;
         Returns: { category_id: string }[];
+      };
+      delete_category_cascade: {
+        Args: { p_category_id: string };
+        Returns: string[];
+      };
+      delete_category_reassign: {
+        Args: { p_category_id: string; p_reassign_to: string };
+        Returns: string;
+      };
+      reorder_categories: {
+        Args: { p_ordered_ids: string[] };
+        Returns: undefined;
       };
     };
     Enums: {

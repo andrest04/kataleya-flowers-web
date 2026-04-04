@@ -31,6 +31,7 @@ npm run lint         # eslint .
 npm run lint:fix     # eslint . --fix
 npm run lint:strict  # eslint . --max-warnings 0
 npx playwright test  # Tests e2e
+npm run db:types     # Regenerar tipos de Supabase (requiere SUPABASE_ACCESS_TOKEN en env)
 ```
 
 ---

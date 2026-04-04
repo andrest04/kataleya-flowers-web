@@ -1,4 +1,5 @@
-import type { ProductColor, ProductFlowerType, PriceVariantRow } from '@/lib/supabase/types';
+import type { ProductColor, ProductFlowerType } from '@/lib/supabase/types';
+import type { PriceVariantRow } from '@/features/catalog/types';
 
 export type { ProductColor, ProductFlowerType };
 
