@@ -36,7 +36,7 @@ export async function createCategory(
 
     const nextOrder = (all && all.length > 0) ? all[0].display_order + 1 : 1;
 
-    const slug = data.slug.trim() !== '' ? data.slug : slugify(data.name);
+    const slug = slugify(data.name);
     const payload = toInsertPayload({ ...data, displayOrder: nextOrder }, slug);
 
     const { error } = await supabase.from('categories').insert(payload);
@@ -65,7 +65,7 @@ export async function updateCategory(
       .eq('id', id)
       .single();
 
-    const slug = data.slug.trim() !== '' ? data.slug : slugify(data.name);
+    const slug = slugify(data.name);
     const payload = toInsertPayload(data, slug);
 
     const { error } = await supabase.from('categories').update(payload).eq('id', id);

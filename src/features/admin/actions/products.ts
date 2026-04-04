@@ -35,7 +35,7 @@ export async function createProduct(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const supabase = await createClient();
-    const slug = data.slug.trim() !== '' ? data.slug : slugify(data.name);
+    const slug = slugify(data.name);
     const payload = toInsertPayload(data, slug);
 
     const { error } = await supabase
@@ -66,7 +66,7 @@ export async function updateProduct(
       .eq('id', id)
       .single();
 
-    const slug = data.slug.trim() !== '' ? data.slug : slugify(data.name);
+    const slug = slugify(data.name);
     const payload = toInsertPayload(data, slug);
 
     const { error } = await supabase

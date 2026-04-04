@@ -20,9 +20,14 @@ const chartConfig: ChartConfig = {
 export default function TopProductsChart({ data }: Props) {
   if (data.length === 0) {
     return (
-      <p className="text-sm text-center py-12" style={{ color: 'var(--color-muted)' }}>
-        Sin datos de vistas todavía
-      </p>
+      <div className="py-12 text-center space-y-2" style={{ color: 'var(--color-muted)' }}>
+        <p className="text-sm font-medium" style={{ color: 'var(--color-dark)' }}>
+          Todavía no hay vistas de detalle de producto en este rango.
+        </p>
+        <p className="text-sm">
+          Ampliá el rango o esperá nuevas visitas para detectar qué productos ya están captando interés.
+        </p>
+      </div>
     );
   }
 

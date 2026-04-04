@@ -20,9 +20,14 @@ const chartConfig: ChartConfig = {
 export default function TopCategoriesChart({ data }: Props) {
   if (data.length === 0) {
     return (
-      <p className="text-sm text-center py-12" style={{ color: 'var(--color-muted)' }}>
-        Sin datos de clics todavía
-      </p>
+      <div className="py-12 text-center space-y-2" style={{ color: 'var(--color-muted)' }}>
+        <p className="text-sm font-medium" style={{ color: 'var(--color-dark)' }}>
+          Todavía no hay clics en categorías en este rango.
+        </p>
+        <p className="text-sm">
+          Cuando se active la exploración del catálogo, acá vas a ver qué categorías abren más recorrido.
+        </p>
+      </div>
     );
   }
 

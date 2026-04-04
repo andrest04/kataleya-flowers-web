@@ -28,9 +28,14 @@ export default function DailyViewsChart({ data }: Props) {
 
   if (!hasData) {
     return (
-      <p className="text-sm text-center py-12" style={{ color: 'var(--color-muted)' }}>
-        Sin datos de actividad todavía
-      </p>
+      <div className="py-12 text-center space-y-2" style={{ color: 'var(--color-muted)' }}>
+        <p className="text-sm font-medium" style={{ color: 'var(--color-dark)' }}>
+          Todavía no hay actividad suficiente en este rango.
+        </p>
+        <p className="text-sm">
+          Si querés validar tendencia operativa, ampliá el rango o esperá nuevos eventos del catálogo público.
+        </p>
+      </div>
     );
   }
 

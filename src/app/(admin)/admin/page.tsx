@@ -6,18 +6,55 @@ import {
   getFlowerTypeDistribution,
   getInventoryStatus,
   getRecentActivity,
+  getActionableKpis,
 } from '@/features/admin/queries/dashboard';
 import {
+  getAnalyticsPeriodComparison,
   getAnalyticsSummary,
+  getFunnelMetrics,
+  getLowProductWhatsAppConversions,
+  getZeroWhatsAppProductInsightSummary,
   getTopProducts,
   getTopCategories,
   getWhatsAppBySource,
   getDailyEventCounts,
+  getTopProductWhatsAppConversions,
 } from '@/features/admin/queries/analytics';
+import { getDashboardInsights } from '@/features/admin/queries/dashboardInsights';
 import { DashboardTabs } from '@/features/admin/components/dashboard';
+import { parseAnalyticsRange } from '@/features/admin/components/dashboard/analyticsRange';
+import { parseAnalyticsView } from '@/features/admin/components/dashboard/analyticsView';
+import { parseDashboardTab } from '@/features/admin/components/dashboard/dashboardTab';
 import { Button } from '@/components/ui';
 
-export default async function AdminDashboardPage() {
+interface AdminDashboardPageProps {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}
+
+export default async function AdminDashboardPage({
+  searchParams,
+}: AdminDashboardPageProps) {
+  const resolvedSearchParams = await searchParams;
+  const analyticsRange = parseAnalyticsRange(resolvedSearchParams.range);
+  const activeTab = parseDashboardTab(resolvedSearchParams.tab);
+  const analyticsView = parseAnalyticsView(resolvedSearchParams.analytics_view);
+  const analyticsQueryParams = new URLSearchParams();
+
+  for (const [key, value] of Object.entries(resolvedSearchParams)) {
+    if (value === undefined) continue;
+
+    if (Array.isArray(value)) {
+      for (const entry of value) {
+        analyticsQueryParams.append(key, entry);
+      }
+      continue;
+    }
+
+    analyticsQueryParams.set(key, value);
+  }
+
+  const analyticsQueryString = analyticsQueryParams.toString();
+
   const [
     productsPerCategory,
     priceDistribution,
@@ -25,11 +62,17 @@ export default async function AdminDashboardPage() {
     flowerTypeDistribution,
     inventory,
     recentActivity,
+    actionableKpis,
     analyticsSummary,
+    analyticsComparison,
+    funnelMetrics,
     topProducts,
     topCategories,
     whatsAppBySource,
     dailyEventCounts,
+    topProductConversions,
+    lowProductConversions,
+    zeroWhatsAppProductInsight,
   ] = await Promise.all([
     getProductsPerCategory(),
     getPriceDistribution(),
@@ -37,12 +80,23 @@ export default async function AdminDashboardPage() {
     getFlowerTypeDistribution(),
     getInventoryStatus(),
     getRecentActivity(),
-    getAnalyticsSummary(),
-    getTopProducts(),
-    getTopCategories(),
-    getWhatsAppBySource(),
-    getDailyEventCounts(),
+    getActionableKpis(analyticsRange),
+    getAnalyticsSummary(analyticsRange),
+    getAnalyticsPeriodComparison(analyticsRange),
+    getFunnelMetrics(analyticsRange),
+    getTopProducts(10, analyticsRange),
+    getTopCategories(10, analyticsRange),
+    getWhatsAppBySource(analyticsRange),
+    getDailyEventCounts(analyticsRange),
+    getTopProductWhatsAppConversions(5, analyticsRange),
+    getLowProductWhatsAppConversions(5, analyticsRange),
+    getZeroWhatsAppProductInsightSummary(analyticsRange),
   ]);
+  const automaticInsights = getDashboardInsights({
+    actionableKpis,
+    analyticsSummary,
+    zeroWhatsAppProductInsight,
+  });
 
   return (
     <div className="space-y-8">
@@ -66,11 +120,21 @@ export default async function AdminDashboardPage() {
         colorDistribution={colorDistribution}
         flowerTypeDistribution={flowerTypeDistribution}
         recentActivity={recentActivity}
+        actionableKpis={actionableKpis}
+        automaticInsights={automaticInsights}
         analyticsSummary={analyticsSummary}
+        analyticsComparison={analyticsComparison}
+        funnelMetrics={funnelMetrics}
         topProducts={topProducts}
         topCategories={topCategories}
         whatsAppBySource={whatsAppBySource}
         dailyEventCounts={dailyEventCounts}
+        topProductConversions={topProductConversions}
+        lowProductConversions={lowProductConversions}
+        analyticsRange={analyticsRange}
+        initialActiveTab={activeTab}
+        initialAnalyticsView={analyticsView}
+        analyticsQueryString={analyticsQueryString}
       />
 
       <div>

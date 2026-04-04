@@ -20,7 +20,7 @@ interface CategoryFormProps {
 function rowToFormData(row: CategoryRow): Omit<CategoryFormData, 'displayOrder'> {
   return {
     name: row.name,
-    slug: row.slug,
+    slug: slugify(row.name),
     description: row.description,
     occasion: row.occasion ?? '',
     imageUrl: row.image_url ?? '',
@@ -80,7 +80,7 @@ export default function CategoryForm({ category }: CategoryFormProps) {
             required
             defaultValue={initial.name}
             onChange={(e) => {
-              if (slugRef.current && !isEditing) {
+              if (slugRef.current) {
                 slugRef.current.value = slugify(e.target.value);
               }
             }}
@@ -93,8 +93,9 @@ export default function CategoryForm({ category }: CategoryFormProps) {
             id="slug"
             name="slug"
             type="text"
-            defaultValue={initial.slug}
-            placeholder="se genera automáticamente"
+            defaultValue={slugify(initial.name)}
+            placeholder="se genera desde el nombre"
+            readOnly
           />
         </FormField>
       </div>
