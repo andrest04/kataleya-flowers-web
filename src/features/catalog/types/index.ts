@@ -6,6 +6,7 @@ export interface Category {
   occasion?: string; // e.g. "Cumpleaños", "Amor", "Condolencias"
   imageUrl?: string;
   priceFrom?: number; // "Desde S/XXX" for category cards
+  isFeatured?: boolean;
 }
 
 export interface PriceVariant {

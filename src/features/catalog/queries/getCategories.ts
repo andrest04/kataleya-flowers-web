@@ -17,6 +17,7 @@ function mapCategoryRow(
     occasion: row.occasion ?? undefined,
     imageUrl: row.image_url ?? undefined,
     priceFrom: priceSummary?.price_from ?? undefined,
+    isFeatured: row.is_featured,
   };
 }
 

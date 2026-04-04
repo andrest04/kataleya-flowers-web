@@ -9,7 +9,12 @@ interface CatalogSectionProps {
 }
 
 export default function CatalogSection({ categories }: CatalogSectionProps) {
-  const featuredCategories = categories.slice(0, 4);
+  const featuredCategories = categories.filter((category) => category.isFeatured).slice(0, 4);
+
+  if (featuredCategories.length === 0) {
+    return null;
+  }
+
   return (
     <section
       id="catalogo"

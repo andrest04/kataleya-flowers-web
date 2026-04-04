@@ -3,11 +3,13 @@
 import { useState, useTransition } from 'react';
 import Image from 'next/image';
 import { toast } from 'sonner';
+import { StarIcon } from 'lucide-react';
+import { Button as ShadcnButton } from '@/components/ui/primitives/button';
 import { DragDropProvider } from '@dnd-kit/react';
 import { useSortable } from '@dnd-kit/react/sortable';
 import { move } from '@dnd-kit/helpers';
 import type { Database } from '@/lib/supabase/types';
-import { deleteCategory, getCategoryProductCount, reorderCategories, toggleCategoryStatus } from '@/features/admin/actions/categories';
+import { deleteCategory, getCategoryProductCount, reorderCategories, toggleCategoryFeatured, toggleCategoryStatus } from '@/features/admin/actions/categories';
 import Button from '@/components/ui/Button';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import ToggleSwitch from '@/components/ui/ToggleSwitch';
@@ -28,9 +30,10 @@ interface SortableRowProps {
   hasChanges: boolean;
   onDelete: (id: string, name: string) => void;
   onToggleStatus: (id: string, isActive: boolean) => void;
+  onToggleFeatured: (id: string, isFeatured: boolean) => void;
 }
 
-function SortableRow({ category, index, deletingId, hasChanges, onDelete, onToggleStatus }: SortableRowProps) {
+function SortableRow({ category, index, deletingId, hasChanges, onDelete, onToggleStatus, onToggleFeatured }: SortableRowProps) {
   const { ref, handleRef, isDragging } = useSortable({ id: category.id, index });
 
   return (
@@ -103,6 +106,20 @@ function SortableRow({ category, index, deletingId, hasChanges, onDelete, onTogg
         label={`${category.is_active ? 'Desactivar' : 'Activar'} ${category.name}`}
         onChange={(checked) => onToggleStatus(category.id, checked)}
       />
+
+      <ShadcnButton
+        variant="ghost"
+        size="icon"
+        onClick={() => onToggleFeatured(category.id, !category.is_featured)}
+        className="text-muted hover:text-secondary"
+        style={{
+          color: category.is_featured ? 'var(--color-secondary)' : undefined,
+        }}
+        aria-label={`${category.is_featured ? 'Quitar de destacadas' : 'Marcar como destacada'} ${category.name}`}
+        title={category.is_featured ? 'Categoría destacada' : 'Categoría normal'}
+      >
+        <StarIcon className="size-4" fill={category.is_featured ? 'currentColor' : 'none'} />
+      </ShadcnButton>
 
       {/* Actions — hidden while pending changes */}
       {!hasChanges && (
@@ -208,6 +225,19 @@ export default function CategoryList({
     }
   }
 
+  async function handleToggleFeatured(id: string, isFeatured: boolean) {
+    setItems((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, is_featured: isFeatured } : c)),
+    );
+    const result = await toggleCategoryFeatured(id, isFeatured);
+    if (!result.success) {
+      setItems((prev) =>
+        prev.map((c) => (c.id === id ? { ...c, is_featured: !isFeatured } : c)),
+      );
+      toast.error(`Error al actualizar destacada: ${result.error ?? 'Error desconocido'}`);
+    }
+  }
+
   function handleDragEnd(event: Parameters<NonNullable<React.ComponentProps<typeof DragDropProvider>['onDragEnd']>>[0]) {
     if (event.canceled) return;
 
@@ -269,6 +299,7 @@ export default function CategoryList({
           <span className="flex-1">Nombre</span>
           <span className="hidden md:block w-28">Ocasión</span>
           <span className="w-12">Estado</span>
+          <span className="w-20 text-center">Destacado</span>
           {!hasChanges && <span className="w-36 text-right">Acciones</span>}
         </div>
 
@@ -283,6 +314,7 @@ export default function CategoryList({
               hasChanges={hasChanges}
               onDelete={handleDeleteRequest}
               onToggleStatus={(id, checked) => void handleToggleStatus(id, checked)}
+              onToggleFeatured={(id, checked) => void handleToggleFeatured(id, checked)}
             />
           ))}
         </DragDropProvider>

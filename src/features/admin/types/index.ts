@@ -29,4 +29,5 @@ export interface CategoryFormData {
   imageUrl: string;
   displayOrder: number;
   isActive: boolean;
+  isFeatured: boolean;
 }
