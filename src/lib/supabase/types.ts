@@ -185,10 +185,6 @@ export interface Database {
         Args: { p_event_type: string; p_since: string; p_limit?: number };
         Returns: { entity_slug: string; count: number }[];
       };
-      get_daily_event_counts: {
-        Args: { p_since: string };
-        Returns: { date: string; event_type: string; count: number }[];
-      };
       get_whatsapp_source_counts: {
         Args: { p_since: string };
         Returns: { source: string; count: number }[];
@@ -200,26 +196,6 @@ export interface Database {
       get_inventory_status: {
         Args: Record<string, never>;
         Returns: { active: number; inactive: number; featured: number; total: number }[];
-      };
-      get_products_per_category: {
-        Args: Record<string, never>;
-        Returns: { category: string; count: number; active: number }[];
-      };
-      get_price_distribution: {
-        Args: Record<string, never>;
-        Returns: { range: string; count: number }[];
-      };
-      get_color_distribution: {
-        Args: Record<string, never>;
-        Returns: { color_name: string; count: number }[];
-      };
-      get_flower_type_distribution: {
-        Args: Record<string, never>;
-        Returns: { flower_type: string; count: number }[];
-      };
-      get_price_range_by_category: {
-        Args: Record<string, never>;
-        Returns: { category: string; min_price: number; max_price: number; avg_price: number }[];
       };
       get_product_ids_with_views: {
         Args: { p_since: string };

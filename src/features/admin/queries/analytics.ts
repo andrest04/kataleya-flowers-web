@@ -26,22 +26,6 @@ export interface WhatsAppBySource {
   fill: string;
 }
 
-export interface DailyEventCount {
-  date: string;
-  views: number;
-  clicks: number;
-}
-
-export interface FunnelMetrics {
-  categoryClicks: number;
-  productViews: number;
-  whatsAppClicks: number;
-  productDetailWhatsAppClicks: number;
-  categoryToProductRate: number;
-  productToWhatsAppRate: number;
-  periodDays: number;
-}
-
 export interface ProductWhatsAppConversion {
   id: string;
   name: string;
@@ -57,31 +41,6 @@ export interface ZeroWhatsAppProductInsightSummary {
   productsWithoutClicks: number;
   minimumViews: number;
   totalViews: number;
-}
-
-export type ComparisonTrend = 'up' | 'down' | 'flat';
-
-export interface ComparativeMetric {
-  current: number;
-  previous: number;
-  deltaAbsolute: number;
-  deltaPercentage: number;
-  trend: ComparisonTrend;
-}
-
-export interface AnalyticsPeriodComparison {
-  productViews: ComparativeMetric;
-  categoryClicks: ComparativeMetric;
-  whatsAppClicks: ComparativeMetric;
-  productDetailWhatsAppClicks: ComparativeMetric;
-  categoryToProductRate: ComparativeMetric;
-  productToWhatsAppRate: ComparativeMetric;
-  periodDays: number;
-}
-
-export interface AnalyticsSummaryAndFunnel {
-  summary: AnalyticsSummary;
-  funnel: FunnelMetrics;
 }
 
 // --- Internal types ---
@@ -133,60 +92,10 @@ function calculateRate(numerator: number, denominator: number): number {
   return (numerator / denominator) * 100;
 }
 
-function getTrend(deltaAbsolute: number): ComparisonTrend {
-  if (deltaAbsolute > 0) return 'up';
-  if (deltaAbsolute < 0) return 'down';
-  return 'flat';
-}
-
-function buildComparativeMetric(current: number, previous: number): ComparativeMetric {
-  const deltaAbsolute = current - previous;
-  const deltaPercentage = previous > 0 ? (deltaAbsolute / previous) * 100 : 0;
-
-  return {
-    current,
-    previous,
-    deltaAbsolute,
-    deltaPercentage,
-    trend: getTrend(deltaAbsolute),
-  };
-}
-
-function deriveFunnelFromCounts(counts: EventTypeCount[], periodDays: number): FunnelMetrics {
-  let categoryClicks = 0;
-  let productViews = 0;
-  let whatsAppClicks = 0;
-  let productDetailWhatsAppClicks = 0;
-
-  for (const row of counts) {
-    if (row.event_type === 'category_click') {
-      categoryClicks += row.count;
-    } else if (row.event_type === 'product_view') {
-      productViews += row.count;
-    } else if (row.event_type === 'whatsapp_click') {
-      whatsAppClicks += row.count;
-      if (row.source === 'product_detail') {
-        productDetailWhatsAppClicks += row.count;
-      }
-    }
-  }
-
-  return {
-    categoryClicks,
-    productViews,
-    whatsAppClicks,
-    productDetailWhatsAppClicks,
-    categoryToProductRate: calculateRate(productViews, categoryClicks),
-    productToWhatsAppRate: calculateRate(productDetailWhatsAppClicks, productViews),
-    periodDays,
-  };
-}
-
-async function fetchEventTypeCounts(since: string, until?: string): Promise<EventTypeCount[]> {
+async function fetchEventTypeCounts(since: string): Promise<EventTypeCount[]> {
   const supabase = await createClient();
   const { data, error } = await supabase.rpc('get_event_type_counts', {
     p_since: since,
-    ...(until ? { p_until: until } : {}),
   });
 
   if (error) throw new Error(error.message);
@@ -229,53 +138,20 @@ function getPublicProductPath(categorySlug: string | null, productSlug: string):
 
 // --- Exported query functions ---
 
-export async function getAnalyticsSummaryAndFunnel(days = 30): Promise<AnalyticsSummaryAndFunnel> {
+export async function getAnalyticsSummary(days = 30): Promise<AnalyticsSummary> {
   const counts = await fetchEventTypeCounts(getSinceDate(days));
-  const funnel = deriveFunnelFromCounts(counts, days);
 
-  return {
-    summary: {
-      totalProductViews: funnel.productViews,
-      totalCategoryClicks: funnel.categoryClicks,
-      totalWhatsAppClicks: funnel.whatsAppClicks,
-      periodDays: days,
-    },
-    funnel,
-  };
-}
+  let totalProductViews = 0;
+  let totalCategoryClicks = 0;
+  let totalWhatsAppClicks = 0;
 
-export async function getAnalyticsPeriodComparison(
-  days = 30,
-): Promise<AnalyticsPeriodComparison> {
-  const currentSince = getSinceDate(days);
-  const previousSince = getSinceDate(days * 2);
+  for (const row of counts) {
+    if (row.event_type === 'product_view') totalProductViews += row.count;
+    else if (row.event_type === 'category_click') totalCategoryClicks += row.count;
+    else if (row.event_type === 'whatsapp_click') totalWhatsAppClicks += row.count;
+  }
 
-  const [currentCounts, previousCounts] = await Promise.all([
-    fetchEventTypeCounts(currentSince),
-    fetchEventTypeCounts(previousSince, currentSince),
-  ]);
-
-  const current = deriveFunnelFromCounts(currentCounts, days);
-  const previous = deriveFunnelFromCounts(previousCounts, days);
-
-  return {
-    productViews: buildComparativeMetric(current.productViews, previous.productViews),
-    categoryClicks: buildComparativeMetric(current.categoryClicks, previous.categoryClicks),
-    whatsAppClicks: buildComparativeMetric(current.whatsAppClicks, previous.whatsAppClicks),
-    productDetailWhatsAppClicks: buildComparativeMetric(
-      current.productDetailWhatsAppClicks,
-      previous.productDetailWhatsAppClicks,
-    ),
-    categoryToProductRate: buildComparativeMetric(
-      current.categoryToProductRate,
-      previous.categoryToProductRate,
-    ),
-    productToWhatsAppRate: buildComparativeMetric(
-      current.productToWhatsAppRate,
-      previous.productToWhatsAppRate,
-    ),
-    periodDays: days,
-  };
+  return { totalProductViews, totalCategoryClicks, totalWhatsAppClicks, periodDays: days };
 }
 
 export async function getTopProducts(limit = 10, days = 30): Promise<TopProduct[]> {
@@ -341,42 +217,6 @@ export async function getWhatsAppBySource(days = 30): Promise<WhatsAppBySource[]
     clicks: count,
     fill: SOURCE_FILLS[source] ?? 'var(--chart-5)',
   }));
-}
-
-export async function getDailyEventCounts(days = 30): Promise<DailyEventCount[]> {
-  const supabase = await createClient();
-  const { data, error } = await supabase.rpc('get_daily_event_counts', {
-    p_since: getSinceDate(days),
-  });
-
-  if (error) throw new Error(error.message);
-
-  // Build a map with all days initialized to zero
-  const dailyCounts = new Map<string, { views: number; clicks: number }>();
-  for (let i = days - 1; i >= 0; i--) {
-    const date = new Date(Date.now() - i * 86_400_000).toISOString().slice(0, 10);
-    dailyCounts.set(date, { views: 0, clicks: 0 });
-  }
-
-  // Fill in actual counts from the RPC
-  for (const row of data ?? []) {
-    const dateStr = row.date.slice(0, 10);
-    const existing = dailyCounts.get(dateStr) ?? { views: 0, clicks: 0 };
-    if (row.event_type === 'product_view') {
-      existing.views += row.count;
-    } else {
-      existing.clicks += row.count;
-    }
-    dailyCounts.set(dateStr, existing);
-  }
-
-  return Array.from(dailyCounts.entries())
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([date, counts]) => ({
-      date,
-      views: counts.views,
-      clicks: counts.clicks,
-    }));
 }
 
 export async function getProductWhatsAppConversions(days: number): Promise<ProductWhatsAppConversion[]> {

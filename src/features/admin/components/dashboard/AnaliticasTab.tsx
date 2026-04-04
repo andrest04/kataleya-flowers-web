@@ -1,11 +1,8 @@
 import type {
   AnalyticsSummary,
-  AnalyticsPeriodComparison,
-  FunnelMetrics,
   TopProduct,
   TopCategory,
   WhatsAppBySource,
-  DailyEventCount,
   ProductWhatsAppConversion,
 } from '@/features/admin/queries/analytics';
 import { MIN_FRICTION_PRODUCT_VIEWS } from './analyticsShared';
@@ -13,22 +10,16 @@ import type { AnalyticsRange } from './analyticsRange';
 import { ANALYTICS_VIEWS, type AnalyticsView } from './analyticsView';
 import ChartCard from './ChartCard';
 import AnalyticsRangeSelector from './AnalyticsRangeSelector';
-import AnalyticsComparisonPanel from './AnalyticsComparisonPanel';
-import FunnelSummaryPanel from './FunnelSummaryPanel';
 import ProductConversionRanking from './ProductConversionRanking';
 import TopProductsChart from './TopProductsChart';
 import TopCategoriesChart from './TopCategoriesChart';
 import WhatsAppSourceChart from './WhatsAppSourceChart';
-import DailyViewsChart from './DailyViewsChart';
 
 interface AnaliticasTabProps {
   analyticsSummary: AnalyticsSummary;
-  analyticsComparison: AnalyticsPeriodComparison;
-  funnelMetrics: FunnelMetrics;
   topProducts: TopProduct[];
   topCategories: TopCategory[];
   whatsAppBySource: WhatsAppBySource[];
-  dailyEventCounts: DailyEventCount[];
   topProductConversions: ProductWhatsAppConversion[];
   lowProductConversions: ProductWhatsAppConversion[];
   analyticsRange: AnalyticsRange;
@@ -40,12 +31,9 @@ interface AnaliticasTabProps {
 
 export default function AnaliticasTab({
   analyticsSummary,
-  analyticsComparison,
-  funnelMetrics,
   topProducts,
   topCategories,
   whatsAppBySource,
-  dailyEventCounts,
   topProductConversions,
   lowProductConversions,
   analyticsRange,
@@ -71,19 +59,14 @@ export default function AnaliticasTab({
         <span className="font-medium">Rango activo:</span> últimos {analyticsSummary.periodDays} días.
         <span style={{ color: 'var(--color-muted)' }}>
           {' '}
-          Todas las métricas de esta vista son operacionales y se calculan con eventos agregados del catálogo público.
+          Métricas calculadas con eventos del catálogo público.
         </span>
       </div>
 
       <div className="flex flex-wrap gap-2">
         {ANALYTICS_VIEWS.map((view) => {
           const isActive = activeView === view;
-          const label =
-            view === 'resumen'
-              ? 'Resumen'
-              : view === 'conversion'
-                ? 'Conversión'
-                : 'Tráfico';
+          const label = view === 'conversion' ? 'Conversión' : 'Tráfico';
 
           return (
             <button
@@ -111,32 +94,6 @@ export default function AnaliticasTab({
           );
         })}
       </div>
-
-      {activeView === 'resumen' && (
-        <section className="space-y-4">
-          <div>
-            <h2 className="text-lg font-serif font-semibold" style={{ color: 'var(--color-dark)' }}>
-              Estado del período
-            </h2>
-            <p className="text-sm mt-1" style={{ color: 'var(--color-muted)' }}>
-              Primero mirá si el rendimiento sube o baja y en qué parte del recorrido aparece la fricción.
-            </p>
-          </div>
-
-          <ChartCard
-            title="Comparativa vs período anterior"
-            description={`Últimos ${analyticsSummary.periodDays} días vs los ${analyticsSummary.periodDays} días inmediatamente anteriores`}
-          >
-            <AnalyticsComparisonPanel data={analyticsComparison} />
-          </ChartCard>
-          <ChartCard
-            title="Funnel operativo de conversión"
-            description={`Últimos ${analyticsSummary.periodDays} días — lectura basada en eventos agregados`}
-          >
-            <FunnelSummaryPanel data={funnelMetrics} />
-          </ChartCard>
-        </section>
-      )}
 
       {activeView === 'conversion' && (
         <section className="space-y-4">
@@ -170,10 +127,10 @@ export default function AnaliticasTab({
         <section className="space-y-4">
           <div>
             <h2 className="text-lg font-serif font-semibold" style={{ color: 'var(--color-dark)' }}>
-              Contexto detallado
+              Detalle de tráfico
             </h2>
             <p className="text-sm mt-1" style={{ color: 'var(--color-muted)' }}>
-              Acá queda el detalle de tráfico y origen para profundizar después del diagnóstico principal.
+              Qué productos y categorías generan más interés, y de dónde vienen los contactos por WhatsApp.
             </p>
           </div>
 
@@ -185,14 +142,9 @@ export default function AnaliticasTab({
               <WhatsAppSourceChart data={whatsAppBySource} />
             </ChartCard>
           </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <ChartCard title="Top categorías" description={`Últimos ${analyticsSummary.periodDays} días`}>
-              <TopCategoriesChart data={topCategories} />
-            </ChartCard>
-            <ChartCard title="Actividad diaria" description={`Vistas y clics — últimos ${analyticsSummary.periodDays} días`}>
-              <DailyViewsChart data={dailyEventCounts} />
-            </ChartCard>
-          </div>
+          <ChartCard title="Top categorías" description={`Últimos ${analyticsSummary.periodDays} días`}>
+            <TopCategoriesChart data={topCategories} />
+          </ChartCard>
         </section>
       )}
     </div>

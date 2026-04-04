@@ -1,4 +1,4 @@
-export const ANALYTICS_VIEWS = ['resumen', 'conversion', 'trafico'] as const;
+export const ANALYTICS_VIEWS = ['conversion', 'trafico'] as const;
 
 export type AnalyticsView = (typeof ANALYTICS_VIEWS)[number];
 
@@ -7,5 +7,5 @@ export function parseAnalyticsView(rawValue: string | string[] | undefined): Ana
     return parseAnalyticsView(rawValue[0]);
   }
 
-  return ANALYTICS_VIEWS.find((view) => view === rawValue) ?? 'resumen';
+  return ANALYTICS_VIEWS.find((view) => view === rawValue) ?? 'conversion';
 }

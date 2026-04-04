@@ -1,7 +1,5 @@
 export const DASHBOARD_TABS = [
   'resumen',
-  'catalogo',
-  'productos',
   'analiticas',
 ] as const;
 

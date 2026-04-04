@@ -4,56 +4,39 @@ import { useEffect, useMemo, useState, useTransition } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import type {
   ActionableKpis,
-  ProductsPerCategory,
-  PriceDistribution,
-  ColorDistribution,
-  FlowerTypeDistribution,
   InventoryStatus,
   RecentActivityItem,
 } from '@/features/admin/queries/dashboard';
 import type {
   AnalyticsSummary,
-  AnalyticsPeriodComparison,
-  FunnelMetrics,
   TopProduct,
   TopCategory,
   WhatsAppBySource,
-  DailyEventCount,
   ProductWhatsAppConversion,
 } from '@/features/admin/queries/analytics';
 import type { AnalyticsRange } from './analyticsRange';
-import { ANALYTICS_VIEWS, type AnalyticsView } from './analyticsView';
+import type { AnalyticsView } from './analyticsView';
+import { ANALYTICS_VIEWS } from './analyticsView';
 import type { DashboardInsight } from '@/features/admin/queries/dashboardInsights';
 import { DASHBOARD_TABS, type DashboardTab } from './dashboardTab';
 import ResumenTab from './ResumenTab';
-import CatalogoTab from './CatalogoTab';
-import ProductosTab from './ProductosTab';
 import AnaliticasTab from './AnaliticasTab';
 
 const TABS: { key: DashboardTab; label: string }[] = [
   { key: 'resumen', label: 'Resumen' },
-  { key: 'catalogo', label: 'Catálogo' },
-  { key: 'productos', label: 'Productos' },
   { key: 'analiticas', label: 'Analíticas' },
 ];
 
 interface Props {
   inventory: InventoryStatus;
   categoryCount: number;
-  productsPerCategory: ProductsPerCategory[];
-  priceDistribution: PriceDistribution[];
-  colorDistribution: ColorDistribution[];
-  flowerTypeDistribution: FlowerTypeDistribution[];
   recentActivity: RecentActivityItem[];
   actionableKpis: ActionableKpis;
   automaticInsights: DashboardInsight[];
   analyticsSummary: AnalyticsSummary;
-  analyticsComparison: AnalyticsPeriodComparison;
-  funnelMetrics: FunnelMetrics;
   topProducts: TopProduct[];
   topCategories: TopCategory[];
   whatsAppBySource: WhatsAppBySource[];
-  dailyEventCounts: DailyEventCount[];
   topProductConversions: ProductWhatsAppConversion[];
   lowProductConversions: ProductWhatsAppConversion[];
   analyticsRange: AnalyticsRange;
@@ -65,20 +48,13 @@ interface Props {
 export default function DashboardTabs({
   inventory,
   categoryCount,
-  productsPerCategory,
-  priceDistribution,
-  colorDistribution,
-  flowerTypeDistribution,
   recentActivity,
   actionableKpis,
   automaticInsights,
   analyticsSummary,
-  analyticsComparison,
-  funnelMetrics,
   topProducts,
   topCategories,
   whatsAppBySource,
-  dailyEventCounts,
   topProductConversions,
   lowProductConversions,
   analyticsRange,
@@ -182,29 +158,12 @@ export default function DashboardTabs({
         />
       )}
 
-      {activeTab === 'catalogo' && (
-        <CatalogoTab
-          productsPerCategory={productsPerCategory}
-          priceDistribution={priceDistribution}
-        />
-      )}
-
-      {activeTab === 'productos' && (
-        <ProductosTab
-          colorDistribution={colorDistribution}
-          flowerTypeDistribution={flowerTypeDistribution}
-        />
-      )}
-
       {activeTab === 'analiticas' && (
         <AnaliticasTab
           analyticsSummary={analyticsSummary}
-          analyticsComparison={analyticsComparison}
-          funnelMetrics={funnelMetrics}
           topProducts={topProducts}
           topCategories={topCategories}
           whatsAppBySource={whatsAppBySource}
-          dailyEventCounts={dailyEventCounts}
           topProductConversions={topProductConversions}
           lowProductConversions={lowProductConversions}
           analyticsRange={analyticsRange}
