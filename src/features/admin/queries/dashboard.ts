@@ -1,5 +1,9 @@
 import { createClient } from '@/lib/supabase/server';
 import type { Database } from '@/lib/supabase/types';
+import {
+  getCategoryIdsWithActiveProducts,
+  getProductIdsWithViewsInRange,
+} from '@/features/admin/queries/adminFilters';
 
 type ProductRow = Database['public']['Tables']['products']['Row'];
 type CategoryRow = Database['public']['Tables']['categories']['Row'];
@@ -16,6 +20,13 @@ export interface RecentActivityItem {
   date: string;
 }
 export interface PriceRangeByCategory { category: string; min: number; max: number; avg: number }
+export interface ActionableKpis {
+  activeWithoutAdditionalImages: number;
+  categoriesWithoutActiveProducts: number;
+  featuredWithoutViews: number;
+  activeWithoutViews: number;
+  periodDays: number;
+}
 
 export async function getProductsPerCategory(): Promise<ProductsPerCategory[]> {
   const supabase = await createClient();
@@ -219,4 +230,64 @@ export async function getPriceRangeByCategory(): Promise<PriceRangeByCategory[]>
         avg,
       };
     });
+}
+
+export async function getActionableKpis(days = 30): Promise<ActionableKpis> {
+  const supabase = await createClient();
+
+  const [
+    { data: products, error: productsError },
+    { data: categories, error: categoriesError },
+    viewedProductIds,
+    activeCategoryIds,
+  ] = await Promise.all([
+    supabase
+      .from('products')
+      .select('id, category_id, images, is_active, is_featured'),
+    supabase
+      .from('categories')
+      .select('id'),
+    getProductIdsWithViewsInRange(days),
+    getCategoryIdsWithActiveProducts(),
+  ]);
+
+  if (productsError) throw new Error(productsError.message);
+  if (categoriesError) throw new Error(categoriesError.message);
+
+  const rows = products ?? [];
+  const categoryRows = categories ?? [];
+
+  let activeWithoutAdditionalImages = 0;
+  let featuredWithoutViews = 0;
+  let activeWithoutViews = 0;
+
+  for (const product of rows) {
+    const hasViews = viewedProductIds.has(product.id);
+
+    if (product.is_active) {
+      if (product.images.length === 0) {
+        activeWithoutAdditionalImages++;
+      }
+
+      if (!hasViews) {
+        activeWithoutViews++;
+      }
+    }
+
+    if (product.is_featured && !hasViews) {
+      featuredWithoutViews++;
+    }
+  }
+
+  const categoriesWithoutActiveProducts = categoryRows.filter(
+    (category) => !activeCategoryIds.has(category.id),
+  ).length;
+
+  return {
+    activeWithoutAdditionalImages,
+    categoriesWithoutActiveProducts,
+    featuredWithoutViews,
+    activeWithoutViews,
+    periodDays: days,
+  };
 }
