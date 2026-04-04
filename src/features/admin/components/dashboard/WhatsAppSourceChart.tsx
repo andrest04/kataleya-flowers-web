@@ -28,9 +28,14 @@ export default function WhatsAppSourceChart({ data }: Props) {
 
   if (total === 0) {
     return (
-      <p className="text-sm text-center py-12" style={{ color: 'var(--color-muted)' }}>
-        Sin clics de WhatsApp todavía
-      </p>
+      <div className="py-12 text-center space-y-2" style={{ color: 'var(--color-muted)' }}>
+        <p className="text-sm font-medium" style={{ color: 'var(--color-dark)' }}>
+          Todavía no hay clics a WhatsApp en este rango.
+        </p>
+        <p className="text-sm">
+          Este corte te va a mostrar desde qué superficies del sitio empieza el contacto cuando entren nuevos eventos.
+        </p>
+      </div>
     );
   }
 
