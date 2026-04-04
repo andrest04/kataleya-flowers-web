@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react';
 import type { Database } from '@/lib/supabase/types';
 import type { ProductFormData } from '@/features/admin/types';
+import { slugify } from '@/features/admin/utils/slugify';
 import { PRODUCT_COLORS, PRODUCT_FLOWER_TYPES } from '@/features/catalog/types';
 import { createProduct, updateProduct } from '@/features/admin/actions/products';
 import Button from '@/components/ui/Button';
@@ -43,7 +44,7 @@ function buildInitialState(product?: ProductRow): ProductFormData {
   }
   return {
     name: product.name,
-    slug: product.slug,
+    slug: slugify(product.name),
     description: product.description,
     price: Number(product.price),
     categoryId: product.category_id,
@@ -161,7 +162,14 @@ export default function ProductForm({ product, categories, onSuccess }: ProductF
           <Input
             type="text"
             value={form.name}
-            onChange={(e) => set('name', e.target.value)}
+            onChange={(e) => {
+              const name = e.target.value;
+              setForm((prev) => ({
+                ...prev,
+                name,
+                slug: slugify(name),
+              }));
+            }}
             required
             placeholder="Ramo de rosas rojas"
           />
@@ -170,8 +178,8 @@ export default function ProductForm({ product, categories, onSuccess }: ProductF
           <Input
             type="text"
             value={form.slug}
-            onChange={(e) => set('slug', e.target.value)}
-            placeholder="ramo-rosas-rojas (auto si vacío)"
+            placeholder="se genera desde el nombre"
+            readOnly
           />
         </FormField>
       </div>

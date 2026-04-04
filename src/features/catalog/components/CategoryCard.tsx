@@ -1,15 +1,28 @@
+'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
 import type { Category } from '@/features/catalog/types';
+import { clientTrackEvent } from '@/features/analytics/lib/clientTrack';
 
 interface CategoryCardProps {
   category: Category;
 }
 
 export default function CategoryCard({ category }: CategoryCardProps) {
+  const handleClick = () => {
+    clientTrackEvent({
+      eventType: 'category_click',
+      entityType: 'category',
+      entityId: category.id,
+      entitySlug: category.slug,
+    });
+  };
+
   return (
     <Link
       href={`/catalogo/${category.slug}`}
+      onClick={handleClick}
       className="group block rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5"
       style={{
         backgroundColor: 'var(--color-white)',

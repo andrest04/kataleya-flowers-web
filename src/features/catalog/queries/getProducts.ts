@@ -1,14 +1,16 @@
-import { createClient } from '@/lib/supabase/server';
+import { createStaticClient } from '@/lib/supabase/static';
 import type { Product } from '@/features/catalog/types';
 import { mapProductRow } from '@/features/catalog/queries/mappers';
 
 export async function getProducts(): Promise<Product[]> {
-  const supabase = await createClient();
+  const supabase = createStaticClient();
 
+  // !inner join ensures only products with an active category are returned
   const { data, error } = await supabase
     .from('products')
-    .select('*')
+    .select('*, categories!inner(id)')
     .eq('is_active', true)
+    .eq('categories.is_active', true)
     .order('display_order', { ascending: true });
 
   if (error) {

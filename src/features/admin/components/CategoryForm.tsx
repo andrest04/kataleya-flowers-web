@@ -20,11 +20,12 @@ interface CategoryFormProps {
 function rowToFormData(row: CategoryRow): Omit<CategoryFormData, 'displayOrder'> {
   return {
     name: row.name,
-    slug: row.slug,
+    slug: slugify(row.name),
     description: row.description,
     occasion: row.occasion ?? '',
     imageUrl: row.image_url ?? '',
     isActive: row.is_active,
+    isFeatured: row.is_featured,
   };
 }
 
@@ -38,7 +39,7 @@ export default function CategoryForm({ category }: CategoryFormProps) {
   const isEditing = Boolean(category);
   const initial = category
     ? rowToFormData(category)
-    : { name: '', slug: '', description: '', occasion: '', imageUrl: '', isActive: true };
+    : { name: '', slug: '', description: '', occasion: '', imageUrl: '', isActive: true, isFeatured: false };
   const [imageUrl, setImageUrl] = useState(initial.imageUrl);
 
   const [state, formAction, isPending] = useActionState<FormState, FormData>(
@@ -51,6 +52,7 @@ export default function CategoryForm({ category }: CategoryFormProps) {
         imageUrl: formData.get('imageUrl') as string,
         displayOrder: category?.display_order ?? 0,
         isActive: formData.get('isActive') === 'on',
+        isFeatured: formData.get('isFeatured') === 'on',
       };
 
       const result = category
@@ -80,7 +82,7 @@ export default function CategoryForm({ category }: CategoryFormProps) {
             required
             defaultValue={initial.name}
             onChange={(e) => {
-              if (slugRef.current && !isEditing) {
+              if (slugRef.current) {
                 slugRef.current.value = slugify(e.target.value);
               }
             }}
@@ -93,8 +95,9 @@ export default function CategoryForm({ category }: CategoryFormProps) {
             id="slug"
             name="slug"
             type="text"
-            defaultValue={initial.slug}
-            placeholder="se genera automáticamente"
+            defaultValue={slugify(initial.name)}
+            placeholder="se genera desde el nombre"
+            readOnly
           />
         </FormField>
       </div>
@@ -130,7 +133,7 @@ export default function CategoryForm({ category }: CategoryFormProps) {
         </FormField>
       </div>
 
-      <div>
+      <div className="flex flex-wrap items-center gap-6">
         <label className="flex items-center gap-2 cursor-pointer">
           <input
             name="isActive"
@@ -141,6 +144,19 @@ export default function CategoryForm({ category }: CategoryFormProps) {
           />
           <span className="text-sm font-medium" style={{ color: 'var(--color-dark)' }}>
             Categoría activa
+          </span>
+        </label>
+
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            name="isFeatured"
+            type="checkbox"
+            defaultChecked={initial.isFeatured}
+            className="w-4 h-4 rounded"
+            style={{ accentColor: 'var(--color-secondary)' }}
+          />
+          <span className="text-sm font-medium" style={{ color: 'var(--color-dark)' }}>
+            Categoría destacada
           </span>
         </label>
       </div>

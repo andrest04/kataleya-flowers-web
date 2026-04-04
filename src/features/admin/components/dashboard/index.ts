@@ -1,8 +1,12 @@
+export { default as DashboardTabs } from './DashboardTabs';
+export { default as ResumenTab } from './ResumenTab';
+export { default as AnaliticasTab } from './AnaliticasTab';
 export { default as ChartCard } from './ChartCard';
-export { default as ProductsByCategoryChart } from './ProductsByCategoryChart';
-export { default as PriceDistributionChart } from './PriceDistributionChart';
-export { default as ColorPaletteChart } from './ColorPaletteChart';
-export { default as FlowerTypeRadar } from './FlowerTypeRadar';
 export { default as InventoryDonut } from './InventoryDonut';
 export { default as RecentActivityList } from './RecentActivityList';
-export { default as DashboardTabs } from './DashboardTabs';
+export { default as TopProductsChart } from './TopProductsChart';
+export { default as TopCategoriesChart } from './TopCategoriesChart';
+export { default as WhatsAppSourceChart } from './WhatsAppSourceChart';
+export { default as ActionableKpiGrid } from './ActionableKpiGrid';
+export { default as AutomaticInsightsPanel } from './AutomaticInsightsPanel';
+export { default as ProductConversionRanking } from './ProductConversionRanking';

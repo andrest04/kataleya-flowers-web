@@ -4,6 +4,7 @@ import { LazyMotion, domAnimation, m } from "framer-motion";
 import { FaWhatsapp } from "react-icons/fa";
 
 import { BUSINESS } from "@/lib/constants";
+import { clientTrackEvent } from "@/features/analytics/lib/clientTrack";
 
 export default function WhatsAppFloat() {
   const href = BUSINESS.whatsappWithMessage("Hola, me gustaría hacer un pedido");
@@ -43,6 +44,7 @@ export default function WhatsAppFloat() {
           target="_blank"
           rel="noopener noreferrer"
           aria-label="Contactar por WhatsApp"
+          onClick={() => clientTrackEvent({ eventType: 'whatsapp_click', metadata: { source: 'float' } })}
           className="
             relative flex items-center justify-center
             w-14 h-14 md:w-16 md:h-16

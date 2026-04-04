@@ -18,6 +18,7 @@ function toInsertPayload(data: CategoryFormData, slug: string): CategoryInsert {
     image_url: data.imageUrl || null,
     display_order: data.displayOrder,
     is_active: data.isActive,
+    is_featured: data.isFeatured,
   };
 }
 
@@ -36,7 +37,7 @@ export async function createCategory(
 
     const nextOrder = (all && all.length > 0) ? all[0].display_order + 1 : 1;
 
-    const slug = data.slug.trim() !== '' ? data.slug : slugify(data.name);
+    const slug = slugify(data.name);
     const payload = toInsertPayload({ ...data, displayOrder: nextOrder }, slug);
 
     const { error } = await supabase.from('categories').insert(payload);
@@ -65,7 +66,7 @@ export async function updateCategory(
       .eq('id', id)
       .single();
 
-    const slug = data.slug.trim() !== '' ? data.slug : slugify(data.name);
+    const slug = slugify(data.name);
     const payload = toInsertPayload(data, slug);
 
     const { error } = await supabase.from('categories').update(payload).eq('id', id);
@@ -225,6 +226,29 @@ export async function toggleCategoryStatus(
 
     revalidatePath('/catalogo');
     revalidatePath('/admin/categorias');
+    revalidatePath('/');
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: err instanceof Error ? err.message : 'Error desconocido' };
+  }
+}
+
+export async function toggleCategoryFeatured(
+  id: string,
+  isFeatured: boolean
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const supabase = await createClient();
+    const { error } = await supabase
+      .from('categories')
+      .update({ is_featured: isFeatured })
+      .eq('id', id);
+
+    if (error) return { success: false, error: error.message };
+
+    revalidatePath('/catalogo');
+    revalidatePath('/admin/categorias');
+    revalidatePath('/');
     return { success: true };
   } catch (err) {
     return { success: false, error: err instanceof Error ? err.message : 'Error desconocido' };

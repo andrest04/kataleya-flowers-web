@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { toast } from 'sonner';
 import type { Database } from '@/lib/supabase/types';
 import { deleteProduct, toggleProductStatus } from '@/features/admin/actions/products';
+import type { AdminProductFilter } from '@/features/admin/utils/adminFilters';
 import Button from '@/components/ui/Button';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import ToggleSwitch from '@/components/ui/ToggleSwitch';
@@ -16,24 +17,59 @@ type CategoryRow = Database['public']['Tables']['categories']['Row'];
 interface ProductTableProps {
   products: ProductRow[];
   categories: CategoryRow[];
+  activeFilter?: AdminProductFilter | null;
+  viewedProductIds?: string[];
+  emptyMessage?: string;
+  clearFilterHref?: string;
 }
 
-export default function ProductTable({ products, categories }: ProductTableProps) {
+function matchesActiveFilter(
+  product: ProductRow,
+  filter: AdminProductFilter | null | undefined,
+  viewedProductIds: Set<string>,
+): boolean {
+  switch (filter) {
+    case 'missing-gallery':
+      return product.is_active && product.images.length === 0;
+    case 'featured-without-views':
+      return product.is_featured && !viewedProductIds.has(product.id);
+    case 'active-without-views':
+      return product.is_active && !viewedProductIds.has(product.id);
+    default:
+      return true;
+  }
+}
+
+export default function ProductTable({
+  products,
+  categories,
+  activeFilter = null,
+  viewedProductIds = [],
+  emptyMessage,
+  clearFilterHref,
+}: ProductTableProps) {
   const [items, setItems] = useState(products);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
 
   const categoryMap = new Map(categories.map((c) => [c.id, c.name]));
+  const viewedProductIdSet = new Set(viewedProductIds);
+
+  useEffect(() => {
+    setItems(products);
+  }, [products]);
 
   async function handleToggleStatus(id: string, isActive: boolean) {
-    setItems((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, is_active: isActive } : p)),
-    );
+    const previousItems = items;
+    const nextItems = items
+      .map((product) => (product.id === id ? { ...product, is_active: isActive } : product))
+      .filter((product) => matchesActiveFilter(product, activeFilter, viewedProductIdSet));
+
+    setItems(nextItems);
+
     const result = await toggleProductStatus(id, isActive);
     if (!result.success) {
-      setItems((prev) =>
-        prev.map((p) => (p.id === id ? { ...p, is_active: !isActive } : p)),
-      );
+      setItems(previousItems);
     }
   }
 
@@ -51,7 +87,18 @@ export default function ProductTable({ products, categories }: ProductTableProps
   }
 
   if (items.length === 0) {
-    return <EmptyState message="No hay productos aún. ¡Creá el primero!" />;
+    return (
+      <EmptyState
+        message={emptyMessage ?? 'No hay productos aún. ¡Creá el primero!'}
+        action={
+          clearFilterHref ? (
+            <Button href={clearFilterHref} variant="ghost" size="sm">
+              Ver todos los productos
+            </Button>
+          ) : undefined
+        }
+      />
+    );
   }
 
   return (

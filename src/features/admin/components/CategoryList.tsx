@@ -3,11 +3,13 @@
 import { useState, useTransition } from 'react';
 import Image from 'next/image';
 import { toast } from 'sonner';
+import { StarIcon } from 'lucide-react';
+import { Button as ShadcnButton } from '@/components/ui/primitives/button';
 import { DragDropProvider } from '@dnd-kit/react';
 import { useSortable } from '@dnd-kit/react/sortable';
 import { move } from '@dnd-kit/helpers';
 import type { Database } from '@/lib/supabase/types';
-import { deleteCategory, getCategoryProductCount, reorderCategories, toggleCategoryStatus } from '@/features/admin/actions/categories';
+import { deleteCategory, getCategoryProductCount, reorderCategories, toggleCategoryFeatured, toggleCategoryStatus } from '@/features/admin/actions/categories';
 import Button from '@/components/ui/Button';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import ToggleSwitch from '@/components/ui/ToggleSwitch';
@@ -17,6 +19,8 @@ type CategoryRow = Database['public']['Tables']['categories']['Row'];
 
 interface CategoryListProps {
   categories: CategoryRow[];
+  emptyMessage?: string;
+  clearFilterHref?: string;
 }
 
 interface SortableRowProps {
@@ -26,9 +30,10 @@ interface SortableRowProps {
   hasChanges: boolean;
   onDelete: (id: string, name: string) => void;
   onToggleStatus: (id: string, isActive: boolean) => void;
+  onToggleFeatured: (id: string, isFeatured: boolean) => void;
 }
 
-function SortableRow({ category, index, deletingId, hasChanges, onDelete, onToggleStatus }: SortableRowProps) {
+function SortableRow({ category, index, deletingId, hasChanges, onDelete, onToggleStatus, onToggleFeatured }: SortableRowProps) {
   const { ref, handleRef, isDragging } = useSortable({ id: category.id, index });
 
   return (
@@ -91,20 +96,38 @@ function SortableRow({ category, index, deletingId, hasChanges, onDelete, onTogg
       </div>
 
       {/* Occasion */}
-      <span className="text-sm hidden md:block w-28 truncate" style={{ color: 'var(--color-dark)' }}>
+      <span className="text-sm hidden md:block w-28 flex-shrink-0 truncate" style={{ color: 'var(--color-dark)' }}>
         {category.occasion ?? '—'}
       </span>
 
       {/* Status toggle */}
-      <ToggleSwitch
-        checked={category.is_active}
-        label={`${category.is_active ? 'Desactivar' : 'Activar'} ${category.name}`}
-        onChange={(checked) => onToggleStatus(category.id, checked)}
-      />
+      <div className="w-12 flex-shrink-0 flex justify-center">
+        <ToggleSwitch
+          checked={category.is_active}
+          label={`${category.is_active ? 'Desactivar' : 'Activar'} ${category.name}`}
+          onChange={(checked) => onToggleStatus(category.id, checked)}
+        />
+      </div>
+
+      <div className="w-20 flex-shrink-0 flex justify-center">
+        <ShadcnButton
+          variant="ghost"
+          size="icon"
+          onClick={() => onToggleFeatured(category.id, !category.is_featured)}
+          className="text-muted hover:text-secondary"
+          style={{
+            color: category.is_featured ? 'var(--color-secondary)' : undefined,
+          }}
+          aria-label={`${category.is_featured ? 'Quitar de destacadas' : 'Marcar como destacada'} ${category.name}`}
+          title={category.is_featured ? 'Categoría destacada' : 'Categoría normal'}
+        >
+          <StarIcon className="size-4" fill={category.is_featured ? 'currentColor' : 'none'} />
+        </ShadcnButton>
+      </div>
 
       {/* Actions — hidden while pending changes */}
       {!hasChanges && (
-        <div className="flex items-center gap-2 flex-shrink-0">
+        <div className="flex items-center gap-2 flex-shrink-0 w-36 justify-end">
           <Button variant="ghost" size="sm" href={`/admin/categorias/${category.id}`}>
             Editar
           </Button>
@@ -125,7 +148,11 @@ function SortableRow({ category, index, deletingId, hasChanges, onDelete, onTogg
   );
 }
 
-export default function CategoryList({ categories: initialCategories }: CategoryListProps) {
+export default function CategoryList({
+  categories: initialCategories,
+  emptyMessage,
+  clearFilterHref,
+}: CategoryListProps) {
   const [items, setItems] = useState(initialCategories);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string; productCount: number } | null>(null);
@@ -202,6 +229,19 @@ export default function CategoryList({ categories: initialCategories }: Category
     }
   }
 
+  async function handleToggleFeatured(id: string, isFeatured: boolean) {
+    setItems((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, is_featured: isFeatured } : c)),
+    );
+    const result = await toggleCategoryFeatured(id, isFeatured);
+    if (!result.success) {
+      setItems((prev) =>
+        prev.map((c) => (c.id === id ? { ...c, is_featured: !isFeatured } : c)),
+      );
+      toast.error(`Error al actualizar destacada: ${result.error ?? 'Error desconocido'}`);
+    }
+  }
+
   function handleDragEnd(event: Parameters<NonNullable<React.ComponentProps<typeof DragDropProvider>['onDragEnd']>>[0]) {
     if (event.canceled) return;
 
@@ -228,7 +268,18 @@ export default function CategoryList({ categories: initialCategories }: Category
   }
 
   if (items.length === 0) {
-    return <EmptyState message="No hay categorías aún. ¡Creá la primera!" />;
+    return (
+      <EmptyState
+        message={emptyMessage ?? 'No hay categorías aún. ¡Creá la primera!'}
+        action={
+          clearFilterHref ? (
+            <Button href={clearFilterHref} variant="ghost" size="sm">
+              Ver todas las categorías
+            </Button>
+          ) : undefined
+        }
+      />
+    );
   }
 
   return (
@@ -250,8 +301,9 @@ export default function CategoryList({ categories: initialCategories }: Category
           <span className="w-5 flex-shrink-0">#</span>
           <span className="w-10 flex-shrink-0">Imagen</span>
           <span className="flex-1">Nombre</span>
-          <span className="hidden md:block w-28">Ocasión</span>
-          <span className="w-12">Estado</span>
+          <span className="hidden md:block w-28 flex-shrink-0">Ocasión</span>
+          <span className="w-12 flex-shrink-0 text-center">Estado</span>
+          <span className="w-20 flex-shrink-0 text-center">Destacado</span>
           {!hasChanges && <span className="w-36 text-right">Acciones</span>}
         </div>
 
@@ -266,6 +318,7 @@ export default function CategoryList({ categories: initialCategories }: Category
               hasChanges={hasChanges}
               onDelete={handleDeleteRequest}
               onToggleStatus={(id, checked) => void handleToggleStatus(id, checked)}
+              onToggleFeatured={(id, checked) => void handleToggleFeatured(id, checked)}
             />
           ))}
         </DragDropProvider>

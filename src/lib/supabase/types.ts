@@ -38,6 +38,7 @@ export interface Database {
           image_url: string | null;
           display_order: number;
           is_active: boolean;
+          is_featured: boolean;
           created_at: string;
           updated_at: string;
         };
@@ -50,6 +51,7 @@ export interface Database {
           image_url?: string | null;
           display_order?: number;
           is_active?: boolean;
+          is_featured?: boolean;
           created_at?: string;
           updated_at?: string;
         };
@@ -62,6 +64,7 @@ export interface Database {
           image_url?: string | null;
           display_order?: number;
           is_active?: boolean;
+          is_featured?: boolean;
           created_at?: string;
           updated_at?: string;
         };
@@ -142,6 +145,27 @@ export interface Database {
           },
         ];
       };
+      analytics_events: {
+        Row: {
+          id: number;
+          event_type: string;
+          entity_type: string | null;
+          entity_id: string | null;
+          entity_slug: string | null;
+          metadata: Record<string, string> | null;
+          created_at: string;
+        };
+        Insert: {
+          event_type: string;
+          entity_type?: string | null;
+          entity_id?: string | null;
+          entity_slug?: string | null;
+          metadata?: Record<string, string> | null;
+          created_at?: string;
+        };
+        Update: never;
+        Relationships: [];
+      };
     };
     Views: {
       category_price_summary: {
@@ -152,7 +176,36 @@ export interface Database {
         Relationships: [];
       };
     };
-    Functions: Record<string, never>;
+    Functions: {
+      get_event_type_counts: {
+        Args: { p_since: string; p_until?: string };
+        Returns: { event_type: string; source: string; count: number }[];
+      };
+      get_top_entities: {
+        Args: { p_event_type: string; p_since: string; p_limit?: number };
+        Returns: { entity_slug: string; count: number }[];
+      };
+      get_whatsapp_source_counts: {
+        Args: { p_since: string };
+        Returns: { source: string; count: number }[];
+      };
+      get_product_conversion_metrics: {
+        Args: { p_since: string };
+        Returns: { entity_slug: string; views: number; whatsapp_clicks: number }[];
+      };
+      get_inventory_status: {
+        Args: Record<string, never>;
+        Returns: { active: number; inactive: number; featured: number; total: number }[];
+      };
+      get_product_ids_with_views: {
+        Args: { p_since: string };
+        Returns: { entity_id: string }[];
+      };
+      get_active_category_ids: {
+        Args: Record<string, never>;
+        Returns: { category_id: string }[];
+      };
+    };
     Enums: {
       product_color: ProductColor;
       product_flower_type: ProductFlowerType;

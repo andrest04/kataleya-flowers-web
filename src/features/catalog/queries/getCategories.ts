@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { createStaticClient } from '@/lib/supabase/static';
 import type { Database } from '@/lib/supabase/types';
 import type { Category } from '@/features/catalog/types';
 
@@ -17,11 +17,12 @@ function mapCategoryRow(
     occasion: row.occasion ?? undefined,
     imageUrl: row.image_url ?? undefined,
     priceFrom: priceSummary?.price_from ?? undefined,
+    isFeatured: row.is_featured,
   };
 }
 
 export async function getCategories(): Promise<Category[]> {
-  const supabase = await createClient();
+  const supabase = createStaticClient();
 
   const [categoriesResult, priceSummaryResult] = await Promise.all([
     supabase
