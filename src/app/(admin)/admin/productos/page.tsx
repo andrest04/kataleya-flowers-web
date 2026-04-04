@@ -5,6 +5,7 @@ import { getProductIdsWithViewsInRange } from '@/features/admin/queries/adminFil
 import ProductTable from '@/features/admin/components/ProductTable';
 import { parseAnalyticsRange } from '@/features/admin/components/dashboard/analyticsRange';
 import {
+  buildAdminProductsHref,
   getAdminProductFilterMeta,
   parseAdminProductFilter,
 } from '@/features/admin/utils/adminFilters';
@@ -28,7 +29,12 @@ export default async function AdminProductosPage({
       : Promise.resolve(new Set<string>()),
   ]);
 
-  const filteredProducts = products.filter((product) => {
+  const rawCategorySlug = Array.isArray(resolvedSearchParams.categoria)
+    ? resolvedSearchParams.categoria[0]
+    : resolvedSearchParams.categoria;
+  const activeCategory = categories.find((category) => category.slug === rawCategorySlug) ?? null;
+
+  const baseFilteredProducts = products.filter((product) => {
     switch (activeFilter) {
       case 'missing-gallery':
         return product.is_active && product.images.length === 0;
@@ -41,10 +47,19 @@ export default async function AdminProductosPage({
     }
   });
 
+  const categoryCounts = new Map<string, number>();
+  for (const product of baseFilteredProducts) {
+    categoryCounts.set(product.category_id, (categoryCounts.get(product.category_id) ?? 0) + 1);
+  }
+
+  const filteredProducts = activeCategory
+    ? baseFilteredProducts.filter((product) => product.category_id === activeCategory.id)
+    : baseFilteredProducts;
+
   const filterMeta = activeFilter
     ? getAdminProductFilterMeta(activeFilter, analyticsRange)
     : null;
-  const clearFilterHref = '/admin/productos';
+  const clearFilterHref = buildAdminProductsHref({ categorySlug: activeCategory?.slug ?? null });
 
   return (
     <div className="space-y-6">
@@ -58,7 +73,11 @@ export default async function AdminProductosPage({
           </h1>
           <p className="text-sm mt-1" style={{ color: 'var(--color-muted)' }}>
             {filteredProducts.length} producto{filteredProducts.length !== 1 ? 's' : ''}
-            {activeFilter ? ' en el filtro actual' : ' en total'}
+            {activeCategory
+              ? ` en ${activeCategory.name}`
+              : activeFilter
+                ? ' en el filtro actual'
+                : ' en total'}
           </p>
         </div>
         <Link
@@ -71,6 +90,79 @@ export default async function AdminProductosPage({
         >
           + Nuevo producto
         </Link>
+      </div>
+
+      <div
+        className="rounded-xl p-4 space-y-3"
+        style={{
+          background: 'var(--color-white)',
+          border: '1px solid var(--color-border)',
+        }}
+      >
+        <div>
+          <h2 className="text-sm font-semibold" style={{ color: 'var(--color-dark)' }}>
+            Categorías
+          </h2>
+          <p className="text-sm mt-1" style={{ color: 'var(--color-muted)' }}>
+            Usá la categoría como eje principal para ordenar el trabajo antes de aplicar filtros más finos.
+          </p>
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          <Link
+            href={buildAdminProductsHref({
+              filter: activeFilter,
+              range: analyticsRange,
+              categorySlug: null,
+            })}
+            className="px-4 py-2 rounded-full text-sm font-medium transition-all"
+            style={
+              activeCategory === null
+                ? {
+                    background: 'var(--color-primary)',
+                    color: 'var(--color-white)',
+                  }
+                : {
+                    background: 'var(--color-white)',
+                    color: 'var(--color-dark)',
+                    border: '1px solid var(--color-border)',
+                  }
+            }
+          >
+            Todas ({baseFilteredProducts.length})
+          </Link>
+
+          {categories.map((category) => {
+            const isActive = activeCategory?.id === category.id;
+            const count = categoryCounts.get(category.id) ?? 0;
+
+            return (
+              <Link
+                key={category.id}
+                href={buildAdminProductsHref({
+                  filter: activeFilter,
+                  range: analyticsRange,
+                  categorySlug: category.slug,
+                })}
+                className="px-4 py-2 rounded-full text-sm font-medium transition-all"
+                style={
+                  isActive
+                    ? {
+                        background: 'var(--color-primary)',
+                        color: 'var(--color-white)',
+                      }
+                    : {
+                        background: 'var(--color-white)',
+                        color: 'var(--color-dark)',
+                        border: '1px solid var(--color-border)',
+                      }
+                }
+              >
+                {category.name} ({count})
+              </Link>
+            );
+          })}
+        </div>
       </div>
 
       {filterMeta ? (
@@ -95,6 +187,11 @@ export default async function AdminProductosPage({
             <p className="text-sm leading-6" style={{ color: 'var(--color-muted)' }}>
               {filterMeta.description}
             </p>
+            {activeCategory ? (
+              <p className="text-sm leading-6" style={{ color: 'var(--color-muted)' }}>
+                Además, el listado está acotado a la categoría <span style={{ color: 'var(--color-dark)' }}>{activeCategory.name}</span>.
+              </p>
+            ) : null}
           </div>
 
           <Link

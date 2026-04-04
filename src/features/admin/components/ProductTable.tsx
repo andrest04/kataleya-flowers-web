@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { toast } from 'sonner';
 import type { Database } from '@/lib/supabase/types';
@@ -54,6 +54,10 @@ export default function ProductTable({
 
   const categoryMap = new Map(categories.map((c) => [c.id, c.name]));
   const viewedProductIdSet = new Set(viewedProductIds);
+
+  useEffect(() => {
+    setItems(products);
+  }, [products]);
 
   async function handleToggleStatus(id: string, isActive: boolean) {
     const previousItems = items;

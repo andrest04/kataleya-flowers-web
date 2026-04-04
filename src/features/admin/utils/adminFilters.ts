@@ -16,6 +16,33 @@ function getSingleValue(value: string | string[] | undefined): string | undefine
   return Array.isArray(value) ? value[0] : value;
 }
 
+export function buildAdminProductsHref(params: {
+  filter?: AdminProductFilter | null;
+  range?: number;
+  categorySlug?: string | null;
+}): string {
+  const searchParams = new URLSearchParams();
+
+  if (params.filter) {
+    searchParams.set('filter', params.filter);
+  }
+
+  if (
+    params.range !== undefined
+    && params.filter
+    && (params.filter === 'featured-without-views' || params.filter === 'active-without-views')
+  ) {
+    searchParams.set('range', String(params.range));
+  }
+
+  if (params.categorySlug) {
+    searchParams.set('categoria', params.categorySlug);
+  }
+
+  const query = searchParams.toString();
+  return query ? `/admin/productos?${query}` : '/admin/productos';
+}
+
 export function parseAdminProductFilter(
   value: string | string[] | undefined,
 ): AdminProductFilter | null {
@@ -93,16 +120,7 @@ export function getAdminProductFilterHref(
   filter: AdminProductFilter,
   range?: number,
 ): string {
-  const params = new URLSearchParams({ filter });
-
-  if (
-    range !== undefined
-    && (filter === 'featured-without-views' || filter === 'active-without-views')
-  ) {
-    params.set('range', String(range));
-  }
-
-  return `/admin/productos?${params.toString()}`;
+  return buildAdminProductsHref({ filter, range });
 }
 
 export function getAdminCategoryFilterHref(filter: AdminCategoryFilter): string {
