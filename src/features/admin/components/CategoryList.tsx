@@ -17,6 +17,8 @@ type CategoryRow = Database['public']['Tables']['categories']['Row'];
 
 interface CategoryListProps {
   categories: CategoryRow[];
+  emptyMessage?: string;
+  clearFilterHref?: string;
 }
 
 interface SortableRowProps {
@@ -125,7 +127,11 @@ function SortableRow({ category, index, deletingId, hasChanges, onDelete, onTogg
   );
 }
 
-export default function CategoryList({ categories: initialCategories }: CategoryListProps) {
+export default function CategoryList({
+  categories: initialCategories,
+  emptyMessage,
+  clearFilterHref,
+}: CategoryListProps) {
   const [items, setItems] = useState(initialCategories);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string; productCount: number } | null>(null);
@@ -228,7 +234,18 @@ export default function CategoryList({ categories: initialCategories }: Category
   }
 
   if (items.length === 0) {
-    return <EmptyState message="No hay categorías aún. ¡Creá la primera!" />;
+    return (
+      <EmptyState
+        message={emptyMessage ?? 'No hay categorías aún. ¡Creá la primera!'}
+        action={
+          clearFilterHref ? (
+            <Button href={clearFilterHref} variant="ghost" size="sm">
+              Ver todas las categorías
+            </Button>
+          ) : undefined
+        }
+      />
+    );
   }
 
   return (
