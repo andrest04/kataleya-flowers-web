@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import type { Category, Product } from '@/features/catalog/types';
 import {
@@ -153,15 +153,6 @@ export default function CatalogSearch({ categories, products, flowerTypes, produ
     setInputValue(urlQ);
   }, [urlQ]);
 
-  // Debounce text → URL
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      updateParam('q', inputValue.trim());
-    }, 300);
-    return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [inputValue]);
-
   const updateParam = useCallback(
     (key: string, value: string) => {
       const params = new URLSearchParams(searchParams.toString());
@@ -174,6 +165,20 @@ export default function CatalogSearch({ categories, products, flowerTypes, produ
     },
     [searchParams, pathname, router],
   );
+
+  // Stable ref for debounce effect — avoids re-triggering when searchParams change
+  const updateParamRef = useRef(updateParam);
+  useEffect(() => {
+    updateParamRef.current = updateParam;
+  }, [updateParam]);
+
+  // Debounce text → URL
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      updateParamRef.current('q', inputValue.trim());
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [inputValue]);
 
   const updateListParam = useCallback(
     (key: string, list: string[]) => {
