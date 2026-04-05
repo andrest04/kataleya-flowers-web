@@ -205,8 +205,10 @@ export default async function AdminProductosPage({
       ) : null}
 
       <ProductTable
+        key={activeCategory?.id ?? 'all'}
         products={filteredProducts}
         categories={categories}
+        reorderable={activeCategory !== null}
         activeFilter={activeFilter}
         viewedProductIds={[...viewedProductIds]}
         emptyMessage={filterMeta?.emptyMessage}
