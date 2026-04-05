@@ -1,25 +1,6 @@
 // Auto-generated — do not edit manually
 // Regenerate: npm run db:types (requires SUPABASE_ACCESS_TOKEN in env)
 
-export type ProductColor =
-  | 'rojo'
-  | 'rosa'
-  | 'amarillo'
-  | 'blanco'
-  | 'morado'
-  | 'naranja'
-  | 'verde'
-  | 'mixto';
-
-export type ProductFlowerType =
-  | 'rosas'
-  | 'girasoles'
-  | 'orquídeas'
-  | 'astromelias'
-  | 'lirios'
-  | 'gerberas'
-  | 'mixto';
-
 export interface PriceVariantRow {
   label: string;
   price: number;
@@ -81,8 +62,8 @@ export interface Database {
           image_url: string;
           occasion: string | null;
           note: string | null;
-          colors: ProductColor[];
-          flower_types: ProductFlowerType[];
+          colors: string[];
+          flower_types: string[];
           images: string[];
           includes: string[];
           price_variants: PriceVariantRow[] | null;
@@ -103,8 +84,8 @@ export interface Database {
           image_url: string;
           occasion?: string | null;
           note?: string | null;
-          colors?: ProductColor[];
-          flower_types?: ProductFlowerType[];
+          colors?: string[];
+          flower_types?: string[];
           images?: string[];
           includes?: string[];
           price_variants?: PriceVariantRow[] | null;
@@ -124,8 +105,8 @@ export interface Database {
           image_url?: string;
           occasion?: string | null;
           note?: string | null;
-          colors?: ProductColor[];
-          flower_types?: ProductFlowerType[];
+          colors?: string[];
+          flower_types?: string[];
           images?: string[];
           includes?: string[];
           price_variants?: PriceVariantRow[] | null;
@@ -144,6 +125,60 @@ export interface Database {
             referencedColumns: ['id'];
           },
         ];
+      };
+      product_colors: {
+        Row: {
+          id: string;
+          name: string;
+          label: string;
+          hex: string | null;
+          display_order: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          label: string;
+          hex?: string | null;
+          display_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          label?: string;
+          hex?: string | null;
+          display_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      flower_types: {
+        Row: {
+          id: string;
+          name: string;
+          display_order: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          display_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          display_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
       };
       analytics_events: {
         Row: {
@@ -217,11 +252,36 @@ export interface Database {
         Args: { p_ordered_ids: string[] };
         Returns: undefined;
       };
+      reorder_products: {
+        Args: { p_ordered_ids: string[] };
+        Returns: undefined;
+      };
+      delete_flower_type: {
+        Args: { p_name: string };
+        Returns: undefined;
+      };
+      rename_flower_type: {
+        Args: { p_old_name: string; p_new_name: string };
+        Returns: undefined;
+      };
+      get_flower_type_usage: {
+        Args: { p_name: string };
+        Returns: { product_id: string; product_name: string }[];
+      };
+      delete_product_color: {
+        Args: { p_name: string };
+        Returns: undefined;
+      };
+      rename_product_color: {
+        Args: { p_old_name: string; p_new_name: string };
+        Returns: undefined;
+      };
+      get_product_color_usage: {
+        Args: { p_name: string };
+        Returns: { product_id: string; product_name: string }[];
+      };
     };
-    Enums: {
-      product_color: ProductColor;
-      product_flower_type: ProductFlowerType;
-    };
+    Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
   };
 }

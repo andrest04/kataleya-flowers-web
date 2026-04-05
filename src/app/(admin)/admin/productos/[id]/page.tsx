@@ -2,6 +2,8 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { getAdminProductById } from '@/features/admin/queries/products';
 import { getAdminCategories } from '@/features/admin/queries/categories';
+import { getFlowerTypes } from '@/features/admin/queries/flowerTypes';
+import { getProductColors } from '@/features/admin/queries/productColors';
 import ProductForm from '@/features/admin/components/ProductForm';
 
 interface EditarProductoPageProps {
@@ -11,9 +13,11 @@ interface EditarProductoPageProps {
 export default async function EditarProductoPage({ params }: EditarProductoPageProps) {
   const { id } = await params;
 
-  const [product, categories] = await Promise.all([
+  const [product, categories, flowerTypes, productColors] = await Promise.all([
     getAdminProductById(id),
     getAdminCategories(),
+    getFlowerTypes(),
+    getProductColors(),
   ]);
 
   if (!product) {
@@ -51,7 +55,7 @@ export default async function EditarProductoPage({ params }: EditarProductoPageP
           border: '1px solid var(--color-border)',
         }}
       >
-        <ProductForm product={product} categories={categories} />
+        <ProductForm product={product} categories={categories} flowerTypes={flowerTypes} productColors={productColors} />
       </div>
     </div>
   );

@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import type { Category } from "@/features/catalog/types";
 import { getCategories } from "@/features/catalog/queries/getCategories";
 import { getProducts } from "@/features/catalog/queries/getProducts";
+import { getFlowerTypes } from "@/features/catalog/queries/getFlowerTypes";
+import { getProductColors } from "@/features/catalog/queries/getProductColors";
 import CatalogSearch from "@/features/catalog/components/CatalogSearch";
 import BreadcrumbNav from "@/components/ui/Breadcrumb";
 import CategoryCard from "@/features/catalog/components/CategoryCard";
@@ -30,9 +32,11 @@ export const metadata: Metadata = {
 };
 
 export default async function CatalogoPage(): Promise<React.ReactElement> {
-  const [categories, products] = await Promise.all([
+  const [categories, products, flowerTypeRows, colorRows] = await Promise.all([
     getCategories(),
     getProducts(),
+    getFlowerTypes(),
+    getProductColors(),
   ]);
 
   return (
@@ -48,7 +52,7 @@ export default async function CatalogoPage(): Promise<React.ReactElement> {
         </h1>
 
         <Suspense fallback={<CategoryGridFallback categories={categories} />}>
-          <CatalogSearch categories={categories} products={products} />
+          <CatalogSearch categories={categories} products={products} flowerTypes={flowerTypeRows.map((ft) => ft.name)} productColors={colorRows} />
         </Suspense>
       </div>
     </main>

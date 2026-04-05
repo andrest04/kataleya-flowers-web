@@ -1,11 +1,13 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useEffect, useRef, useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import type { Database } from '@/lib/supabase/types';
 import type { ProductFormData } from '@/features/admin/types';
 import { slugify } from '@/features/admin/utils/slugify';
-import { PRODUCT_COLORS, PRODUCT_FLOWER_TYPES } from '@/features/catalog/types';
 import { createProduct, updateProduct } from '@/features/admin/actions/products';
+import { deleteFlowerType, renameFlowerType } from '@/features/admin/actions/flowerTypes';
+import { deleteProductColor, renameProductColor } from '@/features/admin/actions/productColors';
 import Button from '@/components/ui/Button';
 import { Input, Textarea, Select } from '@/components/ui/Input';
 import { FormField, FormError } from '@/components/ui/FormField';
@@ -15,9 +17,23 @@ import ImageUploader from '@/features/admin/components/ImageUploader';
 type ProductRow = Database['public']['Tables']['products']['Row'];
 type CategoryRow = Database['public']['Tables']['categories']['Row'];
 
+interface FlowerTypeOption {
+  id: string;
+  name: string;
+}
+
+interface ColorOption {
+  id: string;
+  name: string;
+  label: string;
+  hex: string | null;
+}
+
 interface ProductFormProps {
   product?: ProductRow;
   categories: CategoryRow[];
+  flowerTypes: FlowerTypeOption[];
+  productColors: ColorOption[];
   onSuccess?: () => void;
 }
 
@@ -68,7 +84,8 @@ function makeKeys(length: number): string[] {
   return Array.from({ length }, () => crypto.randomUUID());
 }
 
-export default function ProductForm({ product, categories, onSuccess }: ProductFormProps) {
+export default function ProductForm({ product, categories, flowerTypes, productColors, onSuccess }: ProductFormProps) {
+  const router = useRouter();
   const [form, setForm] = useState<ProductFormData>(buildInitialState(product));
   const [includeKeys, setIncludeKeys] = useState<string[]>(() =>
     makeKeys(product?.includes?.length ?? 0)
@@ -76,8 +93,62 @@ export default function ProductForm({ product, categories, onSuccess }: ProductF
   const [variantKeys, setVariantKeys] = useState<string[]>(() =>
     makeKeys(product?.price_variants?.length ?? 0)
   );
+  // Flower type management state
+  const [pendingNewTypes, setPendingNewTypes] = useState<string[]>([]);
+  const [newTypeInput, setNewTypeInput] = useState('');
+  const [showNewTypeInput, setShowNewTypeInput] = useState(false);
+  const newTypeInputRef = useRef<HTMLInputElement>(null);
+  const renameInputRef = useRef<HTMLInputElement>(null);
+  const [manageFlowerTypes, setManageFlowerTypes] = useState(false);
+  const [renamingType, setRenamingType] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState('');
+  const [deletingType, setDeletingType] = useState<string | null>(null);
+  const [deleteUsageCount, setDeleteUsageCount] = useState<number | null>(null);
+  // Color management state
+  const [pendingNewColors, setPendingNewColors] = useState<{ name: string; hex: string }[]>([]);
+  const [newColorInput, setNewColorInput] = useState('');
+  const [newColorHex, setNewColorHex] = useState('#3b82f6');
+  const [showNewColorInput, setShowNewColorInput] = useState(false);
+  const newColorInputRef = useRef<HTMLInputElement>(null);
+  const renameColorInputRef = useRef<HTMLInputElement>(null);
+  const [manageColors, setManageColors] = useState(false);
+  const [renamingColor, setRenamingColor] = useState<string | null>(null);
+  const [renameColorValue, setRenameColorValue] = useState('');
+  const [deletingColor, setDeletingColor] = useState<string | null>(null);
+  const [deleteColorUsageCount, setDeleteColorUsageCount] = useState<number | null>(null);
+
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  useEffect(() => {
+    if (showNewTypeInput) newTypeInputRef.current?.focus();
+  }, [showNewTypeInput]);
+
+  useEffect(() => {
+    if (renamingType) renameInputRef.current?.focus();
+  }, [renamingType]);
+
+  useEffect(() => {
+    if (showNewColorInput) newColorInputRef.current?.focus();
+  }, [showNewColorInput]);
+
+  useEffect(() => {
+    if (renamingColor) renameColorInputRef.current?.focus();
+  }, [renamingColor]);
+
+  const dbFlowerTypeNames = flowerTypes.map((ft) => ft.name);
+  const allFlowerTypes = [
+    ...dbFlowerTypeNames,
+    ...pendingNewTypes.filter((t) => !dbFlowerTypeNames.includes(t)),
+  ];
+
+  const dbColorNames = productColors.map((c) => c.name);
+  const allColors: ColorOption[] = [
+    ...productColors,
+    ...pendingNewColors
+      .filter((pc) => !dbColorNames.includes(pc.name))
+      .map((pc) => ({ id: pc.name, name: pc.name, label: pc.name.charAt(0).toUpperCase() + pc.name.slice(1), hex: pc.hex })),
+  ];
 
   // ── helpers ────────────────────────────────────────────────────────────────
 
@@ -135,19 +206,20 @@ export default function ProductForm({ product, categories, onSuccess }: ProductF
     setError(null);
 
     startTransition(async () => {
+      const payload = { ...form, newFlowerTypes: pendingNewTypes, newColors: pendingNewColors };
       const result = product
-        ? await updateProduct(product.id, form)
-        : await createProduct(form);
+        ? await updateProduct(product.id, payload)
+        : await createProduct(payload);
 
       if (!result.success) {
         setError(result.error ?? 'Ocurrió un error al guardar.');
         return;
       }
 
+      setPendingNewTypes([]);
+      setPendingNewColors([]);
       onSuccess?.();
-      if (!product) {
-        setForm(buildInitialState());
-      }
+      router.push('/admin/productos');
     });
   }
 
@@ -244,16 +316,174 @@ export default function ProductForm({ product, categories, onSuccess }: ProductF
 
       {/* Colores */}
       <div>
-        <FormField label="Colores">
-          <div className="flex flex-wrap gap-2">
-          {PRODUCT_COLORS.map((c) => {
-            const selected = form.colors.includes(c.value);
+        <div className="flex items-center gap-2 mb-1.5">
+          <FormField label="Colores">
+            <></>
+          </FormField>
+          <button
+            type="button"
+            onClick={() => { setManageColors((v) => !v); setRenamingColor(null); setDeletingColor(null); }}
+            className="text-xs underline underline-offset-2 transition-opacity hover:opacity-70"
+            style={{ color: 'var(--color-muted)' }}
+          >
+            {manageColors ? 'Listo' : 'Gestionar'}
+          </button>
+        </div>
+        <div>
+          <div className="flex flex-wrap gap-2 items-center">
+          {allColors.map((c) => {
+            const selected = form.colors.includes(c.name);
+            const isPendingColor = pendingNewColors.some((pc) => pc.name === c.name);
+
+            if (manageColors && !isPendingColor) {
+              if (renamingColor === c.name) {
+                return (
+                  <div key={c.name} className="flex items-center gap-1">
+                    <input
+                      ref={renameColorInputRef}
+                      type="text"
+                      value={renameColorValue}
+                      onChange={(e) => setRenameColorValue(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          const newName = renameColorValue.toLowerCase().trim();
+                          if (newName && newName !== c.name && !allColors.some((co) => co.name === newName)) {
+                            startTransition(async () => {
+                              const result = await renameProductColor(c.name, newName);
+                              if (result.success) {
+                                if (form.colors.includes(c.name)) {
+                                  set('colors', form.colors.map((t) => t === c.name ? newName : t));
+                                }
+                                setRenamingColor(null);
+                              } else {
+                                setError(result.error ?? 'Error al renombrar');
+                              }
+                            });
+                          }
+                        }
+                        if (e.key === 'Escape') setRenamingColor(null);
+                      }}
+                      className="rounded-full px-3 py-1 text-sm border outline-none focus:ring-1"
+                      style={{
+                        borderColor: 'var(--color-border)',
+                        color: 'var(--color-dark)',
+                        background: 'var(--color-white)',
+                        width: '130px',
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setRenamingColor(null)}
+                      className="text-xs"
+                      style={{ color: 'var(--color-muted)' }}
+                    >
+                      ×
+                    </button>
+                  </div>
+                );
+              }
+
+              if (deletingColor === c.name) {
+                return (
+                  <div
+                    key={c.name}
+                    className="flex items-center gap-2 rounded-full px-3 py-1 text-sm border"
+                    style={{
+                      borderColor: 'var(--color-primary)',
+                      color: 'var(--color-primary)',
+                      background: 'color-mix(in srgb, var(--color-primary) 6%, var(--color-white))',
+                    }}
+                  >
+                    <span className="capitalize">{c.label}</span>
+                    {deleteColorUsageCount !== null && deleteColorUsageCount > 0 && (
+                      <span className="text-xs">({deleteColorUsageCount} producto{deleteColorUsageCount !== 1 ? 's' : ''})</span>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        startTransition(async () => {
+                          const result = await deleteProductColor(c.name);
+                          if (result.success) {
+                            set('colors', form.colors.filter((t) => t !== c.name));
+                            setDeletingColor(null);
+                            setDeleteColorUsageCount(null);
+                          } else {
+                            setError(result.error ?? 'Error al eliminar');
+                          }
+                        });
+                      }}
+                      className="text-xs font-medium underline"
+                    >
+                      Confirmar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setDeletingColor(null); setDeleteColorUsageCount(null); }}
+                      className="text-xs"
+                    >
+                      ×
+                    </button>
+                  </div>
+                );
+              }
+
+              return (
+                <div
+                  key={c.name}
+                  className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-sm border"
+                  style={{
+                    borderColor: 'var(--color-border)',
+                    color: 'var(--color-dark)',
+                    background: selected ? 'color-mix(in srgb, var(--color-primary) 12%, var(--color-white))' : 'var(--color-surface)',
+                  }}
+                >
+                  {c.hex && (
+                    <span
+                      className="w-3 h-3 rounded-full inline-block border"
+                      style={{ background: c.hex, borderColor: 'var(--color-border)' }}
+                    />
+                  )}
+                  <span>{c.label}</span>
+                  <button
+                    type="button"
+                    onClick={() => { setRenamingColor(c.name); setRenameColorValue(c.name); setDeletingColor(null); }}
+                    className="text-xs transition-opacity hover:opacity-70"
+                    style={{ color: 'var(--color-muted)' }}
+                    title="Renombrar"
+                  >
+                    ✎
+                  </button>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      setDeletingColor(c.name);
+                      setRenamingColor(null);
+                      setDeleteColorUsageCount(null);
+                      try {
+                        const res = await fetch(`/api/admin/product-color-usage?name=${encodeURIComponent(c.name)}`);
+                        const data = await res.json() as { products: { product_id: string }[] };
+                        setDeleteColorUsageCount(data.products.length);
+                      } catch {
+                        setDeleteColorUsageCount(0);
+                      }
+                    }}
+                    className="text-xs transition-opacity hover:opacity-70"
+                    style={{ color: 'var(--color-primary)' }}
+                    title="Eliminar"
+                  >
+                    ×
+                  </button>
+                </div>
+              );
+            }
+
             return (
               <PillToggle
-                key={c.value}
+                key={c.name}
                 label={c.label}
                 active={selected}
-                onClick={() => set('colors', toggleArrayItem(form.colors, c.value))}
+                onClick={() => set('colors', toggleArrayItem(form.colors, c.name))}
                 activeColor="primary"
                 icon={c.hex ? (
                   <span
@@ -264,16 +494,258 @@ export default function ProductForm({ product, categories, onSuccess }: ProductF
               />
             );
           })}
+          {showNewColorInput ? (
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={newColorInput}
+                  onChange={(e) => setNewColorInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      const name = newColorInput.toLowerCase().trim();
+                      if (name && !allColors.some((co) => co.name === name)) {
+                        setPendingNewColors((prev) => [...prev, { name, hex: newColorHex }]);
+                        set('colors', [...form.colors, name]);
+                        setNewColorInput('');
+                        setNewColorHex('#3b82f6');
+                        setShowNewColorInput(false);
+                      }
+                    }
+                    if (e.key === 'Escape') {
+                      setNewColorInput('');
+                      setShowNewColorInput(false);
+                    }
+                  }}
+                  ref={newColorInputRef}
+                  placeholder="nombre del color..."
+                  className="rounded-full px-3 py-1.5 text-sm border outline-none focus:ring-1"
+                  style={{
+                    borderColor: 'var(--color-border)',
+                    color: 'var(--color-dark)',
+                    background: 'var(--color-white)',
+                    width: '150px',
+                  }}
+                />
+                <label
+                  className="w-7 h-7 rounded-full border cursor-pointer block shrink-0 overflow-hidden"
+                  style={{ borderColor: 'var(--color-border)', background: newColorHex }}
+                  title="Elegir color"
+                >
+                  <span className="sr-only">Elegir color</span>
+                  <input
+                    type="color"
+                    value={newColorHex}
+                    onChange={(e) => setNewColorHex(e.target.value)}
+                    className="opacity-0 w-0 h-0 absolute"
+                  />
+                </label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const name = newColorInput.toLowerCase().trim();
+                    if (name && !allColors.some((co) => co.name === name)) {
+                      setPendingNewColors((prev) => [...prev, { name, hex: newColorHex }]);
+                      set('colors', [...form.colors, name]);
+                      setNewColorInput('');
+                      setNewColorHex('#3b82f6');
+                      setShowNewColorInput(false);
+                    }
+                  }}
+                  className="rounded-full px-3 py-1.5 text-xs font-medium border transition-colors hover:opacity-80"
+                  style={{
+                    color: 'var(--color-primary)',
+                    borderColor: 'var(--color-primary)',
+                  }}
+                >
+                  Agregar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setNewColorInput(''); setShowNewColorInput(false); }}
+                  className="rounded-full px-2 py-1.5 text-sm transition-colors"
+                  style={{ color: 'var(--color-muted)' }}
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setShowNewColorInput(true)}
+              className="rounded-full px-3 py-1 text-sm border border-dashed transition-colors hover:opacity-70"
+              style={{
+                borderColor: 'var(--color-border)',
+                color: 'var(--color-muted)',
+              }}
+            >
+              + Nuevo color
+            </button>
+          )}
           </div>
-        </FormField>
+        </div>
       </div>
 
       {/* Tipos de flor */}
       <div>
-        <FormField label="Tipos de flor">
-          <div className="flex flex-wrap gap-2">
-          {PRODUCT_FLOWER_TYPES.map((ft) => {
+        <div className="flex items-center gap-2 mb-1.5">
+          <FormField label="Tipos de flor">
+            <></>
+          </FormField>
+          <button
+            type="button"
+            onClick={() => { setManageFlowerTypes((v) => !v); setRenamingType(null); setDeletingType(null); }}
+            className="text-xs underline underline-offset-2 transition-opacity hover:opacity-70"
+            style={{ color: 'var(--color-muted)' }}
+          >
+            {manageFlowerTypes ? 'Listo' : 'Gestionar'}
+          </button>
+        </div>
+        <div>
+          <div className="flex flex-wrap gap-2 items-center">
+          {allFlowerTypes.map((ft) => {
             const selected = form.flowerTypes.includes(ft);
+            const isPending_ = pendingNewTypes.includes(ft);
+
+            if (manageFlowerTypes && !isPending_) {
+              if (renamingType === ft) {
+                return (
+                  <div key={ft} className="flex items-center gap-1">
+                    <input
+                      ref={renameInputRef}
+                      type="text"
+                      value={renameValue}
+                      onChange={(e) => setRenameValue(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          const newName = renameValue.toLowerCase().trim();
+                          if (newName && newName !== ft && !allFlowerTypes.includes(newName)) {
+                            startTransition(async () => {
+                              const result = await renameFlowerType(ft, newName);
+                              if (result.success) {
+                                if (form.flowerTypes.includes(ft)) {
+                                  set('flowerTypes', form.flowerTypes.map((t) => t === ft ? newName : t));
+                                }
+                                setRenamingType(null);
+                              } else {
+                                setError(result.error ?? 'Error al renombrar');
+                              }
+                            });
+                          }
+                        }
+                        if (e.key === 'Escape') setRenamingType(null);
+                      }}
+                      className="rounded-full px-3 py-1 text-sm border outline-none focus:ring-1"
+                      style={{
+                        borderColor: 'var(--color-border)',
+                        color: 'var(--color-dark)',
+                        background: 'var(--color-white)',
+                        width: '130px',
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setRenamingType(null)}
+                      className="text-xs"
+                      style={{ color: 'var(--color-muted)' }}
+                    >
+                      ×
+                    </button>
+                  </div>
+                );
+              }
+
+              if (deletingType === ft) {
+                return (
+                  <div
+                    key={ft}
+                    className="flex items-center gap-2 rounded-full px-3 py-1 text-sm border"
+                    style={{
+                      borderColor: 'var(--color-primary)',
+                      color: 'var(--color-primary)',
+                      background: 'color-mix(in srgb, var(--color-primary) 6%, var(--color-white))',
+                    }}
+                  >
+                    <span className="capitalize">{ft}</span>
+                    {deleteUsageCount !== null && deleteUsageCount > 0 && (
+                      <span className="text-xs">({deleteUsageCount} producto{deleteUsageCount !== 1 ? 's' : ''})</span>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        startTransition(async () => {
+                          const result = await deleteFlowerType(ft);
+                          if (result.success) {
+                            set('flowerTypes', form.flowerTypes.filter((t) => t !== ft));
+                            setDeletingType(null);
+                            setDeleteUsageCount(null);
+                          } else {
+                            setError(result.error ?? 'Error al eliminar');
+                          }
+                        });
+                      }}
+                      className="text-xs font-medium underline"
+                    >
+                      Confirmar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setDeletingType(null); setDeleteUsageCount(null); }}
+                      className="text-xs"
+                    >
+                      ×
+                    </button>
+                  </div>
+                );
+              }
+
+              return (
+                <div
+                  key={ft}
+                  className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-sm border"
+                  style={{
+                    borderColor: 'var(--color-border)',
+                    color: 'var(--color-dark)',
+                    background: selected ? 'color-mix(in srgb, var(--color-accent) 12%, var(--color-white))' : 'var(--color-surface)',
+                  }}
+                >
+                  <span className="capitalize">{ft}</span>
+                  <button
+                    type="button"
+                    onClick={() => { setRenamingType(ft); setRenameValue(ft); setDeletingType(null); }}
+                    className="text-xs transition-opacity hover:opacity-70"
+                    style={{ color: 'var(--color-muted)' }}
+                    title="Renombrar"
+                  >
+                    ✎
+                  </button>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      setDeletingType(ft);
+                      setRenamingType(null);
+                      setDeleteUsageCount(null);
+                      try {
+                        const res = await fetch(`/api/admin/flower-type-usage?name=${encodeURIComponent(ft)}`);
+                        const data = await res.json() as { products: { product_id: string }[] };
+                        setDeleteUsageCount(data.products.length);
+                      } catch {
+                        setDeleteUsageCount(0);
+                      }
+                    }}
+                    className="text-xs transition-opacity hover:opacity-70"
+                    style={{ color: 'var(--color-primary)' }}
+                    title="Eliminar"
+                  >
+                    ×
+                  </button>
+                </div>
+              );
+            }
+
             return (
               <PillToggle
                 key={ft}
@@ -285,8 +757,78 @@ export default function ProductForm({ product, categories, onSuccess }: ProductF
               />
             );
           })}
+          {showNewTypeInput ? (
+            <div className="flex items-center gap-1">
+              <input
+                type="text"
+                value={newTypeInput}
+                onChange={(e) => setNewTypeInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const name = newTypeInput.toLowerCase().trim();
+                    if (name && !allFlowerTypes.includes(name)) {
+                      setPendingNewTypes((prev) => [...prev, name]);
+                      set('flowerTypes', [...form.flowerTypes, name]);
+                      setNewTypeInput('');
+                      setShowNewTypeInput(false);
+                    }
+                  }
+                  if (e.key === 'Escape') {
+                    setNewTypeInput('');
+                    setShowNewTypeInput(false);
+                  }
+                }}
+                ref={newTypeInputRef}
+                placeholder="nuevo tipo..."
+                className="rounded-full px-3 py-1 text-sm border outline-none focus:ring-1"
+                style={{
+                  borderColor: 'var(--color-border)',
+                  color: 'var(--color-dark)',
+                  background: 'var(--color-white)',
+                  width: '140px',
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  const name = newTypeInput.toLowerCase().trim();
+                  if (name && !allFlowerTypes.includes(name)) {
+                    setPendingNewTypes((prev) => [...prev, name]);
+                    set('flowerTypes', [...form.flowerTypes, name]);
+                    setNewTypeInput('');
+                    setShowNewTypeInput(false);
+                  }
+                }}
+                className="rounded-full px-2 py-1 text-xs font-medium transition-colors"
+                style={{ color: 'var(--color-accent)' }}
+              >
+                Agregar
+              </button>
+              <button
+                type="button"
+                onClick={() => { setNewTypeInput(''); setShowNewTypeInput(false); }}
+                className="rounded-full px-2 py-1 text-xs transition-colors"
+                style={{ color: 'var(--color-muted)' }}
+              >
+                ×
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setShowNewTypeInput(true)}
+              className="rounded-full px-3 py-1 text-sm border border-dashed transition-colors hover:opacity-70"
+              style={{
+                borderColor: 'var(--color-border)',
+                color: 'var(--color-muted)',
+              }}
+            >
+              + Nuevo tipo
+            </button>
+          )}
           </div>
-        </FormField>
+        </div>
       </div>
 
       {/* Incluye */}
@@ -368,39 +910,7 @@ export default function ProductForm({ product, categories, onSuccess }: ProductF
         </FormField>
       </div>
 
-      {/* Orden de display */}
-      <div className="w-40">
-        <FormField label="Orden de display">
-          <Input
-            type="number"
-            value={form.displayOrder}
-            onChange={(e) => set('displayOrder', Number(e.target.value))}
-            min={0}
-          />
-        </FormField>
-      </div>
 
-      {/* Checkboxes */}
-      <div className="flex gap-6">
-        <label className="flex items-center gap-2 cursor-pointer text-sm" style={{ color: 'var(--color-dark)' }}>
-          <input
-            type="checkbox"
-            checked={form.isActive}
-            onChange={(e) => set('isActive', e.target.checked)}
-            className="w-4 h-4 accent-[var(--color-accent)]"
-          />
-          Activo
-        </label>
-        <label className="flex items-center gap-2 cursor-pointer text-sm" style={{ color: 'var(--color-dark)' }}>
-          <input
-            type="checkbox"
-            checked={form.isFeatured}
-            onChange={(e) => set('isFeatured', e.target.checked)}
-            className="w-4 h-4 accent-[var(--color-secondary)]"
-          />
-          Destacado
-        </label>
-      </div>
 
       {/* Error */}
       <FormError message={error} />

@@ -33,30 +33,6 @@ export interface Product {
   includes?: string[]; // e.g. ["24 rosas rojas", "Caja negra premium"]
   occasion?: string; // e.g. "Perfecto para San Valentín y aniversarios"
   note?: string; // e.g. "Incluye peluche"
-  colors?: ProductColor[];
-  flowerTypes?: ProductFlowerType[];
+  colors?: string[];
+  flowerTypes?: string[];
 }
-
-export const PRODUCT_COLORS = [
-  { value: 'rojo',     label: 'Rojo',     hex: '#c0392b' },
-  { value: 'rosa',     label: 'Rosa',     hex: '#e91e8c' },
-  { value: 'amarillo', label: 'Amarillo', hex: '#e8b84b' },
-  { value: 'blanco',   label: 'Blanco',   hex: '#e8e8e0' },
-  { value: 'morado',   label: 'Morado',   hex: '#7b1fa2' },
-  { value: 'naranja',  label: 'Naranja',  hex: '#ff6b2b' },
-  { value: 'verde',    label: 'Verde',    hex: '#2d5a1b' },
-  { value: 'mixto',    label: 'Mixto',    hex: null },
-] as const;
-
-export const PRODUCT_FLOWER_TYPES = [
-  'rosas',
-  'girasoles',
-  'orquídeas',
-  'astromelias',
-  'lirios',
-  'gerberas',
-  'mixto',
-] as const;
-
-export type ProductColor = (typeof PRODUCT_COLORS)[number]['value'];
-export type ProductFlowerType = (typeof PRODUCT_FLOWER_TYPES)[number];

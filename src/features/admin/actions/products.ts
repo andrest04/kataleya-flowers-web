@@ -8,6 +8,45 @@ import { slugify } from '@/features/admin/utils/slugify';
 import { destroyCloudinaryImage, destroyCloudinaryImages } from '@/lib/cloudinary';
 
 type ProductInsert = Database['public']['Tables']['products']['Insert'];
+type SupabaseClient = Awaited<ReturnType<typeof createClient>>;
+
+async function ensureColors(supabase: SupabaseClient, colors: { name: string; hex: string }[]) {
+  if (colors.length === 0) return;
+  const { data: existing } = await supabase
+    .from('product_colors')
+    .select('name, display_order')
+    .order('display_order', { ascending: false })
+    .limit(1);
+  const nextOrder = (existing?.length ? existing[0].display_order : 0) + 1;
+
+  await supabase.from('product_colors').upsert(
+    colors.map((c, i) => ({
+      name: c.name.toLowerCase().trim(),
+      label: c.name.charAt(0).toUpperCase() + c.name.slice(1).toLowerCase().trim(),
+      hex: c.hex || null,
+      display_order: nextOrder + i,
+    })),
+    { onConflict: 'name', ignoreDuplicates: true }
+  );
+}
+
+async function ensureFlowerTypes(supabase: SupabaseClient, names: string[]) {
+  if (names.length === 0) return;
+  const { data: existing } = await supabase
+    .from('flower_types')
+    .select('name, display_order')
+    .order('display_order', { ascending: false })
+    .limit(1);
+  const nextOrder = (existing?.length ? existing[0].display_order : 0) + 1;
+
+  await supabase.from('flower_types').upsert(
+    names.map((name, i) => ({
+      name: name.toLowerCase().trim(),
+      display_order: nextOrder + i,
+    })),
+    { onConflict: 'name', ignoreDuplicates: true }
+  );
+}
 
 function toInsertPayload(data: ProductFormData, slug: string): ProductInsert {
   return {
@@ -35,6 +74,14 @@ export async function createProduct(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const supabase = await createClient();
+
+    if (data.newFlowerTypes?.length) {
+      await ensureFlowerTypes(supabase, data.newFlowerTypes);
+    }
+    if (data.newColors?.length) {
+      await ensureColors(supabase, data.newColors);
+    }
+
     const slug = slugify(data.name);
     const payload = toInsertPayload(data, slug);
 
@@ -46,6 +93,7 @@ export async function createProduct(
 
     revalidatePath('/catalogo');
     revalidatePath('/admin/productos');
+    revalidatePath('/admin/tipos-de-flor');
     return { success: true };
   } catch (err) {
     return { success: false, error: err instanceof Error ? err.message : 'Error desconocido' };
@@ -58,6 +106,13 @@ export async function updateProduct(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const supabase = await createClient();
+
+    if (data.newFlowerTypes?.length) {
+      await ensureFlowerTypes(supabase, data.newFlowerTypes);
+    }
+    if (data.newColors?.length) {
+      await ensureColors(supabase, data.newColors);
+    }
 
     // Fetch current images to detect replacements
     const { data: current } = await supabase
@@ -138,6 +193,25 @@ export async function toggleProductStatus(
       .from('products')
       .update({ is_active: isActive })
       .eq('id', id);
+
+    if (error) return { success: false, error: error.message };
+
+    revalidatePath('/catalogo');
+    revalidatePath('/admin/productos');
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: err instanceof Error ? err.message : 'Error desconocido' };
+  }
+}
+
+export async function reorderProducts(
+  orderedIds: string[]
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const supabase = await createClient();
+    const { error } = await supabase.rpc('reorder_products', {
+      p_ordered_ids: orderedIds,
+    });
 
     if (error) return { success: false, error: error.message };
 
