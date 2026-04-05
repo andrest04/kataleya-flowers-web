@@ -1,9 +1,15 @@
 import Link from 'next/link';
 import { getAdminCategories } from '@/features/admin/queries/categories';
+import { getFlowerTypes } from '@/features/admin/queries/flowerTypes';
+import { getProductColors } from '@/features/admin/queries/productColors';
 import ProductForm from '@/features/admin/components/ProductForm';
 
 export default async function NuevoProductoPage() {
-  const categories = await getAdminCategories();
+  const [categories, flowerTypes, productColors] = await Promise.all([
+    getAdminCategories(),
+    getFlowerTypes(),
+    getProductColors(),
+  ]);
 
   return (
     <div className="space-y-6">
@@ -36,7 +42,7 @@ export default async function NuevoProductoPage() {
           border: '1px solid var(--color-border)',
         }}
       >
-        <ProductForm categories={categories} />
+        <ProductForm categories={categories} flowerTypes={flowerTypes} productColors={productColors} />
       </div>
     </div>
   );

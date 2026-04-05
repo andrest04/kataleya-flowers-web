@@ -133,34 +133,6 @@ export default function CategoryForm({ category }: CategoryFormProps) {
         </FormField>
       </div>
 
-      <div className="flex flex-wrap items-center gap-6">
-        <label className="flex items-center gap-2 cursor-pointer">
-          <input
-            name="isActive"
-            type="checkbox"
-            defaultChecked={initial.isActive}
-            className="w-4 h-4 rounded"
-            style={{ accentColor: 'var(--color-accent)' }}
-          />
-          <span className="text-sm font-medium" style={{ color: 'var(--color-dark)' }}>
-            Categoría activa
-          </span>
-        </label>
-
-        <label className="flex items-center gap-2 cursor-pointer">
-          <input
-            name="isFeatured"
-            type="checkbox"
-            defaultChecked={initial.isFeatured}
-            className="w-4 h-4 rounded"
-            style={{ accentColor: 'var(--color-secondary)' }}
-          />
-          <span className="text-sm font-medium" style={{ color: 'var(--color-dark)' }}>
-            Categoría destacada
-          </span>
-        </label>
-      </div>
-
       <div className="flex items-center gap-3 pt-2">
         <Button type="submit" variant="primary" size="md" loading={isPending}>
           {isPending

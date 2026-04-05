@@ -1,9 +1,8 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import type { Category, Product } from '@/features/catalog/types';
-import { PRODUCT_COLORS, PRODUCT_FLOWER_TYPES } from '@/features/catalog/types';
 import {
   filterProducts,
   hasActiveFilters,
@@ -15,9 +14,17 @@ import CategoryCard from '@/features/catalog/components/CategoryCard';
 import ProductCardComponent from '@/features/catalog/components/ProductCard';
 import FilterChip from '@/components/ui/FilterChip';
 
+interface ColorDef {
+  name: string;
+  label: string;
+  hex: string | null;
+}
+
 interface CatalogSearchProps {
   categories: Category[];
   products: Product[];
+  flowerTypes: string[];
+  productColors: ColorDef[];
 }
 
 function parseCommaList(value: string | null): string[] {
@@ -49,10 +56,12 @@ function CategoryGrid({ categories }: { categories: Category[] }) {
 function ActiveFilterChips({
   filters,
   categories,
+  productColors,
   onRemove,
   onClear,
 }: {
   filters: ProductFilters;
+  productColors: ColorDef[];
   categories: Category[];
   onRemove: (key: keyof ProductFilters, value?: string) => void;
   onClear: () => void;
@@ -79,7 +88,7 @@ function ActiveFilterChips({
     });
   }
   filters.colors.forEach((c) => {
-    const colorDef = PRODUCT_COLORS.find((pc) => pc.value === c);
+    const colorDef = productColors.find((pc) => pc.name === c);
     chips.push({
       label: colorDef?.label ?? c,
       onRemove: () => onRemove('colors', c),
@@ -112,7 +121,7 @@ function ActiveFilterChips({
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export default function CatalogSearch({ categories, products }: CatalogSearchProps) {
+export default function CatalogSearch({ categories, products, flowerTypes, productColors }: CatalogSearchProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -144,15 +153,6 @@ export default function CatalogSearch({ categories, products }: CatalogSearchPro
     setInputValue(urlQ);
   }, [urlQ]);
 
-  // Debounce text → URL
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      updateParam('q', inputValue.trim());
-    }, 300);
-    return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [inputValue]);
-
   const updateParam = useCallback(
     (key: string, value: string) => {
       const params = new URLSearchParams(searchParams.toString());
@@ -165,6 +165,20 @@ export default function CatalogSearch({ categories, products }: CatalogSearchPro
     },
     [searchParams, pathname, router],
   );
+
+  // Stable ref for debounce effect — avoids re-triggering when searchParams change
+  const updateParamRef = useRef(updateParam);
+  useEffect(() => {
+    updateParamRef.current = updateParam;
+  }, [updateParam]);
+
+  // Debounce text → URL
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      updateParamRef.current('q', inputValue.trim());
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [inputValue]);
 
   const updateListParam = useCallback(
     (key: string, list: string[]) => {
@@ -317,12 +331,12 @@ export default function CatalogSearch({ categories, products }: CatalogSearchPro
           Color
         </p>
         <div className="flex flex-wrap gap-2">
-          {PRODUCT_COLORS.map((colorDef) => {
-            const active = urlColors.includes(colorDef.value);
+          {productColors.map((colorDef) => {
+            const active = urlColors.includes(colorDef.name);
             return (
               <button
-                key={colorDef.value}
-                onClick={() => updateListParam('color', toggleValue(urlColors, colorDef.value))}
+                key={colorDef.name}
+                onClick={() => updateListParam('color', toggleValue(urlColors, colorDef.name))}
                 className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-body text-xs font-medium transition-all"
                 style={
                   active
@@ -359,7 +373,7 @@ export default function CatalogSearch({ categories, products }: CatalogSearchPro
           Tipo de flor
         </p>
         <div className="flex flex-wrap gap-2">
-          {PRODUCT_FLOWER_TYPES.map((type) => {
+          {flowerTypes.map((type) => {
             const active = urlTypes.includes(type);
             return (
               <button
@@ -553,6 +567,7 @@ export default function CatalogSearch({ categories, products }: CatalogSearchPro
             <ActiveFilterChips
               filters={filters}
               categories={categories}
+              productColors={productColors}
               onRemove={handleRemoveFilter}
               onClear={clearAllFilters}
             />

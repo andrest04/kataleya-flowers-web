@@ -1,7 +1,4 @@
-import type { ProductColor, ProductFlowerType } from '@/lib/supabase/types';
 import type { PriceVariantRow } from '@/features/catalog/types';
-
-export type { ProductColor, ProductFlowerType };
 
 export interface ProductFormData {
   name: string;
@@ -11,8 +8,8 @@ export interface ProductFormData {
   categoryId: string;
   imageUrl: string;
   images: string[];
-  colors: ProductColor[];
-  flowerTypes: ProductFlowerType[];
+  colors: string[];
+  flowerTypes: string[];
   includes: string[];
   priceVariants: PriceVariantRow[] | null;
   occasion: string;
@@ -20,6 +17,8 @@ export interface ProductFormData {
   isActive: boolean;
   isFeatured: boolean;
   displayOrder: number;
+  newFlowerTypes?: string[];
+  newColors?: { name: string; hex: string }[];
 }
 
 export interface CategoryFormData {
