@@ -55,13 +55,7 @@ export default function AboutSection() {
                       "color-mix(in srgb, var(--color-accent) 16%, transparent)",
                   }}
                 >
-                  <dt
-                    className="text-4xl leading-none"
-                    style={{
-                      color: "var(--color-accent)",
-                      fontFamily: "var(--font-heading)",
-                    }}
-                  >
+                  <dt className="text-4xl leading-none font-heading text-accent">
                     {highlight.value}
                   </dt>
                   <dd className="mt-3 text-sm leading-6">{highlight.label}</dd>

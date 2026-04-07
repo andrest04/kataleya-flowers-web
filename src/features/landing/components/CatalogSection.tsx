@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { Flower2 } from "lucide-react";
 import type { Category } from "@/features/catalog/types";
 import Button from "@/components/ui/Button";
 import SectionHeader from "@/components/ui/SectionHeader";
@@ -32,7 +33,7 @@ export default function CatalogSection({ categories }: CatalogSectionProps) {
             <Link
               key={category.id}
               href={`/catalogo/${category.slug}`}
-              className="group shrink-0 w-[46vw] sm:w-auto overflow-hidden rounded-[1.75rem] border transition-all duration-300 hover:-translate-y-1"
+              className="group shrink-0 w-[46vw] sm:w-auto cursor-pointer overflow-hidden rounded-[1.75rem] border transition-all duration-300 hover:-translate-y-1"
               style={{
                 backgroundColor: "var(--color-cream)",
                 borderColor:
@@ -58,41 +59,27 @@ export default function CatalogSection({ categories }: CatalogSectionProps) {
                   />
                 ) : (
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <span
-                      className="text-4xl opacity-30"
+                    <Flower2
+                      className="h-10 w-10 opacity-30"
                       style={{ color: "var(--color-secondary)" }}
-                    >
-                      🌸
-                    </span>
+                    />
                   </div>
                 )}
               </div>
 
               <div className="space-y-2 px-6 py-6">
-                <h3
-                  className="text-xl"
-                  style={{
-                    color: "var(--color-dark)",
-                    fontFamily: "var(--font-heading)",
-                  }}
-                >
+                <h3 className="text-xl font-heading text-dark">
                   {category.name}
                 </h3>
-                <p className="hidden sm:block text-sm leading-6" style={{ color: "var(--color-dark)" }}>
+                <p className="hidden sm:block text-sm leading-6 text-dark">
                   {category.description}
                 </p>
                 {category.priceFrom !== undefined && (
-                  <p
-                    className="text-sm font-semibold"
-                    style={{ color: "var(--color-secondary)" }}
-                  >
+                  <p className="text-sm font-semibold text-secondary">
                     Desde S/{category.priceFrom.toFixed(2)}
                   </p>
                 )}
-                <p
-                  className="text-xs font-semibold tracking-[0.15em] uppercase mt-3"
-                  style={{ color: "var(--color-accent)" }}
-                >
+                <p className="text-xs font-semibold tracking-[0.15em] uppercase mt-3 text-accent">
                   Ver productos →
                 </p>
               </div>

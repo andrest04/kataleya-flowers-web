@@ -1,4 +1,5 @@
 import { FaInstagram, FaWhatsapp } from "react-icons/fa";
+import { Clock } from "lucide-react";
 import { BUSINESS } from "@/lib/constants";
 import BusinessHoursBadge from "@/components/shared/BusinessHoursBadge";
 import SectionHeader from "@/components/ui/SectionHeader";
@@ -52,16 +53,10 @@ export default function ContactSection() {
         {/* Lado derecho - Botones y horario */}
         <div className="space-y-6">
           <div className="space-y-3">
-            <h3
-              className="text-3xl sm:text-4xl"
-              style={{
-                color: "var(--color-primary)",
-                fontFamily: "var(--font-heading)",
-              }}
-            >
+            <h3 className="text-3xl sm:text-4xl font-heading text-primary">
               ¿Listo para crear algo especial?
             </h3>
-            <p className="text-base" style={{ color: "var(--color-dark)" }}>
+            <p className="text-base text-dark">
               Cuéntanos qué necesitas y lo hacemos realidad.
             </p>
           </div>
@@ -128,11 +123,8 @@ export default function ContactSection() {
             }}
           >
             <div className="flex items-center gap-3">
-              <span className="text-xl">🕐</span>
-              <span
-                className="text-sm font-medium"
-                style={{ color: "var(--color-dark)" }}
-              >
+              <Clock className="h-5 w-5 shrink-0" style={{ color: "var(--color-accent)" }} />
+              <span className="text-sm font-medium text-dark">
                 {BUSINESS.hours.weekdays} · {BUSINESS.hours.time}
               </span>
             </div>
