@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { FaInstagram, FaWhatsapp } from "react-icons/fa";
 import { BUSINESS } from "@/lib/constants";
 import Button from "@/components/ui/Button";
@@ -7,30 +8,21 @@ const WHATSAPP_LINK = BUSINESS.whatsappWithMessage(
 );
 
 const NAV_LINKS = [
-  { href: "#hero", label: "Inicio" },
-  { href: "#catalogo", label: "Catalogo" },
-  { href: "#nosotros", label: "Nosotros" },
-  { href: "#contacto", label: "Contacto" },
+  { href: "/#hero", label: "Inicio" },
+  { href: "/#catalogo", label: "Catalogo" },
+  { href: "/#nosotros", label: "Nosotros" },
+  { href: "/#contacto", label: "Contacto" },
 ];
 
 const COPYRIGHT_YEAR = 2026;
 
 export default function Footer() {
   return (
-    <footer
-      className="px-4 py-10 sm:px-6 lg:px-8"
-      style={{
-        backgroundColor: "var(--color-accent)",
-        color: "var(--color-cream)",
-      }}
-    >
+    <footer className="bg-accent text-cream px-4 py-10 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl space-y-8">
         <div className="grid gap-8 text-center md:grid-cols-[1.1fr_0.9fr] md:items-center md:text-left">
           <div className="space-y-3">
-            <h2
-              className="text-2xl leading-none sm:text-3xl"
-              style={{ fontFamily: "var(--font-heading)" }}
-            >
+            <h2 className="text-2xl leading-none sm:text-3xl font-heading">
               Kataleya Flawers
             </h2>
             <p className="max-w-md text-sm opacity-90 sm:text-base">
@@ -88,13 +80,13 @@ export default function Footer() {
             <ul className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm sm:justify-start">
               {NAV_LINKS.map((link) => (
                 <li key={link.href}>
-                  <a
+                  <Link
                     href={link.href}
                     className="inline-block rounded-sm py-0.5 opacity-90 transition-opacity hover:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2"
                     style={{ outlineColor: "var(--color-secondary)" }}
                   >
                     {link.label}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -108,13 +100,13 @@ export default function Footer() {
               Atencion en Lima, Peru para entregas y recojo.
             </p>
             <p className="opacity-80">WhatsApp: +{BUSINESS.phone}</p>
-            <a
-              href="#contacto"
+            <Link
+              href="/#contacto"
               className="inline-block rounded-sm font-semibold text-[var(--color-secondary)] transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2"
               style={{ outlineColor: "var(--color-secondary)" }}
             >
               Ver ubicacion y mapa
-            </a>
+            </Link>
           </div>
         </div>
 
