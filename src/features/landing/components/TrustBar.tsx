@@ -74,7 +74,7 @@ function AnimatedStat({
       <span
         className="text-2xl md:text-3xl font-bold"
         style={{
-          fontFamily: "var(--font-display)",
+          fontFamily: "var(--font-heading)",
           color: "var(--color-secondary)",
         }}
       >
