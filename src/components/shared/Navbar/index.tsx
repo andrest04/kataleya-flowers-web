@@ -59,17 +59,16 @@ export default function Navbar() {
           </button>
 
           {/* Logo */}
-          <button
-            type="button"
-            className="cursor-pointer text-[1.45rem] leading-none transition-all duration-300"
-            onClick={() => handleNavigate("#hero")}
+          <Link
+            href="/"
+            className="text-[1.45rem] leading-none transition-all duration-300"
             style={{
               color: "var(--color-primary)",
-              fontFamily: "var(--font-display)",
+              fontFamily: "var(--font-heading)",
             }}
           >
             Kataleya Flawers
-          </button>
+          </Link>
 
           {/* Desktop: Catálogo + search bar con autocomplete + CTA */}
           <div className="hidden items-center gap-4 md:flex">
