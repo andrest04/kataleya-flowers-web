@@ -1,7 +1,24 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { LazyMotion, domAnimation, m, AnimatePresence } from "framer-motion";
+
+function usePrefersReducedMotion(): boolean {
+  const [prefersReduced, setPrefersReduced] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => setPrefersReduced(mq.matches);
+    const timeoutId = window.setTimeout(update, 0);
+    mq.addEventListener("change", (e) => setPrefersReduced(e.matches));
+    return () => {
+      window.clearTimeout(timeoutId);
+      mq.removeEventListener("change", (e) => setPrefersReduced(e.matches));
+    };
+  }, []);
+
+  return prefersReduced;
+}
 import Image from "next/image";
 import HeroButtons from "./HeroButtons";
 import TrustBar from "./TrustBar";
@@ -85,6 +102,7 @@ const slideVariants = {
 export default function HeroSection() {
   const [[page, direction], setPage] = useState([0, 0]);
   const [imageExists, setImageExists] = useState<Record<number, boolean>>({});
+  const prefersReducedMotion = usePrefersReducedMotion();
 
   const slideIndex = ((page % slides.length) + slides.length) % slides.length;
 
@@ -121,13 +139,14 @@ export default function HeroSection() {
     }
   };
 
-  // Auto-play every AUTOPLAY_INTERVAL milliseconds
+  // Auto-play every AUTOPLAY_INTERVAL milliseconds (disabled when reduced motion preferred)
   useEffect(() => {
+    if (prefersReducedMotion) return;
     const timer = setInterval(() => {
       paginate(1);
     }, AUTOPLAY_INTERVAL);
     return () => clearInterval(timer);
-  }, [paginate]);
+  }, [paginate, prefersReducedMotion]);
 
   // Check if images exist
   useEffect(() => {
@@ -144,6 +163,17 @@ export default function HeroSection() {
   const currentSlide = slides[slideIndex];
   const hasImage = imageExists[currentSlide.id];
 
+  const reducedVariants = useMemo(() => ({
+    enter: { opacity: 0 },
+    center: { opacity: 1 },
+    exit: { opacity: 0 },
+  }), []);
+
+  const activeVariants = prefersReducedMotion ? reducedVariants : slideVariants;
+  const activeTransition = prefersReducedMotion
+    ? { duration: 0.3 }
+    : { type: "spring" as const, stiffness: 300, damping: 30 };
+
   return (
     <LazyMotion features={domAnimation}>
       <section
@@ -154,19 +184,10 @@ export default function HeroSection() {
           {/* Texto Hero */}
           <div className="space-y-8">
             <div className="space-y-5">
-              <p
-                className="text-sm font-semibold tracking-[0.22em] uppercase"
-                style={{ color: "var(--color-accent)" }}
-              >
+              <p className="text-sm font-semibold tracking-[0.22em] uppercase text-accent">
                 Flores Premium de Lima
               </p>
-              <h1
-                className="text-5xl leading-none sm:text-6xl lg:text-7xl"
-                style={{
-                  color: "var(--color-primary)",
-                  fontFamily: "var(--font-heading)",
-                }}
-              >
+              <h1 className="text-5xl leading-none sm:text-6xl lg:text-7xl font-heading text-primary">
                 Kataleya Flawers
               </h1>
               <p className="max-w-2xl text-lg leading-8">
@@ -182,13 +203,16 @@ export default function HeroSection() {
           {/* Carrusel */}
           <div
             className="relative overflow-hidden rounded-3xl h-64 sm:h-80 lg:h-[440px]"
+            role="region"
+            aria-roledescription="carrusel"
+            aria-label="Galería de arreglos florales"
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
           >
             {/* Badge: Certificado de frescura */}
             <div className="absolute left-4 top-4 z-10 flex items-center gap-2 rounded-full px-3 py-1.5 shadow-lg backdrop-blur-sm" style={{ backgroundColor: "color-mix(in srgb, var(--color-white) 95%, transparent)" }}>
               <span
-                className="h-2 w-2 rounded-full animate-pulse"
+                className="h-2 w-2 rounded-full animate-pulse motion-reduce:animate-none"
                 style={{ backgroundColor: "var(--color-accent)" }}
               />
               <span
@@ -200,20 +224,20 @@ export default function HeroSection() {
             </div>
 
             {/* Slides con AnimatePresence */}
+            <div aria-live="polite" aria-atomic="true" className="absolute inset-0">
             <AnimatePresence initial={false} custom={direction}>
               <m.div
                 key={page}
                 custom={direction}
-                variants={slideVariants}
+                variants={activeVariants}
                 initial="enter"
                 animate="center"
                 exit="exit"
-                transition={{
-                  type: "spring",
-                  stiffness: 300,
-                  damping: 30,
-                }}
+                transition={activeTransition}
                 className="absolute inset-0"
+                role="group"
+                aria-roledescription="slide"
+                aria-label={`Slide ${slideIndex + 1} de ${slides.length}: ${currentSlide.label}`}
               >
                 {hasImage ? (
                   <Image
@@ -249,18 +273,18 @@ export default function HeroSection() {
                 {/* Texto del slide */}
                 <div className="absolute bottom-6 left-6 right-6 text-white">
                   <m.p
-                    initial={{ y: 20, opacity: 0 }}
+                    initial={prefersReducedMotion ? false : { y: 20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.2, duration: 0.4 }}
+                    transition={prefersReducedMotion ? { duration: 0 } : { delay: 0.2, duration: 0.4 }}
                     className="text-xl font-semibold"
                     style={{ fontFamily: "var(--font-heading)" }}
                   >
                     {currentSlide.label}
                   </m.p>
                   <m.p
-                    initial={{ y: 20, opacity: 0 }}
+                    initial={prefersReducedMotion ? false : { y: 20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
-                    transition={{ delay: 0.3, duration: 0.4 }}
+                    transition={prefersReducedMotion ? { duration: 0 } : { delay: 0.3, duration: 0.4 }}
                     className="text-sm opacity-90"
                   >
                     {currentSlide.sublabel}
@@ -268,11 +292,12 @@ export default function HeroSection() {
                 </div>
               </m.div>
             </AnimatePresence>
+            </div>
 
             {/* Flechas de navegación */}
             <button
               onClick={() => paginate(-1)}
-              className="absolute left-3 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full shadow-lg transition-all hover:scale-105"
+              className="absolute left-3 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full shadow-lg transition-all hover:scale-105"
               style={{ backgroundColor: "color-mix(in srgb, var(--color-white) 90%, transparent)", color: "var(--color-dark)" }}
               aria-label="Slide anterior"
             >
@@ -280,7 +305,7 @@ export default function HeroSection() {
             </button>
             <button
               onClick={() => paginate(1)}
-              className="absolute right-3 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full shadow-lg transition-all hover:scale-105"
+              className="absolute right-3 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full shadow-lg transition-all hover:scale-105"
               style={{ backgroundColor: "color-mix(in srgb, var(--color-white) 90%, transparent)", color: "var(--color-dark)" }}
               aria-label="Siguiente slide"
             >
@@ -300,7 +325,7 @@ export default function HeroSection() {
                 <button
                   key={slide.id}
                   onClick={() => goToSlide(index)}
-                  className="h-2 rounded-full transition-all duration-300"
+                  className="h-2 cursor-pointer rounded-full transition-all duration-300"
                   style={{
                     width: index === slideIndex ? "24px" : "8px",
                     backgroundColor:

@@ -33,7 +33,7 @@ export default function WhatsAppFloat() {
 
         {/* Pulse ring */}
         <span
-          className="absolute inset-0 rounded-full animate-pulse"
+          className="absolute inset-0 rounded-full animate-pulse motion-reduce:animate-none"
           style={{ backgroundColor: "var(--color-whatsapp)", opacity: 0.35 }}
           aria-hidden="true"
         />
