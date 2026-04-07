@@ -15,20 +15,11 @@ export default function SectionHeader({
 
   return (
     <div className={`space-y-4 ${textAlign}`}>
-      <p
-        className="text-sm font-semibold tracking-[0.2em] uppercase"
-        style={{ color: 'var(--color-accent)' }}
-      >
+      <p className="text-sm font-semibold tracking-[0.2em] uppercase text-accent">
         {subtitle}
       </p>
       <div className="space-y-3">
-        <h2
-          className="text-4xl sm:text-5xl"
-          style={{
-            color: 'var(--color-primary)',
-            fontFamily: 'var(--font-heading)',
-          }}
-        >
+        <h2 className="text-4xl sm:text-5xl font-heading text-primary">
           {title}
         </h2>
         {description && (
