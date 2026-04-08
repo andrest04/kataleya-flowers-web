@@ -32,21 +32,21 @@ const AUTOPLAY_INTERVAL = 4000; // milliseconds
 const slides = [
   {
     id: 1,
-    image: "/hero-1.jpg",
+    image: "/images/hero/arreglos.webp",
     bgColor: "var(--color-primary)",
     label: "Arreglos Hoy",
     sublabel: "Diseño personalizado, entrega rápida en Lima",
   },
   {
     id: 2,
-    image: "/hero-2.jpg",
+    image: "/images/hero/orquideas.webp",
     bgColor: "var(--color-accent)",
     label: "Orquídeas Seleccionadas",
     sublabel: "Las variedades más finas, disponibles ahora",
   },
   {
     id: 3,
-    image: "/hero-3.jpg",
+    image: "/images/hero/regalos.webp",
     bgColor: "var(--color-secondary)",
     label: "Regalos Premium",
     sublabel: "Flores frescas para ocasiones especiales",
