@@ -3,9 +3,7 @@ import { FaInstagram, FaWhatsapp } from "react-icons/fa";
 import { BUSINESS } from "@/lib/constants";
 import Button from "@/components/ui/Button";
 
-const WHATSAPP_LINK = BUSINESS.whatsappWithMessage(
-  "Hola Kataleya Flawers, quiero hacer un pedido.",
-);
+const WHATSAPP_LINK = BUSINESS.whatsappWithMessage(BUSINESS.messages.whatsappDefault);
 
 const NAV_LINKS = [
   { href: "/#hero", label: "Inicio" },
@@ -23,7 +21,7 @@ export default function Footer() {
         <div className="grid gap-8 text-center md:grid-cols-[1.1fr_0.9fr] md:items-center md:text-left">
           <div className="space-y-3">
             <h2 className="text-2xl leading-none sm:text-3xl font-heading">
-              Kataleya Flawers
+              {BUSINESS.name}
             </h2>
             <p className="max-w-md text-sm opacity-90 sm:text-base">
               Arreglos florales hechos con amor para cada ocasion especial.
@@ -39,7 +37,7 @@ export default function Footer() {
               size="md"
               href={WHATSAPP_LINK}
               external
-              aria-label="Escribir a Kataleya Flawers por WhatsApp"
+              aria-label={`Escribir a ${BUSINESS.name} por WhatsApp`}
               className="w-full sm:w-auto focus-visible:outline-2 focus-visible:outline-offset-2"
               style={{ outlineColor: "var(--color-secondary)" }}
             >
@@ -52,7 +50,7 @@ export default function Footer() {
               size="md"
               href={BUSINESS.instagram}
               external
-              aria-label="Seguir a Kataleya Flawers en Instagram"
+              aria-label={`Seguir a ${BUSINESS.name} en Instagram`}
               className="w-full sm:w-auto focus-visible:outline-2 focus-visible:outline-offset-2"
               style={{
                 borderColor: "color-mix(in srgb, var(--color-cream) 45%, transparent)",
@@ -97,7 +95,7 @@ export default function Footer() {
               Confianza
             </p>
             <p className="opacity-90">
-              Atencion en Lima, Peru para entregas y recojo.
+              Atencion en {BUSINESS.location} para entregas y recojo.
             </p>
             <p className="opacity-80">WhatsApp: +{BUSINESS.phone}</p>
             <Link
@@ -111,7 +109,7 @@ export default function Footer() {
         </div>
 
         <p className="text-center text-xs opacity-80 sm:text-left sm:text-sm">
-          © {COPYRIGHT_YEAR} Kataleya Flawers · Hecho con amor en Lima, Peru
+          © {COPYRIGHT_YEAR} {BUSINESS.name} · Hecho con amor en {BUSINESS.location}
         </p>
       </div>
     </footer>

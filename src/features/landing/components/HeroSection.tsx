@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { LazyMotion, domAnimation, m, AnimatePresence } from "framer-motion";
+import { BUSINESS } from "@/lib/constants";
 
 function usePrefersReducedMotion(): boolean {
   const [prefersReduced, setPrefersReduced] = useState(false);
@@ -188,12 +189,12 @@ export default function HeroSection() {
                 Flores Premium de Lima
               </p>
               <h1 className="text-5xl leading-none sm:text-6xl lg:text-7xl font-heading text-primary">
-                Kataleya Flawers
+                {BUSINESS.name}
               </h1>
               <p className="max-w-2xl text-lg leading-8">
                 Arreglos florales diseñados con pasión y flores frescas del más
-                alto calibre. Más de 30 años transformando momentos especiales
-                en Lima.
+                alto calibre. Más de {BUSINESS.experience} años transformando momentos especiales
+                en {BUSINESS.location}.
               </p>
             </div>
 

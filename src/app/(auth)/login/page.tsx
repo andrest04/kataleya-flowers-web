@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { BUSINESS } from '@/lib/constants';
 import { createClient } from '@/lib/supabase/client';
 
 export default function LoginPage() {
@@ -43,7 +44,7 @@ export default function LoginPage() {
             className="font-serif text-3xl"
             style={{ color: 'var(--color-primary)' }}
           >
-            Kataleya Flawers
+            {BUSINESS.name}
           </h1>
           <p className="text-sm mt-1" style={{ color: 'var(--color-muted)' }}>
             Panel de administración

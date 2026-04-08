@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { BUSINESS } from "@/lib/constants";
 import { useNavbar } from "./useNavbar";
 import DesktopSearch from "./DesktopSearch";
 import MobileDrawer from "./MobileDrawer";
@@ -67,7 +68,7 @@ export default function Navbar() {
               fontFamily: "var(--font-heading)",
             }}
           >
-            Kataleya Flawers
+            {BUSINESS.name}
           </Link>
 
           {/* Desktop: Catálogo + search bar con autocomplete + CTA */}

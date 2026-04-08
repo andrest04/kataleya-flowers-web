@@ -2,6 +2,7 @@
 
 import type { FormEvent, RefObject } from "react";
 import Link from "next/link";
+import { BUSINESS } from "@/lib/constants";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/primitives/sheet";
 import SearchResultItem from "@/components/shared/SearchResultItem";
 import { primaryLinks, secondaryLinks } from "./constants";
@@ -42,7 +43,7 @@ export default function MobileDrawer({
         {/* Header */}
         <div className="flex items-center justify-between border-b border-border px-6 py-5">
           <SheetTitle className="text-lg text-primary font-heading">
-            Kataleya Flawers
+            {BUSINESS.name}
           </SheetTitle>
         </div>
 

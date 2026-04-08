@@ -12,8 +12,8 @@ const baseDescription = `Floristería en Lima con ${BUSINESS.experience} años d
 
 export const metadata: Metadata = {
   title: {
-    default: "Kataleya Flawers",
-    template: "%s | Kataleya Flawers",
+    default: BUSINESS.name,
+    template: `%s | ${BUSINESS.name}`,
   },
   description: baseDescription,
   icons: {
@@ -22,14 +22,14 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "es_PE",
-    siteName: "Kataleya Flawers",
-    title: "Kataleya Flawers — Floristería en Lima",
+    siteName: BUSINESS.name,
+    title: `${BUSINESS.name} — Floristería en ${BUSINESS.location}`,
     description: baseDescription,
   },
   twitter: {
     card: "summary",
-    title: "Kataleya Flawers — Floristería en Lima",
-    description: `Floristería en Lima con ${BUSINESS.experience} años de experiencia en arreglos florales y orquídeas.`,
+    title: `${BUSINESS.name} — Floristería en ${BUSINESS.location}`,
+    description: `Floristería en ${BUSINESS.location} con ${BUSINESS.experience} años de experiencia en arreglos florales y orquídeas.`,
   },
 };
 
@@ -47,9 +47,9 @@ export default function RootLayout({
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "Florist",
-              name: "Kataleya Flawers",
-              description: `Floristería en Lima con ${BUSINESS.experience} años de experiencia en arreglos florales y orquídeas.`,
-              url: "https://kataleyaflawers.com",
+              name: BUSINESS.name,
+              description: `Floristería en ${BUSINESS.location} con ${BUSINESS.experience} años de experiencia en arreglos florales y orquídeas.`,
+              url: BUSINESS.website,
               telephone: `+${BUSINESS.phone}`,
               address: {
                 "@type": "PostalAddress",
@@ -67,8 +67,8 @@ export default function RootLayout({
                     "Friday",
                     "Saturday",
                   ],
-                  opens: "08:00",
-                  closes: "19:00",
+                  opens: BUSINESS.hours.opens,
+                  closes: BUSINESS.hours.closes,
                 },
               ],
               sameAs: [BUSINESS.instagram],

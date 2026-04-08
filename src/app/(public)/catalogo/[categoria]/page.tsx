@@ -1,6 +1,7 @@
 import React from "react";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { BUSINESS } from "@/lib/constants";
 import { getCategories } from "@/features/catalog/queries/getCategories";
 import { getProductsByCategory } from "@/features/catalog/queries/getProductsByCategory";
 import ProductGrid from "@/features/catalog/components/ProductGrid";
@@ -33,19 +34,19 @@ export async function generateMetadata({
 
     if (!category) {
       return {
-        title: "Categoria no encontrada | Kataleya Flawers",
+        title: `Categoria no encontrada | ${BUSINESS.name}`,
         description: "La categoria solicitada no existe en nuestro catalogo.",
       };
     }
 
     return {
-      title: `${category.name} | Catalogo Kataleya Flawers`,
+      title: `${category.name} | Catalogo ${BUSINESS.name}`,
       description: category.description,
     };
   } catch {
     return {
-      title: "Catalogo | Kataleya Flawers",
-      description: "Arreglos florales premium en Lima.",
+      title: `Catalogo | ${BUSINESS.name}`,
+      description: `Arreglos florales premium en ${BUSINESS.location}.`,
     };
   }
 }

@@ -7,7 +7,7 @@ import { BUSINESS } from "@/lib/constants";
 import { clientTrackEvent } from "@/features/analytics/lib/clientTrack";
 
 export default function WhatsAppFloat() {
-  const href = BUSINESS.whatsappWithMessage("Hola, me gustaría hacer un pedido");
+  const href = BUSINESS.whatsappWithMessage(BUSINESS.messages.whatsappFloat);
 
   return (
     <LazyMotion features={domAnimation}>

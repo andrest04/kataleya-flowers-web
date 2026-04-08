@@ -39,11 +39,11 @@ export default function ContactSection() {
           />
 
           <iframe
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3900.667835343661!2d-77.0213840240266!3d-12.134864543549192!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9105b7fe8f580c29%3A0xf37f77a4ef274530!2sFlorer%C3%ADa%20Floritel!5e0!3m2!1sen!2spe!4v1773457299751!5m2!1sen!2spe"
+            src={BUSINESS.mapsEmbedUrl}
             width="100%"
             height="220"
             style={{ border: 0, borderRadius: "12px" }}
-            title="Mapa de ubicación de Kataleya Flawers"
+            title={`Mapa de ubicación de ${BUSINESS.name}`}
             allowFullScreen
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"

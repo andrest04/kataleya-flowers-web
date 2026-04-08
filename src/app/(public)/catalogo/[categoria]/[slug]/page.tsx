@@ -56,7 +56,7 @@ export async function generateMetadata({
 
     if (!product) {
       return {
-        title: "Producto no encontrado | Kataleya Flawers",
+        title: `Producto no encontrado | ${BUSINESS.name}`,
         description: "El producto solicitado no esta disponible en el catalogo.",
       };
     }
@@ -67,19 +67,19 @@ export async function generateMetadata({
 
     if (!category) {
       return {
-        title: `${product.name} | Kataleya Flawers`,
+        title: `${product.name} | ${BUSINESS.name}`,
         description: product.description,
       };
     }
 
     return {
-      title: `${product.name} | ${category.name} | Kataleya Flawers`,
+      title: `${product.name} | ${category.name} | ${BUSINESS.name}`,
       description: product.description,
     };
   } catch {
     return {
-      title: "Kataleya Flawers",
-      description: "Arreglos florales premium en Lima.",
+      title: BUSINESS.name,
+      description: `Arreglos florales premium en ${BUSINESS.location}.`,
     };
   }
 }
@@ -107,7 +107,7 @@ export default async function ProductoPage({
   }
 
   const whatsappUrl = BUSINESS.whatsappWithMessage(
-    `Hola, me interesa el producto: ${product.name}`
+    BUSINESS.messages.whatsappProduct(product.name)
   );
 
   return (

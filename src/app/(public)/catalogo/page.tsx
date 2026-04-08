@@ -1,5 +1,6 @@
 import React, { Suspense } from "react";
 import type { Metadata } from "next";
+import { BUSINESS } from "@/lib/constants";
 import type { Category } from "@/features/catalog/types";
 import { getCategories } from "@/features/catalog/queries/getCategories";
 import { getProducts } from "@/features/catalog/queries/getProducts";
@@ -26,9 +27,9 @@ function CategoryGridFallback({
 }
 
 export const metadata: Metadata = {
-  title: "Catalogo de Flores | Kataleya Flawers",
+  title: `Catalogo de Flores | ${BUSINESS.name}`,
   description:
-    "Explora nuestro catalogo de arreglos florales, orquideas y regalos premium disponibles en Lima.",
+    `Explora nuestro catalogo de arreglos florales, orquideas y regalos premium disponibles en ${BUSINESS.location}.`,
 };
 
 export default async function CatalogoPage(): Promise<React.ReactElement> {

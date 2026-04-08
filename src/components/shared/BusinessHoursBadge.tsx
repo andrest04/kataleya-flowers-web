@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { BUSINESS } from "@/lib/constants";
 
 function isBusinessOpen(): boolean {
   const now = new Date();
@@ -12,8 +13,10 @@ function isBusinessOpen(): boolean {
   const day = peru.getDay(); // 0 = Sunday, 1 = Monday ... 6 = Saturday
   const hour = peru.getHours(); // 0-23
 
-  // Open Monday–Saturday (1–6), 08:00–18:59 (i.e. before 19:00)
-  return day >= 1 && day <= 6 && hour >= 8 && hour < 19;
+  const opensHour = Number(BUSINESS.hours.opens.split(":")[0]);
+  const closesHour = Number(BUSINESS.hours.closes.split(":")[0]);
+
+  return BUSINESS.hours.openDays.includes(day) && hour >= opensHour && hour < closesHour;
 }
 
 export default function BusinessHoursBadge() {
