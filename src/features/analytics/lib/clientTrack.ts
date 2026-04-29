@@ -53,5 +53,13 @@ export function clientTrackEvent(params: ClientTrackParams): void {
 
   if (!shouldTrack(params.eventType, identifier)) return;
 
-  trackEvent(params);
+  // Tracking server-side es fire-and-forget intencional: NO bloqueamos la UX
+  // del usuario esperando confirmación. Si el server action falla, lo logueamos
+  // en dev pero NO interrumpimos la navegación. `void` no aplica porque
+  // queremos capturar errores en silencio sin perder visibilidad en dev.
+  trackEvent(params).catch((err: unknown) => {
+    if (process.env.NODE_ENV !== "production") {
+      console.error("[analytics] trackEvent failed:", err);
+    }
+  });
 }

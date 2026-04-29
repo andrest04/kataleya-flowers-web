@@ -2,6 +2,7 @@
 
 import type { FormEvent, RefObject } from "react";
 import Link from "next/link";
+import { ChevronRight, Search } from "lucide-react";
 import type { SearchResult } from "./constants";
 import SearchResultItem from "@/components/shared/SearchResultItem";
 
@@ -26,10 +27,14 @@ export default function DesktopSearch({
   desktopSearchRef,
   clearSearch,
 }: DesktopSearchProps) {
+  const trimmedQuery = searchQuery.trim();
+  const isExpanded = searchResults.length > 0;
+
   return (
     <div ref={desktopSearchRef} className="relative">
       <form
         onSubmit={handleSearchSubmit}
+        role="search"
         className="flex items-center gap-2 rounded-full px-4 py-2 transition-all duration-300"
         style={{
           backgroundColor: isScrolled
@@ -43,33 +48,37 @@ export default function DesktopSearch({
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Buscar flores..."
-          className="w-32 bg-transparent text-sm outline-none lg:w-48"
-          style={{ color: "var(--color-dark)", fontFamily: "var(--font-body)" }}
+          className="w-32 bg-transparent font-body text-sm text-(--color-dark) outline-none lg:w-48"
           aria-label="Buscar productos"
+          // ARIA combobox pattern: input controla un listbox externo.
+          role="combobox"
           aria-autocomplete="list"
+          aria-expanded={isExpanded}
           aria-controls="search-dropdown"
         />
-        <button type="submit" className="shrink-0 cursor-pointer" aria-label="Buscar">
-          <svg
-            className="h-4 w-4"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={2}
-            style={{ color: "var(--color-muted)" }}
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-            />
-          </svg>
+        <button
+          type="submit"
+          className="shrink-0 cursor-pointer text-(--color-muted)"
+          aria-label="Buscar"
+        >
+          <Search className="h-4 w-4" aria-hidden="true" strokeWidth={2} />
         </button>
       </form>
 
+      {/* Anuncia la cantidad de resultados a screen readers. */}
+      <p className="sr-only" aria-live="polite" aria-atomic="true">
+        {trimmedQuery.length === 0
+          ? ""
+          : searchResults.length === 0
+            ? "Sin resultados"
+            : `${searchResults.length} resultado${
+                searchResults.length === 1 ? "" : "s"
+              }`}
+      </p>
+
       {/* Dropdown de autocomplete — desktop */}
-      {searchResults.length > 0 && (
-        <div
+      {isExpanded && (
+        <ul
           id="search-dropdown"
           role="listbox"
           aria-label="Resultados de búsqueda"
@@ -82,46 +91,37 @@ export default function DesktopSearch({
           }}
         >
           {searchResults.map((result) => (
-            <SearchResultItem
+            <li
               key={`${result.categorySlug}/${result.slug}`}
-              imageUrl={result.imageUrl}
-              name={result.name}
-              subtitle={result.categoryName}
-              price={`${result.hasVariants ? "Desde " : ""}S/${result.price}`}
-              onClick={() => handleResultClick(result.categorySlug, result.slug)}
-            />
-          ))}
-          <Link
-            href={`/catalogo?q=${encodeURIComponent(searchQuery)}`}
-            onClick={clearSearch}
-            className="flex w-full items-center justify-center gap-1.5 px-4 py-3 text-xs tracking-[0.06em] uppercase transition-colors duration-150"
-            style={{
-              color: "var(--color-primary)",
-              fontFamily: "var(--font-body)",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = "var(--color-surface)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = "transparent";
-            }}
-          >
-            Ver todos los resultados
-            <svg
-              className="h-3 w-3"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
+              role="option"
+              aria-selected={false}
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M9 5l7 7-7 7"
+              <SearchResultItem
+                imageUrl={result.imageUrl}
+                name={result.name}
+                subtitle={result.categoryName}
+                price={`${result.hasVariants ? "Desde " : ""}S/${result.price}`}
+                onClick={() =>
+                  handleResultClick(result.categorySlug, result.slug)
+                }
               />
-            </svg>
-          </Link>
-        </div>
+            </li>
+          ))}
+          <li>
+            <Link
+              href={`/catalogo?q=${encodeURIComponent(searchQuery)}`}
+              onClick={clearSearch}
+              className="flex w-full items-center justify-center gap-1.5 px-4 py-3 font-body text-xs tracking-[0.06em] text-(--color-primary) uppercase transition-colors duration-150 hover:bg-(--color-surface)"
+            >
+              Ver todos los resultados
+              <ChevronRight
+                className="h-3 w-3"
+                aria-hidden="true"
+                strokeWidth={2}
+              />
+            </Link>
+          </li>
+        </ul>
       )}
     </div>
   );

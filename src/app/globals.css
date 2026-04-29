@@ -28,6 +28,11 @@
   --color-status-created: #27ae60;
   --color-status-updated: #2980b9;
   --color-white: #ffffff;
+  /* Z-stack interno del Hero (badge, flechas, dots, swipe hint).
+     Z-stack global del proyecto: Navbar z-[90], WhatsAppFloat z-50,
+     Lightbox z-[100]. Este token vive aislado al carousel y no compite
+     con esos niveles globales. */
+  --z-hero-overlay: 10;
   --color-muted: color-mix(in srgb, var(--color-dark) 50%, transparent);
   --color-surface: color-mix(in srgb, var(--color-dark) 6%, var(--color-cream));
   --color-border: color-mix(in srgb, var(--color-dark) 12%, var(--color-cream));

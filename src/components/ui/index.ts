@@ -8,3 +8,4 @@ export { default as PillToggle } from './PillToggle';
 export { default as FilterChip } from './FilterChip';
 export { default as ToggleSwitch } from './ToggleSwitch';
 export { default as ConfirmDialog } from './ConfirmDialog';
+export { default as LightboxDialog } from './LightboxDialog';

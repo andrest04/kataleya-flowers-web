@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Menu, Search, X } from "lucide-react";
 import { BUSINESS } from "@/lib/constants";
 import { useNavbar } from "./useNavbar";
 import DesktopSearch from "./DesktopSearch";
@@ -35,38 +36,30 @@ export default function Navbar() {
           backdropFilter: isScrolled ? "blur(8px)" : "blur(0px)",
         }}
       >
-        <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-5 sm:px-6 lg:px-8">
+        <nav
+          aria-label="Navegación principal"
+          className="mx-auto flex max-w-7xl items-center justify-between px-4 py-5 sm:px-6 lg:px-8"
+        >
           {/* Hamburger — siempre visible */}
           <button
             type="button"
-            className="flex h-11 w-11 shrink-0 cursor-pointer flex-col items-center justify-center gap-1.5"
+            className="flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center text-(--color-primary)"
             aria-label={isDrawerOpen ? "Cerrar menu" : "Abrir menu"}
             aria-expanded={isDrawerOpen}
             aria-controls="nav-drawer"
             onClick={() => (isDrawerOpen ? setIsDrawerOpen(false) : openDrawer())}
           >
-            <span
-              className="block h-0.5 w-6"
-              style={{ backgroundColor: "var(--color-primary)" }}
-            />
-            <span
-              className="block h-0.5 w-6"
-              style={{ backgroundColor: "var(--color-primary)" }}
-            />
-            <span
-              className="block h-0.5 w-6"
-              style={{ backgroundColor: "var(--color-primary)" }}
-            />
+            {isDrawerOpen ? (
+              <X className="h-6 w-6" aria-hidden="true" strokeWidth={2} />
+            ) : (
+              <Menu className="h-6 w-6" aria-hidden="true" strokeWidth={2} />
+            )}
           </button>
 
           {/* Logo */}
           <Link
             href="/"
-            className="text-[1.45rem] leading-none transition-all duration-300"
-            style={{
-              color: "var(--color-primary)",
-              fontFamily: "var(--font-heading)",
-            }}
+            className="font-heading text-[1.45rem] leading-none text-(--color-primary) transition-all duration-300"
           >
             {BUSINESS.name}
           </Link>
@@ -75,14 +68,7 @@ export default function Navbar() {
           <div className="hidden items-center gap-4 md:flex">
             <Link
               href="/catalogo"
-              className="text-[0.8rem] font-normal tracking-[0.08em] uppercase transition-all duration-300"
-              style={{ color: "var(--color-dark)", fontFamily: "var(--font-body)" }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = "var(--color-accent)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.color = "var(--color-dark)";
-              }}
+              className="font-body text-[0.8rem] font-normal tracking-[0.08em] text-(--color-dark) uppercase transition-colors duration-300 hover:text-(--color-accent)"
             >
               Catálogo
             </Link>
@@ -100,21 +86,8 @@ export default function Navbar() {
 
             <button
               type="button"
-              className="cursor-pointer rounded-full border px-6 py-3 text-[0.8rem] tracking-[0.08em] uppercase transition-all duration-300"
+              className="cursor-pointer rounded-full border border-(--color-primary) px-6 py-3 font-body text-[0.8rem] tracking-[0.08em] text-(--color-primary) uppercase transition-colors duration-300 hover:bg-(--color-primary) hover:text-(--color-cream)"
               onClick={() => handleNavigate("#contacto")}
-              style={{
-                borderColor: "var(--color-primary)",
-                color: "var(--color-primary)",
-                fontFamily: "var(--font-body)",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = "var(--color-primary)";
-                e.currentTarget.style.color = "var(--color-cream)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "transparent";
-                e.currentTarget.style.color = "var(--color-primary)";
-              }}
             >
               Hacer pedido
             </button>
@@ -123,24 +96,11 @@ export default function Navbar() {
           {/* Mobile: solo icono de búsqueda — abre el drawer con auto-focus */}
           <button
             type="button"
-            className="flex h-11 w-11 cursor-pointer items-center justify-center md:hidden"
+            className="flex h-11 w-11 cursor-pointer items-center justify-center text-(--color-primary) md:hidden"
             aria-label="Buscar"
             onClick={openDrawer}
           >
-            <svg
-              className="h-5 w-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-              style={{ color: "var(--color-primary)" }}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
+            <Search className="h-5 w-5" aria-hidden="true" strokeWidth={2} />
           </button>
         </nav>
       </header>
