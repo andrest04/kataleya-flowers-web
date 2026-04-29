@@ -1,44 +1,92 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { createClient } from '@/lib/supabase/server';
+import {
+  type AdminActionFailure,
+  describeSupabaseError,
+  failureFromUnknown,
+  requireAdmin,
+} from '@/features/admin/utils/auth';
+import {
+  deleteFlowerTypeSchema,
+  renameFlowerTypeSchema,
+} from '@/features/admin/schemas/flowerType';
 
-export async function deleteFlowerType(
-  name: string
-): Promise<{ success: boolean; error?: string }> {
+interface SuccessResult {
+  success: true;
+}
+type FlowerTypeActionResult = SuccessResult | AdminActionFailure;
+
+export async function deleteFlowerType(name: string): Promise<FlowerTypeActionResult> {
   try {
-    const supabase = await createClient();
-    const { error } = await supabase.rpc('delete_flower_type', { p_name: name });
+    const { supabase } = await requireAdmin();
 
-    if (error) return { success: false, error: error.message };
+    const parsed = deleteFlowerTypeSchema.safeParse({ name });
+    if (!parsed.success) {
+      return {
+        success: false,
+        error: 'Nombre inválido.',
+        code: 'VALIDATION',
+        issues: parsed.error.issues,
+      };
+    }
 
+    const { error } = await supabase.rpc('delete_flower_type', {
+      p_name: parsed.data.name,
+    });
+
+    if (error) {
+      return {
+        success: false,
+        error: describeSupabaseError(error),
+        code: 'INTERNAL',
+      };
+    }
+
+    revalidatePath('/');
     revalidatePath('/catalogo');
     revalidatePath('/admin/productos');
-    revalidatePath('/admin/tipos-de-flor');
     return { success: true };
   } catch (err) {
-    return { success: false, error: err instanceof Error ? err.message : 'Error desconocido' };
+    return failureFromUnknown(err);
   }
 }
 
 export async function renameFlowerType(
   oldName: string,
-  newName: string
-): Promise<{ success: boolean; error?: string }> {
+  newName: string,
+): Promise<FlowerTypeActionResult> {
   try {
-    const supabase = await createClient();
+    const { supabase } = await requireAdmin();
+
+    const parsed = renameFlowerTypeSchema.safeParse({ oldName, newName });
+    if (!parsed.success) {
+      return {
+        success: false,
+        error: 'Datos inválidos para renombrar.',
+        code: 'VALIDATION',
+        issues: parsed.error.issues,
+      };
+    }
+
     const { error } = await supabase.rpc('rename_flower_type', {
-      p_old_name: oldName,
-      p_new_name: newName.toLowerCase().trim(),
+      p_old_name: parsed.data.oldName,
+      p_new_name: parsed.data.newName.toLowerCase().trim(),
     });
 
-    if (error) return { success: false, error: error.message };
+    if (error) {
+      return {
+        success: false,
+        error: describeSupabaseError(error),
+        code: 'INTERNAL',
+      };
+    }
 
+    revalidatePath('/');
     revalidatePath('/catalogo');
     revalidatePath('/admin/productos');
-    revalidatePath('/admin/tipos-de-flor');
     return { success: true };
   } catch (err) {
-    return { success: false, error: err instanceof Error ? err.message : 'Error desconocido' };
+    return failureFromUnknown(err);
   }
 }

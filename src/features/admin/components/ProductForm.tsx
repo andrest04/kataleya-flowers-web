@@ -456,17 +456,21 @@ export default function ProductForm({ product, categories, flowerTypes, productC
                   </button>
                   <button
                     type="button"
-                    onClick={async () => {
+                    onClick={() => {
                       setDeletingColor(c.name);
                       setRenamingColor(null);
                       setDeleteColorUsageCount(null);
-                      try {
-                        const res = await fetch(`/api/admin/product-color-usage?name=${encodeURIComponent(c.name)}`);
-                        const data = await res.json() as { products: { product_id: string }[] };
-                        setDeleteColorUsageCount(data.products.length);
-                      } catch {
-                        setDeleteColorUsageCount(0);
-                      }
+                      void (async () => {
+                        try {
+                          const res = await fetch(
+                            `/api/admin/product-color-usage?name=${encodeURIComponent(c.name)}`,
+                          );
+                          const data = (await res.json()) as { products: { product_id: string }[] };
+                          setDeleteColorUsageCount(data.products.length);
+                        } catch {
+                          setDeleteColorUsageCount(0);
+                        }
+                      })();
                     }}
                     className="text-xs transition-opacity hover:opacity-70"
                     style={{ color: 'var(--color-primary)' }}
@@ -724,17 +728,21 @@ export default function ProductForm({ product, categories, flowerTypes, productC
                   </button>
                   <button
                     type="button"
-                    onClick={async () => {
+                    onClick={() => {
                       setDeletingType(ft);
                       setRenamingType(null);
                       setDeleteUsageCount(null);
-                      try {
-                        const res = await fetch(`/api/admin/flower-type-usage?name=${encodeURIComponent(ft)}`);
-                        const data = await res.json() as { products: { product_id: string }[] };
-                        setDeleteUsageCount(data.products.length);
-                      } catch {
-                        setDeleteUsageCount(0);
-                      }
+                      void (async () => {
+                        try {
+                          const res = await fetch(
+                            `/api/admin/flower-type-usage?name=${encodeURIComponent(ft)}`,
+                          );
+                          const data = (await res.json()) as { products: { product_id: string }[] };
+                          setDeleteUsageCount(data.products.length);
+                        } catch {
+                          setDeleteUsageCount(0);
+                        }
+                      })();
                     }}
                     className="text-xs transition-opacity hover:opacity-70"
                     style={{ color: 'var(--color-primary)' }}

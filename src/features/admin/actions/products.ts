@@ -1,16 +1,35 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { createClient } from '@/lib/supabase/server';
 import type { Database } from '@/lib/supabase/types';
 import type { ProductFormData } from '@/features/admin/types';
 import { slugify } from '@/features/admin/utils/slugify';
 import { destroyCloudinaryImage, destroyCloudinaryImages } from '@/lib/cloudinary';
+import {
+  type AdminActionFailure,
+  type AdminSupabaseClient,
+  describeSupabaseError,
+  failureFromUnknown,
+  requireAdmin,
+} from '@/features/admin/utils/auth';
+import { isAllowedCloudinaryUrl } from '@/features/admin/utils/cloudinaryUrl';
+import { productCreateSchema, productUpdateSchema } from '@/features/admin/schemas/product';
+import { reorderSchema } from '@/features/admin/schemas/reorder';
+import { uuid } from '@/features/admin/schemas/common';
 
 type ProductInsert = Database['public']['Tables']['products']['Insert'];
-type SupabaseClient = Awaited<ReturnType<typeof createClient>>;
 
-async function ensureColors(supabase: SupabaseClient, colors: { name: string; hex: string }[]) {
+interface SuccessResult {
+  success: true;
+}
+type ProductActionResult = SuccessResult | AdminActionFailure;
+
+// ─── Helpers internos ────────────────────────────────────────────────────────
+
+async function ensureColors(
+  supabase: AdminSupabaseClient,
+  colors: { name: string; hex: string }[],
+) {
   if (colors.length === 0) return;
   const { data: existing } = await supabase
     .from('product_colors')
@@ -26,11 +45,11 @@ async function ensureColors(supabase: SupabaseClient, colors: { name: string; he
       hex: c.hex || null,
       display_order: nextOrder + i,
     })),
-    { onConflict: 'name', ignoreDuplicates: true }
+    { onConflict: 'name', ignoreDuplicates: true },
   );
 }
 
-async function ensureFlowerTypes(supabase: SupabaseClient, names: string[]) {
+async function ensureFlowerTypes(supabase: AdminSupabaseClient, names: string[]) {
   if (names.length === 0) return;
   const { data: existing } = await supabase
     .from('flower_types')
@@ -44,7 +63,7 @@ async function ensureFlowerTypes(supabase: SupabaseClient, names: string[]) {
       name: name.toLowerCase().trim(),
       display_order: nextOrder + i,
     })),
-    { onConflict: 'name', ignoreDuplicates: true }
+    { onConflict: 'name', ignoreDuplicates: true },
   );
 }
 
@@ -69,156 +88,328 @@ function toInsertPayload(data: ProductFormData, slug: string): ProductInsert {
   };
 }
 
-export async function createProduct(
-  data: ProductFormData
-): Promise<{ success: boolean; error?: string }> {
+async function revalidateProductPaths(
+  supabase: AdminSupabaseClient,
+  slug?: string,
+  categoryId?: string,
+): Promise<void> {
+  // Catálogo público
+  revalidatePath('/');
+  revalidatePath('/catalogo');
+
+  // Detalle si tenemos categoría
+  if (categoryId) {
+    const { data: category } = await supabase
+      .from('categories')
+      .select('slug')
+      .eq('id', categoryId)
+      .single();
+    if (category?.slug) {
+      revalidatePath(`/catalogo/${category.slug}`);
+      if (slug) revalidatePath(`/catalogo/${category.slug}/${slug}`);
+    }
+  }
+
+  // Admin
+  revalidatePath('/admin/productos');
+}
+
+// ─── Server Actions ──────────────────────────────────────────────────────────
+
+export async function createProduct(data: ProductFormData): Promise<ProductActionResult> {
   try {
-    const supabase = await createClient();
+    const ctx = await requireAdmin();
 
-    if (data.newFlowerTypes?.length) {
-      await ensureFlowerTypes(supabase, data.newFlowerTypes);
+    const parsed = productCreateSchema.safeParse(data);
+    if (!parsed.success) {
+      console.warn('[createProduct] validation failed:', parsed.error.issues);
+      return {
+        success: false,
+        error: 'Datos inválidos. Revisá el formulario.',
+        code: 'VALIDATION',
+        issues: parsed.error.issues,
+      };
     }
-    if (data.newColors?.length) {
-      await ensureColors(supabase, data.newColors);
+
+    // Defense-in-depth: validar URLs de imagen a nivel de allowlist
+    if (!isAllowedCloudinaryUrl(parsed.data.imageUrl)) {
+      return {
+        success: false,
+        error: 'URL de imagen no permitida.',
+        code: 'VALIDATION',
+      };
+    }
+    for (const url of parsed.data.images) {
+      if (!isAllowedCloudinaryUrl(url)) {
+        return {
+          success: false,
+          error: 'Una de las imágenes adicionales tiene una URL no permitida.',
+          code: 'VALIDATION',
+        };
+      }
     }
 
-    const slug = slugify(data.name);
-    const payload = toInsertPayload(data, slug);
+    const { supabase } = ctx;
+    const formData = parsed.data as ProductFormData;
 
-    const { error } = await supabase
-      .from('products')
-      .insert(payload);
+    if (formData.newFlowerTypes?.length) {
+      await ensureFlowerTypes(supabase, formData.newFlowerTypes);
+    }
+    if (formData.newColors?.length) {
+      await ensureColors(supabase, formData.newColors);
+    }
 
-    if (error) return { success: false, error: error.message };
+    const slug = formData.slug?.trim() || slugify(formData.name);
+    const payload = toInsertPayload(formData, slug);
 
-    revalidatePath('/catalogo');
-    revalidatePath('/admin/productos');
-    revalidatePath('/admin/tipos-de-flor');
+    const { error } = await supabase.from('products').insert(payload);
+
+    if (error) {
+      return {
+        success: false,
+        error: describeSupabaseError(error),
+        code: 'INTERNAL',
+      };
+    }
+
+    await revalidateProductPaths(supabase, slug, formData.categoryId);
     return { success: true };
   } catch (err) {
-    return { success: false, error: err instanceof Error ? err.message : 'Error desconocido' };
+    return failureFromUnknown(err);
   }
 }
 
 export async function updateProduct(
   id: string,
-  data: ProductFormData
-): Promise<{ success: boolean; error?: string }> {
+  data: ProductFormData,
+): Promise<ProductActionResult> {
   try {
-    const supabase = await createClient();
+    const ctx = await requireAdmin();
 
-    if (data.newFlowerTypes?.length) {
-      await ensureFlowerTypes(supabase, data.newFlowerTypes);
+    const idParsed = uuid.safeParse(id);
+    if (!idParsed.success) {
+      return {
+        success: false,
+        error: 'Identificador inválido.',
+        code: 'VALIDATION',
+        issues: idParsed.error.issues,
+      };
     }
-    if (data.newColors?.length) {
-      await ensureColors(supabase, data.newColors);
+
+    const parsed = productUpdateSchema.safeParse(data);
+    if (!parsed.success) {
+      console.warn('[updateProduct] validation failed:', parsed.error.issues);
+      return {
+        success: false,
+        error: 'Datos inválidos. Revisá el formulario.',
+        code: 'VALIDATION',
+        issues: parsed.error.issues,
+      };
+    }
+
+    if (!isAllowedCloudinaryUrl(parsed.data.imageUrl)) {
+      return {
+        success: false,
+        error: 'URL de imagen no permitida.',
+        code: 'VALIDATION',
+      };
+    }
+    for (const url of parsed.data.images) {
+      if (!isAllowedCloudinaryUrl(url)) {
+        return {
+          success: false,
+          error: 'Una de las imágenes adicionales tiene una URL no permitida.',
+          code: 'VALIDATION',
+        };
+      }
+    }
+
+    const { supabase } = ctx;
+    const formData = parsed.data as ProductFormData;
+
+    if (formData.newFlowerTypes?.length) {
+      await ensureFlowerTypes(supabase, formData.newFlowerTypes);
+    }
+    if (formData.newColors?.length) {
+      await ensureColors(supabase, formData.newColors);
     }
 
     // Fetch current images to detect replacements
     const { data: current } = await supabase
       .from('products')
       .select('image_url, images')
-      .eq('id', id)
+      .eq('id', idParsed.data)
       .single();
 
-    const slug = slugify(data.name);
-    const payload = toInsertPayload(data, slug);
+    const slug = formData.slug?.trim() || slugify(formData.name);
+    const payload = toInsertPayload(formData, slug);
 
     const { error } = await supabase
       .from('products')
       .update(payload)
-      .eq('id', id);
+      .eq('id', idParsed.data);
 
-    if (error) return { success: false, error: error.message };
+    if (error) {
+      return {
+        success: false,
+        error: describeSupabaseError(error),
+        code: 'INTERNAL',
+      };
+    }
 
-    // Cleanup replaced images from Cloudinary (best-effort, after successful update)
+    // Cleanup replaced images from Cloudinary (best-effort)
     if (current) {
-      if (current.image_url && current.image_url !== data.imageUrl) {
+      if (current.image_url && current.image_url !== formData.imageUrl) {
         void destroyCloudinaryImage(current.image_url);
       }
-      const oldImages = (current.images as string[]) ?? [];
-      const removed = oldImages.filter((url) => !data.images.includes(url));
+      const oldImages = (current.images as string[] | null) ?? [];
+      const removed = oldImages.filter((url) => !formData.images.includes(url));
       if (removed.length > 0) void destroyCloudinaryImages(removed);
     }
 
-    revalidatePath('/catalogo');
-    revalidatePath('/admin/productos');
+    await revalidateProductPaths(supabase, slug, formData.categoryId);
     return { success: true };
   } catch (err) {
-    return { success: false, error: err instanceof Error ? err.message : 'Error desconocido' };
+    return failureFromUnknown(err);
   }
 }
 
-export async function deleteProduct(
-  id: string
-): Promise<{ success: boolean; error?: string }> {
+export async function deleteProduct(id: string): Promise<ProductActionResult> {
   try {
-    const supabase = await createClient();
+    const ctx = await requireAdmin();
 
-    // Fetch images before deleting the row
+    const idParsed = uuid.safeParse(id);
+    if (!idParsed.success) {
+      return {
+        success: false,
+        error: 'Identificador inválido.',
+        code: 'VALIDATION',
+        issues: idParsed.error.issues,
+      };
+    }
+
+    const { supabase } = ctx;
+
+    // Fetch images and category before deleting the row
     const { data: product } = await supabase
       .from('products')
-      .select('image_url, images')
-      .eq('id', id)
+      .select('image_url, images, category_id, slug')
+      .eq('id', idParsed.data)
       .single();
 
     const { error } = await supabase
       .from('products')
       .delete()
-      .eq('id', id);
+      .eq('id', idParsed.data);
 
-    if (error) return { success: false, error: error.message };
+    if (error) {
+      return {
+        success: false,
+        error: describeSupabaseError(error),
+        code: 'INTERNAL',
+      };
+    }
 
-    // Cleanup images from Cloudinary (best-effort, after successful delete)
+    // Cleanup images from Cloudinary (best-effort)
     if (product) {
-      const allUrls = [product.image_url, ...((product.images as string[]) ?? [])];
+      const allUrls = [
+        product.image_url,
+        ...(((product.images as string[] | null) ?? []) as string[]),
+      ];
       void destroyCloudinaryImages(allUrls);
     }
 
-    revalidatePath('/catalogo');
-    revalidatePath('/admin/productos');
+    await revalidateProductPaths(supabase, product?.slug, product?.category_id);
     return { success: true };
   } catch (err) {
-    return { success: false, error: err instanceof Error ? err.message : 'Error desconocido' };
+    return failureFromUnknown(err);
   }
 }
 
 export async function toggleProductStatus(
   id: string,
-  isActive: boolean
-): Promise<{ success: boolean; error?: string }> {
+  isActive: boolean,
+): Promise<ProductActionResult> {
   try {
-    const supabase = await createClient();
+    const ctx = await requireAdmin();
+
+    const idParsed = uuid.safeParse(id);
+    if (!idParsed.success) {
+      return {
+        success: false,
+        error: 'Identificador inválido.',
+        code: 'VALIDATION',
+        issues: idParsed.error.issues,
+      };
+    }
+    if (typeof isActive !== 'boolean') {
+      return {
+        success: false,
+        error: 'Estado inválido.',
+        code: 'VALIDATION',
+      };
+    }
+
+    const { supabase } = ctx;
+
+    const { data: product } = await supabase
+      .from('products')
+      .select('category_id, slug')
+      .eq('id', idParsed.data)
+      .single();
+
     const { error } = await supabase
       .from('products')
       .update({ is_active: isActive })
-      .eq('id', id);
+      .eq('id', idParsed.data);
 
-    if (error) return { success: false, error: error.message };
+    if (error) {
+      return {
+        success: false,
+        error: describeSupabaseError(error),
+        code: 'INTERNAL',
+      };
+    }
 
-    revalidatePath('/catalogo');
-    revalidatePath('/admin/productos');
+    await revalidateProductPaths(supabase, product?.slug, product?.category_id);
     return { success: true };
   } catch (err) {
-    return { success: false, error: err instanceof Error ? err.message : 'Error desconocido' };
+    return failureFromUnknown(err);
   }
 }
 
-export async function reorderProducts(
-  orderedIds: string[]
-): Promise<{ success: boolean; error?: string }> {
+export async function reorderProducts(orderedIds: string[]): Promise<ProductActionResult> {
   try {
-    const supabase = await createClient();
+    const ctx = await requireAdmin();
+
+    const parsed = reorderSchema.safeParse({ ids: orderedIds });
+    if (!parsed.success) {
+      return {
+        success: false,
+        error: 'Lista de identificadores inválida.',
+        code: 'VALIDATION',
+        issues: parsed.error.issues,
+      };
+    }
+
+    const { supabase } = ctx;
     const { error } = await supabase.rpc('reorder_products', {
-      p_ordered_ids: orderedIds,
+      p_ordered_ids: parsed.data.ids,
     });
 
-    if (error) return { success: false, error: error.message };
+    if (error) {
+      return {
+        success: false,
+        error: describeSupabaseError(error),
+        code: 'INTERNAL',
+      };
+    }
 
+    revalidatePath('/');
     revalidatePath('/catalogo');
     revalidatePath('/admin/productos');
     return { success: true };
   } catch (err) {
-    return { success: false, error: err instanceof Error ? err.message : 'Error desconocido' };
+    return failureFromUnknown(err);
   }
 }

@@ -52,7 +52,7 @@ export default function LoginPage() {
         </div>
 
         <form
-          onSubmit={handleSubmit}
+          onSubmit={(e) => void handleSubmit(e)}
           className="space-y-5 p-8 rounded-2xl"
           style={{
             background: 'var(--color-white)',

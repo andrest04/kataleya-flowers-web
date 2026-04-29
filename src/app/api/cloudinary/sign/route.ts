@@ -1,26 +1,88 @@
 import { createHash } from 'node:crypto';
 import { NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
+import {
+  ALLOWED_FOLDERS,
+  isAllowedFolder,
+} from '@/features/admin/utils/cloudinaryUrl';
 
+interface SignRequestBody {
+  folder?: unknown;
+}
+
+/**
+ * Genera firmas de upload para Cloudinary.
+ *
+ * Defensa en capas:
+ * 1. Sesión válida obligatoria (`auth.getUser()`).
+ * 2. Folder restringido a un allowlist (`productos`, `categorias`).
+ * 3. Firmamos también `allowed_formats` y `max_file_size` para que la subida
+ *    real las respete server-side en Cloudinary.
+ *
+ * Nunca logueamos el `apiSecret` ni el `signature` generado.
+ */
 export async function POST(request: Request) {
-  const { folder } = (await request.json()) as { folder?: string };
+  // ── 1. Auth ───────────────────────────────────────────────────────────────
+  const supabase = await createClient();
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
 
+  if (authError || !user) {
+    return NextResponse.json({ error: 'unauthenticated' }, { status: 401 });
+  }
+
+  // ── 2. Parsear body con manejo defensivo ──────────────────────────────────
+  let body: SignRequestBody = {};
+  try {
+    body = (await request.json()) as SignRequestBody;
+  } catch {
+    return NextResponse.json({ error: 'invalid_body' }, { status: 400 });
+  }
+
+  // ── 3. Validar folder ─────────────────────────────────────────────────────
+  if (!isAllowedFolder(body.folder)) {
+    console.warn(
+      '[cloudinary/sign] folder rechazado',
+      { user: user.id, folder: body.folder },
+    );
+    return NextResponse.json(
+      {
+        error: 'invalid_folder',
+        message: `Folder debe ser uno de: ${ALLOWED_FOLDERS.join(', ')}`,
+      },
+      { status: 400 },
+    );
+  }
+  const folder = body.folder;
+
+  // ── 4. Validar credenciales ───────────────────────────────────────────────
   const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
   const apiKey = process.env.CLOUDINARY_API_KEY;
   const apiSecret = process.env.CLOUDINARY_API_SECRET;
 
   if (!cloudName || !apiKey || !apiSecret) {
+    console.error('[cloudinary/sign] credenciales no configuradas');
     return NextResponse.json(
-      { error: 'Cloudinary credentials not configured' },
+      { error: 'cloudinary_not_configured' },
       { status: 500 },
     );
   }
 
+  // ── 5. Construir parámetros firmados ──────────────────────────────────────
   const timestamp = Math.floor(Date.now() / 1000);
+  const allowedFormats = 'jpg,jpeg,png,webp,avif';
+  const maxFileSize = 10 * 1024 * 1024; // 10 MB — coincide con useImageUpload
 
-  // Build params to sign (alphabetical order, excluding file & api_key)
-  const params: Record<string, string | number> = { timestamp };
-  if (folder) params.folder = folder;
+  const params: Record<string, string | number> = {
+    timestamp,
+    folder,
+    allowed_formats: allowedFormats,
+    max_file_size: maxFileSize,
+  };
 
+  // Firma alfabética de los params (excluye file/api_key/signature)
   const sortedParams = Object.keys(params)
     .sort()
     .map((key) => `${key}=${params[key]}`)
@@ -35,6 +97,8 @@ export async function POST(request: Request) {
     timestamp,
     apiKey,
     cloudName,
-    folder: folder ?? '',
+    folder,
+    allowedFormats,
+    maxFileSize,
   });
 }

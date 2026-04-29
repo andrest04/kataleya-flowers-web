@@ -10,6 +10,8 @@ interface SignResponse {
   apiKey: string;
   cloudName: string;
   folder: string;
+  allowedFormats?: string;
+  maxFileSize?: number;
 }
 
 interface UploadResult {
@@ -82,6 +84,9 @@ export function useImageUpload() {
         formData.append('timestamp', String(sign.timestamp));
         formData.append('signature', sign.signature);
         if (sign.folder) formData.append('folder', sign.folder);
+        // Reenviamos los params firmados — Cloudinary los aplica server-side
+        if (sign.allowedFormats) formData.append('allowed_formats', sign.allowedFormats);
+        if (sign.maxFileSize) formData.append('max_file_size', String(sign.maxFileSize));
 
         xhr.open('POST', `https://api.cloudinary.com/v1_1/${sign.cloudName}/image/upload`);
         xhr.send(formData);

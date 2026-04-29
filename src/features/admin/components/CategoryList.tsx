@@ -316,7 +316,7 @@ export default function CategoryList({
               index={index}
               deletingId={deletingId}
               hasChanges={hasChanges}
-              onDelete={handleDeleteRequest}
+              onDelete={(id, name) => void handleDeleteRequest(id, name)}
               onToggleStatus={(id, checked) => void handleToggleStatus(id, checked)}
               onToggleFeatured={(id, checked) => void handleToggleFeatured(id, checked)}
             />
