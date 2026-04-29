@@ -1,5 +1,4 @@
 import TrustBar from "../TrustBar";
-
 import { CAMPAIGN_MODE } from "./constants";
 import HeroCarousel from "./HeroCarousel";
 import HeroContent from "./HeroContent";

@@ -2,9 +2,10 @@
 
 import type { Category } from '@/features/catalog/types';
 import type { ProductFilters } from '@/features/catalog/utils/filterProducts';
+
+import type { ColorDef } from './CatalogFilterColors';
 import CatalogFilterSections from './CatalogFilterSections';
 import CatalogSearchInput from './CatalogSearchInput';
-import type { ColorDef } from './CatalogFilterColors';
 import { FILTER_LABEL_CLS, PANEL_CARD_CLS } from './constants';
 
 interface CatalogSearchDesktopProps {

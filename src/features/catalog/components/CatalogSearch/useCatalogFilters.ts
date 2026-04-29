@@ -1,14 +1,16 @@
 'use client';
 
+import { usePathname,useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useRouter, useSearchParams, usePathname } from 'next/navigation';
+
 import {
   filterProducts,
   hasActiveFilters,
-  PRICE_MIN,
   PRICE_MAX,
+  PRICE_MIN,
   type ProductFilters,
 } from '@/features/catalog/utils/filterProducts';
+
 import {
   parseCommaList,
   toggleValue,

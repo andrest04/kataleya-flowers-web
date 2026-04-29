@@ -7,12 +7,13 @@
  * volver al snapshot inicial de página.
  */
 
-import { useRef, useState, useTransition } from 'react';
-import { toast } from 'sonner';
 import { move } from '@dnd-kit/helpers';
 import type { DragDropEvents } from '@dnd-kit/react';
-import type { Database } from '@/lib/supabase/types';
+import { useRef, useState, useTransition } from 'react';
+import { toast } from 'sonner';
+
 import { reorderCategories } from '@/features/admin/actions/categories';
+import type { Database } from '@/lib/supabase/types';
 
 type CategoryRow = Database['public']['Tables']['categories']['Row'];
 type DragEndHandler = NonNullable<DragDropEvents['dragend']>;

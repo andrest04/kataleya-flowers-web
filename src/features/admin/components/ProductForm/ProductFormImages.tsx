@@ -1,8 +1,9 @@
 'use client';
 
-import type { ProductFormData } from '@/features/admin/types';
 import { FormField } from '@/components/ui/FormField';
 import ImageUploader from '@/features/admin/components/ImageUploader';
+import type { ProductFormData } from '@/features/admin/types';
+
 import { FieldError } from './FieldError';
 import type { FieldErrors } from './validation';
 

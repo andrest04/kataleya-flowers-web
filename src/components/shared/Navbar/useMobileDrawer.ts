@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
 import type { RefObject } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 interface UseMobileDrawerResult {
   isOpen: boolean;

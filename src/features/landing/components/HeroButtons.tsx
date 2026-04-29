@@ -1,8 +1,8 @@
 "use client";
 
-import { BUSINESS } from "@/lib/constants";
 import Button from "@/components/ui/Button";
 import { clientTrackEvent } from "@/features/analytics/lib/clientTrack";
+import { BUSINESS } from "@/lib/constants";
 
 type CampaignMode = "contact" | "catalog";
 

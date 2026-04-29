@@ -1,7 +1,8 @@
 'use client';
 
-import { useCallback, useRef, useState } from 'react';
 import Image from 'next/image';
+import { useCallback, useRef, useState } from 'react';
+
 import { useImageUpload } from '@/features/admin/hooks/useImageUpload';
 
 // ── Types ────────────────────────────────────────────────────────────────────

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { expect,test } from '@playwright/test';
 
 test('catalog search syncs query params and can clear filters', async ({ page }) => {
   await page.goto('/catalogo');

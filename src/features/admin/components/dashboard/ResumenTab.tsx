@@ -1,14 +1,16 @@
-import { LuPackage, LuLayoutGrid, LuStar, LuEye, LuMousePointerClick } from 'react-icons/lu';
 import { FaWhatsapp } from 'react-icons/fa';
-import type { ActionableKpis, InventoryStatus, RecentActivityItem } from '@/features/admin/queries/dashboard';
+import { LuEye, LuLayoutGrid, LuMousePointerClick,LuPackage, LuStar } from 'react-icons/lu';
+
 import type { AnalyticsSummary } from '@/features/admin/queries/analytics';
+import type { ActionableKpis, InventoryStatus, RecentActivityItem } from '@/features/admin/queries/dashboard';
 import type { DashboardInsight } from '@/features/admin/queries/dashboardInsights';
+
+import ActionableKpiGrid from './ActionableKpiGrid';
 import type { AnalyticsRange } from './analyticsRange';
+import AutomaticInsightsPanel from './AutomaticInsightsPanel';
 import ChartCard from './ChartCard';
 import InventoryDonut from './InventoryDonut';
 import RecentActivityList from './RecentActivityList';
-import ActionableKpiGrid from './ActionableKpiGrid';
-import AutomaticInsightsPanel from './AutomaticInsightsPanel';
 
 interface StatCardProps {
   icon: React.ReactNode;

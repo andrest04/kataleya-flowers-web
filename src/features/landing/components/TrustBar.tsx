@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import { animate, useInView, useMotionValue } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
+
 import { BUSINESS } from "@/lib/constants";
 
 type Stat =

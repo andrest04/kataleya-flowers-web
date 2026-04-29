@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { toast } from 'sonner';
+
 import { createClient } from '@/lib/supabase/client';
 
 export default function LogoutButton() {

@@ -1,28 +1,29 @@
-import { LuPlus, LuExternalLink } from 'react-icons/lu';
-import {
-  getInventoryStatus,
-  getCategoryCount,
-  getRecentActivity,
-  getActionableKpis,
-} from '@/features/admin/queries/dashboard';
-import type { InventoryStatus, ActionableKpis } from '@/features/admin/queries/dashboard';
-import {
-  getAnalyticsSummary,
-  getProductWhatsAppConversions,
-  deriveTopProductConversions,
-  deriveLowProductConversions,
-  deriveZeroWhatsAppInsight,
-  getTopProducts,
-  getTopCategories,
-  getWhatsAppBySource,
-} from '@/features/admin/queries/analytics';
-import type { AnalyticsSummary } from '@/features/admin/queries/analytics';
-import { getDashboardInsights } from '@/features/admin/queries/dashboardInsights';
+import { LuExternalLink,LuPlus } from 'react-icons/lu';
+
+import { Button } from '@/components/ui';
 import { DashboardTabs } from '@/features/admin/components/dashboard';
 import { parseAnalyticsRange } from '@/features/admin/components/dashboard/analyticsRange';
 import { parseAnalyticsView } from '@/features/admin/components/dashboard/analyticsView';
 import { parseDashboardTab } from '@/features/admin/components/dashboard/dashboardTab';
-import { Button } from '@/components/ui';
+import type { AnalyticsSummary } from '@/features/admin/queries/analytics';
+import {
+  deriveLowProductConversions,
+  deriveTopProductConversions,
+  deriveZeroWhatsAppInsight,
+  getAnalyticsSummary,
+  getProductWhatsAppConversions,
+  getTopCategories,
+  getTopProducts,
+  getWhatsAppBySource,
+} from '@/features/admin/queries/analytics';
+import type { ActionableKpis,InventoryStatus } from '@/features/admin/queries/dashboard';
+import {
+  getActionableKpis,
+  getCategoryCount,
+  getInventoryStatus,
+  getRecentActivity,
+} from '@/features/admin/queries/dashboard';
+import { getDashboardInsights } from '@/features/admin/queries/dashboardInsights';
 
 const EMPTY_INVENTORY: InventoryStatus = { active: 0, inactive: 0, featured: 0, total: 0 };
 const EMPTY_KPIS: ActionableKpis = { activeWithoutAdditionalImages: 0, categoriesWithoutActiveProducts: 0, featuredWithoutViews: 0, activeWithoutViews: 0, periodDays: 0 };

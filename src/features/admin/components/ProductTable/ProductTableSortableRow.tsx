@@ -10,9 +10,11 @@
  *   controles del row reciben clicks normales.
  */
 
-import { GripVertical } from 'lucide-react';
 import { useSortable } from '@dnd-kit/react/sortable';
+import { GripVertical } from 'lucide-react';
+
 import ToggleSwitch from '@/components/ui/ToggleSwitch';
+
 import ProductTableActions from './ProductTableActions';
 import ProductTableImage from './ProductTableImage';
 import type { ProductTableRowBaseProps } from './ProductTableRow';

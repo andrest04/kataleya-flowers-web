@@ -1,14 +1,15 @@
 'use client';
 
-import { PieChart, Pie, Label } from 'recharts';
+import { Label,Pie, PieChart } from 'recharts';
+
+import type { ChartConfig } from '@/components/ui/primitives/chart';
 import {
   ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
   ChartLegend,
   ChartLegendContent,
+  ChartTooltip,
+  ChartTooltipContent,
 } from '@/components/ui/primitives/chart';
-import type { ChartConfig } from '@/components/ui/primitives/chart';
 import type { WhatsAppBySource } from '@/features/admin/queries/analytics';
 
 interface Props {

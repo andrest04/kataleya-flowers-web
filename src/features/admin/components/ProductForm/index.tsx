@@ -1,15 +1,16 @@
 'use client';
 
-import type { Database } from '@/lib/supabase/types';
 import Button from '@/components/ui/Button';
 import { FormError } from '@/components/ui/FormField';
+import type { Database } from '@/lib/supabase/types';
+
+import ColorManager, { type ColorOption } from './ColorManager';
+import FlowerTypeManager from './FlowerTypeManager';
 import ProductFormFields from './ProductFormFields';
+import ProductFormFlags from './ProductFormFlags';
 import ProductFormImages from './ProductFormImages';
 import ProductFormIncludes from './ProductFormIncludes';
 import ProductFormPriceVariants from './ProductFormPriceVariants';
-import ProductFormFlags from './ProductFormFlags';
-import ColorManager, { type ColorOption } from './ColorManager';
-import FlowerTypeManager from './FlowerTypeManager';
 import { useProductForm } from './useProductForm';
 
 type ProductRow = Database['public']['Tables']['products']['Row'];

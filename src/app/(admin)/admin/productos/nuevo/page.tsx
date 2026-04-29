@@ -1,8 +1,9 @@
 import Link from 'next/link';
+
+import ProductForm from '@/features/admin/components/ProductForm';
 import { getAdminCategories } from '@/features/admin/queries/categories';
 import { getFlowerTypes } from '@/features/admin/queries/flowerTypes';
 import { getProductColors } from '@/features/admin/queries/productColors';
-import ProductForm from '@/features/admin/components/ProductForm';
 
 export default async function NuevoProductoPage() {
   const [categories, flowerTypes, productColors] = await Promise.all([

@@ -1,4 +1,5 @@
-import { test, expect } from '@playwright/test';
+import { expect,test } from '@playwright/test';
+
 import { getAdminCredentials, loginAsAdmin } from './helpers/adminAuth';
 
 const credentials = getAdminCredentials();

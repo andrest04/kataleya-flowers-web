@@ -1,16 +1,11 @@
 import Link from "next/link";
 import { FaInstagram, FaWhatsapp } from "react-icons/fa";
-import { BUSINESS } from "@/lib/constants";
+
 import Button from "@/components/ui/Button";
+import { BUSINESS } from "@/lib/constants";
+import { allNavLinks, withRoot } from "@/lib/navigation";
 
 const WHATSAPP_LINK = BUSINESS.whatsappWithMessage(BUSINESS.messages.whatsappDefault);
-
-const NAV_LINKS = [
-  { href: "/#hero", label: "Inicio" },
-  { href: "/#catalogo", label: "Catalogo" },
-  { href: "/#nosotros", label: "Nosotros" },
-  { href: "/#contacto", label: "Contacto" },
-];
 
 const COPYRIGHT_YEAR = 2026;
 
@@ -76,10 +71,10 @@ export default function Footer() {
               Navegacion
             </p>
             <ul className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm sm:justify-start">
-              {NAV_LINKS.map((link) => (
+              {allNavLinks.map((link) => (
                 <li key={link.href}>
                   <Link
-                    href={link.href}
+                    href={withRoot(link.href)}
                     className="inline-block rounded-sm py-0.5 opacity-90 transition-opacity hover:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2"
                     style={{ outlineColor: "var(--color-secondary)" }}
                   >

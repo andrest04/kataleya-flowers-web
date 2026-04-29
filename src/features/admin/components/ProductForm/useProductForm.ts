@@ -1,11 +1,13 @@
 'use client';
 
-import { useCallback, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import type { Database } from '@/lib/supabase/types';
+import { useCallback, useState, useTransition } from 'react';
+
+import { createProduct, updateProduct } from '@/features/admin/actions/products';
 import type { ProductFormData } from '@/features/admin/types';
 import { slugify } from '@/features/admin/utils/slugify';
-import { createProduct, updateProduct } from '@/features/admin/actions/products';
+import type { Database } from '@/lib/supabase/types';
+
 import { buildFieldErrors, type FieldErrors } from './validation';
 
 type ProductRow = Database['public']['Tables']['products']['Row'];
@@ -26,8 +28,15 @@ export interface ProductFormState {
 export interface ProductFormApi {
   /** Actualiza un campo simple del form. */
   setField: <K extends keyof ProductFormData>(key: K, value: ProductFormData[K]) => void;
-  /** Cambia el `name` y deriva el `slug` automáticamente. */
+  /**
+   * Cambia el `name`. En modo create, el slug se deriva automáticamente.
+   * En modo edit, el slug se preserva (no rompemos URLs indexadas).
+   */
   setName: (name: string) => void;
+  /** Regenera el slug desde el `name` actual. Solo se ofrece en modo edit. */
+  regenerateSlug: () => void;
+  /** True cuando el form está en modo edit (hay un product). */
+  isEditing: boolean;
   /** Toggle declarativo para arrays de strings (colores, flowerTypes). */
   toggleArrayItem: <K extends 'colors' | 'flowerTypes'>(key: K, item: string) => void;
   /** Pendientes de nuevos tipos/colores que viajan al server action. */
@@ -83,7 +92,9 @@ function buildInitialState(product?: ProductRow): ProductFormData {
   }
   return {
     name: product.name,
-    slug: slugify(product.name),
+    // SEO: preservar el slug existente en edit. Cambiar el name no regenera el slug
+    // (rompería URLs ya indexadas). El user puede regenerar a propósito.
+    slug: product.slug,
     description: product.description,
     price: Number(product.price),
     categoryId: product.category_id,
@@ -112,8 +123,11 @@ export function useProductForm({
   onSuccess,
 }: UseProductFormParams): ProductFormState & ProductFormApi {
   const router = useRouter();
+  const isEditing = Boolean(product);
 
   const [form, setForm] = useState<ProductFormData>(() => buildInitialState(product));
+  // En create el slug se deriva del name; en edit no se toca a menos que el user lo regenere.
+  const [autoSlug, setAutoSlug] = useState(!isEditing);
   const [includeKeys, setIncludeKeys] = useState<string[]>(() =>
     makeKeys(product?.includes?.length ?? 0),
   );
@@ -137,8 +151,21 @@ export function useProductForm({
     [],
   );
 
-  const setName = useCallback((name: string) => {
-    setForm((prev) => ({ ...prev, name, slug: slugify(name) }));
+  const setName = useCallback(
+    (name: string) => {
+      setForm((prev) => ({
+        ...prev,
+        name,
+        // Solo derivamos el slug si autoSlug está activo (create, o edit con regenerar pedido).
+        slug: autoSlug ? slugify(name) : prev.slug,
+      }));
+    },
+    [autoSlug],
+  );
+
+  const regenerateSlug = useCallback(() => {
+    setAutoSlug(true);
+    setForm((prev) => ({ ...prev, slug: slugify(prev.name) }));
   }, []);
 
   const toggleArrayItem = useCallback(
@@ -285,6 +312,8 @@ export function useProductForm({
     // api
     setField,
     setName,
+    regenerateSlug,
+    isEditing,
     toggleArrayItem,
     addPendingFlowerType,
     addPendingColor,

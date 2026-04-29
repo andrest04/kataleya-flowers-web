@@ -1,12 +1,14 @@
 'use client';
 
 import type { ReactNode } from 'react';
+
 import type { Category, Product } from '@/features/catalog/types';
+
 import CatalogActiveChips from './CatalogActiveChips';
+import type { ColorDef } from './CatalogFilterColors';
 import CatalogResults from './CatalogResults';
 import CatalogSearchDesktop from './CatalogSearchDesktop';
 import CatalogSearchMobile from './CatalogSearchMobile';
-import type { ColorDef } from './CatalogFilterColors';
 import { useCatalogFilters } from './useCatalogFilters';
 
 interface CatalogSearchProps {

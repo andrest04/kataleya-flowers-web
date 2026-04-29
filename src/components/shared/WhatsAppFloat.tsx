@@ -1,10 +1,10 @@
 "use client";
 
-import { LazyMotion, domAnimation, m } from "framer-motion";
+import { domAnimation, LazyMotion, m } from "framer-motion";
 import { FaWhatsapp } from "react-icons/fa";
 
-import { BUSINESS } from "@/lib/constants";
 import { clientTrackEvent } from "@/features/analytics/lib/clientTrack";
+import { BUSINESS } from "@/lib/constants";
 
 export default function WhatsAppFloat() {
   const href = BUSINESS.whatsappWithMessage(BUSINESS.messages.whatsappFloat);

@@ -1,10 +1,12 @@
 'use client';
 
 import { Plus, Trash2 } from 'lucide-react';
-import type { ProductFormData } from '@/features/admin/types';
+
 import Button from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
 import { FormField } from '@/components/ui/FormField';
+import { Input } from '@/components/ui/Input';
+import type { ProductFormData } from '@/features/admin/types';
+
 import { FieldError } from './FieldError';
 import type { FieldErrors } from './validation';
 

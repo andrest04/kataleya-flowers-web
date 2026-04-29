@@ -1,6 +1,7 @@
 'use client';
 
-import { PRICE_MIN, PRICE_MAX } from '@/features/catalog/utils/filterProducts';
+import { PRICE_MAX,PRICE_MIN } from '@/features/catalog/utils/filterProducts';
+
 import { FILTER_LABEL_CLS, INPUT_CLS } from './constants';
 
 interface CatalogFilterPriceProps {

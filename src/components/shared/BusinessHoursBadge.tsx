@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+
 import { BUSINESS } from "@/lib/constants";
 
 function isBusinessOpen(): boolean {

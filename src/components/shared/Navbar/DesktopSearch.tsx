@@ -1,10 +1,12 @@
 "use client";
 
-import type { FormEvent, RefObject } from "react";
-import Link from "next/link";
 import { ChevronRight, Search } from "lucide-react";
-import type { SearchResult } from "./constants";
+import Link from "next/link";
+import type { FormEvent, RefObject } from "react";
+
 import SearchResultItem from "@/components/shared/SearchResultItem";
+
+import type { SearchResult } from "./constants";
 
 interface DesktopSearchProps {
   searchQuery: string;

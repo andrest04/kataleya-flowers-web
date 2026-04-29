@@ -1,4 +1,5 @@
 import Link from 'next/link';
+
 import type { DashboardInsight, DashboardInsightTone } from '@/features/admin/queries/dashboardInsights';
 import { getDashboardInsightActionHref } from '@/features/admin/utils/adminFilters';
 

@@ -1,8 +1,9 @@
 import { Button } from '@/components/ui';
-import { MIN_FRICTION_PRODUCT_VIEWS } from './analyticsShared';
 import {
   type ProductWhatsAppConversion,
 } from '@/features/admin/queries/analytics';
+
+import { MIN_FRICTION_PRODUCT_VIEWS } from './analyticsShared';
 
 type ProductConversionRankingVariant = 'best' | 'friction';
 

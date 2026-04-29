@@ -1,6 +1,7 @@
 'use client';
 
 import type { Category } from '@/features/catalog/types';
+
 import {
   CHIP_ACTIVE_CLS,
   CHIP_BASE_CLS,

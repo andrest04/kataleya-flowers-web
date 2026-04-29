@@ -1,6 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
+
 import { clientTrackEvent } from '@/features/analytics/lib/clientTrack';
 
 interface WhatsAppContactLinkProps {

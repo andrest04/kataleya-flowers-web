@@ -1,18 +1,20 @@
 "use client";
 
-import type { FormEvent, RefObject } from "react";
-import Link from "next/link";
 import { ChevronRight, Search } from "lucide-react";
-import { BUSINESS } from "@/lib/constants";
+import Link from "next/link";
+import type { FormEvent, RefObject } from "react";
+
+import SearchResultItem from "@/components/shared/SearchResultItem";
 import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetTitle,
 } from "@/components/ui/primitives/sheet";
-import SearchResultItem from "@/components/shared/SearchResultItem";
-import { primaryLinks, secondaryLinks } from "./constants";
+import { BUSINESS } from "@/lib/constants";
+
 import type { SearchResult } from "./constants";
+import { primaryLinks, secondaryLinks } from "./constants";
 
 interface MobileDrawerProps {
   isDrawerOpen: boolean;

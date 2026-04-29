@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+
 import { getFlowerTypeUsage } from '@/features/admin/queries/flowerTypes';
+import { createClient } from '@/lib/supabase/server';
 
 export async function GET(request: NextRequest) {
   const supabase = await createClient();

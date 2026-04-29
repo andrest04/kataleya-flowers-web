@@ -1,9 +1,11 @@
 'use client';
 
-import { useCallback, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import type { Database } from '@/lib/supabase/types';
+import { useCallback, useMemo } from 'react';
+
 import type { AdminProductFilter } from '@/features/admin/utils/adminFilters';
+import type { Database } from '@/lib/supabase/types';
+
 import ProductTable from './ProductTable';
 
 type ProductRow = Database['public']['Tables']['products']['Row'];

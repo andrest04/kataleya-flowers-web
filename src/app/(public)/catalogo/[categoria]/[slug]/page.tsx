@@ -1,15 +1,19 @@
-import React from "react";
-import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { getCategories } from "@/features/catalog/queries/getCategories";
-import { getProducts } from "@/features/catalog/queries/getProducts";
-import { getProductBySlug } from "@/features/catalog/queries/getProductBySlug";
-import { BUSINESS } from "@/lib/constants";
-import { ProductGallery } from "@/features/catalog/components/ProductGallery";
-import { BackButton } from "@/features/catalog/components/BackButton";
+import { notFound } from "next/navigation";
+import React from "react";
+
 import Breadcrumb from "@/components/ui/Breadcrumb";
+import { JsonLd } from "@/components/ui/JsonLd";
 import TrackProductView from "@/features/analytics/components/TrackProductView";
 import WhatsAppProductButton from "@/features/analytics/components/WhatsAppProductButton";
+import { BackButton } from "@/features/catalog/components/BackButton";
+import { ProductGallery } from "@/features/catalog/components/ProductGallery";
+import { getCategories } from "@/features/catalog/queries/getCategories";
+import { getProductBySlug } from "@/features/catalog/queries/getProductBySlug";
+import { getProducts } from "@/features/catalog/queries/getProducts";
+import { BUSINESS } from "@/lib/constants";
+
+const SITE_URL = "https://kataleya-flawers.vercel.app";
 
 interface ProductoPageProps {
   params: Promise<{ categoria: string; slug: string }>;
@@ -56,8 +60,9 @@ export async function generateMetadata({
 
     if (!product) {
       return {
-        title: `Producto no encontrado | ${BUSINESS.name}`,
-        description: "El producto solicitado no esta disponible en el catalogo.",
+        // El template del root layout agrega `| Kataleya Flawers`.
+        title: "Producto no encontrado",
+        description: "El producto solicitado no está disponible en el catálogo.",
       };
     }
 
@@ -65,16 +70,38 @@ export async function generateMetadata({
       (cat) => cat.slug === categoria && cat.id === product.categoryId
     );
 
-    if (!category) {
-      return {
-        title: `${product.name} | ${BUSINESS.name}`,
-        description: product.description,
-      };
-    }
+    const description = product.description.slice(0, 160);
+    const productImages =
+      product.images && product.images.length > 0
+        ? product.images
+        : [product.imageUrl];
+    const titleBase = category
+      ? `${product.name} | ${category.name}`
+      : product.name;
+    const canonicalPath = category
+      ? `/catalogo/${category.slug}/${product.slug}`
+      : `/catalogo/${categoria}/${slug}`;
 
     return {
-      title: `${product.name} | ${category.name} | ${BUSINESS.name}`,
-      description: product.description,
+      // El template del root layout agrega `| Kataleya Flawers`.
+      title: titleBase,
+      description,
+      alternates: {
+        canonical: canonicalPath,
+      },
+      openGraph: {
+        title: titleBase,
+        description,
+        type: "website",
+        url: canonicalPath,
+        images: productImages,
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: titleBase,
+        description,
+        images: [productImages[0]],
+      },
     };
   } catch {
     return {
@@ -110,8 +137,84 @@ export default async function ProductoPage({
     BUSINESS.messages.whatsappProduct(product.name)
   );
 
+  const productUrl = `${SITE_URL}/catalogo/${category.slug}/${product.slug}`;
+  const productImages =
+    product.images && product.images.length > 0
+      ? product.images
+      : [product.imageUrl];
+
+  // Si el producto tiene tabla de precios variable, usamos AggregateOffer con
+  // min/max. Si no, una Offer simple con el precio fijo. Moneda PEN (sol peruano).
+  const offers =
+    product.priceTable && product.priceTable.length > 0
+      ? {
+          "@type": "AggregateOffer",
+          priceCurrency: "PEN",
+          lowPrice: Math.min(...product.priceTable.map((v) => v.price)),
+          highPrice: Math.max(...product.priceTable.map((v) => v.price)),
+          offerCount: product.priceTable.length,
+          availability: "https://schema.org/InStock",
+          url: productUrl,
+        }
+      : {
+          "@type": "Offer",
+          priceCurrency: "PEN",
+          price: product.price,
+          availability: "https://schema.org/InStock",
+          url: productUrl,
+        };
+
+  const productLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.name,
+    description: product.description,
+    image: productImages,
+    brand: {
+      "@type": "Brand",
+      name: BUSINESS.name,
+    },
+    category: category.name,
+    offers,
+  };
+
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Inicio",
+        item: `${SITE_URL}/`,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Catálogo",
+        item: `${SITE_URL}/catalogo`,
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: category.name,
+        item: `${SITE_URL}/catalogo/${category.slug}`,
+      },
+      {
+        "@type": "ListItem",
+        position: 4,
+        name: product.name,
+        item: productUrl,
+      },
+    ],
+  };
+
   return (
-    <main className="min-h-screen bg-cream pt-28 pb-12 px-4 sm:px-6 lg:px-8">
+    <main
+      id="main-content"
+      className="min-h-screen bg-cream pt-28 pb-12 px-4 sm:px-6 lg:px-8"
+    >
+      <JsonLd data={[productLd, breadcrumbLd]} />
       <TrackProductView productId={product.id} productSlug={product.slug} />
       <div className="max-w-7xl mx-auto">
         <Breadcrumb items={[

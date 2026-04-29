@@ -1,7 +1,7 @@
 'use client';
 
-import type { Category, Product } from '@/features/catalog/types';
 import ProductCardComponent from '@/features/catalog/components/ProductCard';
+import type { Category, Product } from '@/features/catalog/types';
 
 interface CatalogResultsProps {
   products: Product[];

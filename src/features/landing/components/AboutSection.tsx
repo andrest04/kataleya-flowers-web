@@ -1,6 +1,11 @@
 import Image from "next/image";
+
 import SectionHeader from "@/components/ui/SectionHeader";
 import { BUSINESS } from "@/lib/constants";
+
+// TODO: reemplazar con foto profesional del local cuando el dueño la provea.
+// Mientras tanto usamos un placeholder SVG con la paleta de marca.
+const ABOUT_IMAGE_SRC = "/about-placeholder.svg";
 
 interface Highlight {
   readonly value: string;
@@ -67,11 +72,12 @@ export default function AboutSection() {
 
         <div className="relative overflow-hidden rounded-[2rem]">
           <Image
-            src="/about-placeholder.svg"
+            src={ABOUT_IMAGE_SRC}
             alt="Nuestra historia"
             width={600}
             height={400}
             className="h-auto w-full"
+            loading="lazy"
           />
         </div>
       </div>

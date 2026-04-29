@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+
 import { clientTrackEvent } from '@/features/analytics/lib/clientTrack';
 
 interface TrackProductViewProps {

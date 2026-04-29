@@ -1,10 +1,10 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { AnimatePresence,domAnimation, LazyMotion, m } from 'framer-motion';
+import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import Image from 'next/image';
 import { Dialog as DialogPrimitive } from 'radix-ui';
-import { ChevronLeft, ChevronRight, X } from 'lucide-react';
-import { LazyMotion, domAnimation, m, AnimatePresence } from 'framer-motion';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 interface LightboxDialogProps {
   open: boolean;

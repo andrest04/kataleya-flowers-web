@@ -1,6 +1,7 @@
 'use client';
 
 import { deleteFlowerType, renameFlowerType } from '@/features/admin/actions/flowerTypes';
+
 import TaxonomyManager, { type TaxonomyActionResult, type TaxonomyItem } from './TaxonomyManager';
 
 export interface FlowerTypeOption extends TaxonomyItem {

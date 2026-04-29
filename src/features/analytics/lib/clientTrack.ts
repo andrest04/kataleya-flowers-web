@@ -1,5 +1,5 @@
-import { trackEvent } from '@/features/analytics/actions/trackEvent';
 import type { AnalyticsEventType } from '@/features/analytics/actions/trackEvent';
+import { trackEvent } from '@/features/analytics/actions/trackEvent';
 
 const THROTTLE_MS = 30_000; // 30 seconds
 

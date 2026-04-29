@@ -1,18 +1,20 @@
-import { defineConfig } from 'eslint/config';
 import eslintJs from '@eslint/js';
-import tseslint from 'typescript-eslint';
+import nextPlugin from '@next/eslint-plugin-next';
+import { defineConfig } from 'eslint/config';
+import jsxA11yPlugin from 'eslint-plugin-jsx-a11y';
 import reactPlugin from 'eslint-plugin-react';
 import reactHooksPlugin from 'eslint-plugin-react-hooks';
-import jsxA11yPlugin from 'eslint-plugin-jsx-a11y';
-import nextPlugin from '@next/eslint-plugin-next';
+import simpleImportSort from 'eslint-plugin-simple-import-sort';
 import globals from 'globals';
+import tseslint from 'typescript-eslint';
 
-// TODO(fase 3/4): instalar `eslint-plugin-simple-import-sort` (sin aprobación aún) y
-// activar `simple-import-sort/imports` + `simple-import-sort/exports`.
+// TODO(fase 5+): subir `simple-import-sort/imports` y `simple-import-sort/exports`
+// de `'warn'` a `'error'` después de un pass global con `npm run lint -- --fix`
+// y revisar que ningún módulo dependa de un orden de import específico (side effects).
 //
-// TODO(fase 3/4): agregar un script en `package.json` (ej. `prebuild` o `prepare`) que
-// falle si existe `tailwind.config.*` (Tailwind v4 es CSS-puro, ningún config en JS).
-// ESLint no valida presencia de archivos: la verificación queda fuera del lint.
+// La validación de "no `tailwind.config.*` en el repo" vive en
+// `scripts/check-no-tailwind-config.mjs` y corre vía `prebuild`. ESLint no
+// valida presencia de archivos.
 
 export default defineConfig([
   // 1. Ignores globales
@@ -186,7 +188,35 @@ export default defineConfig([
     },
   },
 
-  // 8. Override para `src/lib/constants.ts` — es la fuente única de verdad
+  // 7.5. Scripts node — habilitar globals de Node para los scripts del repo.
+  //      `scripts/*.mjs` son utilidades de build (ej. check-no-tailwind-config),
+  //      corren con Node y necesitan `process`, `console`, etc.
+  {
+    name: 'project/scripts',
+    files: ['scripts/**/*.{js,mjs}'],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
+    },
+  },
+
+  // 8. simple-import-sort — orden estable de imports/exports.
+  //    Arrancamos en `'warn'` para no explotar el lint con cientos de violaciones.
+  //    TODO: subir a `'error'` después de un pass global con `--fix` (ver header del archivo).
+  {
+    name: 'project/simple-import-sort',
+    files: ['**/*.{js,jsx,ts,tsx,mjs}'],
+    plugins: {
+      'simple-import-sort': simpleImportSort,
+    },
+    rules: {
+      'simple-import-sort/imports': 'warn',
+      'simple-import-sort/exports': 'warn',
+    },
+  },
+
+  // 9. Override para `src/lib/constants.ts` — es la fuente única de verdad
   //    de los datos de negocio. Las reglas que prohiben hardcodear el teléfono,
   //    la URL de WhatsApp y el handle de Instagram NO aplican acá.
   {

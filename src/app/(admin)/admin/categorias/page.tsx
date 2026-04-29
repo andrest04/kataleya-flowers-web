@@ -1,7 +1,8 @@
 import Link from 'next/link';
-import { getAdminCategories } from '@/features/admin/queries/categories';
-import { getCategoryIdsWithActiveProducts } from '@/features/admin/queries/adminFilters';
+
 import CategoryList from '@/features/admin/components/CategoryList';
+import { getCategoryIdsWithActiveProducts } from '@/features/admin/queries/adminFilters';
+import { getAdminCategories } from '@/features/admin/queries/categories';
 import {
   getAdminCategoryFilterMeta,
   parseAdminCategoryFilter,

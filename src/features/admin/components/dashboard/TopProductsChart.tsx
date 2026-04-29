@@ -1,12 +1,13 @@
 'use client';
 
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
+import { Bar, BarChart, CartesianGrid,XAxis, YAxis } from 'recharts';
+
+import type { ChartConfig } from '@/components/ui/primitives/chart';
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/primitives/chart';
-import type { ChartConfig } from '@/components/ui/primitives/chart';
 import type { TopProduct } from '@/features/admin/queries/analytics';
 
 interface Props {

@@ -1,18 +1,19 @@
 import type {
   AnalyticsSummary,
-  TopProduct,
-  TopCategory,
-  WhatsAppBySource,
   ProductWhatsAppConversion,
+  TopCategory,
+  TopProduct,
+  WhatsAppBySource,
 } from '@/features/admin/queries/analytics';
-import { MIN_FRICTION_PRODUCT_VIEWS } from './analyticsShared';
+
 import type { AnalyticsRange } from './analyticsRange';
+import AnalyticsRangeSelector from './AnalyticsRangeSelector';
+import { MIN_FRICTION_PRODUCT_VIEWS } from './analyticsShared';
 import { ANALYTICS_VIEWS, type AnalyticsView } from './analyticsView';
 import ChartCard from './ChartCard';
-import AnalyticsRangeSelector from './AnalyticsRangeSelector';
 import ProductConversionRanking from './ProductConversionRanking';
-import TopProductsChart from './TopProductsChart';
 import TopCategoriesChart from './TopCategoriesChart';
+import TopProductsChart from './TopProductsChart';
 import WhatsAppSourceChart from './WhatsAppSourceChart';
 
 interface AnaliticasTabProps {

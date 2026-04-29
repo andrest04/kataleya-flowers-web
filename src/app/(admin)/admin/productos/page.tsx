@@ -1,10 +1,11 @@
 import Link from 'next/link';
 import { Suspense } from 'react';
-import { getAdminProducts } from '@/features/admin/queries/products';
-import { getAdminCategories } from '@/features/admin/queries/categories';
-import { getProductIdsWithViewsInRange } from '@/features/admin/queries/adminFilters';
-import ProductListClient from '@/features/admin/components/ProductListClient';
+
 import { parseAnalyticsRange } from '@/features/admin/components/dashboard/analyticsRange';
+import ProductListClient from '@/features/admin/components/ProductListClient';
+import { getProductIdsWithViewsInRange } from '@/features/admin/queries/adminFilters';
+import { getAdminCategories } from '@/features/admin/queries/categories';
+import { getAdminProducts } from '@/features/admin/queries/products';
 import {
   buildAdminProductsHref,
   getAdminProductFilterMeta,

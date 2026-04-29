@@ -1,4 +1,5 @@
 import Image from "next/image";
+
 import SectionHeader from "@/components/ui/SectionHeader";
 import { BUSINESS } from "@/lib/constants";
 

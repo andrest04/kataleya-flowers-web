@@ -1,11 +1,13 @@
 "use client";
 
-import Link from "next/link";
 import { Menu, Search, X } from "lucide-react";
+import Link from "next/link";
+
 import { BUSINESS } from "@/lib/constants";
-import { useNavbar } from "./useNavbar";
+
 import DesktopSearch from "./DesktopSearch";
 import MobileDrawer from "./MobileDrawer";
+import { useNavbar } from "./useNavbar";
 
 export default function Navbar() {
   const {

@@ -7,6 +7,7 @@
  */
 
 import ToggleSwitch from '@/components/ui/ToggleSwitch';
+
 import ProductTableActions from './ProductTableActions';
 import ProductTableImage from './ProductTableImage';
 import type { ProductTableRowBaseProps } from './ProductTableRow';

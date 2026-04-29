@@ -12,10 +12,12 @@
  * - El handle es un `<button>` separado: solo él inicia drag.
  */
 
-import { GripVertical } from 'lucide-react';
 import { useSortable } from '@dnd-kit/react/sortable';
-import type { Database } from '@/lib/supabase/types';
+import { GripVertical } from 'lucide-react';
+
 import Button from '@/components/ui/Button';
+import type { Database } from '@/lib/supabase/types';
+
 import CategoryRowImage from './CategoryRowImage';
 import CategoryToggleFeatured from './CategoryToggleFeatured';
 import CategoryToggleStatus from './CategoryToggleStatus';

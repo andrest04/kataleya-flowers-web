@@ -1,9 +1,10 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import type { Product } from '@/features/catalog/types';
+
 import EmptyState from '@/components/ui/EmptyState';
 import ProductCard from '@/features/catalog/components/ProductCard';
+import type { Product } from '@/features/catalog/types';
 
 interface ProductGridProps {
   initialProducts: Product[];

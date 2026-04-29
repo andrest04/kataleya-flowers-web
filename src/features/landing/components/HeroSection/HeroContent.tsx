@@ -1,7 +1,6 @@
 import { BUSINESS } from "@/lib/constants";
 
 import HeroButtons from "../HeroButtons";
-
 import type { CampaignMode } from "./types";
 
 interface HeroContentProps {

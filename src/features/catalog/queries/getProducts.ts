@@ -1,6 +1,6 @@
-import { createStaticClient } from '@/lib/supabase/static';
-import type { Product } from '@/features/catalog/types';
 import { mapProductRow } from '@/features/catalog/queries/mappers';
+import type { Product } from '@/features/catalog/types';
+import { createStaticClient } from '@/lib/supabase/static';
 
 export async function getProducts(): Promise<Product[]> {
   const supabase = createStaticClient();

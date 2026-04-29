@@ -1,5 +1,5 @@
-import type { Database } from '@/lib/supabase/types';
 import type { Product } from '@/features/catalog/types';
+import type { Database } from '@/lib/supabase/types';
 
 export type ProductRow = Database['public']['Tables']['products']['Row'];
 

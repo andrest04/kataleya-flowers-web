@@ -7,9 +7,10 @@
  * existía en dos render trees casi idénticos.
  */
 
+import type { Database } from '@/lib/supabase/types';
+
 import ProductTableSortableRow from './ProductTableSortableRow';
 import ProductTableStaticRow from './ProductTableStaticRow';
-import type { Database } from '@/lib/supabase/types';
 
 type ProductRow = Database['public']['Tables']['products']['Row'];
 

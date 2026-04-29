@@ -1,6 +1,6 @@
+import type { Category } from '@/features/catalog/types';
 import { createStaticClient } from '@/lib/supabase/static';
 import type { Database } from '@/lib/supabase/types';
-import type { Category } from '@/features/catalog/types';
 
 type CategoryRow = Database['public']['Tables']['categories']['Row'];
 type PriceSummaryRow = Database['public']['Views']['category_price_summary']['Row'];

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+
 import { hexColor, taxonomyName } from './common';
 
 /** Borrar un color por su `name` normalizado. */

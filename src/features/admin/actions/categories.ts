@@ -1,10 +1,14 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import type { Database } from '@/lib/supabase/types';
+
+import {
+  categoryCreateSchema,
+  categoryUpdateSchema,
+} from '@/features/admin/schemas/category';
+import { uuid } from '@/features/admin/schemas/common';
+import { reorderSchema } from '@/features/admin/schemas/reorder';
 import type { CategoryFormData } from '@/features/admin/types';
-import { slugify } from '@/features/admin/utils/slugify';
-import { destroyCloudinaryImage, destroyCloudinaryImages } from '@/lib/cloudinary';
 import {
   type AdminActionFailure,
   type AdminSupabaseClient,
@@ -13,12 +17,9 @@ import {
   requireAdmin,
 } from '@/features/admin/utils/auth';
 import { isAllowedCloudinaryUrl } from '@/features/admin/utils/cloudinaryUrl';
-import {
-  categoryCreateSchema,
-  categoryUpdateSchema,
-} from '@/features/admin/schemas/category';
-import { reorderSchema } from '@/features/admin/schemas/reorder';
-import { uuid } from '@/features/admin/schemas/common';
+import { slugify } from '@/features/admin/utils/slugify';
+import { destroyCloudinaryImage, destroyCloudinaryImages } from '@/lib/cloudinary';
+import type { Database } from '@/lib/supabase/types';
 
 type CategoryInsert = Database['public']['Tables']['categories']['Insert'];
 
@@ -175,7 +176,15 @@ export async function updateCategory(
       .eq('id', idParsed.data)
       .single();
 
-    const slug = parsed.data.slug?.trim() || slugify(parsed.data.name);
+    // SEO: preservar el slug ya indexado a menos que el user explícitamente lo cambie.
+    // - Si el payload viene vacío → mantener el slug actual de la DB.
+    // - Si viene exactamente igual al actual → no regenerar (evita drift por slugify(name)).
+    // - Solo aceptamos un slug nuevo si difiere del actual y vino con valor.
+    const incomingSlug = parsed.data.slug?.trim() ?? '';
+    const slug =
+      incomingSlug && incomingSlug !== current?.slug
+        ? incomingSlug
+        : (current?.slug ?? slugify(parsed.data.name));
     const payload = toInsertPayload(parsed.data as CategoryFormData, slug);
 
     const { error } = await supabase

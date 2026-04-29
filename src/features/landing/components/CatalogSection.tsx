@@ -1,9 +1,10 @@
+import { Flower2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { Flower2 } from "lucide-react";
-import type { Category } from "@/features/catalog/types";
+
 import Button from "@/components/ui/Button";
 import SectionHeader from "@/components/ui/SectionHeader";
+import type { Category } from "@/features/catalog/types";
 
 interface CatalogSectionProps {
   categories: Category[];

@@ -1,9 +1,10 @@
-import { FaInstagram, FaWhatsapp } from "react-icons/fa";
 import { Clock } from "lucide-react";
-import { BUSINESS } from "@/lib/constants";
+import { FaInstagram, FaWhatsapp } from "react-icons/fa";
+
 import BusinessHoursBadge from "@/components/shared/BusinessHoursBadge";
 import SectionHeader from "@/components/ui/SectionHeader";
 import WhatsAppContactLink from "@/features/analytics/components/WhatsAppContactLink";
+import { BUSINESS } from "@/lib/constants";
 
 
 function ArrowRightIcon({ className }: { className?: string }) {

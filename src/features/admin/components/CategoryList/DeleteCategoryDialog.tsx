@@ -11,8 +11,9 @@
  * cierre por backdrop.
  */
 
-import type { Database } from '@/lib/supabase/types';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
+import type { Database } from '@/lib/supabase/types';
+
 import DeleteModeOption from './DeleteModeOption';
 import type { DeleteMode, DeleteTarget } from './useCategoryDelete';
 

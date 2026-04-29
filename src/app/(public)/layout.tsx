@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 import { Suspense } from "react";
 
-import Navbar from "@/components/shared/Navbar";
 import Footer from "@/components/shared/Footer";
+import Navbar from "@/components/shared/Navbar";
 import WhatsAppFloat from "@/components/shared/WhatsAppFloat";
 
 export default function PublicLayout({ children }: { children: ReactNode }) {

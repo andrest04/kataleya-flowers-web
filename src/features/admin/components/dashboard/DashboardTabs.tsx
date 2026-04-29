@@ -1,26 +1,28 @@
 'use client';
 
-import { useEffect, useMemo, useState, useTransition } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, useMemo, useState, useTransition } from 'react';
+
+import type {
+  AnalyticsSummary,
+  ProductWhatsAppConversion,
+  TopCategory,
+  TopProduct,
+  WhatsAppBySource,
+} from '@/features/admin/queries/analytics';
 import type {
   ActionableKpis,
   InventoryStatus,
   RecentActivityItem,
 } from '@/features/admin/queries/dashboard';
-import type {
-  AnalyticsSummary,
-  TopProduct,
-  TopCategory,
-  WhatsAppBySource,
-  ProductWhatsAppConversion,
-} from '@/features/admin/queries/analytics';
+import type { DashboardInsight } from '@/features/admin/queries/dashboardInsights';
+
+import AnaliticasTab from './AnaliticasTab';
 import type { AnalyticsRange } from './analyticsRange';
 import type { AnalyticsView } from './analyticsView';
 import { ANALYTICS_VIEWS } from './analyticsView';
-import type { DashboardInsight } from '@/features/admin/queries/dashboardInsights';
 import { DASHBOARD_TABS, type DashboardTab } from './dashboardTab';
 import ResumenTab from './ResumenTab';
-import AnaliticasTab from './AnaliticasTab';
 
 const TABS: { key: DashboardTab; label: string }[] = [
   { key: 'resumen', label: 'Resumen' },

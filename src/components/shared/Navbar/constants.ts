@@ -1,13 +1,6 @@
-export const primaryLinks = [
-  { label: "Inicio", href: "#hero", isRoute: false },
-  { label: "Catálogo", href: "/catalogo", isRoute: true },
-] as const;
-
-export const secondaryLinks = [
-  { label: "Nosotros", href: "#nosotros", isRoute: false },
-  { label: "Testimonios", href: "#testimonios", isRoute: false },
-  { label: "Contacto", href: "#contacto", isRoute: false },
-] as const;
+// Re-export desde la fuente única (`@/lib/navigation`) para mantener compatibilidad
+// con los imports existentes del Navbar/MobileDrawer.
+export { primaryLinks, secondaryLinks } from "@/lib/navigation";
 
 export interface SearchResult {
   name: string;

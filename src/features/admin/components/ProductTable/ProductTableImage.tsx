@@ -6,6 +6,7 @@
  */
 
 import Image from 'next/image';
+
 import type { Database } from '@/lib/supabase/types';
 
 type ProductRow = Database['public']['Tables']['products']['Row'];

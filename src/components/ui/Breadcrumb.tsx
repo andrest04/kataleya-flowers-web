@@ -1,10 +1,11 @@
-import React from 'react';
 import Link from 'next/link';
+import React from 'react';
+
 import {
   Breadcrumb as ShadcnBreadcrumb,
-  BreadcrumbList,
   BreadcrumbItem as ShadcnBreadcrumbItem,
   BreadcrumbLink,
+  BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/primitives/breadcrumb';

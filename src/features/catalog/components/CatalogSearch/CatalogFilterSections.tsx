@@ -2,6 +2,7 @@
 
 import type { Category } from '@/features/catalog/types';
 import type { ProductFilters } from '@/features/catalog/utils/filterProducts';
+
 import CatalogFilterCategory from './CatalogFilterCategory';
 import CatalogFilterColors, { type ColorDef } from './CatalogFilterColors';
 import CatalogFilterFlowers from './CatalogFilterFlowers';

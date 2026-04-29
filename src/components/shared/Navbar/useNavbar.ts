@@ -1,12 +1,13 @@
 "use client";
 
-import { useCallback } from "react";
-import type { FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { useScrollBehavior } from "./useScrollBehavior";
-import { useMobileDrawer } from "./useMobileDrawer";
-import { useDesktopSearch } from "./useDesktopSearch";
+import type { FormEvent } from "react";
+import { useCallback } from "react";
+
 import { useAnchorNavigation } from "./useAnchorNavigation";
+import { useDesktopSearch } from "./useDesktopSearch";
+import { useMobileDrawer } from "./useMobileDrawer";
+import { useScrollBehavior } from "./useScrollBehavior";
 
 /**
  * Orquestador del Navbar — compone los hooks especializados:

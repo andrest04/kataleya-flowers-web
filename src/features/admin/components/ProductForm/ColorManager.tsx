@@ -1,6 +1,7 @@
 'use client';
 
 import { deleteProductColor, renameProductColor } from '@/features/admin/actions/productColors';
+
 import TaxonomyManager, { type TaxonomyActionResult } from './TaxonomyManager';
 import { DEFAULT_NEW_COLOR_HEX } from './validation';
 

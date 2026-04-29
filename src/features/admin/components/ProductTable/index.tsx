@@ -13,12 +13,14 @@
  */
 
 import { DragDropProvider } from '@dnd-kit/react';
-import type { Database } from '@/lib/supabase/types';
+
 import Button from '@/components/ui/Button';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import EmptyState from '@/components/ui/EmptyState';
 import { useDndAccessibility } from '@/features/admin/hooks/useDndAccessibility';
 import type { AdminProductFilter } from '@/features/admin/utils/adminFilters';
+import type { Database } from '@/lib/supabase/types';
+
 import DndLiveRegion from '../DndLiveRegion';
 import SaveOrderBar from '../SaveOrderBar';
 import ProductTableHeader from './ProductTableHeader';

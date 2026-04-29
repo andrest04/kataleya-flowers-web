@@ -7,8 +7,9 @@
  */
 
 import { toast } from 'sonner';
-import { toggleCategoryStatus } from '@/features/admin/actions/categories';
+
 import ToggleSwitch from '@/components/ui/ToggleSwitch';
+import { toggleCategoryStatus } from '@/features/admin/actions/categories';
 
 interface CategoryToggleStatusProps {
   id: string;

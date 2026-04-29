@@ -1,10 +1,11 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import type { Database } from '@/lib/supabase/types';
+
+import { uuid } from '@/features/admin/schemas/common';
+import { productCreateSchema, productUpdateSchema } from '@/features/admin/schemas/product';
+import { reorderSchema } from '@/features/admin/schemas/reorder';
 import type { ProductFormData } from '@/features/admin/types';
-import { slugify } from '@/features/admin/utils/slugify';
-import { destroyCloudinaryImage, destroyCloudinaryImages } from '@/lib/cloudinary';
 import {
   type AdminActionFailure,
   type AdminSupabaseClient,
@@ -13,9 +14,9 @@ import {
   requireAdmin,
 } from '@/features/admin/utils/auth';
 import { isAllowedCloudinaryUrl } from '@/features/admin/utils/cloudinaryUrl';
-import { productCreateSchema, productUpdateSchema } from '@/features/admin/schemas/product';
-import { reorderSchema } from '@/features/admin/schemas/reorder';
-import { uuid } from '@/features/admin/schemas/common';
+import { slugify } from '@/features/admin/utils/slugify';
+import { destroyCloudinaryImage, destroyCloudinaryImages } from '@/lib/cloudinary';
+import type { Database } from '@/lib/supabase/types';
 
 type ProductInsert = Database['public']['Tables']['products']['Insert'];
 
@@ -234,14 +235,22 @@ export async function updateProduct(
       await ensureColors(supabase, formData.newColors);
     }
 
-    // Fetch current images to detect replacements
+    // Fetch current images + slug to detect replacements / preserve indexed URL
     const { data: current } = await supabase
       .from('products')
-      .select('image_url, images')
+      .select('image_url, images, slug')
       .eq('id', idParsed.data)
       .single();
 
-    const slug = formData.slug?.trim() || slugify(formData.name);
+    // SEO: preservar el slug ya indexado a menos que el user explícitamente lo cambie.
+    // - Si el payload viene vacío → mantener el slug actual de la DB.
+    // - Si viene exactamente igual al actual → no regenerar.
+    // - Solo aceptamos un slug nuevo si difiere del actual y vino con valor.
+    const incomingSlug = formData.slug?.trim() ?? '';
+    const slug =
+      incomingSlug && incomingSlug !== current?.slug
+        ? incomingSlug
+        : (current?.slug ?? slugify(formData.name));
     const payload = toInsertPayload(formData, slug);
 
     const { error } = await supabase

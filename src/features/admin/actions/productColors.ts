@@ -1,16 +1,17 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+
+import {
+  deleteColorSchema,
+  renameColorSchema,
+} from '@/features/admin/schemas/color';
 import {
   type AdminActionFailure,
   describeSupabaseError,
   failureFromUnknown,
   requireAdmin,
 } from '@/features/admin/utils/auth';
-import {
-  deleteColorSchema,
-  renameColorSchema,
-} from '@/features/admin/schemas/color';
 
 interface SuccessResult {
   success: true;

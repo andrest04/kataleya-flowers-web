@@ -6,17 +6,18 @@
  * y reorder drag-and-drop con `@dnd-kit/react`.
  */
 
-import { useRef, useState, useTransition } from 'react';
-import { toast } from 'sonner';
 import { move } from '@dnd-kit/helpers';
 import type { DragDropEvents } from '@dnd-kit/react';
-import type { Database } from '@/lib/supabase/types';
+import { useRef, useState, useTransition } from 'react';
+import { toast } from 'sonner';
+
 import {
   deleteProduct,
   reorderProducts,
   toggleProductStatus,
 } from '@/features/admin/actions/products';
 import type { AdminProductFilter } from '@/features/admin/utils/adminFilters';
+import type { Database } from '@/lib/supabase/types';
 
 type ProductRow = Database['public']['Tables']['products']['Row'];
 type DragEndHandler = NonNullable<DragDropEvents['dragend']>;

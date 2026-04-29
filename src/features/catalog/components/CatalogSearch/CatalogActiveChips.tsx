@@ -1,12 +1,13 @@
 'use client';
 
+import FilterChip from '@/components/ui/FilterChip';
 import type { Category } from '@/features/catalog/types';
 import {
-  PRICE_MIN,
   PRICE_MAX,
+  PRICE_MIN,
   type ProductFilters,
 } from '@/features/catalog/utils/filterProducts';
-import FilterChip from '@/components/ui/FilterChip';
+
 import type { ColorDef } from './CatalogFilterColors';
 
 interface CatalogActiveChipsProps {

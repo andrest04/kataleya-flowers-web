@@ -2,6 +2,7 @@
 
 import { Search, X } from 'lucide-react';
 import { useId } from 'react';
+
 import { INPUT_CLS } from './constants';
 
 interface CatalogSearchInputProps {

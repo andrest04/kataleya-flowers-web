@@ -1,7 +1,7 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
 import type { SearchResult } from '@/components/shared/Navbar/constants';
+import { createClient } from '@/lib/supabase/server';
 
 export async function searchProducts(query: string): Promise<SearchResult[]> {
   const q = query.trim();

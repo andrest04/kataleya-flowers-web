@@ -1,7 +1,8 @@
-import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { getAdminCategoryById } from '@/features/admin/queries/categories';
+import { notFound } from 'next/navigation';
+
 import CategoryForm from '@/features/admin/components/CategoryForm';
+import { getAdminCategoryById } from '@/features/admin/queries/categories';
 
 interface EditarCategoriaPageProps {
   params: Promise<{ id: string }>;

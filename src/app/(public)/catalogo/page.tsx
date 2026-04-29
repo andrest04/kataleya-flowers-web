@@ -1,18 +1,36 @@
-import React, { Suspense } from "react";
 import type { Metadata } from "next";
-import { BUSINESS } from "@/lib/constants";
+import React, { Suspense } from "react";
+
+import BreadcrumbNav from "@/components/ui/Breadcrumb";
+import { JsonLd } from "@/components/ui/JsonLd";
+import CatalogSearch from "@/features/catalog/components/CatalogSearch";
+import CategoryCard from "@/features/catalog/components/CategoryCard";
 import { getCategories } from "@/features/catalog/queries/getCategories";
-import { getProducts } from "@/features/catalog/queries/getProducts";
 import { getFlowerTypes } from "@/features/catalog/queries/getFlowerTypes";
 import { getProductColors } from "@/features/catalog/queries/getProductColors";
-import CatalogSearch from "@/features/catalog/components/CatalogSearch";
-import BreadcrumbNav from "@/components/ui/Breadcrumb";
-import CategoryCard from "@/features/catalog/components/CategoryCard";
+import { getProducts } from "@/features/catalog/queries/getProducts";
+import { BUSINESS } from "@/lib/constants";
+
+const SITE_URL = "https://kataleya-flawers.vercel.app";
 
 export const metadata: Metadata = {
-  title: `Catalogo de Flores | ${BUSINESS.name}`,
-  description:
-    `Explora nuestro catalogo de arreglos florales, orquideas y regalos premium disponibles en ${BUSINESS.location}.`,
+  // El `template` del root layout agrega `| Kataleya Flawers` — no duplicar.
+  title: "Catálogo de Flores",
+  description: `Explora nuestro catálogo de arreglos florales, orquídeas y regalos premium disponibles en ${BUSINESS.location}.`,
+  alternates: {
+    canonical: "/catalogo",
+  },
+  openGraph: {
+    title: "Catálogo de Flores",
+    description: `Explora nuestro catálogo de arreglos florales, orquídeas y regalos premium disponibles en ${BUSINESS.location}.`,
+    url: "/catalogo",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Catálogo de Flores",
+    description: `Explora nuestro catálogo de arreglos florales, orquídeas y regalos premium disponibles en ${BUSINESS.location}.`,
+  },
 };
 
 export default async function CatalogoPage(): Promise<React.ReactElement> {
@@ -34,8 +52,42 @@ export default async function CatalogoPage(): Promise<React.ReactElement> {
     </div>
   );
 
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Inicio",
+        item: `${SITE_URL}/`,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Catálogo",
+        item: `${SITE_URL}/catalogo`,
+      },
+    ],
+  };
+
+  const itemListLd = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    itemListElement: categories.map((cat, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      url: `${SITE_URL}/catalogo/${cat.slug}`,
+      name: cat.name,
+    })),
+  };
+
   return (
-    <main className="min-h-screen bg-cream pt-28 pb-12 px-4 sm:px-6 lg:px-8">
+    <main
+      id="main-content"
+      className="min-h-screen bg-cream pt-28 pb-12 px-4 sm:px-6 lg:px-8"
+    >
+      <JsonLd data={[breadcrumbLd, itemListLd]} />
       <div className="max-w-7xl mx-auto">
         <BreadcrumbNav items={[
           { label: 'Inicio', href: '/' },

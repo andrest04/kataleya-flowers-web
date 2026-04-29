@@ -1,7 +1,8 @@
 'use client';
 
-import { useMemo, useTransition } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
+import { useMemo, useTransition } from 'react';
+
 import {
   ANALYTICS_RANGE_OPTIONS,
   type AnalyticsRange,

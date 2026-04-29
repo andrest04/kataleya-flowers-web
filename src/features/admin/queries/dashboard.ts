@@ -1,9 +1,9 @@
-import { createClient } from '@/lib/supabase/server';
-import type { Database } from '@/lib/supabase/types';
 import {
   getCategoryIdsWithActiveProducts,
   getProductIdsWithViewsInRange,
 } from '@/features/admin/queries/adminFilters';
+import { createClient } from '@/lib/supabase/server';
+import type { Database } from '@/lib/supabase/types';
 
 type ProductRow = Database['public']['Tables']['products']['Row'];
 type CategoryRow = Database['public']['Tables']['categories']['Row'];

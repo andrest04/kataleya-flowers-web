@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+
 import type { ActionableKpis } from '@/features/admin/queries/dashboard';
 import { getAdminCategoryFilterHref, getAdminProductFilterHref } from '@/features/admin/utils/adminFilters';
 

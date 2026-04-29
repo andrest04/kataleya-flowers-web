@@ -9,8 +9,8 @@
  * adyacente para que NVDA/JAWS lo lea.
  */
 
-import { useCallback, useState } from 'react';
 import type { DragDropEvents } from '@dnd-kit/react';
+import { useCallback, useState } from 'react';
 
 interface Identifiable {
   id: string;

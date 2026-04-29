@@ -1,15 +1,16 @@
 'use client';
 
-import { useActionState, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import type { Database } from '@/lib/supabase/types';
-import type { CategoryFormData } from '@/features/admin/types';
-import { createCategory, updateCategory } from '@/features/admin/actions/categories';
-import { slugify } from '@/features/admin/utils/slugify';
+import { useActionState, useRef, useState } from 'react';
+
 import Button from '@/components/ui/Button';
+import { FormError,FormField } from '@/components/ui/FormField';
 import { Input, Textarea } from '@/components/ui/Input';
-import { FormField, FormError } from '@/components/ui/FormField';
+import { createCategory, updateCategory } from '@/features/admin/actions/categories';
 import ImageUploader from '@/features/admin/components/ImageUploader';
+import type { CategoryFormData } from '@/features/admin/types';
+import { slugify } from '@/features/admin/utils/slugify';
+import type { Database } from '@/lib/supabase/types';
 
 type CategoryRow = Database['public']['Tables']['categories']['Row'];
 
@@ -20,7 +21,9 @@ interface CategoryFormProps {
 function rowToFormData(row: CategoryRow): Omit<CategoryFormData, 'displayOrder'> {
   return {
     name: row.name,
-    slug: slugify(row.name),
+    // SEO: en edit preservamos el slug existente — regenerar a partir del nombre rompería
+    // URLs ya indexadas. Solo se regenera para categorías nuevas o si el user lo pide.
+    slug: row.slug,
     description: row.description,
     occasion: row.occasion ?? '',
     imageUrl: row.image_url ?? '',
@@ -41,6 +44,9 @@ export default function CategoryForm({ category }: CategoryFormProps) {
     ? rowToFormData(category)
     : { name: '', slug: '', description: '', occasion: '', imageUrl: '', isActive: true, isFeatured: false };
   const [imageUrl, setImageUrl] = useState(initial.imageUrl);
+  // En modo create, el slug se deriva live del nombre.
+  // En modo edit, NO se toca el slug original a menos que el user lo regenere a propósito.
+  const [autoSlug, setAutoSlug] = useState(!isEditing);
 
   const [state, formAction, isPending] = useActionState<FormState, FormData>(
     async (_prev: FormState, formData: FormData) => {
@@ -80,9 +86,10 @@ export default function CategoryForm({ category }: CategoryFormProps) {
             name="name"
             type="text"
             required
+            aria-required="true"
             defaultValue={initial.name}
             onChange={(e) => {
-              if (slugRef.current) {
+              if (autoSlug && slugRef.current) {
                 slugRef.current.value = slugify(e.target.value);
               }
             }}
@@ -90,15 +97,36 @@ export default function CategoryForm({ category }: CategoryFormProps) {
         </FormField>
 
         <FormField label="Slug" htmlFor="slug">
-          <Input
-            ref={slugRef}
-            id="slug"
-            name="slug"
-            type="text"
-            defaultValue={slugify(initial.name)}
-            placeholder="se genera desde el nombre"
-            readOnly
-          />
+          <div className="flex items-center gap-2">
+            <Input
+              ref={slugRef}
+              id="slug"
+              name="slug"
+              type="text"
+              defaultValue={initial.slug}
+              placeholder="se genera desde el nombre"
+              readOnly
+              aria-readonly="true"
+              className="flex-1"
+            />
+            {isEditing && (
+              <button
+                type="button"
+                onClick={() => {
+                  const nameInput = document.getElementById('name') as HTMLInputElement | null;
+                  if (slugRef.current && nameInput) {
+                    slugRef.current.value = slugify(nameInput.value);
+                    setAutoSlug(true);
+                  }
+                }}
+                className="text-xs underline text-(--color-primary) hover:opacity-80 cursor-pointer"
+                aria-label="Regenerar slug desde el nombre. Cambiar el slug puede romper URLs públicas indexadas."
+                title="Cambiar el slug puede romper URLs públicas indexadas."
+              >
+                Regenerar
+              </button>
+            )}
+          </div>
         </FormField>
       </div>
 
@@ -107,6 +135,7 @@ export default function CategoryForm({ category }: CategoryFormProps) {
           id="description"
           name="description"
           required
+          aria-required="true"
           rows={3}
           defaultValue={initial.description}
         />

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+
 import LogoutButton from '@/features/admin/components/LogoutButton';
 
 const NAV_LINKS = [

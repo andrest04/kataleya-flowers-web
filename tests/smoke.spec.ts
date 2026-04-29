@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { expect,test } from '@playwright/test';
 
 test('landing page loads with hero section', async ({ page }) => {
   await page.goto('/');

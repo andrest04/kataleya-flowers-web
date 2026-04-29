@@ -1,16 +1,17 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+
+import {
+  deleteFlowerTypeSchema,
+  renameFlowerTypeSchema,
+} from '@/features/admin/schemas/flowerType';
 import {
   type AdminActionFailure,
   describeSupabaseError,
   failureFromUnknown,
   requireAdmin,
 } from '@/features/admin/utils/auth';
-import {
-  deleteFlowerTypeSchema,
-  renameFlowerTypeSchema,
-} from '@/features/admin/schemas/flowerType';
 
 interface SuccessResult {
   success: true;

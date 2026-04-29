@@ -1,5 +1,5 @@
-import { createClient } from '@/lib/supabase/server';
 import { MIN_FRICTION_PRODUCT_VIEWS } from '@/features/admin/components/dashboard/analyticsShared';
+import { createClient } from '@/lib/supabase/server';
 
 export interface AnalyticsSummary {
   totalProductViews: number;

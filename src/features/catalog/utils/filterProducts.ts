@@ -1,4 +1,4 @@
-import type { Product, Category } from '@/features/catalog/types';
+import type { Category,Product } from '@/features/catalog/types';
 
 export const PRICE_MIN = 30;
 export const PRICE_MAX = 800;

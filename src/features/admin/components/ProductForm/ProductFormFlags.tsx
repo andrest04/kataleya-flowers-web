@@ -1,9 +1,10 @@
 'use client';
 
-import type { ProductFormData } from '@/features/admin/types';
-import { Input } from '@/components/ui/Input';
 import { FormField } from '@/components/ui/FormField';
+import { Input } from '@/components/ui/Input';
 import ToggleSwitch from '@/components/ui/ToggleSwitch';
+import type { ProductFormData } from '@/features/admin/types';
+
 import { FieldError } from './FieldError';
 import type { FieldErrors } from './validation';
 

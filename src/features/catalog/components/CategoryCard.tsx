@@ -2,8 +2,9 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import type { Category } from '@/features/catalog/types';
+
 import { clientTrackEvent } from '@/features/analytics/lib/clientTrack';
+import type { Category } from '@/features/catalog/types';
 
 interface CategoryCardProps {
   category: Category;

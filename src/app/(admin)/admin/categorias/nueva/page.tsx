@@ -1,4 +1,5 @@
 import Link from 'next/link';
+
 import CategoryForm from '@/features/admin/components/CategoryForm';
 
 export default function NuevaCategoriaPage() {

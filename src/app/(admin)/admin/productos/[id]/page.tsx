@@ -1,10 +1,11 @@
-import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { getAdminProductById } from '@/features/admin/queries/products';
+import { notFound } from 'next/navigation';
+
+import ProductForm from '@/features/admin/components/ProductForm';
 import { getAdminCategories } from '@/features/admin/queries/categories';
 import { getFlowerTypes } from '@/features/admin/queries/flowerTypes';
 import { getProductColors } from '@/features/admin/queries/productColors';
-import ProductForm from '@/features/admin/components/ProductForm';
+import { getAdminProductById } from '@/features/admin/queries/products';
 
 interface EditarProductoPageProps {
   params: Promise<{ id: string }>;

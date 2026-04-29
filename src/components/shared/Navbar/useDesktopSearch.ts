@@ -1,8 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
 import type { RefObject } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+
 import { searchProducts } from "@/features/catalog/actions/searchProducts";
+
 import type { SearchResult } from "./constants";
 
 const DEBOUNCE_MS = 250;
