@@ -35,7 +35,28 @@ const SWIPE_THRESHOLD = 50;
  * z-index `z-[100]` cubre Navbar (z-[90]) y WhatsAppFloat (z-50).
  */
 export default function LightboxDialog(props: LightboxDialogProps) {
-  return <LightboxInner key={props.initialIndex ?? 0} {...props} />;
+  // Key strategy: the key must NEVER change on close.
+  //
+  // Invariant: the key only changes when the user opens a DIFFERENT thumbnail
+  // (a different initialIndex) while already open, or on a close→reopen cycle
+  // at a new index. It must remain frozen when `open` flips true→false, so
+  // that the same LightboxInner instance stays mounted through the exit
+  // animation and Radix Dialog can finish its focus-restore cleanup before
+  // unmounting.
+  //
+  // We track the last initialIndex seen while open in a state variable. When
+  // `open` is true we update it via the render-phase setState pattern (React
+  // docs: "adjusting state when props change"). When `open` is false we leave
+  // it unchanged, so the key is frozen at the value it had when the dialog was
+  // last open. On reopen, LightboxInner's own render-phase reset syncs its
+  // internal index without remounting.
+  const [frozenIndex, setFrozenIndex] = useState(props.initialIndex ?? 0);
+  const incoming = props.initialIndex ?? 0;
+  if (props.open && incoming !== frozenIndex) {
+    setFrozenIndex(incoming);
+  }
+
+  return <LightboxInner key={frozenIndex} {...props} />;
 }
 
 function LightboxInner({
@@ -51,6 +72,29 @@ function LightboxInner({
 
   const total = safeImages.length;
   const hasMultiple = total > 1;
+
+  // Reset internal index when the dialog reopens (open: false → true).
+  //
+  // Because the outer LightboxDialog freezes the key on close, the same
+  // LightboxInner instance persists through the exit animation. When the user
+  // reopens (possibly on a different thumbnail or after internal navigation),
+  // we sync the internal index to the new initialIndex without remounting.
+  //
+  // Technique: store `prevOpen` in state — NOT a ref (refs during render are
+  // blocked by react-hooks/refs). When we detect a false→true transition we
+  // also update the index in the same render. React treats multiple setState
+  // calls in the render body as a single synchronous re-render and discards
+  // the intermediate frame, which is the canonical "adjust state when a prop
+  // changes" pattern (https://react.dev/learn/you-might-not-need-an-effect
+  // #adjusting-some-state-when-a-prop-changes).
+  const [prevOpen, setPrevOpen] = useState(open);
+  if (prevOpen !== open) {
+    setPrevOpen(open);
+    if (!prevOpen && open) {
+      const next = clampIndex(initialIndex, total);
+      if (next !== index) setIndex(next);
+    }
+  }
 
   const goPrev = useCallback(() => {
     if (!hasMultiple) return;
