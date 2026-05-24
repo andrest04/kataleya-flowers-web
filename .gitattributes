@@ -1,0 +1,15 @@
+# Normalize line endings to LF on commit; check out as-is.
+# Prevents CRLF/LF churn between Windows/WSL/macOS contributors.
+* text=auto eol=lf
+
+# Binary files — never touch.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.avif binary
+*.ico binary
+*.pdf binary
+*.woff binary
+*.woff2 binary
