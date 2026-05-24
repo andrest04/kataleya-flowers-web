@@ -226,38 +226,4 @@ export default defineConfig([
       'no-restricted-syntax': 'off',
     },
   },
-
-  // 10. React Three Fiber — los elementos intrínsecos de R3F (instancedMesh,
-  //     meshStandardMaterial, ambientLight, etc.) usan props que el linter de
-  //     React no reconoce (args, position, intensity, side, ...). Configurar
-  //     `react/no-unknown-property` con la lista oficial de props de R3F es la
-  //     práctica documentada del paquete:
-  //     https://docs.pmnd.rs/react-three-fiber/getting-started/installation#eslint-configuration
-  {
-    name: 'project/react-three-fiber',
-    files: ['**/HeroPetalsScene.tsx', '**/*.r3f.tsx'],
-    rules: {
-      'react/no-unknown-property': ['error', {
-        ignore: [
-          'args',
-          'attach',
-          'position',
-          'rotation',
-          'scale',
-          'intensity',
-          'castShadow',
-          'receiveShadow',
-          'side',
-          'transparent',
-          'opacity',
-          'roughness',
-          'metalness',
-          'frustumCulled',
-          'dispose',
-          'object',
-          'color',
-        ],
-      }],
-    },
-  },
 ]);
