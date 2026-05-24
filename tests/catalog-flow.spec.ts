@@ -91,34 +91,6 @@ test.describe("Phase 4B — Catalog flow", () => {
   test("filtro de precio: precio_min/precio_max se reflejan en URL", async ({
     page,
   }) => {
-    // BUG REAL DESCUBIERTO durante Phase 4B (Apr 2026):
-    //   En CatalogFilterPrice.tsx el handler hace:
-    //     const val = Number(e.target.value) || PRICE_MIN;
-    //     onChangeParam('precio_min', val > PRICE_MIN ? String(val) : '');
-    //   Con PRICE_MIN = 30, cuando el usuario empieza a tipear "100" caracter
-    //   por caracter, el primer "1" tiene val=1 < 30, entonces se llama
-    //   updateParam con '' (sin actualizar URL). El re-render (por estado
-    //   controlado `value={precioMin === PRICE_MIN ? '' : precioMin}`)
-    //   pisa el input con '' y borra los dígitos parcialmente tipeados.
-    //   Resultado: imposible tipear cualquier valor de 2+ dígitos < PRICE_MIN
-    //   y poco fiable hasta superar el threshold sin perder dígitos.
-    //
-    //   Repro manual:
-    //   1) abrir /catalogo
-    //   2) intentar escribir "50" en "Precio mínimo"
-    //   3) el input pierde el primer caracter casi siempre
-    //
-    //   Fix sugerido (otro agente / fase separada):
-    //   - Mantener un estado local del input independiente del URL param,
-    //     y solo persistir a URL en blur o tras debounce.
-    //   - O usar un slider en vez de inputs numéricos.
-    //
-    //   El test queda como `fixme` para que el TODO sea visible al equipo.
-    test.fixme(
-      true,
-      "Bug producto: CatalogFilterPrice pisa el input mientras se tipea valores < PRICE_MIN — ver comentario inline.",
-    );
-
     await page.goto("/catalogo");
     const minInput = page.getByLabel("Precio mínimo").first();
     const maxInput = page.getByLabel("Precio máximo").first();
