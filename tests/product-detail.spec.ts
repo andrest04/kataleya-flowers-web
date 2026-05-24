@@ -269,33 +269,6 @@ test.describe("Phase 4B — Product detail", () => {
   test("lightbox a11y: focus restaurado al trigger después de cerrar", async ({
     page,
   }) => {
-    // BUG REAL DESCUBIERTO durante Phase 4B (Apr 2026):
-    //   En LightboxDialog.tsx el componente exterior usa
-    //     `key={`${props.open ? 'open' : 'closed'}-${props.initialIndex ?? 0}`}`
-    //   para remontar el LightboxInner. Como consecuencia, cuando el dialog
-    //   se cierra el subárbol de Radix Dialog se DESMONTA por cambio de key
-    //   en vez de hacer un transition controlado por `open`. Eso hace que
-    //   Radix no pueda restaurar el focus al trigger (el FocusScope se
-    //   destruye antes de devolver el focus). El foco queda en `<body>`.
-    //
-    //   Repro manual:
-    //   1) abrir /catalogo/{cat}/{prod}
-    //   2) Tab hasta la imagen principal
-    //   3) Enter o Space — abre el lightbox
-    //   4) Escape — cierra
-    //   5) Pulsar Tab — el foco arranca desde el principio del documento
-    //      en lugar de continuar desde el trigger
-    //
-    //   Fix sugerido (otro agente / fase separada):
-    //   - Quitar el `key` del wrapper exterior y resetear el state interno
-    //     vía useEffect cuando cambien `open` o `initialIndex`, sin remontar.
-    //
-    //   El test queda como `fixme` para que el TODO sea visible al equipo.
-    test.fixme(
-      true,
-      "Bug producto: LightboxDialog se remonta por cambio de `key`, lo que impide a Radix devolver el focus al trigger.",
-    );
-
     await navigateToFirstProduct(page);
 
     const mainImageButton = page.locator('button[aria-haspopup="dialog"]');

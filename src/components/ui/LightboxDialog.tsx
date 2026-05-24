@@ -1,6 +1,6 @@
 'use client';
 
-import { AnimatePresence,domAnimation, LazyMotion, m } from 'framer-motion';
+import { AnimatePresence, domAnimation, LazyMotion, m } from 'framer-motion';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import Image from 'next/image';
 import { Dialog as DialogPrimitive } from 'radix-ui';
@@ -35,9 +35,7 @@ const SWIPE_THRESHOLD = 50;
  * z-index `z-[100]` cubre Navbar (z-[90]) y WhatsAppFloat (z-50).
  */
 export default function LightboxDialog(props: LightboxDialogProps) {
-  // Remontamos el inner cada vez que se abre o cambia initialIndex para que
-  // el state del índice arranque limpio sin un effect que llame setState.
-  return <LightboxInner key={`${props.open ? 'open' : 'closed'}-${props.initialIndex ?? 0}`} {...props} />;
+  return <LightboxInner key={props.initialIndex ?? 0} {...props} />;
 }
 
 function LightboxInner({
