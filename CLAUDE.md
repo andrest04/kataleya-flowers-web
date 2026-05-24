@@ -70,10 +70,9 @@ Plus `simple-import-sort` (warn — TODO: subir a error después de un pass glob
 
 **Override:** `src/lib/constants.ts` ignora `no-restricted-syntax` (es la fuente de verdad — ahí SÍ pueden vivir los literales).
 
-### Pre-commit (husky + lint-staged)
+### Pre-commit
 
-- `lint-staged` corre `eslint --max-warnings 0` sobre archivos staged
-- **NO** usar `--no-verify` salvo emergencia documentada con el dueño
+- No hay hooks automáticos. Antes de commitear, correr manualmente: `npm run lint:strict` y `npx tsc --noEmit`.
 - **NUNCA** agregar `Co-Authored-By` ni metadata de autor a commits
 
 ### Guardas de build
@@ -404,7 +403,6 @@ Vive en `src/app/`:
 - Mensajes cortos, en presente: `feat: add contact form validation`
 - **NUNCA** agregar `Co-Authored-By` ni metadata de autor
 - **Nunca commitear sin aprobación explícita del usuario.** Flujo: implementar → lint limpio → usuario prueba manualmente → usuario pide commitear → recién entonces se hace el commit
-- **No** `--no-verify` salvo emergencia documentada con el dueño
 
 ---
 
@@ -428,7 +426,7 @@ Vive en `src/app/`:
 - ❌ Componentes UI > 100 líneas sin descomponer
 - ❌ `console.log` (la regla ESLint warnea — usar `console.warn`/`error` si es necesario)
 - ❌ z-index libre en `className` — solo `z-50`, `z-[90]`, `z-[100]`
-- ❌ `--no-verify` o `Co-Authored-By` en commits
+- ❌ `Co-Authored-By` en commits
 - ❌ Modificar `layout.tsx` sin entender que afecta toda la app
 
 ---

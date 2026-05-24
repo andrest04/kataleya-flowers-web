@@ -11,8 +11,7 @@
     "lint:fix": "eslint . --fix",
     "lint:strict": "eslint . --max-warnings 0",
     "test:e2e": "npx playwright test",
-    "db:types": "npx supabase gen types typescript --project-id lhromzqzcssgdfguejje > src/lib/supabase/types.ts",
-    "prepare": "husky"
+    "db:types": "npx supabase gen types typescript --project-id lhromzqzcssgdfguejje > src/lib/supabase/types.ts"
   },
   "dependencies": {
     "@dnd-kit/helpers": "^0.3.2",
@@ -53,19 +52,9 @@
     "eslint-plugin-react-hooks": "7.0.1",
     "eslint-plugin-simple-import-sort": "^13.0.0",
     "globals": "17.4.0",
-    "husky": "^9.1.7",
-    "lint-staged": "^16.4.0",
     "shadcn": "^4.1.2",
     "tailwindcss": "^4",
     "typescript": "^5",
     "typescript-eslint": "^8.57.1"
-  },
-  "lint-staged": {
-    "*.{ts,tsx}": [
-      "eslint --max-warnings 0"
-    ],
-    "*.{js,mjs}": [
-      "eslint --max-warnings 0"
-    ]
   }
 }
