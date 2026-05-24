@@ -3,6 +3,8 @@ import type { ZodIssue, ZodSchema } from 'zod';
 
 import { createClient } from '@/lib/supabase/server';
 
+import { isAdminUser } from './adminMembership';
+
 // ─── Tipos ───────────────────────────────────────────────────────────────────
 
 export type AdminSupabaseClient = Awaited<ReturnType<typeof createClient>>;
@@ -50,11 +52,7 @@ export class AdminAuthError extends Error {
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
 /**
- * Verifica que haya sesión válida y devuelve el contexto admin
- * (`user` + `supabase`).
- *
- * TODO Fase 5: chequear rol admin específico cuando se modele en DB
- * (`app_metadata.role === 'admin'` o tabla `admin_users`).
+ * Verifica que haya sesión válida y membresía explícita en `admin_users`.
  *
  * Se prefiere `auth.getUser()` (no `getSession()`) para forzar verificación
  * contra Supabase Auth Server, igual que en `(admin)/layout.tsx` y `proxy.ts`.
@@ -65,6 +63,12 @@ export async function requireAdmin(): Promise<AdminActionContext> {
   if (error || !data.user) {
     throw new AdminAuthError('UNAUTHENTICATED', 'Sesión inválida o expirada');
   }
+
+  const isAdmin = await isAdminUser(supabase, data.user.id);
+  if (!isAdmin) {
+    throw new AdminAuthError('FORBIDDEN', 'No tenés permisos de administrador');
+  }
+
   return { user: data.user, supabase };
 }
 

@@ -9,6 +9,24 @@ export interface PriceVariantRow {
 export interface Database {
   public: {
     Tables: {
+      admin_users: {
+        Row: {
+          user_id: string;
+          email: string | null;
+          created_at: string;
+        };
+        Insert: {
+          user_id: string;
+          email?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          email?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
       categories: {
         Row: {
           id: string;

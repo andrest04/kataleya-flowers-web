@@ -1,5 +1,6 @@
-import { type NextRequest,NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 
+import { isAdminUser } from '@/features/admin/utils/adminMembership';
 import { createClient } from '@/lib/supabase/middleware';
 
 export async function proxy(request: NextRequest) {
@@ -9,13 +10,20 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  const isAdmin = user ? await isAdminUser(supabase, user.id) : false;
   const { pathname } = request.nextUrl;
 
-  if (pathname.startsWith('/admin') && !user) {
-    return NextResponse.redirect(new URL('/login', request.url));
+  if (pathname.startsWith('/admin')) {
+    if (!user) {
+      return NextResponse.redirect(new URL('/login', request.url));
+    }
+
+    if (!isAdmin) {
+      return NextResponse.redirect(new URL('/login?error=forbidden', request.url));
+    }
   }
 
-  if (pathname === '/login' && user) {
+  if (pathname === '/login' && user && isAdmin) {
     return NextResponse.redirect(new URL('/admin', request.url));
   }
 

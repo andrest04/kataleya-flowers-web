@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 
 import { NextResponse } from 'next/server';
 
+import { isAdminUser } from '@/features/admin/utils/adminMembership';
 import {
   ALLOWED_FOLDERS,
   isAllowedFolder,
@@ -33,6 +34,11 @@ export async function POST(request: Request) {
 
   if (authError || !user) {
     return NextResponse.json({ error: 'unauthenticated' }, { status: 401 });
+  }
+
+  const isAdmin = await isAdminUser(supabase, user.id);
+  if (!isAdmin) {
+    return NextResponse.json({ error: 'forbidden' }, { status: 403 });
   }
 
   // ── 2. Parsear body con manejo defensivo ──────────────────────────────────

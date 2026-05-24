@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 
 import AdminSidebar from '@/features/admin/components/AdminSidebar';
+import { isAdminUser } from '@/features/admin/utils/adminMembership';
 import { createClient } from '@/lib/supabase/server';
 
 export default async function AdminLayout({
@@ -15,6 +16,11 @@ export default async function AdminLayout({
 
   if (!user) {
     redirect('/login');
+  }
+
+  const isAdmin = await isAdminUser(supabase, user.id);
+  if (!isAdmin) {
+    redirect('/login?error=forbidden');
   }
 
   return (

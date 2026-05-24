@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 
 import { BUSINESS } from '@/lib/constants';
@@ -8,10 +8,16 @@ import { createClient } from '@/lib/supabase/client';
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const forbiddenMessage =
+    searchParams.get('error') === 'forbidden'
+      ? 'Tu usuario no tiene permisos de administrador.'
+      : null;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -108,8 +114,10 @@ export default function LoginPage() {
             />
           </div>
 
-          {error && (
-            <p className="text-sm" style={{ color: 'var(--color-primary)' }}>{error}</p>
+          {(error ?? forbiddenMessage) && (
+            <p className="text-sm" style={{ color: 'var(--color-primary)' }}>
+              {error ?? forbiddenMessage}
+            </p>
           )}
 
           <button
