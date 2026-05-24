@@ -1,13 +1,14 @@
+import HeroPetals from "./HeroPetals";
+
 /**
- * Decoración editorial del Hero. Server Component, puro SVG + CSS.
- *
- * Compone dos capas detrás del contenido:
+ * Decoración editorial del Hero. Compone tres capas detrás del contenido:
  *  1. Palabra "Flores" gigante en outline dorado (estilo editorial).
- *  2. Ramas botánicas line-art en las esquinas (esquinas vacías que
- *     marcamos en el audit visual).
+ *  2. Ramas botánicas line-art en las esquinas (SVG estático).
+ *  3. Pétalos 3D flotando (Three.js + R3F, montado en idle, respeta
+ *     `prefers-reduced-motion`).
  *
- * Es `aria-hidden` y `pointer-events-none` — pura decoración.
- * Se oculta en mobile (< lg) para no competir con el contenido.
+ * Todo `aria-hidden` y `pointer-events-none` — pura decoración.
+ * La capa 3D solo se monta en lg+ para no impactar mobile.
  */
 export default function HeroDecor() {
   return (
@@ -15,6 +16,7 @@ export default function HeroDecor() {
       aria-hidden="true"
       className="pointer-events-none absolute inset-0 hidden overflow-hidden lg:block"
     >
+      <HeroPetals />
       <span
         className="font-heading absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[clamp(10rem,20vw,22rem)] leading-none font-bold tracking-tight whitespace-nowrap select-none"
         style={{
