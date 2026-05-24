@@ -16,26 +16,26 @@ CREATE POLICY "admin_users_select_self"
   ON public.admin_users FOR SELECT TO authenticated
   USING (auth.uid() = user_id);
 
-DO $$
-DECLARE
-  v_admin_user_id uuid;
-BEGIN
-  SELECT id
-  INTO v_admin_user_id
-  FROM auth.users
-  WHERE email = 'aatg2004@gmail.com'
-  LIMIT 1;
-
-  IF v_admin_user_id IS NULL THEN
-    RAISE NOTICE 'admin seed skipped: auth.users email aatg2004@gmail.com not found';
-  ELSE
-    INSERT INTO public.admin_users (user_id, email)
-    VALUES (v_admin_user_id, 'aatg2004@gmail.com')
-    ON CONFLICT (user_id) DO UPDATE
-    SET email = EXCLUDED.email;
-  END IF;
-END;
-$$;
+-- Initial admin seed is intentionally NOT included in this migration to avoid
+-- committing PII (personal email) to git history.
+--
+-- To seed the first admin user, run the following SQL manually in the Supabase
+-- dashboard (SQL editor) or via an uncommitted local seed script — do NOT add it
+-- back to this file or to any tracked migration:
+--
+--   DO $$
+--   DECLARE v_uid uuid;
+--   BEGIN
+--     SELECT id INTO v_uid FROM auth.users WHERE email = '<your-admin@email.com>' LIMIT 1;
+--     IF v_uid IS NULL THEN
+--       RAISE NOTICE 'User not found — create the auth user first via Supabase Auth.';
+--     ELSE
+--       INSERT INTO public.admin_users (user_id, email)
+--       VALUES (v_uid, '<your-admin@email.com>')
+--       ON CONFLICT (user_id) DO NOTHING;
+--     END IF;
+--   END;
+--   $$;
 
 CREATE OR REPLACE FUNCTION public.is_admin(p_user_id uuid DEFAULT auth.uid())
 RETURNS boolean
@@ -52,7 +52,8 @@ AS $$
 $$;
 
 REVOKE ALL ON FUNCTION public.is_admin(uuid) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.is_admin(uuid) TO anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.is_admin(uuid) FROM anon;
+GRANT EXECUTE ON FUNCTION public.is_admin(uuid) TO authenticated;
 
 CREATE OR REPLACE FUNCTION public.require_admin()
 RETURNS void
