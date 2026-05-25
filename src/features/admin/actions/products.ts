@@ -15,8 +15,9 @@ import {
 } from '@/features/admin/utils/auth';
 import { isAllowedCloudinaryUrl } from '@/features/admin/utils/cloudinaryUrl';
 import { slugify } from '@/features/admin/utils/slugify';
-import { destroyCloudinaryImage, destroyCloudinaryImages } from '@/lib/cloudinary';
-import type { Database } from '@/lib/supabase/types';
+import { syncTaxonomy } from '@/features/admin/utils/taxonomySync';
+import { destroyCloudinaryImages } from '@/lib/cloudinary';
+import type { Database, Json } from '@/lib/supabase/types';
 
 type ProductInsert = Database['public']['Tables']['products']['Insert'];
 
@@ -25,7 +26,7 @@ interface SuccessResult {
 }
 type ProductActionResult = SuccessResult | AdminActionFailure;
 
-// ─── Helpers internos ────────────────────────────────────────────────────────
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
 async function ensureColors(
   supabase: AdminSupabaseClient,
@@ -68,6 +69,12 @@ async function ensureFlowerTypes(supabase: AdminSupabaseClient, names: string[])
   );
 }
 
+/**
+ * Scalar product fields only.
+ * image_url is still written (NOT NULL constraint remains until Phase D drops it).
+ * Old array columns (colors, flower_types, images) are NOT written — taxonomy is
+ * managed exclusively via set_product_taxonomy RPC from Phase C onward.
+ */
 function toInsertPayload(data: ProductFormData, slug: string): ProductInsert {
   return {
     name: data.name,
@@ -76,11 +83,8 @@ function toInsertPayload(data: ProductFormData, slug: string): ProductInsert {
     price: data.price,
     category_id: data.categoryId,
     image_url: data.imageUrl,
-    images: data.images,
-    colors: data.colors,
-    flower_types: data.flowerTypes,
-    includes: data.includes,
-    price_variants: data.priceVariants,
+    includes: data.includes as unknown as Json,
+    price_variants: data.priceVariants as Json | null,
     occasion: data.occasion || null,
     note: data.note || null,
     is_active: data.isActive,
@@ -89,16 +93,26 @@ function toInsertPayload(data: ProductFormData, slug: string): ProductInsert {
   };
 }
 
+async function validateImageUrls(data: ProductFormData): Promise<AdminActionFailure | null> {
+  if (!isAllowedCloudinaryUrl(data.imageUrl)) {
+    return { success: false, error: 'URL de imagen no permitida.', code: 'VALIDATION' };
+  }
+  for (const url of data.images) {
+    if (!isAllowedCloudinaryUrl(url)) {
+      return { success: false, error: 'Una de las imágenes adicionales tiene una URL no permitida.', code: 'VALIDATION' };
+    }
+  }
+  return null;
+}
+
 async function revalidateProductPaths(
   supabase: AdminSupabaseClient,
   slug?: string,
   categoryId?: string,
 ): Promise<void> {
-  // Catálogo público
   revalidatePath('/');
   revalidatePath('/catalogo');
 
-  // Detalle si tenemos categoría
   if (categoryId) {
     const { data: category } = await supabase
       .from('categories')
@@ -111,7 +125,6 @@ async function revalidateProductPaths(
     }
   }
 
-  // Admin
   revalidatePath('/admin/productos');
 }
 
@@ -124,53 +137,41 @@ export async function createProduct(data: ProductFormData): Promise<ProductActio
     const parsed = productCreateSchema.safeParse(data);
     if (!parsed.success) {
       console.warn('[createProduct] validation failed:', parsed.error.issues);
-      return {
-        success: false,
-        error: 'Datos inválidos. Revisá el formulario.',
-        code: 'VALIDATION',
-        issues: parsed.error.issues,
-      };
+      return { success: false, error: 'Datos inválidos. Revisá el formulario.', code: 'VALIDATION', issues: parsed.error.issues };
     }
 
-    // Defense-in-depth: validar URLs de imagen a nivel de allowlist
-    if (!isAllowedCloudinaryUrl(parsed.data.imageUrl)) {
-      return {
-        success: false,
-        error: 'URL de imagen no permitida.',
-        code: 'VALIDATION',
-      };
-    }
-    for (const url of parsed.data.images) {
-      if (!isAllowedCloudinaryUrl(url)) {
-        return {
-          success: false,
-          error: 'Una de las imágenes adicionales tiene una URL no permitida.',
-          code: 'VALIDATION',
-        };
-      }
-    }
+    const formData = parsed.data as ProductFormData;
+    const urlError = await validateImageUrls(formData);
+    if (urlError) return urlError;
 
     const { supabase } = ctx;
-    const formData = parsed.data as ProductFormData;
 
-    if (formData.newFlowerTypes?.length) {
-      await ensureFlowerTypes(supabase, formData.newFlowerTypes);
-    }
-    if (formData.newColors?.length) {
-      await ensureColors(supabase, formData.newColors);
-    }
+    if (formData.newFlowerTypes?.length) await ensureFlowerTypes(supabase, formData.newFlowerTypes);
+    if (formData.newColors?.length) await ensureColors(supabase, formData.newColors);
 
     const slug = formData.slug?.trim() || slugify(formData.name);
     const payload = toInsertPayload(formData, slug);
 
-    const { error } = await supabase.from('products').insert(payload);
+    const { data: inserted, error } = await supabase
+      .from('products')
+      .insert(payload)
+      .select('id')
+      .single();
 
-    if (error) {
-      return {
-        success: false,
-        error: describeSupabaseError(error),
-        code: 'INTERNAL',
-      };
+    if (error || !inserted) {
+      return { success: false, error: describeSupabaseError(error ?? {}), code: 'INTERNAL' };
+    }
+
+    const syncError = await syncTaxonomy(supabase, {
+      productId: inserted.id,
+      productName: formData.name,
+      colorNames: formData.colors,
+      flowerTypeNames: formData.flowerTypes,
+      imageUrl: formData.imageUrl,
+      galleryImages: formData.images,
+    });
+    if (syncError) {
+      return { success: false, error: syncError.error.message, code: 'INTERNAL' };
     }
 
     await revalidateProductPaths(supabase, slug, formData.categoryId);
@@ -189,68 +190,42 @@ export async function updateProduct(
 
     const idParsed = uuid.safeParse(id);
     if (!idParsed.success) {
-      return {
-        success: false,
-        error: 'Identificador inválido.',
-        code: 'VALIDATION',
-        issues: idParsed.error.issues,
-      };
+      return { success: false, error: 'Identificador inválido.', code: 'VALIDATION', issues: idParsed.error.issues };
     }
 
     const parsed = productUpdateSchema.safeParse(data);
     if (!parsed.success) {
       console.warn('[updateProduct] validation failed:', parsed.error.issues);
-      return {
-        success: false,
-        error: 'Datos inválidos. Revisá el formulario.',
-        code: 'VALIDATION',
-        issues: parsed.error.issues,
-      };
+      return { success: false, error: 'Datos inválidos. Revisá el formulario.', code: 'VALIDATION', issues: parsed.error.issues };
     }
 
-    if (!isAllowedCloudinaryUrl(parsed.data.imageUrl)) {
-      return {
-        success: false,
-        error: 'URL de imagen no permitida.',
-        code: 'VALIDATION',
-      };
-    }
-    for (const url of parsed.data.images) {
-      if (!isAllowedCloudinaryUrl(url)) {
-        return {
-          success: false,
-          error: 'Una de las imágenes adicionales tiene una URL no permitida.',
-          code: 'VALIDATION',
-        };
-      }
-    }
+    const formData = parsed.data as ProductFormData;
+    const urlError = await validateImageUrls(formData);
+    if (urlError) return urlError;
 
     const { supabase } = ctx;
-    const formData = parsed.data as ProductFormData;
 
-    if (formData.newFlowerTypes?.length) {
-      await ensureFlowerTypes(supabase, formData.newFlowerTypes);
-    }
-    if (formData.newColors?.length) {
-      await ensureColors(supabase, formData.newColors);
-    }
+    if (formData.newFlowerTypes?.length) await ensureFlowerTypes(supabase, formData.newFlowerTypes);
+    if (formData.newColors?.length) await ensureColors(supabase, formData.newColors);
 
-    // Fetch current images + slug to detect replacements / preserve indexed URL
+    // Fetch current slug + existing images for Cloudinary cleanup
     const { data: current } = await supabase
       .from('products')
-      .select('image_url, images, slug')
+      .select('slug, category_id')
       .eq('id', idParsed.data)
       .single();
 
-    // SEO: preservar el slug ya indexado a menos que el user explícitamente lo cambie.
-    // - Si el payload viene vacío → mantener el slug actual de la DB.
-    // - Si viene exactamente igual al actual → no regenerar.
-    // - Solo aceptamos un slug nuevo si difiere del actual y vino con valor.
+    const { data: currentImages } = await supabase
+      .from('product_images')
+      .select('url')
+      .eq('product_id', idParsed.data);
+
     const incomingSlug = formData.slug?.trim() ?? '';
     const slug =
       incomingSlug && incomingSlug !== current?.slug
         ? incomingSlug
         : (current?.slug ?? slugify(formData.name));
+
     const payload = toInsertPayload(formData, slug);
 
     const { error } = await supabase
@@ -259,24 +234,29 @@ export async function updateProduct(
       .eq('id', idParsed.data);
 
     if (error) {
-      return {
-        success: false,
-        error: describeSupabaseError(error),
-        code: 'INTERNAL',
-      };
+      return { success: false, error: describeSupabaseError(error), code: 'INTERNAL' };
     }
 
-    // Cleanup replaced images from Cloudinary (best-effort)
-    if (current) {
-      if (current.image_url && current.image_url !== formData.imageUrl) {
-        void destroyCloudinaryImage(current.image_url);
-      }
-      const oldImages = (current.images as string[] | null) ?? [];
-      const removed = oldImages.filter((url) => !formData.images.includes(url));
+    // Cloudinary cleanup — best-effort for removed images
+    if (currentImages) {
+      const newUrls = new Set([formData.imageUrl, ...formData.images]);
+      const removed = (currentImages).filter((r) => !newUrls.has(r.url)).map((r) => r.url);
       if (removed.length > 0) void destroyCloudinaryImages(removed);
     }
 
-    await revalidateProductPaths(supabase, slug, formData.categoryId);
+    const syncError = await syncTaxonomy(supabase, {
+      productId: idParsed.data,
+      productName: formData.name,
+      colorNames: formData.colors,
+      flowerTypeNames: formData.flowerTypes,
+      imageUrl: formData.imageUrl,
+      galleryImages: formData.images,
+    });
+    if (syncError) {
+      return { success: false, error: syncError.error.message, code: 'INTERNAL' };
+    }
+
+    await revalidateProductPaths(supabase, slug, formData.categoryId ?? current?.category_id);
     return { success: true };
   } catch (err) {
     return failureFromUnknown(err);
@@ -289,22 +269,22 @@ export async function deleteProduct(id: string): Promise<ProductActionResult> {
 
     const idParsed = uuid.safeParse(id);
     if (!idParsed.success) {
-      return {
-        success: false,
-        error: 'Identificador inválido.',
-        code: 'VALIDATION',
-        issues: idParsed.error.issues,
-      };
+      return { success: false, error: 'Identificador inválido.', code: 'VALIDATION', issues: idParsed.error.issues };
     }
 
     const { supabase } = ctx;
 
-    // Fetch images and category before deleting the row
+    // Fetch images from product_images (relational source) + product meta before deleting
     const { data: product } = await supabase
       .from('products')
-      .select('image_url, images, category_id, slug')
+      .select('category_id, slug')
       .eq('id', idParsed.data)
       .single();
+
+    const { data: images } = await supabase
+      .from('product_images')
+      .select('url')
+      .eq('product_id', idParsed.data);
 
     const { error } = await supabase
       .from('products')
@@ -312,20 +292,12 @@ export async function deleteProduct(id: string): Promise<ProductActionResult> {
       .eq('id', idParsed.data);
 
     if (error) {
-      return {
-        success: false,
-        error: describeSupabaseError(error),
-        code: 'INTERNAL',
-      };
+      return { success: false, error: describeSupabaseError(error), code: 'INTERNAL' };
     }
 
-    // Cleanup images from Cloudinary (best-effort)
-    if (product) {
-      const allUrls = [
-        product.image_url,
-        ...(((product.images as string[] | null) ?? []) as string[]),
-      ];
-      void destroyCloudinaryImages(allUrls);
+    // Cloudinary cleanup — best-effort (product row is already gone, junctions cascaded)
+    if (images?.length) {
+      void destroyCloudinaryImages(images.map((r) => r.url));
     }
 
     await revalidateProductPaths(supabase, product?.slug, product?.category_id);
@@ -344,19 +316,10 @@ export async function toggleProductStatus(
 
     const idParsed = uuid.safeParse(id);
     if (!idParsed.success) {
-      return {
-        success: false,
-        error: 'Identificador inválido.',
-        code: 'VALIDATION',
-        issues: idParsed.error.issues,
-      };
+      return { success: false, error: 'Identificador inválido.', code: 'VALIDATION', issues: idParsed.error.issues };
     }
     if (typeof isActive !== 'boolean') {
-      return {
-        success: false,
-        error: 'Estado inválido.',
-        code: 'VALIDATION',
-      };
+      return { success: false, error: 'Estado inválido.', code: 'VALIDATION' };
     }
 
     const { supabase } = ctx;
@@ -373,11 +336,7 @@ export async function toggleProductStatus(
       .eq('id', idParsed.data);
 
     if (error) {
-      return {
-        success: false,
-        error: describeSupabaseError(error),
-        code: 'INTERNAL',
-      };
+      return { success: false, error: describeSupabaseError(error), code: 'INTERNAL' };
     }
 
     await revalidateProductPaths(supabase, product?.slug, product?.category_id);
@@ -393,12 +352,7 @@ export async function reorderProducts(orderedIds: string[]): Promise<ProductActi
 
     const parsed = reorderSchema.safeParse({ ids: orderedIds });
     if (!parsed.success) {
-      return {
-        success: false,
-        error: 'Lista de identificadores inválida.',
-        code: 'VALIDATION',
-        issues: parsed.error.issues,
-      };
+      return { success: false, error: 'Lista de identificadores inválida.', code: 'VALIDATION', issues: parsed.error.issues };
     }
 
     const { supabase } = ctx;
@@ -407,11 +361,7 @@ export async function reorderProducts(orderedIds: string[]): Promise<ProductActi
     });
 
     if (error) {
-      return {
-        success: false,
-        error: describeSupabaseError(error),
-        code: 'INTERNAL',
-      };
+      return { success: false, error: describeSupabaseError(error), code: 'INTERNAL' };
     }
 
     revalidatePath('/');

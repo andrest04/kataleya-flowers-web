@@ -34,7 +34,7 @@ export default async function AdminProductosPage({
   const baseFilteredProducts = products.filter((product) => {
     switch (activeFilter) {
       case 'missing-gallery':
-        return product.is_active && product.images.length === 0;
+        return product.is_active && (product.product_images?.length ?? 0) <= 1;
       case 'featured-without-views':
         return product.is_featured && !viewedProductIds.has(product.id);
       case 'active-without-views':

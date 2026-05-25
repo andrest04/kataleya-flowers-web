@@ -7,24 +7,32 @@
 
 import Image from 'next/image';
 
-import type { Database } from '@/lib/supabase/types';
-
-type ProductRow = Database['public']['Tables']['products']['Row'];
+import type { AdminProductRow } from '@/features/admin/queries/products';
 
 interface ProductTableImageProps {
-  product: ProductRow;
+  product: AdminProductRow;
   sizeClass: string;
   sizes: string;
 }
 
 export default function ProductTableImage({ product, sizeClass, sizes }: ProductTableImageProps) {
+  // Resolve primary image from relational product_images (Phase C+)
+  const sortedImages = product.product_images
+    ? [...product.product_images].sort((a, b) => a.display_order - b.display_order)
+    : [];
+  const primaryUrl =
+    sortedImages.find((i) => i.is_primary)?.url ??
+    sortedImages[0]?.url ??
+    product.image_url ??
+    null;
+
   return (
     <div
       className={`relative ${sizeClass} rounded-lg overflow-hidden flex-shrink-0`}
       style={{ background: 'var(--color-surface)' }}
     >
-      {product.image_url ? (
-        <Image src={product.image_url} alt={product.name} fill className="object-cover" sizes={sizes} />
+      {primaryUrl ? (
+        <Image src={primaryUrl} alt={product.name} fill className="object-cover" sizes={sizes} />
       ) : (
         <div className="w-full h-full flex items-center justify-center">
           <span className="text-xs" style={{ color: 'var(--color-muted)' }}>—</span>

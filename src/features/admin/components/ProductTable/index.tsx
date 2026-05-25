@@ -18,6 +18,7 @@ import Button from '@/components/ui/Button';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import EmptyState from '@/components/ui/EmptyState';
 import { useDndAccessibility } from '@/features/admin/hooks/useDndAccessibility';
+import type { AdminProductRow } from '@/features/admin/queries/products';
 import type { AdminProductFilter } from '@/features/admin/utils/adminFilters';
 import type { Database } from '@/lib/supabase/types';
 
@@ -27,11 +28,10 @@ import ProductTableHeader from './ProductTableHeader';
 import ProductTableRow from './ProductTableRow';
 import { useProductTable } from './useProductTable';
 
-type ProductRow = Database['public']['Tables']['products']['Row'];
 type CategoryRow = Database['public']['Tables']['categories']['Row'];
 
 interface ProductTableProps {
-  products: ProductRow[];
+  products: AdminProductRow[];
   categories: CategoryRow[];
   reorderable?: boolean;
   activeFilter?: AdminProductFilter | null;
@@ -85,7 +85,7 @@ export default function ProductTable({
     />
   );
 
-  const rowProps = (product: ProductRow, index: number, opts: { reorderable: boolean; zebra: boolean; hasChanges: boolean }) => ({
+  const rowProps = (product: AdminProductRow, index: number, opts: { reorderable: boolean; zebra: boolean; hasChanges: boolean }) => ({
     product,
     index,
     reorderable: opts.reorderable,

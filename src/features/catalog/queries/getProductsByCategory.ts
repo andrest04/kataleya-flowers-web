@@ -1,6 +1,14 @@
+import type { JoinedProductRow } from '@/features/catalog/queries/mappers';
 import { mapProductRow } from '@/features/catalog/queries/mappers';
 import type { Product } from '@/features/catalog/types';
 import { createStaticClient } from '@/lib/supabase/static';
+
+const PRODUCT_SELECT = `
+  *,
+  product_color_assignments(product_colors(name)),
+  product_flower_type_assignments(flower_types(name)),
+  product_images(url, alt_text, is_primary, display_order)
+` as const;
 
 export async function getProductsByCategory(
   categorySlug: string
@@ -30,7 +38,7 @@ export async function getProductsByCategory(
 
   const { data, error } = await supabase
     .from('products')
-    .select('*')
+    .select(PRODUCT_SELECT)
     .eq('category_id', category.id)
     .eq('is_active', true)
     .order('display_order', { ascending: true });
@@ -39,5 +47,5 @@ export async function getProductsByCategory(
     throw new Error(`getProductsByCategory failed: ${error.message}`);
   }
 
-  return (data ?? []).map(mapProductRow);
+  return (data ?? []).map((row) => mapProductRow(row as unknown as JoinedProductRow));
 }

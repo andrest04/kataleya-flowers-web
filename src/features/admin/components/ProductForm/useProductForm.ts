@@ -4,13 +4,18 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useState, useTransition } from 'react';
 
 import { createProduct, updateProduct } from '@/features/admin/actions/products';
+import type { AdminProductRow } from '@/features/admin/queries/products';
 import type { ProductFormData } from '@/features/admin/types';
 import { slugify } from '@/features/admin/utils/slugify';
+import type { PriceVariantRow } from '@/features/catalog/types';
 import type { Database } from '@/lib/supabase/types';
 
 import { buildFieldErrors, type FieldErrors } from './validation';
 
 type ProductRow = Database['public']['Tables']['products']['Row'];
+
+/** Accept both the old flat row and the new relational AdminProductRow */
+type ProductInput = ProductRow | AdminProductRow;
 
 // ─── Tipos públicos del hook ────────────────────────────────────────────────
 
@@ -63,13 +68,13 @@ export interface ProductFormApi {
 }
 
 interface UseProductFormParams {
-  product?: ProductRow;
+  product?: ProductInput;
   onSuccess?: () => void;
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function buildInitialState(product?: ProductRow): ProductFormData {
+function buildInitialState(product?: ProductInput): ProductFormData {
   if (!product) {
     return {
       name: '',
@@ -90,6 +95,32 @@ function buildInitialState(product?: ProductRow): ProductFormData {
       displayOrder: 0,
     };
   }
+
+  // Resolve taxonomy from relational tables (Phase C+) when present, else fall back to old columns.
+  const relational = product as AdminProductRow;
+
+  const colors: string[] = relational.product_color_assignments
+    ? relational.product_color_assignments
+        .map((a) => a.product_colors?.name)
+        .filter((n): n is string => !!n)
+    : (product.colors ?? []);
+
+  const flowerTypes: string[] = relational.product_flower_type_assignments
+    ? relational.product_flower_type_assignments
+        .map((a) => a.flower_types?.name)
+        .filter((n): n is string => !!n)
+    : (product.flower_types ?? []);
+
+  const sortedImages = relational.product_images
+    ? [...relational.product_images].sort((a, b) => a.display_order - b.display_order)
+    : null;
+
+  const primaryImg = sortedImages?.find((i) => i.is_primary) ?? sortedImages?.[0];
+  const imageUrl = primaryImg?.url ?? product.image_url ?? '';
+  const galleryImages = sortedImages
+    ? sortedImages.map((i) => i.url)
+    : (product.images ?? []);
+
   return {
     name: product.name,
     // SEO: preservar el slug existente en edit. Cambiar el name no regenera el slug
@@ -98,12 +129,12 @@ function buildInitialState(product?: ProductRow): ProductFormData {
     description: product.description,
     price: Number(product.price),
     categoryId: product.category_id,
-    imageUrl: product.image_url,
-    images: product.images ?? [],
-    colors: product.colors ?? [],
-    flowerTypes: product.flower_types ?? [],
-    includes: (product.includes as string[]) ?? [],
-    priceVariants: product.price_variants ?? null,
+    imageUrl,
+    images: galleryImages,
+    colors,
+    flowerTypes,
+    includes: (product.includes as unknown as string[]) ?? [],
+    priceVariants: (product.price_variants as unknown as PriceVariantRow[] | null) ?? null,
     occasion: product.occasion ?? '',
     note: product.note ?? '',
     isActive: product.is_active,
@@ -129,10 +160,10 @@ export function useProductForm({
   // En create el slug se deriva del name; en edit no se toca a menos que el user lo regenere.
   const [autoSlug, setAutoSlug] = useState(!isEditing);
   const [includeKeys, setIncludeKeys] = useState<string[]>(() =>
-    makeKeys(product?.includes?.length ?? 0),
+    makeKeys((product?.includes as unknown as string[] | null | undefined)?.length ?? 0),
   );
   const [variantKeys, setVariantKeys] = useState<string[]>(() =>
-    makeKeys(product?.price_variants?.length ?? 0),
+    makeKeys((product?.price_variants as unknown as unknown[] | null | undefined)?.length ?? 0),
   );
 
   const [pendingNewTypes, setPendingNewTypes] = useState<string[]>([]);

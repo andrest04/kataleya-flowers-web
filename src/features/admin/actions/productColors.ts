@@ -32,11 +32,20 @@ export async function deleteProductColor(name: string): Promise<ColorActionResul
       };
     }
 
-    const { error } = await supabase.rpc('delete_product_color', {
-      p_name: parsed.data.name,
-    });
+    const { error } = await supabase
+      .from('product_colors')
+      .delete()
+      .eq('name', parsed.data.name);
 
     if (error) {
+      // 23503 = FK RESTRICT violation — color is assigned to one or more products
+      if (error.code === '23503') {
+        return {
+          success: false,
+          error: 'Este color está en uso por uno o más productos y no puede eliminarse.',
+          code: 'INTERNAL',
+        };
+      }
       return {
         success: false,
         error: describeSupabaseError(error),
@@ -70,12 +79,22 @@ export async function renameProductColor(
       };
     }
 
-    const { error } = await supabase.rpc('rename_product_color', {
-      p_old_name: parsed.data.oldName,
-      p_new_name: parsed.data.newName.toLowerCase().trim(),
-    });
+    const normalizedNew = parsed.data.newName.toLowerCase().trim();
+
+    const { error } = await supabase
+      .from('product_colors')
+      .update({ name: normalizedNew })
+      .eq('name', parsed.data.oldName);
 
     if (error) {
+      // 23505 = UNIQUE violation — the new name already exists
+      if (error.code === '23505') {
+        return {
+          success: false,
+          error: 'Ya existe un color con ese nombre.',
+          code: 'INTERNAL',
+        };
+      }
       return {
         success: false,
         error: describeSupabaseError(error),

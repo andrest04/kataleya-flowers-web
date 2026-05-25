@@ -1,9 +1,41 @@
-import type { Product } from '@/features/catalog/types';
+import type { PriceVariant, Product } from '@/features/catalog/types';
 import type { Database } from '@/lib/supabase/types';
 
 export type ProductRow = Database['public']['Tables']['products']['Row'];
 
-export function mapProductRow(row: ProductRow): Product {
+/** Shape returned by PostgREST nested-embed queries in Phase C+ */
+export type JoinedProductRow = ProductRow & {
+  product_color_assignments:
+    | { product_colors: { name: string } | null }[]
+    | null;
+  product_flower_type_assignments:
+    | { flower_types: { name: string } | null }[]
+    | null;
+  product_images:
+    | {
+        url: string;
+        alt_text: string | null;
+        is_primary: boolean;
+        display_order: number;
+      }[]
+    | null;
+};
+
+export function mapProductRow(row: JoinedProductRow): Product {
+  const colors = (row.product_color_assignments ?? [])
+    .map((a) => a.product_colors?.name)
+    .filter((n): n is string => !!n);
+
+  const flowerTypes = (row.product_flower_type_assignments ?? [])
+    .map((a) => a.flower_types?.name)
+    .filter((n): n is string => !!n);
+
+  const imgs = [...(row.product_images ?? [])].sort(
+    (a, b) => a.display_order - b.display_order,
+  );
+  const primary = imgs.find((i) => i.is_primary) ?? imgs[0];
+  const gallery = imgs.map((i) => i.url);
+
   return {
     id: row.id,
     name: row.name,
@@ -11,15 +43,15 @@ export function mapProductRow(row: ProductRow): Product {
     description: row.description,
     price: Number(row.price),
     categoryId: row.category_id,
-    imageUrl: row.image_url,
-    images: row.images ?? [],
+    imageUrl: primary?.url ?? '',
+    images: gallery,
     includes: (row.includes as string[]) ?? [],
     occasion: row.occasion ?? undefined,
     note: row.note ?? undefined,
-    colors: row.colors ?? [],
-    flowerTypes: row.flower_types ?? [],
+    colors,
+    flowerTypes,
     priceTable: row.price_variants
-      ? (row.price_variants as { label: string; price: number }[])
+      ? (row.price_variants as unknown as PriceVariant[])
       : undefined,
   };
 }

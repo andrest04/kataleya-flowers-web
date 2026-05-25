@@ -3,12 +3,12 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useMemo } from 'react';
 
+import type { AdminProductRow } from '@/features/admin/queries/products';
 import type { AdminProductFilter } from '@/features/admin/utils/adminFilters';
 import type { Database } from '@/lib/supabase/types';
 
 import ProductTable from './ProductTable';
 
-type ProductRow = Database['public']['Tables']['products']['Row'];
 type CategoryRow = Database['public']['Tables']['categories']['Row'];
 
 interface ProductFilterMeta {
@@ -18,7 +18,7 @@ interface ProductFilterMeta {
 }
 
 interface ProductListClientProps {
-  products: ProductRow[];
+  products: AdminProductRow[];
   categories: CategoryRow[];
   activeFilter: AdminProductFilter | null;
   filterMeta: ProductFilterMeta | null;

@@ -32,11 +32,20 @@ export async function deleteFlowerType(name: string): Promise<FlowerTypeActionRe
       };
     }
 
-    const { error } = await supabase.rpc('delete_flower_type', {
-      p_name: parsed.data.name,
-    });
+    const { error } = await supabase
+      .from('flower_types')
+      .delete()
+      .eq('name', parsed.data.name);
 
     if (error) {
+      // 23503 = FK RESTRICT violation — flower type is assigned to one or more products
+      if (error.code === '23503') {
+        return {
+          success: false,
+          error: 'Este tipo de flor está en uso por uno o más productos y no puede eliminarse.',
+          code: 'INTERNAL',
+        };
+      }
       return {
         success: false,
         error: describeSupabaseError(error),
@@ -70,12 +79,22 @@ export async function renameFlowerType(
       };
     }
 
-    const { error } = await supabase.rpc('rename_flower_type', {
-      p_old_name: parsed.data.oldName,
-      p_new_name: parsed.data.newName.toLowerCase().trim(),
-    });
+    const normalizedNew = parsed.data.newName.toLowerCase().trim();
+
+    const { error } = await supabase
+      .from('flower_types')
+      .update({ name: normalizedNew })
+      .eq('name', parsed.data.oldName);
 
     if (error) {
+      // 23505 = UNIQUE violation — the new name already exists
+      if (error.code === '23505') {
+        return {
+          success: false,
+          error: 'Ya existe un tipo de flor con ese nombre.',
+          code: 'INTERNAL',
+        };
+      }
       return {
         success: false,
         error: describeSupabaseError(error),

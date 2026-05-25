@@ -7,15 +7,13 @@
  * existía en dos render trees casi idénticos.
  */
 
-import type { Database } from '@/lib/supabase/types';
+import type { AdminProductRow } from '@/features/admin/queries/products';
 
 import ProductTableSortableRow from './ProductTableSortableRow';
 import ProductTableStaticRow from './ProductTableStaticRow';
 
-type ProductRow = Database['public']['Tables']['products']['Row'];
-
 export interface ProductTableRowBaseProps {
-  product: ProductRow;
+  product: AdminProductRow;
   index: number;
   hasChanges: boolean;
   deletingId: string | null;

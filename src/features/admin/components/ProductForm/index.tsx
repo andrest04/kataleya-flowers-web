@@ -2,6 +2,7 @@
 
 import Button from '@/components/ui/Button';
 import { FormError } from '@/components/ui/FormField';
+import type { AdminProductRow } from '@/features/admin/queries/products';
 import type { Database } from '@/lib/supabase/types';
 
 import ColorManager, { type ColorOption } from './ColorManager';
@@ -13,7 +14,6 @@ import ProductFormIncludes from './ProductFormIncludes';
 import ProductFormPriceVariants from './ProductFormPriceVariants';
 import { useProductForm } from './useProductForm';
 
-type ProductRow = Database['public']['Tables']['products']['Row'];
 type CategoryRow = Database['public']['Tables']['categories']['Row'];
 
 interface FlowerTypeOption {
@@ -22,7 +22,7 @@ interface FlowerTypeOption {
 }
 
 interface ProductFormProps {
-  product?: ProductRow;
+  product?: AdminProductRow;
   categories: CategoryRow[];
   flowerTypes: FlowerTypeOption[];
   productColors: ColorOption[];

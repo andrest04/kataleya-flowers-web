@@ -16,20 +16,20 @@ import {
   reorderProducts,
   toggleProductStatus,
 } from '@/features/admin/actions/products';
+import type { AdminProductRow } from '@/features/admin/queries/products';
 import type { AdminProductFilter } from '@/features/admin/utils/adminFilters';
-import type { Database } from '@/lib/supabase/types';
 
-type ProductRow = Database['public']['Tables']['products']['Row'];
 type DragEndHandler = NonNullable<DragDropEvents['dragend']>;
 
 function matchesActiveFilter(
-  product: ProductRow,
+  product: AdminProductRow,
   filter: AdminProductFilter | null | undefined,
   viewedProductIds: Set<string>,
 ): boolean {
   switch (filter) {
     case 'missing-gallery':
-      return product.is_active && product.images.length === 0;
+      // <= 1 means only the primary (or no images at all) — no gallery
+      return product.is_active && (product.product_images?.length ?? 0) <= 1;
     case 'featured-without-views':
       return product.is_featured && !viewedProductIds.has(product.id);
     case 'active-without-views':
@@ -40,7 +40,7 @@ function matchesActiveFilter(
 }
 
 interface UseProductTableParams {
-  initial: ProductRow[];
+  initial: AdminProductRow[];
   activeFilter: AdminProductFilter | null;
   viewedProductIds: Set<string>;
 }
@@ -51,12 +51,12 @@ export interface DeleteTarget {
 }
 
 export function useProductTable({ initial, activeFilter, viewedProductIds }: UseProductTableParams) {
-  const [items, setItems] = useState<ProductRow[]>(initial);
+  const [items, setItems] = useState<AdminProductRow[]>(initial);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null);
   const [hasChanges, setHasChanges] = useState(false);
   const [isSaving, startTransition] = useTransition();
-  const lastSavedRef = useRef<ProductRow[]>(initial);
+  const lastSavedRef = useRef<AdminProductRow[]>(initial);
 
   async function handleToggleStatus(id: string, isActive: boolean) {
     const previousItems = items;
