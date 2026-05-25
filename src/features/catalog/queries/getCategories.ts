@@ -41,7 +41,9 @@ export async function getCategories(): Promise<Category[]> {
   const priceSummaries = priceSummaryResult.data ?? [];
 
   const priceSummaryMap = new Map<string, PriceSummaryRow>(
-    priceSummaries.map((s) => [s.category_id, s])
+    priceSummaries
+      .filter((s): s is PriceSummaryRow & { category_id: string } => s.category_id !== null)
+      .map((s) => [s.category_id, s])
   );
 
   return categories.map((row) =>
