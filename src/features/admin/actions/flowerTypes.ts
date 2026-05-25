@@ -43,7 +43,7 @@ export async function deleteFlowerType(name: string): Promise<FlowerTypeActionRe
         return {
           success: false,
           error: 'Este tipo de flor está en uso por uno o más productos y no puede eliminarse.',
-          code: 'INTERNAL',
+          code: 'FLOWER_TYPE_IN_USE',
         };
       }
       return {

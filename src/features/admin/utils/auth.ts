@@ -25,7 +25,7 @@ export interface AdminActionContext {
 export interface AdminActionFailure {
   success: false;
   error: string;
-  code?: 'UNAUTHENTICATED' | 'FORBIDDEN' | 'VALIDATION' | 'INTERNAL';
+  code?: 'UNAUTHENTICATED' | 'FORBIDDEN' | 'VALIDATION' | 'INTERNAL' | 'COLOR_IN_USE' | 'FLOWER_TYPE_IN_USE';
   issues?: ZodIssue[];
 }
 

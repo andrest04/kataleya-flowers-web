@@ -43,7 +43,7 @@ export async function deleteProductColor(name: string): Promise<ColorActionResul
         return {
           success: false,
           error: 'Este color está en uso por uno o más productos y no puede eliminarse.',
-          code: 'INTERNAL',
+          code: 'COLOR_IN_USE',
         };
       }
       return {
