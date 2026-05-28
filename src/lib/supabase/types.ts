@@ -108,6 +108,81 @@ export type Database = {
         }
         Relationships: []
       }
+      complaints: {
+        Row: {
+          claimed_amount: number | null
+          complaint_type: string
+          consumer_address: string
+          consumer_doc_number: string
+          consumer_doc_type: string
+          consumer_email: string
+          consumer_name: string
+          consumer_phone: string | null
+          consumer_request: string
+          correlativo: number
+          created_at: string
+          detail: string
+          email_sent: boolean
+          guardian_name: string | null
+          id: string
+          is_minor: boolean
+          item_description: string
+          item_type: string
+          provider_response: string | null
+          responded_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          claimed_amount?: number | null
+          complaint_type: string
+          consumer_address: string
+          consumer_doc_number: string
+          consumer_doc_type: string
+          consumer_email: string
+          consumer_name: string
+          consumer_phone?: string | null
+          consumer_request: string
+          correlativo?: never
+          created_at?: string
+          detail: string
+          email_sent?: boolean
+          guardian_name?: string | null
+          id?: string
+          is_minor?: boolean
+          item_description: string
+          item_type: string
+          provider_response?: string | null
+          responded_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          claimed_amount?: number | null
+          complaint_type?: string
+          consumer_address?: string
+          consumer_doc_number?: string
+          consumer_doc_type?: string
+          consumer_email?: string
+          consumer_name?: string
+          consumer_phone?: string | null
+          consumer_request?: string
+          correlativo?: never
+          created_at?: string
+          detail?: string
+          email_sent?: boolean
+          guardian_name?: string | null
+          id?: string
+          is_minor?: boolean
+          item_description?: string
+          item_type?: string
+          provider_response?: string | null
+          responded_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       flower_types: {
         Row: {
           created_at: string
@@ -364,6 +439,29 @@ export type Database = {
       }
     }
     Functions: {
+      create_complaint: {
+        Args: {
+          p_claimed_amount?: number
+          p_complaint_type: string
+          p_consumer_address: string
+          p_consumer_doc_number: string
+          p_consumer_doc_type: string
+          p_consumer_email: string
+          p_consumer_name: string
+          p_consumer_phone?: string
+          p_consumer_request: string
+          p_detail: string
+          p_guardian_name?: string
+          p_is_minor?: boolean
+          p_item_description: string
+          p_item_type: string
+        }
+        Returns: {
+          correlativo: number
+          created_at: string
+          id: string
+        }[]
+      }
       delete_category_cascade: {
         Args: { p_category_id: string }
         Returns: string[]
