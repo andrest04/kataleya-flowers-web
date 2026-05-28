@@ -15,6 +15,11 @@ export const BUSINESS = {
     openDays: [1, 2, 3, 4, 5, 6] as readonly number[],
   },
   location: "Lima, Perú",
+  // Datos legales del proveedor — requeridos por el Libro de Reclamaciones (INDECOPI).
+  razonSocial: "Ortiz Ruiz Bienvenido Henry",
+  ruc: "10104853370",
+  address: "Teodosio Parreño 115 (ex cortijo), Lima, Perú",
+  email: "floritel_hor@hotmail.com",
   experience: "32",
   monthlyOrders: "500+",
   mapsEmbedUrl:

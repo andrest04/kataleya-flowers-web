@@ -95,3 +95,24 @@ export const taxonomyName = z
   .trim()
   .min(1, 'Nombre obligatorio')
   .max(60, 'Nombre demasiado largo');
+
+/** Email normalizado (lowercase + trim). */
+export const email = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .min(1, 'El email es obligatorio')
+  .email('Email inválido')
+  .max(255, 'Email demasiado largo');
+
+/** Teléfono — solo formato (dígitos, +, espacios y separadores comunes). */
+export const peruPhone = z
+  .string()
+  .trim()
+  .regex(/^[0-9+\s()-]{6,20}$/, 'Teléfono inválido');
+
+/** Documento de identidad (DNI/CE/Pasaporte) — solo formato. */
+export const docNumber = z
+  .string()
+  .trim()
+  .regex(/^[0-9A-Za-z]{6,15}$/, 'Documento inválido');

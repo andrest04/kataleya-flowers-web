@@ -1,0 +1,28 @@
+import { createClient } from '@/lib/supabase/server';
+
+import type { ComplaintRow } from '../types';
+
+/** Lista de reclamos para el panel admin (más recientes primero). */
+export async function getComplaints(): Promise<ComplaintRow[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('complaints')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) throw new Error(error.message);
+  return data ?? [];
+}
+
+/** Reclamo individual por id (admin). */
+export async function getComplaintById(id: string): Promise<ComplaintRow | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('complaints')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (error) return null;
+  return data;
+}
