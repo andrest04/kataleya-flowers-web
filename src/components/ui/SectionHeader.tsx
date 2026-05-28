@@ -3,6 +3,11 @@ interface SectionHeaderProps {
   title: string;
   description?: string;
   align?: 'center' | 'left';
+  /**
+   * Heading level for the title. Defaults to 'h2' (section heading nested under
+   * a page's h1). Use 'h1' when this is the page's main title.
+   */
+  as?: 'h1' | 'h2';
 }
 
 export default function SectionHeader({
@@ -10,6 +15,7 @@ export default function SectionHeader({
   title,
   description,
   align = 'center',
+  as: Heading = 'h2',
 }: SectionHeaderProps) {
   const textAlign = align === 'center' ? 'text-center' : 'text-left';
 
@@ -19,9 +25,9 @@ export default function SectionHeader({
         {subtitle}
       </p>
       <div className="space-y-3">
-        <h2 className="text-4xl sm:text-5xl font-heading text-primary">
+        <Heading className="text-4xl sm:text-5xl font-heading text-primary">
           {title}
-        </h2>
+        </Heading>
         {description && (
           <p className={`text-lg leading-8 ${align === 'center' ? 'mx-auto max-w-2xl' : ''}`}>
             {description}

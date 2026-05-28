@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { FaInstagram, FaWhatsapp } from "react-icons/fa";
 
@@ -99,6 +100,22 @@ export default function Footer() {
               style={{ outlineColor: "var(--color-secondary)" }}
             >
               Ver ubicacion y mapa
+            </Link>
+            <Link
+              href="/libro-de-reclamaciones"
+              aria-label="Libro de Reclamaciones — registra tu queja o reclamo"
+              className="mx-auto block w-fit rounded-sm bg-white p-1 transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 sm:mx-0"
+              style={{ outlineColor: "var(--color-secondary)" }}
+            >
+              <span className="relative block h-[72px] w-[120px]">
+                <Image
+                  src="/libro-reclamaciones-indecopi.png"
+                  alt="Aviso del Libro de Reclamaciones (INDECOPI)"
+                  fill
+                  sizes="120px"
+                  className="object-contain"
+                />
+              </span>
             </Link>
           </div>
         </div>
