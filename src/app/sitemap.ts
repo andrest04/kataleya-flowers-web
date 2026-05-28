@@ -22,6 +22,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.9,
     },
     {
+      url: `${SITE_URL}/libro-de-reclamaciones`,
+      lastModified: now,
+      changeFrequency: "yearly",
+      priority: 0.4,
+    },
+    {
       url: `${SITE_URL}/login`,
       lastModified: now,
       changeFrequency: "yearly",

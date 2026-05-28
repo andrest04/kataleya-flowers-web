@@ -127,6 +127,13 @@ test.describe("Phase 4B — SEO metadata + JSON-LD", () => {
     expect(occurrences).toBe(1);
   });
 
+  test("title /libro-de-reclamaciones aplica el template del root", async ({
+    page,
+  }) => {
+    await page.goto("/libro-de-reclamaciones");
+    await expect(page).toHaveTitle("Libro de Reclamaciones | Kataleya Flawers");
+  });
+
   // ---- Structured data por página -----------------------------------------
 
   test("JSON-LD Product en /catalogo/{categoria}/{slug}", async ({ page }) => {
