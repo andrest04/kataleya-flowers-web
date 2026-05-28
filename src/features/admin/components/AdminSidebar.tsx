@@ -6,6 +6,7 @@ const NAV_LINKS = [
   { href: '/admin', label: 'Dashboard' },
   { href: '/admin/productos', label: 'Productos' },
   { href: '/admin/categorias', label: 'Categorías' },
+  { href: '/admin/reclamos', label: 'Reclamos' },
 ];
 
 export default function AdminSidebar() {
