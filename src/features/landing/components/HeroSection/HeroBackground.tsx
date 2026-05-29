@@ -3,6 +3,7 @@
 import { AnimatePresence, domAnimation, LazyMotion, m } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
+import type { CSSProperties } from "react";
 
 import {
   HERO_SLIDES,
@@ -72,7 +73,10 @@ export default function HeroBackground() {
                 fill
                 priority={c.slideIndex === 0}
                 sizes="100vw"
-                className="object-cover"
+                // Mobile: encuadra el ramo (corrido a la derecha) vía --hero-focus.
+                // Desktop (sm+): center, donde el recorte horizontal es mínimo.
+                className="object-cover object-[var(--hero-focus)] sm:object-center"
+                style={{ "--hero-focus": currentSlide.focus ?? "center" } as CSSProperties}
               />
             </m.div>
           </AnimatePresence>
@@ -90,7 +94,9 @@ export default function HeroBackground() {
           activeIndex={c.slideIndex}
           onSelect={c.goToSlide}
           prefersReducedMotion={c.prefersReducedMotion}
-          positionClassName="right-6 bottom-28 sm:bottom-24"
+          // Mobile: abajo-izquierda, debajo de la TrustBar (no la solapa) y lejos
+          // del FAB de WhatsApp. Desktop: esquina inferior derecha.
+          positionClassName="left-4 bottom-6 sm:left-auto sm:right-6 sm:bottom-24"
         />
       </div>
     </LazyMotion>

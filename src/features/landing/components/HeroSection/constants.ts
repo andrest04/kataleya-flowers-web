@@ -30,6 +30,7 @@ export const HERO_SLIDES: readonly HeroSlide[] = [
     bgColor: "var(--color-primary)",
     label: "Ramo de rosas en tonos rosados y rojos envuelto para regalo",
     sublabel: "Diseño personalizado, entrega rápida en Lima",
+    focus: "70% center",
   },
   {
     id: 2,
@@ -37,6 +38,7 @@ export const HERO_SLIDES: readonly HeroSlide[] = [
     bgColor: "var(--color-accent)",
     label: "Arreglo de peonías y ranúnculos con eucalipto en florero de cerámica",
     sublabel: "Las variedades más finas, disponibles ahora",
+    focus: "82% center",
   },
   {
     id: 3,
@@ -44,6 +46,7 @@ export const HERO_SLIDES: readonly HeroSlide[] = [
     bgColor: "var(--color-secondary)",
     label: "Gerberas multicolor frescas en tonos vivos",
     sublabel: "Flores frescas para ocasiones especiales",
+    focus: "76% center",
   },
 ];
 

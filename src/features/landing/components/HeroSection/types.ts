@@ -9,6 +9,12 @@ export interface HeroSlide {
   readonly bgColor: string;
   readonly label: string;
   readonly sublabel: string;
+  /**
+   * `object-position` para el recorte en MOBILE (portrait). Las fotos tienen el
+   * ramo corrido a la derecha; centrar el cover lo parte, así que se encuadra
+   * a la derecha. En desktop el recorte horizontal es mínimo → se usa `center`.
+   */
+  readonly focus?: string;
 }
 
 export type SlideVariants = Variants;
