@@ -5,7 +5,7 @@ import Link from "next/link";
 
 import { BUSINESS } from "@/lib/constants";
 
-import DesktopSearch from "./DesktopSearch";
+import DesktopNav from "./DesktopNav";
 import MobileDrawer from "./MobileDrawer";
 import { useNavbar } from "./useNavbar";
 
@@ -14,6 +14,7 @@ export default function Navbar() {
     isDrawerOpen,
     setIsDrawerOpen,
     isScrolled,
+    overHero,
     searchQuery,
     setSearchQuery,
     searchResults,
@@ -25,6 +26,9 @@ export default function Navbar() {
     handleSearchSubmit,
     handleResultClick,
   } = useNavbar();
+
+  // Color de logo/íconos: crema sobre el hero oscuro, rojo en el resto.
+  const topItemColor = overHero ? "text-(--color-cream)" : "text-(--color-primary)";
 
   return (
     <>
@@ -42,10 +46,10 @@ export default function Navbar() {
           aria-label="Navegación principal"
           className="mx-auto flex max-w-7xl items-center justify-between px-4 py-5 sm:px-6 lg:px-8"
         >
-          {/* Hamburger — siempre visible */}
+          {/* Hamburger — solo mobile (en desktop la nav va inline) */}
           <button
             type="button"
-            className="flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center text-(--color-primary)"
+            className={`flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center transition-colors duration-300 md:hidden ${topItemColor}`}
             aria-label={isDrawerOpen ? "Cerrar menu" : "Abrir menu"}
             aria-expanded={isDrawerOpen}
             aria-controls="nav-drawer"
@@ -61,44 +65,29 @@ export default function Navbar() {
           {/* Logo */}
           <Link
             href="/"
-            className="font-heading text-[1.45rem] leading-none text-(--color-primary) transition-all duration-300"
+            className={`font-heading text-[1.5rem] leading-none transition-all duration-300 ${topItemColor}`}
           >
             {BUSINESS.name}
           </Link>
 
-          {/* Desktop: Catálogo + search bar con autocomplete + CTA */}
-          <div className="hidden items-center gap-4 md:flex">
-            <Link
-              href="/catalogo"
-              className="font-body text-[0.8rem] font-normal tracking-[0.08em] text-(--color-dark) uppercase transition-colors duration-300 hover:text-(--color-accent)"
-            >
-              Catálogo
-            </Link>
+          {/* Desktop: links de sección + búsqueda + CTA sólido */}
+          <DesktopNav
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            handleSearchSubmit={handleSearchSubmit}
+            searchResults={searchResults}
+            handleResultClick={handleResultClick}
+            handleNavigate={handleNavigate}
+            isScrolled={isScrolled}
+            overHero={overHero}
+            desktopSearchRef={desktopSearchRef}
+            clearSearch={clearSearch}
+          />
 
-            <DesktopSearch
-              searchQuery={searchQuery}
-              setSearchQuery={setSearchQuery}
-              handleSearchSubmit={handleSearchSubmit}
-              searchResults={searchResults}
-              handleResultClick={handleResultClick}
-              isScrolled={isScrolled}
-              desktopSearchRef={desktopSearchRef}
-              clearSearch={clearSearch}
-            />
-
-            <button
-              type="button"
-              className="cursor-pointer rounded-full border border-(--color-primary) px-6 py-3 font-body text-[0.8rem] tracking-[0.08em] text-(--color-primary) uppercase transition-colors duration-300 hover:bg-(--color-primary) hover:text-(--color-cream)"
-              onClick={() => handleNavigate("#contacto")}
-            >
-              Hacer pedido
-            </button>
-          </div>
-
-          {/* Mobile: solo icono de búsqueda — abre el drawer con auto-focus */}
+          {/* Mobile: icono de búsqueda — abre el drawer con auto-focus */}
           <button
             type="button"
-            className="flex h-11 w-11 cursor-pointer items-center justify-center text-(--color-primary) md:hidden"
+            className={`flex h-11 w-11 cursor-pointer items-center justify-center transition-colors duration-300 md:hidden ${topItemColor}`}
             aria-label="Buscar"
             onClick={openDrawer}
           >

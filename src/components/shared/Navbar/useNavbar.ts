@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import type { FormEvent } from "react";
 import { useCallback } from "react";
 
@@ -22,9 +22,15 @@ import { useScrollBehavior } from "./useScrollBehavior";
  */
 export function useNavbar() {
   const router = useRouter();
+  const pathname = usePathname();
   const isScrolled = useScrollBehavior();
   const drawer = useMobileDrawer();
   const search = useDesktopSearch();
+
+  // El Navbar es "hero-aware": solo la landing (`/`) tiene el hero oscuro a
+  // pantalla completa. Mientras no se scrollee, los items van en crema sobre la
+  // foto; al scrollear (o en otras rutas) vuelven al rojo/tinta por defecto.
+  const overHero = pathname === "/" && !isScrolled;
 
   const handleNavigate = useAnchorNavigation({
     isDrawerOpen: drawer.isOpen,
@@ -69,6 +75,7 @@ export function useNavbar() {
 
     // Scroll
     isScrolled,
+    overHero,
 
     // Search
     searchQuery: search.searchQuery,
