@@ -256,7 +256,19 @@ export async function updateProduct(
       return { success: false, error: syncError.error.message, code: 'INTERNAL' };
     }
 
-    await revalidateProductPaths(supabase, slug, formData.categoryId ?? current?.category_id);
+    const resolvedCategoryId = formData.categoryId ?? current?.category_id;
+    await revalidateProductPaths(supabase, slug, resolvedCategoryId);
+
+    // Revalidate the OLD paths when slug or category changed so the stale
+    // product-detail page and old category index page are also purged.
+    const previousSlug = current?.slug;
+    const previousCategoryId = current?.category_id;
+    const slugChanged = previousSlug && previousSlug !== slug;
+    const categoryChanged = previousCategoryId && previousCategoryId !== resolvedCategoryId;
+    if (slugChanged || categoryChanged) {
+      await revalidateProductPaths(supabase, previousSlug, previousCategoryId);
+    }
+
     return { success: true };
   } catch (err) {
     return failureFromUnknown(err);
@@ -367,6 +379,26 @@ export async function reorderProducts(orderedIds: string[]): Promise<ProductActi
     revalidatePath('/');
     revalidatePath('/catalogo');
     revalidatePath('/admin/productos');
+
+    // Revalidate the category index pages affected by the reorder so the new
+    // product order is reflected on /catalogo/{categoria} immediately.
+    const { data: affectedProducts } = await supabase
+      .from('products')
+      .select('category_id')
+      .in('id', parsed.data.ids);
+    const affectedCategoryIds = [
+      ...new Set((affectedProducts ?? []).map((p) => p.category_id).filter(Boolean)),
+    ];
+    if (affectedCategoryIds.length > 0) {
+      const { data: affectedCategories } = await supabase
+        .from('categories')
+        .select('slug')
+        .in('id', affectedCategoryIds);
+      for (const row of affectedCategories ?? []) {
+        if (row.slug) revalidatePath(`/catalogo/${row.slug}`);
+      }
+    }
+
     return { success: true };
   } catch (err) {
     return failureFromUnknown(err);

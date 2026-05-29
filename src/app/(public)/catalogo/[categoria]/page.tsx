@@ -12,6 +12,10 @@ import { BUSINESS } from "@/lib/constants";
 
 const SITE_URL = "https://kataleya-flawers.vercel.app";
 
+// ISR backstop: pages refresh instantly on-demand via revalidatePath in admin actions;
+// this self-heals any missed path (e.g. color/flower-type renames) within 1 hour.
+export const revalidate = 3600;
+
 interface CategoriaPageProps {
   params: Promise<{ categoria: string }>;
 }

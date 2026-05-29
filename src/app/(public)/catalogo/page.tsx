@@ -13,6 +13,10 @@ import { BUSINESS } from "@/lib/constants";
 
 const SITE_URL = "https://kataleya-flawers.vercel.app";
 
+// ISR backstop: pages refresh instantly on-demand via revalidatePath in admin actions;
+// this self-heals any missed path (e.g. color/flower-type renames) within 1 hour.
+export const revalidate = 3600;
+
 export const metadata: Metadata = {
   // El `template` del root layout agrega `| Kataleya Flawers` — no duplicar.
   title: "Catálogo de Flores",
