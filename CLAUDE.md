@@ -194,7 +194,7 @@ Toda action en `src/features/admin/actions/` **debe**:
    - **Productos:** `/`, `/catalogo`, `/catalogo/{categoria.slug}`, `/catalogo/{categoria.slug}/{slug}`, `/admin/productos`
    - **Categorías:** `/`, `/catalogo`, `/catalogo/{slug}` (por cada slug afectado), `/admin/categorias`
 
-> ⚠️ **TODO:** el rol admin específico aún no está en DB. Hoy `requireAdmin` solo verifica sesión válida. Cuando se agregue, NO cambiar el contrato de `Result<T>` ni la firma de las actions.
+> ✅ **Autorización admin:** `requireAdmin` / `withAdminAuth` verifican sesión válida (`auth.getUser()`) **y** membresía explícita en la tabla `admin_users` (vía `isAdminUser` — ver `src/features/admin/utils/adminMembership.ts`). Si el usuario autenticado no está en `admin_users`, la action tira `FORBIDDEN`. **Operacional:** `admin_users` debe estar seedeada; si queda vacía, todos los admins se bloquean. Al evolucionar la autorización, NO cambiar el contrato de `Result<T>` ni la firma de las actions.
 
 ### Slugs en CRUD admin
 

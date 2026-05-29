@@ -20,7 +20,9 @@ export default defineConfig([
   // 1. Ignores globales
   {
     name: 'project/ignores',
-    ignores: ['.next/**', 'node_modules/**', 'public/**', 'next-env.d.ts'],
+    // `.claude/**` = skills/commands locales (no trackeados por git) — no son
+    // código del proyecto y rompían `lint:strict` con cientos de errores.
+    ignores: ['.next/**', 'node_modules/**', 'public/**', 'next-env.d.ts', '.claude/**'],
   },
 
   // 2. ESLint recommended base (JS/TS/TSX)
