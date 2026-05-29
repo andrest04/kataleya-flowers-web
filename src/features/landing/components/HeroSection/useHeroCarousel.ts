@@ -22,8 +22,10 @@ interface UseHeroCarouselResult {
 
 /**
  * Lógica del carousel: paginación, autoplay, swipe táctil, reduced-motion.
- * `paginate` y `goToSlide` usan functional setState para que el autoplay
- * NO reinstale el `setInterval` en cada cambio de página.
+ * `paginate` y `goToSlide` usan functional setState → son estables (no
+ * dependen de `page`). El efecto de autoplay SÍ depende de `page` a propósito:
+ * reinicia el timer en cada cambio de slide para mantener un ritmo constante
+ * tras navegación manual y sincronizar la barra de progreso de los dots.
  */
 export function useHeroCarousel({
   slidesCount,
@@ -62,7 +64,7 @@ export function useHeroCarousel({
     if (prefersReducedMotion) return;
     const timer = window.setInterval(() => { paginate(1); }, AUTOPLAY_INTERVAL);
     return () => { window.clearInterval(timer); };
-  }, [paginate, prefersReducedMotion]);
+  }, [paginate, prefersReducedMotion, page]);
 
   return {
     page,

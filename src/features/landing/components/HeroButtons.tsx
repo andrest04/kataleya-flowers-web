@@ -8,10 +8,13 @@ type CampaignMode = "contact" | "catalog";
 
 interface HeroButtonsProps {
   campaignMode?: CampaignMode;
+  /** Estilo para fondo oscuro (hero full-bleed sobre foto). */
+  onDark?: boolean;
 }
 
 export default function HeroButtons({
   campaignMode = "contact",
+  onDark = false,
 }: HeroButtonsProps) {
   const handleScroll = (targetId: string) => {
     const cleanId = targetId.startsWith("#") ? targetId.slice(1) : targetId;
@@ -32,8 +35,17 @@ export default function HeroButtons({
 
   const isPrimaryContact = campaignMode === "contact";
 
+  // Secundario discreto: sobre la foto oscura, borde crema tenue + texto crema
+  // (ghost), claramente subordinado al primario sólido. En claro, contorno verde.
+  const secondaryStyle = onDark
+    ? {
+        borderColor: "color-mix(in srgb, var(--color-cream) 38%, transparent)",
+        color: "var(--color-cream)",
+      }
+    : { borderColor: "var(--color-accent)", color: "var(--color-accent)" };
+
   return (
-    <div className="flex flex-col gap-4 sm:flex-row">
+    <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
       {isPrimaryContact ? (
         <>
           <Button
@@ -41,7 +53,7 @@ export default function HeroButtons({
             size="lg"
             href={BUSINESS.whatsapp}
             external
-            className="text-center"
+            className="w-full text-center sm:w-auto"
             onClick={() => clientTrackEvent({ eventType: 'whatsapp_click', metadata: { source: 'hero' } })}
           >
             Pedir por WhatsApp
@@ -50,22 +62,23 @@ export default function HeroButtons({
             variant="secondary"
             size="lg"
             href="/catalogo"
-            className="text-center"
-            style={{ borderColor: "var(--color-accent)", color: "var(--color-accent)" }}
+            className="w-full text-center sm:w-auto"
+            style={secondaryStyle}
           >
             Explorar Catálogo
           </Button>
         </>
       ) : (
         <>
-          <Button variant="primary" size="lg" href="/catalogo" className="text-center">
+          <Button variant="primary" size="lg" href="/catalogo" className="w-full text-center sm:w-auto">
             Ver Catálogo
           </Button>
           <Button
             variant="secondary"
             size="lg"
             onClick={() => handleScroll("#contacto")}
-            style={{ borderColor: "var(--color-accent)", color: "var(--color-accent)" }}
+            className="w-full text-center sm:w-auto"
+            style={secondaryStyle}
           >
             Contáctanos
           </Button>

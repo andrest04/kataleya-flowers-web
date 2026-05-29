@@ -27,7 +27,7 @@ export default function HeroArrowButton({
       type="button"
       onClick={onClick}
       aria-label={label}
-      className={`absolute top-1/2 ${position} flex h-10 w-10 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full shadow-lg transition-all hover:scale-105`}
+      className={`absolute top-1/2 ${position} hidden h-10 w-10 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full shadow-lg transition-all hover:scale-105 sm:flex`}
       style={{ ...ARROW_BG, ...OVERLAY_Z }}
     >
       <Icon className="h-5 w-5" />
