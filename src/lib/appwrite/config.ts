@@ -67,6 +67,30 @@ function requireEnv(name: string): string {
 }
 
 /**
+ * Development-only backend consistency check.
+ *
+ * Logs a clear operator error when BACKEND and NEXT_PUBLIC_BACKEND are both
+ * set but do not match. This indicates a split-brain deployment configuration
+ * that would route the client (login form, LogoutButton) to the wrong path.
+ *
+ * NEVER throws at import time — config.ts must remain lazy/import-safe so that
+ * Supabase builds are never broken by missing Appwrite env vars. Only emits a
+ * console.error; enforcement is intentionally soft (dev warning, not a fatal).
+ */
+export function assertBackendConsistency(): void {
+  if (process.env.NODE_ENV !== 'development') return;
+  const server = process.env.BACKEND;
+  const client = process.env.NEXT_PUBLIC_BACKEND;
+  if (server && client && server !== client) {
+    console.error(
+      `[appwrite/config] BACKEND_MISMATCH detected: BACKEND="${server}" but ` +
+        `NEXT_PUBLIC_BACKEND="${client}". Both vars must be identical at cutover. ` +
+        'Login and logout will route to different backends — this is a deployment error.',
+    );
+  }
+}
+
+/**
  * Resolves and validates the full Appwrite configuration.
  *
  * Throws if any required variable is missing. Call this only from server-side
