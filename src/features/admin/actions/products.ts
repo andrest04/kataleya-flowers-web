@@ -1,6 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { AppwriteException } from 'node-appwrite';
 
 import { uuid } from '@/features/admin/schemas/common';
 import { productCreateSchema, productUpdateSchema } from '@/features/admin/schemas/product';
@@ -16,6 +17,26 @@ import {
 import { isAllowedCloudinaryUrl } from '@/features/admin/utils/cloudinaryUrl';
 import { slugify } from '@/features/admin/utils/slugify';
 import { syncTaxonomy } from '@/features/admin/utils/taxonomySync';
+import { APPWRITE_COLLECTIONS, isAppwriteBackend } from '@/lib/appwrite/config';
+import {
+  createProductDocument,
+  deleteProductDocument,
+  deleteProductRelations,
+  getCategorySlugById,
+  getCategorySlugsForProducts,
+  getNextProductOrder,
+  getProductCategorySlug,
+  getProductImageUrls,
+  reorderProductDocuments,
+  setProductActive,
+  syncProductTaxonomyAppwrite,
+  updateProductDocument,
+} from '@/lib/appwrite/repositories/products';
+import { getRepositoryContext } from '@/lib/appwrite/repositories/shared';
+import {
+  ensureColorsAppwrite,
+  ensureFlowerTypesAppwrite,
+} from '@/lib/appwrite/repositories/taxonomy';
 import { destroyCloudinaryImages } from '@/lib/cloudinary';
 import type { Database, Json } from '@/lib/supabase/types';
 
@@ -128,6 +149,39 @@ async function revalidateProductPaths(
   revalidatePath('/admin/productos');
 }
 
+async function revalidateProductPathsAppwrite(
+  slug?: string,
+  categoryId?: string,
+): Promise<void> {
+  revalidatePath('/');
+  revalidatePath('/catalogo');
+
+  if (categoryId) {
+    const categorySlug = await getCategorySlugById(categoryId);
+    if (categorySlug) {
+      revalidatePath(`/catalogo/${categorySlug}`);
+      if (slug) revalidatePath(`/catalogo/${categorySlug}/${slug}`);
+    }
+  }
+
+  revalidatePath('/admin/productos');
+}
+
+/** Fetches the slug of a product from Appwrite, returns null if not found. */
+async function getAppwriteProductSlug(productId: string): Promise<string | null> {
+  try {
+    const { databases, databaseId } = getRepositoryContext();
+    const doc = await databases.getDocument({
+      databaseId,
+      collectionId: APPWRITE_COLLECTIONS.products,
+      documentId: productId,
+    });
+    return (doc as unknown as { slug: string }).slug;
+  } catch {
+    return null;
+  }
+}
+
 // ─── Server Actions ──────────────────────────────────────────────────────────
 
 export async function createProduct(data: ProductFormData): Promise<ProductActionResult> {
@@ -144,12 +198,59 @@ export async function createProduct(data: ProductFormData): Promise<ProductActio
     const urlError = await validateImageUrls(formData);
     if (urlError) return urlError;
 
-    const { supabase } = ctx;
+    const slug = formData.slug?.trim() || slugify(formData.name);
+
+    if (isAppwriteBackend()) {
+      if (formData.newFlowerTypes?.length) await ensureFlowerTypesAppwrite(formData.newFlowerTypes);
+      if (formData.newColors?.length) await ensureColorsAppwrite(formData.newColors);
+
+      const nextOrder = formData.displayOrder || (await getNextProductOrder());
+      let productId: string;
+      try {
+        productId = await createProductDocument({
+          name: formData.name,
+          slug,
+          description: formData.description,
+          price: formData.price,
+          categoryId: formData.categoryId,
+          imageUrl: formData.imageUrl,
+          includes: formData.includes,
+          priceVariants: formData.priceVariants,
+          occasion: formData.occasion || null,
+          note: formData.note || null,
+          isActive: formData.isActive,
+          isFeatured: formData.isFeatured,
+          displayOrder: nextOrder,
+        });
+      } catch (writeErr) {
+        if (writeErr instanceof AppwriteException && writeErr.code === 409) {
+          return { success: false, error: 'Ya existe un registro con esos datos.', code: 'INTERNAL' };
+        }
+        throw writeErr;
+      }
+
+      const syncErr = await syncProductTaxonomyAppwrite({
+        productId,
+        productName: formData.name,
+        colorNames: formData.colors,
+        flowerTypeNames: formData.flowerTypes,
+        imageUrl: formData.imageUrl,
+        galleryImages: formData.images,
+      });
+      if (syncErr) {
+        return { success: false, error: syncErr.message, code: 'INTERNAL' };
+      }
+
+      await revalidateProductPathsAppwrite(slug, formData.categoryId);
+      return { success: true };
+    }
+
+    // ── Supabase path ─────────────────────────────────────────────────────────
+    const { supabase } = ctx as { supabase: AdminSupabaseClient };
 
     if (formData.newFlowerTypes?.length) await ensureFlowerTypes(supabase, formData.newFlowerTypes);
     if (formData.newColors?.length) await ensureColors(supabase, formData.newColors);
 
-    const slug = formData.slug?.trim() || slugify(formData.name);
     const payload = toInsertPayload(formData, slug);
 
     const { data: inserted, error } = await supabase
@@ -203,7 +304,75 @@ export async function updateProduct(
     const urlError = await validateImageUrls(formData);
     if (urlError) return urlError;
 
-    const { supabase } = ctx;
+    if (isAppwriteBackend()) {
+      if (formData.newFlowerTypes?.length) await ensureFlowerTypesAppwrite(formData.newFlowerTypes);
+      if (formData.newColors?.length) await ensureColorsAppwrite(formData.newColors);
+
+      const meta = await getProductCategorySlug(idParsed.data);
+      const currentSlug = await getAppwriteProductSlug(idParsed.data);
+      const currentImageUrls = await getProductImageUrls(idParsed.data);
+
+      const incomingSlug = formData.slug?.trim() ?? '';
+      const slug =
+        incomingSlug && incomingSlug !== currentSlug
+          ? incomingSlug
+          : (currentSlug ?? slugify(formData.name));
+
+      try {
+        await updateProductDocument(idParsed.data, {
+          name: formData.name,
+          slug,
+          description: formData.description,
+          price: formData.price,
+          categoryId: formData.categoryId,
+          imageUrl: formData.imageUrl,
+          includes: formData.includes,
+          priceVariants: formData.priceVariants,
+          occasion: formData.occasion || null,
+          note: formData.note || null,
+          isActive: formData.isActive,
+          isFeatured: formData.isFeatured,
+          displayOrder: formData.displayOrder,
+        });
+      } catch (writeErr) {
+        if (writeErr instanceof AppwriteException && writeErr.code === 409) {
+          return { success: false, error: 'Ya existe un registro con esos datos.', code: 'INTERNAL' };
+        }
+        throw writeErr;
+      }
+
+      // Cloudinary cleanup — best-effort for removed images
+      const newUrls = new Set([formData.imageUrl, ...formData.images]);
+      const removed = currentImageUrls.filter((url) => !newUrls.has(url));
+      if (removed.length > 0) void destroyCloudinaryImages(removed);
+
+      const syncErr = await syncProductTaxonomyAppwrite({
+        productId: idParsed.data,
+        productName: formData.name,
+        colorNames: formData.colors,
+        flowerTypeNames: formData.flowerTypes,
+        imageUrl: formData.imageUrl,
+        galleryImages: formData.images,
+      });
+      if (syncErr) {
+        return { success: false, error: syncErr.message, code: 'INTERNAL' };
+      }
+
+      const resolvedCategoryId = formData.categoryId ?? meta?.categoryId;
+      await revalidateProductPathsAppwrite(slug, resolvedCategoryId);
+
+      // Revalidate OLD paths if slug or category changed
+      const slugChanged = currentSlug && currentSlug !== slug;
+      const categoryChanged = meta?.categoryId && meta.categoryId !== resolvedCategoryId;
+      if (slugChanged || categoryChanged) {
+        await revalidateProductPathsAppwrite(currentSlug ?? undefined, meta?.categoryId);
+      }
+
+      return { success: true };
+    }
+
+    // ── Supabase path ─────────────────────────────────────────────────────────
+    const { supabase } = ctx as { supabase: AdminSupabaseClient };
 
     if (formData.newFlowerTypes?.length) await ensureFlowerTypes(supabase, formData.newFlowerTypes);
     if (formData.newColors?.length) await ensureColors(supabase, formData.newColors);
@@ -284,7 +453,22 @@ export async function deleteProduct(id: string): Promise<ProductActionResult> {
       return { success: false, error: 'Identificador inválido.', code: 'VALIDATION', issues: idParsed.error.issues };
     }
 
-    const { supabase } = ctx;
+    if (isAppwriteBackend()) {
+      const meta = await getProductCategorySlug(idParsed.data);
+      const productSlug = await getAppwriteProductSlug(idParsed.data);
+      const imageUrls = await getProductImageUrls(idParsed.data);
+
+      await deleteProductRelations(idParsed.data);
+      await deleteProductDocument(idParsed.data);
+
+      if (imageUrls.length > 0) void destroyCloudinaryImages(imageUrls);
+
+      await revalidateProductPathsAppwrite(productSlug ?? undefined, meta?.categoryId);
+      return { success: true };
+    }
+
+    // ── Supabase path ─────────────────────────────────────────────────────────
+    const { supabase } = ctx as { supabase: AdminSupabaseClient };
 
     // Fetch images from product_images (relational source) + product meta before deleting
     const { data: product } = await supabase
@@ -334,7 +518,16 @@ export async function toggleProductStatus(
       return { success: false, error: 'Estado inválido.', code: 'VALIDATION' };
     }
 
-    const { supabase } = ctx;
+    if (isAppwriteBackend()) {
+      const meta = await getProductCategorySlug(idParsed.data);
+      await setProductActive(idParsed.data, isActive);
+      const slug = await getAppwriteProductSlug(idParsed.data);
+      await revalidateProductPathsAppwrite(slug ?? undefined, meta?.categoryId);
+      return { success: true };
+    }
+
+    // ── Supabase path ─────────────────────────────────────────────────────────
+    const { supabase } = ctx as { supabase: AdminSupabaseClient };
 
     const { data: product } = await supabase
       .from('products')
@@ -367,7 +560,23 @@ export async function reorderProducts(orderedIds: string[]): Promise<ProductActi
       return { success: false, error: 'Lista de identificadores inválida.', code: 'VALIDATION', issues: parsed.error.issues };
     }
 
-    const { supabase } = ctx;
+    if (isAppwriteBackend()) {
+      await reorderProductDocuments(parsed.data.ids);
+
+      revalidatePath('/');
+      revalidatePath('/catalogo');
+      revalidatePath('/admin/productos');
+
+      const slugMap = await getCategorySlugsForProducts(parsed.data.ids);
+      for (const categorySlug of slugMap.values()) {
+        if (categorySlug) revalidatePath(`/catalogo/${categorySlug}`);
+      }
+
+      return { success: true };
+    }
+
+    // ── Supabase path ─────────────────────────────────────────────────────────
+    const { supabase } = ctx as { supabase: AdminSupabaseClient };
     const { error } = await supabase.rpc('reorder_products', {
       p_ordered_ids: parsed.data.ids,
     });

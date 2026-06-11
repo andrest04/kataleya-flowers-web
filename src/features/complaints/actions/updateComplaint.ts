@@ -36,7 +36,7 @@ export async function updateComplaint(
     }
 
     const { id, status, providerResponse } = parsed.data;
-    const { supabase } = ctx;
+    const { supabase } = ctx as { supabase: import('@/features/admin/utils/auth').AdminSupabaseClient };
 
     const { error } = await supabase
       .from('complaints')

@@ -1,6 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { AppwriteException } from 'node-appwrite';
 
 import {
   categoryCreateSchema,
@@ -18,6 +19,20 @@ import {
 } from '@/features/admin/utils/auth';
 import { isAllowedCloudinaryUrl } from '@/features/admin/utils/cloudinaryUrl';
 import { slugify } from '@/features/admin/utils/slugify';
+import { isAppwriteBackend } from '@/lib/appwrite/config';
+import {
+  countProductsInCategory,
+  createCategoryDocument,
+  deleteCategoryCascadeAppwrite,
+  deleteCategoryReassignAppwrite,
+  findCategoryById,
+  getNextCategoryOrder,
+  listAllCategorySlugs,
+  reorderCategoryDocuments,
+  setCategoryActive,
+  setCategoryFeatured,
+  updateCategoryDocument,
+} from '@/lib/appwrite/repositories/categories';
 import { destroyCloudinaryImage, destroyCloudinaryImages } from '@/lib/cloudinary';
 import type { Database } from '@/lib/supabase/types';
 
@@ -70,6 +85,20 @@ async function revalidateAllCategoryPaths(
   }
 }
 
+async function revalidateAllCategoryPathsAppwrite(
+  affectedSlugs?: string[],
+): Promise<void> {
+  revalidatePath('/');
+  revalidatePath('/catalogo');
+  revalidatePath('/admin/categorias');
+  revalidatePath('/admin/productos');
+
+  const slugs = affectedSlugs ?? (await listAllCategorySlugs());
+  for (const slug of slugs) {
+    if (slug) revalidatePath(`/catalogo/${slug}`);
+  }
+}
+
 // ─── Server Actions ──────────────────────────────────────────────────────────
 
 export async function createCategory(
@@ -97,7 +126,34 @@ export async function createCategory(
       };
     }
 
-    const { supabase } = ctx;
+    const slug = parsed.data.slug?.trim() || slugify(parsed.data.name);
+
+    if (isAppwriteBackend()) {
+      const nextOrder = parsed.data.displayOrder || (await getNextCategoryOrder());
+      try {
+        await createCategoryDocument({
+          name: parsed.data.name,
+          slug,
+          description: parsed.data.description,
+          occasion: (parsed.data as CategoryFormData).occasion || null,
+          imageUrl: parsed.data.imageUrl || null,
+          displayOrder: nextOrder,
+          isActive: (parsed.data as CategoryFormData).isActive,
+          isFeatured: (parsed.data as CategoryFormData).isFeatured,
+        });
+      } catch (writeErr) {
+        if (writeErr instanceof AppwriteException && writeErr.code === 409) {
+          return { success: false, error: 'Ya existe un registro con esos datos.', code: 'INTERNAL' };
+        }
+        throw writeErr;
+      }
+
+      await revalidateAllCategoryPathsAppwrite([slug]);
+      return { success: true };
+    }
+
+    // ── Supabase path ─────────────────────────────────────────────────────────
+    const { supabase } = ctx as { supabase: AdminSupabaseClient };
 
     // Auto-assign next display order
     const { data: all } = await supabase
@@ -108,7 +164,6 @@ export async function createCategory(
 
     const nextOrder = all && all.length > 0 ? all[0].display_order + 1 : 1;
 
-    const slug = parsed.data.slug?.trim() || slugify(parsed.data.name);
     const payload = toInsertPayload(
       { ...(parsed.data as CategoryFormData), displayOrder: nextOrder },
       slug,
@@ -167,7 +222,47 @@ export async function updateCategory(
       };
     }
 
-    const { supabase } = ctx;
+    if (isAppwriteBackend()) {
+      const current = await findCategoryById(idParsed.data);
+
+      const incomingSlug = parsed.data.slug?.trim() ?? '';
+      const slug =
+        incomingSlug && incomingSlug !== current?.slug
+          ? incomingSlug
+          : (current?.slug ?? slugify(parsed.data.name));
+
+      try {
+        await updateCategoryDocument(idParsed.data, {
+          name: parsed.data.name,
+          slug,
+          description: parsed.data.description,
+          occasion: (parsed.data as CategoryFormData).occasion || null,
+          imageUrl: parsed.data.imageUrl || null,
+          displayOrder: (parsed.data as CategoryFormData).displayOrder,
+          isActive: (parsed.data as CategoryFormData).isActive,
+          isFeatured: (parsed.data as CategoryFormData).isFeatured,
+        });
+      } catch (writeErr) {
+        if (writeErr instanceof AppwriteException && writeErr.code === 409) {
+          return { success: false, error: 'Ya existe un registro con esos datos.', code: 'INTERNAL' };
+        }
+        throw writeErr;
+      }
+
+      // Cleanup replaced image from Cloudinary (best-effort)
+      if (current?.image_url && current.image_url !== parsed.data.imageUrl) {
+        void destroyCloudinaryImage(current.image_url);
+      }
+
+      const affected = [current?.slug, slug].filter(
+        (value): value is string => typeof value === 'string',
+      );
+      await revalidateAllCategoryPathsAppwrite(affected);
+      return { success: true };
+    }
+
+    // ── Supabase path ─────────────────────────────────────────────────────────
+    const { supabase } = ctx as { supabase: AdminSupabaseClient };
 
     // Fetch current image + slug to detect replacement
     const { data: current } = await supabase
@@ -231,7 +326,14 @@ export async function reorderCategories(
       };
     }
 
-    const { supabase } = ctx;
+    if (isAppwriteBackend()) {
+      await reorderCategoryDocuments(parsed.data.ids);
+      await revalidateAllCategoryPathsAppwrite();
+      return { success: true };
+    }
+
+    // ── Supabase path ─────────────────────────────────────────────────────────
+    const { supabase } = ctx as { supabase: AdminSupabaseClient };
 
     const { error } = await supabase.rpc('reorder_categories', {
       p_ordered_ids: parsed.data.ids,
@@ -269,7 +371,13 @@ export async function getCategoryProductCount(
       };
     }
 
-    const { supabase } = ctx;
+    if (isAppwriteBackend()) {
+      const count = await countProductsInCategory(idParsed.data);
+      return { count };
+    }
+
+    // ── Supabase path ─────────────────────────────────────────────────────────
+    const { supabase } = ctx as { supabase: AdminSupabaseClient };
 
     const { count, error } = await supabase
       .from('products')
@@ -316,7 +424,29 @@ export async function deleteCategory(
       };
     }
 
-    const { supabase } = ctx;
+    if (isAppwriteBackend()) {
+      if (mode === 'cascade') {
+        const imageUrls = await deleteCategoryCascadeAppwrite(idParsed.data);
+        if (imageUrls.length > 0) void destroyCloudinaryImages(imageUrls);
+      } else {
+        const reassignParsed = uuid.safeParse(reassignTo);
+        if (!reassignParsed.success) {
+          return {
+            success: false,
+            error: 'Seleccioná una categoría destino válida para reasignar los productos.',
+            code: 'VALIDATION',
+          };
+        }
+        const imageUrl = await deleteCategoryReassignAppwrite(idParsed.data, reassignParsed.data);
+        if (imageUrl) void destroyCloudinaryImage(imageUrl);
+      }
+
+      await revalidateAllCategoryPathsAppwrite();
+      return { success: true };
+    }
+
+    // ── Supabase path ─────────────────────────────────────────────────────────
+    const { supabase } = ctx as { supabase: AdminSupabaseClient };
 
     if (mode === 'cascade') {
       const { data: imageUrls, error } = await supabase.rpc(
@@ -394,7 +524,15 @@ export async function toggleCategoryStatus(
       };
     }
 
-    const { supabase } = ctx;
+    if (isAppwriteBackend()) {
+      const current = await findCategoryById(idParsed.data);
+      await setCategoryActive(idParsed.data, isActive);
+      await revalidateAllCategoryPathsAppwrite(current?.slug ? [current.slug] : undefined);
+      return { success: true };
+    }
+
+    // ── Supabase path ─────────────────────────────────────────────────────────
+    const { supabase } = ctx as { supabase: AdminSupabaseClient };
 
     const { data: row } = await supabase
       .from('categories')
@@ -446,7 +584,15 @@ export async function toggleCategoryFeatured(
       };
     }
 
-    const { supabase } = ctx;
+    if (isAppwriteBackend()) {
+      const current = await findCategoryById(idParsed.data);
+      await setCategoryFeatured(idParsed.data, isFeatured);
+      await revalidateAllCategoryPathsAppwrite(current?.slug ? [current.slug] : undefined);
+      return { success: true };
+    }
+
+    // ── Supabase path ─────────────────────────────────────────────────────────
+    const { supabase } = ctx as { supabase: AdminSupabaseClient };
 
     const { data: row } = await supabase
       .from('categories')

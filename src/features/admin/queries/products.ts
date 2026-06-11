@@ -1,3 +1,9 @@
+import { isAppwriteBackend } from '@/lib/appwrite/config';
+import {
+  type AdminProductAppwriteRow,
+  findAdminProductById,
+  listAdminProducts,
+} from '@/lib/appwrite/repositories/products';
 import { createClient } from '@/lib/supabase/server';
 import type { Database } from '@/lib/supabase/types';
 
@@ -22,6 +28,8 @@ export type AdminProductRow = ProductRow & {
     | null;
 };
 
+export type { AdminProductAppwriteRow };
+
 const ADMIN_PRODUCT_SELECT = `
   *,
   product_color_assignments(color_id, product_colors(id, name, hex, label)),
@@ -30,6 +38,10 @@ const ADMIN_PRODUCT_SELECT = `
 ` as const;
 
 export async function getAdminProducts(): Promise<AdminProductRow[]> {
+  if (isAppwriteBackend()) {
+    return listAdminProducts() as unknown as AdminProductRow[];
+  }
+
   const supabase = await createClient();
   const { data, error } = await supabase
     .from('products')
@@ -41,6 +53,11 @@ export async function getAdminProducts(): Promise<AdminProductRow[]> {
 }
 
 export async function getAdminProductById(id: string): Promise<AdminProductRow | null> {
+  if (isAppwriteBackend()) {
+    const row = await findAdminProductById(id);
+    return row as unknown as AdminProductRow | null;
+  }
+
   const supabase = await createClient();
   const { data, error } = await supabase
     .from('products')

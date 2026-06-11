@@ -1,9 +1,20 @@
+import { isAppwriteBackend } from '@/lib/appwrite/config';
+import {
+  type ColorRepoRow,
+  getColorUsage,
+  listColors,
+} from '@/lib/appwrite/repositories/taxonomy';
 import { createClient } from '@/lib/supabase/server';
 import type { Database } from '@/lib/supabase/types';
 
 export type ProductColorRow = Database['public']['Tables']['product_colors']['Row'];
+export type { ColorRepoRow };
 
-export async function getProductColors(): Promise<ProductColorRow[]> {
+export async function getProductColors(): Promise<ProductColorRow[] | ColorRepoRow[]> {
+  if (isAppwriteBackend()) {
+    return listColors();
+  }
+
   const supabase = await createClient();
   const { data, error } = await supabase
     .from('product_colors')
@@ -21,6 +32,10 @@ export async function getProductColors(): Promise<ProductColorRow[]> {
 export async function getProductColorUsage(
   name: string
 ): Promise<{ product_id: string; product_name: string }[]> {
+  if (isAppwriteBackend()) {
+    return getColorUsage(name);
+  }
+
   const supabase = await createClient();
 
   // Resolve color name → id first

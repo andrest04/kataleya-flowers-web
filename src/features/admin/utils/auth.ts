@@ -1,11 +1,16 @@
 import type { User } from '@supabase/supabase-js';
 import type { ZodIssue, ZodSchema } from 'zod';
 
+import { isAppwriteBackend } from '@/lib/appwrite/config';
 import { createClient } from '@/lib/supabase/server';
 
 import { isAdminUser } from './adminMembership';
+import type { AppwriteAdminActionContext } from './auth.appwrite';
+import { requireAdminAppwrite } from './auth.appwrite';
 
 // ─── Tipos ───────────────────────────────────────────────────────────────────
+
+export type { AppwriteAdminActionContext };
 
 export type AdminSupabaseClient = Awaited<ReturnType<typeof createClient>>;
 
@@ -52,12 +57,18 @@ export class AdminAuthError extends Error {
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
 /**
- * Verifica que haya sesión válida y membresía explícita en `admin_users`.
+ * Verifica que haya sesión válida y membresía explícita en `admin_users` (Supabase)
+ * o en el Team `admins` (Appwrite). Dispatches to the Appwrite path automatically
+ * when `BACKEND=appwrite` — call sites remain unchanged.
  *
  * Se prefiere `auth.getUser()` (no `getSession()`) para forzar verificación
  * contra Supabase Auth Server, igual que en `(admin)/layout.tsx` y `proxy.ts`.
  */
-export async function requireAdmin(): Promise<AdminActionContext> {
+export async function requireAdmin(): Promise<AdminActionContext | AppwriteAdminActionContext> {
+  if (isAppwriteBackend()) {
+    return requireAdminAppwrite();
+  }
+
   const supabase = await createClient();
   const { data, error } = await supabase.auth.getUser();
   if (error || !data.user) {
@@ -144,11 +155,11 @@ export function withAdminAuth<TInput, TOutput extends { success: boolean }>(
   schema: ZodSchema<TInput> | null,
 ) {
   return function bind(
-    fn: (input: TInput, ctx: AdminActionContext) => Promise<TOutput>,
+    fn: (input: TInput, ctx: AdminActionContext | AppwriteAdminActionContext) => Promise<TOutput>,
   ): (input: unknown) => Promise<TOutput | AdminActionFailure> {
     return async (rawInput: unknown) => {
       // 1) Auth check (defense-in-depth)
-      let ctx: AdminActionContext;
+      let ctx: AdminActionContext | AppwriteAdminActionContext;
       try {
         ctx = await requireAdmin();
       } catch (err) {

@@ -3,7 +3,7 @@
 // Mirrors the Supabase taxonomy queries (`getProductColors`, `getFlowerTypes`,
 // and their admin/usage variants). Rows are shaped like the Supabase Row
 // contracts so existing consumers stay unchanged.
-import { Query } from 'node-appwrite';
+import { ID, Query } from 'node-appwrite';
 
 import { APPWRITE_COLLECTIONS } from '@/lib/appwrite/config';
 import type {
@@ -16,6 +16,7 @@ import type {
 
 import {
   chunkIds,
+  findOneDocument,
   getRepositoryContext,
   listAllDocuments,
 } from './shared';
@@ -175,4 +176,186 @@ export async function getFlowerTypeUsage(
   );
 
   return resolveProductNames(assignments.map((a) => a.product_id));
+}
+
+// ─── Admin write operations ───────────────────────────────────────────────────
+
+/**
+ * Returns the next display_order for a new color or flower type.
+ */
+async function getNextTaxonomyOrder(
+  collectionId: string,
+): Promise<number> {
+  const { databases, databaseId } = getRepositoryContext();
+  const page = await databases.listDocuments({
+    databaseId,
+    collectionId,
+    queries: [Query.orderDesc('display_order'), Query.limit(1)],
+  });
+  const maxOrder = (page.documents[0] as { display_order?: number } | undefined)?.display_order ?? 0;
+  return maxOrder + 1;
+}
+
+/**
+ * Upserts colors by name (case-insensitive, lowercased). New colors are inserted;
+ * existing ones (matched by name) are skipped — matches Supabase upsert behaviour.
+ * Returns the normalized names so callers can resolve them to ids.
+ */
+export async function ensureColorsAppwrite(
+  colors: { name: string; hex: string }[],
+): Promise<void> {
+  if (colors.length === 0) return;
+  const { databases, databaseId } = getRepositoryContext();
+
+  const existing = await listAllDocuments<ColorDoc>(databases, databaseId, C.colors);
+  const existingNames = new Set(existing.map((c) => c.name));
+
+  const newColors = colors.filter((c) => !existingNames.has(c.name.toLowerCase().trim()));
+  if (newColors.length === 0) return;
+
+  const nextOrder = await getNextTaxonomyOrder(C.colors);
+
+  await Promise.all(
+    newColors.map((c, i) =>
+      databases.createDocument<ColorDoc>({
+        databaseId,
+        collectionId: C.colors,
+        documentId: ID.unique(),
+        data: {
+          name: c.name.toLowerCase().trim(),
+          label: c.name.charAt(0).toUpperCase() + c.name.slice(1).toLowerCase().trim(),
+          hex: c.hex || null,
+          display_order: nextOrder + i,
+        },
+      }),
+    ),
+  );
+}
+
+/**
+ * Upserts flower types by name. New entries are inserted; existing ones skipped.
+ */
+export async function ensureFlowerTypesAppwrite(names: string[]): Promise<void> {
+  if (names.length === 0) return;
+  const { databases, databaseId } = getRepositoryContext();
+
+  const existing = await listAllDocuments<FlowerTypeDoc>(databases, databaseId, C.flowerTypes);
+  const existingNames = new Set(existing.map((f) => f.name));
+
+  const newNames = names.filter((n) => !existingNames.has(n.toLowerCase().trim()));
+  if (newNames.length === 0) return;
+
+  const nextOrder = await getNextTaxonomyOrder(C.flowerTypes);
+
+  await Promise.all(
+    newNames.map((n, i) =>
+      databases.createDocument<FlowerTypeDoc>({
+        databaseId,
+        collectionId: C.flowerTypes,
+        documentId: ID.unique(),
+        data: {
+          name: n.toLowerCase().trim(),
+          display_order: nextOrder + i,
+        },
+      }),
+    ),
+  );
+}
+
+/**
+ * Deletes a color by name. Returns true if deleted, false if not found.
+ * Throws if the color is still referenced (no ON DELETE RESTRICT in Appwrite, but
+ * callers MUST check usage before deleting — mirrors Supabase FK-RESTRICT).
+ */
+export async function deleteColorAppwrite(name: string): Promise<boolean> {
+  const { databases, databaseId } = getRepositoryContext();
+
+  const color = await findOneDocument<ColorDoc>(databases, databaseId, C.colors, [
+    Query.equal('name', name),
+  ]);
+  if (!color) return false;
+
+  await databases.deleteDocument({ databaseId, collectionId: C.colors, documentId: color.$id });
+  return true;
+}
+
+/**
+ * Renames a color (updates the `name` field). Returns false if the color is not
+ * found. Uniqueness is enforced by checking existing names before writing —
+ * mirrors the Supabase UNIQUE constraint.
+ *
+ * Returns 'duplicate' when the new name already exists, 'not_found' when the old
+ * name does not exist, or null on success.
+ */
+export async function renameColorAppwrite(
+  oldName: string,
+  newName: string,
+): Promise<'duplicate' | 'not_found' | null> {
+  const { databases, databaseId } = getRepositoryContext();
+  const normalized = newName.toLowerCase().trim();
+
+  const color = await findOneDocument<ColorDoc>(databases, databaseId, C.colors, [
+    Query.equal('name', oldName),
+  ]);
+  if (!color) return 'not_found';
+
+  // Check for duplicate
+  const duplicate = await findOneDocument<ColorDoc>(databases, databaseId, C.colors, [
+    Query.equal('name', normalized),
+  ]);
+  if (duplicate) return 'duplicate';
+
+  await databases.updateDocument<ColorDoc>({
+    databaseId,
+    collectionId: C.colors,
+    documentId: color.$id,
+    data: { name: normalized },
+  });
+
+  return null;
+}
+
+/**
+ * Deletes a flower type by name. Returns true if deleted, false if not found.
+ */
+export async function deleteFlowerTypeAppwrite(name: string): Promise<boolean> {
+  const { databases, databaseId } = getRepositoryContext();
+
+  const flowerType = await findOneDocument<FlowerTypeDoc>(databases, databaseId, C.flowerTypes, [
+    Query.equal('name', name),
+  ]);
+  if (!flowerType) return false;
+
+  await databases.deleteDocument({ databaseId, collectionId: C.flowerTypes, documentId: flowerType.$id });
+  return true;
+}
+
+/**
+ * Renames a flower type. Returns 'duplicate' | 'not_found' | null (success).
+ */
+export async function renameFlowerTypeAppwrite(
+  oldName: string,
+  newName: string,
+): Promise<'duplicate' | 'not_found' | null> {
+  const { databases, databaseId } = getRepositoryContext();
+  const normalized = newName.toLowerCase().trim();
+
+  const flowerType = await findOneDocument<FlowerTypeDoc>(databases, databaseId, C.flowerTypes, [
+    Query.equal('name', oldName),
+  ]);
+  if (!flowerType) return 'not_found';
+
+  const duplicate = await findOneDocument<FlowerTypeDoc>(databases, databaseId, C.flowerTypes, [
+    Query.equal('name', normalized),
+  ]);
+  if (duplicate) return 'duplicate';
+
+  await databases.updateDocument<FlowerTypeDoc>({
+    databaseId,
+    collectionId: C.flowerTypes,
+    documentId: flowerType.$id,
+    data: { name: normalized },
+  });
+
+  return null;
 }

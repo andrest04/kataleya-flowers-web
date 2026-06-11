@@ -1,9 +1,20 @@
+import { isAppwriteBackend } from '@/lib/appwrite/config';
+import {
+  type FlowerTypeRepoRow,
+  getFlowerTypeUsage as getFlowerTypeUsageAppwrite,
+  listFlowerTypes,
+} from '@/lib/appwrite/repositories/taxonomy';
 import { createClient } from '@/lib/supabase/server';
 import type { Database } from '@/lib/supabase/types';
 
 export type FlowerTypeRow = Database['public']['Tables']['flower_types']['Row'];
+export type { FlowerTypeRepoRow };
 
-export async function getFlowerTypes(): Promise<FlowerTypeRow[]> {
+export async function getFlowerTypes(): Promise<FlowerTypeRow[] | FlowerTypeRepoRow[]> {
+  if (isAppwriteBackend()) {
+    return listFlowerTypes();
+  }
+
   const supabase = await createClient();
   const { data, error } = await supabase
     .from('flower_types')
@@ -21,6 +32,10 @@ export async function getFlowerTypes(): Promise<FlowerTypeRow[]> {
 export async function getFlowerTypeUsage(
   name: string
 ): Promise<{ product_id: string; product_name: string }[]> {
+  if (isAppwriteBackend()) {
+    return getFlowerTypeUsageAppwrite(name);
+  }
+
   const supabase = await createClient();
 
   // Resolve flower type name → id first
