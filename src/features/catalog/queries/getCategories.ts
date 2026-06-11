@@ -34,7 +34,25 @@ export async function getCategories(): Promise<Category[]> {
   ]);
 
   if (categoriesResult.error) {
+    // Dev-only fallback: allows working on the landing while Supabase is
+    // paused/unreachable. Production MUST throw — a failed build or
+    // revalidation keeps serving the last good page instead of caching
+    // an empty catalog.
+    if (process.env.NODE_ENV === 'development') {
+      console.warn(
+        `getCategories: Supabase unavailable, rendering without categories — ${categoriesResult.error.message}`
+      );
+      return [];
+    }
     throw new Error(`getCategories failed: ${categoriesResult.error.message}`);
+  }
+
+  if (priceSummaryResult.error && process.env.NODE_ENV === 'development') {
+    // Prices degrade gracefully (categories render without "Desde S/ …"),
+    // but the failure should not be invisible while developing.
+    console.warn(
+      `getCategories: price summary unavailable — ${priceSummaryResult.error.message}`
+    );
   }
 
   const categories = categoriesResult.data ?? [];
