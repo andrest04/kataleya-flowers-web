@@ -108,7 +108,20 @@ Dry-run: `... --dry-run` to preview values without writing.
 
 ### 7. Deploy with BACKEND=appwrite
 
-Set `BACKEND=appwrite` in the Vercel environment variables and redeploy.
+Set BOTH `BACKEND=appwrite` and `NEXT_PUBLIC_BACKEND=appwrite` in the Vercel
+environment variables and redeploy (they must always match — a mismatch
+splits client/server auth paths; see `assertBackendConsistency`).
+
+**Operational notes (correlativo / Libro de Reclamaciones):**
+- A correlativo gap can occur if `insertComplaint` fails AFTER the counter
+  increment (network/outage). This is equivalent to the previous Supabase
+  behavior (Postgres IDENTITY sequences do not roll back either). Failures
+  are logged via `[submitComplaint/appwrite]` — gaps are reconstructable
+  from logs for any audit.
+- The counter year bucket and the displayed `NNNNN-YYYY` both derive from
+  UTC (Vercel has no TZ set). On Dec 31 ~19:00–24:00 Lima time the year
+  rolls to the next UTC year. Consistent within each request; no action
+  needed, just expected behavior.
 
 ### 8. Rollback
 

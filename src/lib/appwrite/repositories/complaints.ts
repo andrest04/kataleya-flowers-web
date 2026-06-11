@@ -222,3 +222,35 @@ export async function insertComplaint(
 
   return { id: doc.$id, correlativo: doc.correlativo, created_at: doc.$createdAt };
 }
+
+/** Fields accepted by the admin status-update operation. */
+export interface ComplaintStatusUpdate {
+  status: string;
+  provider_response: string | null;
+  responded_at: string | null;
+}
+
+/**
+ * Updates the status and provider response of an existing complaint (admin
+ * only). Mirrors the Supabase `.update({ status, provider_response,
+ * responded_at }).eq('id', id)` pattern — uses the admin client so the
+ * operation is authorized even though `complaints` has no public write
+ * permission.
+ */
+export async function updateComplaintDocument(
+  id: string,
+  data: ComplaintStatusUpdate,
+): Promise<void> {
+  const { databases, databaseId } = getRepositoryContext();
+
+  await databases.updateDocument<ComplaintDoc>({
+    databaseId,
+    collectionId: C.complaints,
+    documentId: id,
+    data: {
+      status: data.status,
+      provider_response: data.provider_response,
+      responded_at: data.responded_at,
+    },
+  });
+}
