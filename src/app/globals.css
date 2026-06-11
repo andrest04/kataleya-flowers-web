@@ -33,6 +33,10 @@
      Lightbox z-[100]. Este token vive aislado al carousel y no compite
      con esos niveles globales. */
   --z-hero-overlay: 10;
+  /* AA-safe gold variants — La Regla del Dorado-No-Es-Texto (DESIGN.md + QA/audit/10).
+     Base #e8b84b (1.8:1 on cream) is decoration-only; these tokens are text-safe. */
+  --color-gold-text: #8a6a1f; /* 4.92:1 on cream #fdfcfa — text on light backgrounds */
+  --color-gold-text-dark: #f0c668; /* 5.01:1 on footer green #2d5a1b — text on dark green */
   --color-muted: color-mix(in srgb, var(--color-dark) 50%, transparent);
   --color-surface: color-mix(in srgb, var(--color-dark) 6%, var(--color-cream));
   --color-border: color-mix(in srgb, var(--color-dark) 12%, var(--color-cream));
@@ -80,6 +84,8 @@
   --font-body: var(--font-body);
   --color-whatsapp: var(--color-whatsapp);
   --color-white: var(--color-white);
+  --color-gold-text: var(--color-gold-text);
+  --color-gold-text-dark: var(--color-gold-text-dark);
   --color-muted: var(--color-muted);
   --color-surface: var(--color-surface);
   --color-border: var(--color-border);

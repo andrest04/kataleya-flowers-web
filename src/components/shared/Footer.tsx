@@ -20,7 +20,7 @@ export default function Footer() {
               {BUSINESS.name}
             </h2>
             <p className="max-w-md text-sm opacity-90 sm:text-base">
-              Arreglos florales hechos con amor para cada ocasion especial.
+              Arreglos florales hechos con amor para cada ocasión especial.
             </p>
             <p className="text-sm opacity-80">
               {BUSINESS.location} · {BUSINESS.hours.weekdays} {BUSINESS.hours.time}
@@ -67,9 +67,9 @@ export default function Footer() {
               "color-mix(in srgb, var(--color-cream) 20%, transparent)",
           }}
         >
-          <nav aria-label="Navegacion del sitio" className="space-y-2">
+          <nav aria-label="Navegación del sitio" className="space-y-2">
             <p className="text-xs font-semibold tracking-[0.2em] uppercase opacity-80">
-              Navegacion
+              Navegación
             </p>
             <ul className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm sm:justify-start">
               {allNavLinks.map((link) => (
@@ -91,15 +91,19 @@ export default function Footer() {
               Confianza
             </p>
             <p className="opacity-90">
-              Atencion en {BUSINESS.location} para entregas y recojo.
+              Atención en {BUSINESS.location} para entregas y recojo.
             </p>
             <p className="opacity-80">WhatsApp: +{BUSINESS.phone}</p>
+            {/* --color-gold-text-dark: 5.01:1 on footer green #2d5a1b — WCAG AA */}
             <Link
               href="/#contacto"
-              className="inline-block rounded-sm font-semibold text-[var(--color-secondary)] transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2"
-              style={{ outlineColor: "var(--color-secondary)" }}
+              className="inline-block rounded-sm font-semibold transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2"
+              style={{
+                color: "var(--color-gold-text-dark)",
+                outlineColor: "var(--color-gold-text-dark)",
+              }}
             >
-              Ver ubicacion y mapa
+              Ver ubicación y mapa
             </Link>
             <Link
               href="/libro-de-reclamaciones"
