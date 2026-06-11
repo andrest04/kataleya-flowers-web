@@ -203,6 +203,19 @@ export default defineConfig([
     },
   },
 
+  // 7.6. Migration scripts (offline tooling) — allow full console output.
+  //      These TypeScript scripts run via `npx tsx` outside the Next.js runtime.
+  //      They are never imported by app code and produce structured log output
+  //      by design (progress reports, row counts, errors). `console.log` is
+  //      intentional here, not a production leak.
+  {
+    name: 'project/migration-scripts',
+    files: ['scripts/migration/**/*.ts'],
+    rules: {
+      'no-console': 'off',
+    },
+  },
+
   // 8. simple-import-sort — orden estable de imports/exports.
   //    Arrancamos en `'warn'` para no explotar el lint con cientos de violaciones.
   //    TODO: subir a `'error'` después de un pass global con `--fix` (ver header del archivo).

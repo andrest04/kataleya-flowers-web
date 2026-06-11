@@ -60,3 +60,6 @@ skills-lock.json
 
 # Supabase local CLI artifacts
 supabase/.temp/
+
+# Migration script exports (may contain PII — never commit)
+scripts/migration/data/
