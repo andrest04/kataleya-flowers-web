@@ -34,7 +34,7 @@ Pre-commit (manual, no hay hooks): `npm run lint:strict` + `npx tsc --noEmit`.
 - `react/jsx-key` en listas. `no-console` (warn — `warn`/`error` OK, `log` no). `simple-import-sort` (warn, será error).
 
 **Otras reglas no auto-enforced pero obligatorias:**
-- **Componentes UI < 100 líneas** — si supera, dividir en carpeta con `index.tsx` orquestador (ej. `HeroSection/`). One component per file.
+- **Componentes UI: una responsabilidad por componente.** Superar ~100 líneas es *trigger de revisión*, no infracción: detente y evalúa si sigue siendo UNA responsabilidad. Si lo es (markup denso, variantes del mismo concepto), se queda; si acumuló responsabilidades, dividir en carpeta con `index.tsx` orquestador (ej. `HeroSection/`). One component per file.
 - **No crear modales custom** — usar `LightboxDialog` / `ConfirmDialog`. **No SVG inline** para íconos comunes — usar `lucide-react`.
 - **No `@import url(...)` Google Fonts** en CSS (render-blocking) — usar `next/font/google`.
 - **No duplicar `NAV_LINKS`** — re-exportar de `src/lib/navigation.ts`.
