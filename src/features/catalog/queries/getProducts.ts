@@ -1,6 +1,8 @@
 import type { JoinedProductRow } from '@/features/catalog/queries/mappers';
 import { mapProductRow } from '@/features/catalog/queries/mappers';
 import type { Product } from '@/features/catalog/types';
+import { isAppwriteBackend } from '@/lib/appwrite/config';
+import { listActiveJoinedProducts } from '@/lib/appwrite/repositories/products';
 import { createStaticClient } from '@/lib/supabase/static';
 
 const PRODUCT_SELECT = `
@@ -11,6 +13,11 @@ const PRODUCT_SELECT = `
 ` as const;
 
 export async function getProducts(): Promise<Product[]> {
+  if (isAppwriteBackend()) {
+    const rows = await listActiveJoinedProducts();
+    return rows.map(mapProductRow);
+  }
+
   const supabase = createStaticClient();
 
   // !inner join ensures only products with an active category are returned

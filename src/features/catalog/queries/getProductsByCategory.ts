@@ -1,6 +1,8 @@
 import type { JoinedProductRow } from '@/features/catalog/queries/mappers';
 import { mapProductRow } from '@/features/catalog/queries/mappers';
 import type { Product } from '@/features/catalog/types';
+import { isAppwriteBackend } from '@/lib/appwrite/config';
+import { listActiveJoinedProductsByCategorySlug } from '@/lib/appwrite/repositories/products';
 import { createStaticClient } from '@/lib/supabase/static';
 
 const PRODUCT_SELECT = `
@@ -13,6 +15,11 @@ const PRODUCT_SELECT = `
 export async function getProductsByCategory(
   categorySlug: string
 ): Promise<Product[]> {
+  if (isAppwriteBackend()) {
+    const rows = await listActiveJoinedProductsByCategorySlug(categorySlug);
+    return rows.map(mapProductRow);
+  }
+
   const supabase = createStaticClient();
 
   // First resolve the category id from slug

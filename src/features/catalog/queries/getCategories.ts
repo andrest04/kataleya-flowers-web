@@ -1,4 +1,10 @@
 import type { Category } from '@/features/catalog/types';
+import { isAppwriteBackend } from '@/lib/appwrite/config';
+import type { CategoryRepoRow } from '@/lib/appwrite/repositories/categories';
+import {
+  listActiveCategories,
+  listCategoryPriceFrom,
+} from '@/lib/appwrite/repositories/categories';
 import { createStaticClient } from '@/lib/supabase/static';
 import type { Database } from '@/lib/supabase/types';
 
@@ -21,7 +27,31 @@ function mapCategoryRow(
   };
 }
 
+function mapAppwriteCategoryRow(
+  row: CategoryRepoRow,
+  priceFrom: number | undefined
+): Category {
+  return {
+    id: row.id,
+    name: row.name,
+    slug: row.slug,
+    description: row.description,
+    occasion: row.occasion ?? undefined,
+    imageUrl: row.image_url ?? undefined,
+    priceFrom,
+    isFeatured: row.is_featured,
+  };
+}
+
 export async function getCategories(): Promise<Category[]> {
+  if (isAppwriteBackend()) {
+    const [rows, priceFromMap] = await Promise.all([
+      listActiveCategories(),
+      listCategoryPriceFrom(),
+    ]);
+    return rows.map((row) => mapAppwriteCategoryRow(row, priceFromMap.get(row.id)));
+  }
+
   const supabase = createStaticClient();
 
   const [categoriesResult, priceSummaryResult] = await Promise.all([

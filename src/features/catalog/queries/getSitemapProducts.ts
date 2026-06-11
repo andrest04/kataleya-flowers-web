@@ -1,3 +1,5 @@
+import { isAppwriteBackend } from "@/lib/appwrite/config";
+import { listSitemapProducts } from "@/lib/appwrite/repositories/products";
 import { createStaticClient } from "@/lib/supabase/static";
 
 /**
@@ -17,6 +19,11 @@ export interface SitemapProduct {
 }
 
 export async function getSitemapProducts(): Promise<SitemapProduct[]> {
+  if (isAppwriteBackend()) {
+    // listSitemapProducts returns the same { slug, categorySlug, updatedAt } shape
+    return listSitemapProducts();
+  }
+
   const supabase = createStaticClient();
 
   // !inner garantiza que solo se devuelvan productos con categoría activa
@@ -34,8 +41,8 @@ export async function getSitemapProducts(): Promise<SitemapProduct[]> {
   const rows = data ?? [];
 
   return rows.flatMap((row): SitemapProduct[] => {
-    // Supabase tipa la relación como array u objeto según la inferencia.
-    // Normalizamos a un único objeto.
+    // Supabase types the relation as array or object depending on inference.
+    // Normalize to a single object.
     const rawCategory: unknown = (row as { categories: unknown }).categories;
     const category = Array.isArray(rawCategory) ? rawCategory[0] : rawCategory;
 
