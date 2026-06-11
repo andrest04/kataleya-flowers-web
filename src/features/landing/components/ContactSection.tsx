@@ -1,4 +1,5 @@
-import { Clock } from "lucide-react";
+import { ArrowRight, Clock } from "lucide-react";
+import Image from "next/image";
 import { FaInstagram, FaWhatsapp } from "react-icons/fa";
 
 import BusinessHoursBadge from "@/components/shared/BusinessHoursBadge";
@@ -6,30 +7,31 @@ import SectionHeader from "@/components/ui/SectionHeader";
 import WhatsAppContactLink from "@/features/analytics/components/WhatsAppContactLink";
 import { BUSINESS } from "@/lib/constants";
 
-
-function ArrowRightIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M5 12h14M12 5l7 7-7 7" />
-    </svg>
-  );
-}
-
 export default function ContactSection() {
   return (
     <section
       id="contacto"
-      className="scroll-mt-20 flex items-center justify-center px-4 py-20 sm:px-6 lg:px-8 lg:py-28"
+      className="relative scroll-mt-20 flex items-center justify-center px-4 py-20 sm:px-6 lg:px-8 lg:py-28"
     >
-      <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+      {/* Fondo ambiental sutil; el scrim cream garantiza contraste del contenido */}
+      <Image
+        src="/contact-floral-texture.jpg"
+        alt=""
+        aria-hidden="true"
+        fill
+        sizes="100vw"
+        className="object-cover"
+        loading="lazy"
+      />
+      <div
+        aria-hidden="true"
+        className="absolute inset-0"
+        style={{
+          backgroundColor: "color-mix(in srgb, var(--color-cream) 55%, transparent)",
+        }}
+      />
+
+      <div className="relative mx-auto grid max-w-7xl gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
         {/* Lado izquierdo - Mapa */}
         <div className="space-y-6">
           <SectionHeader
@@ -79,7 +81,7 @@ export default function ContactSection() {
                 <p className="text-sm text-white/80">+{BUSINESS.phone}</p>
               </div>
             </div>
-            <ArrowRightIcon className="h-6 w-6 text-white transition-transform duration-300 group-hover:translate-x-1" />
+            <ArrowRight className="h-6 w-6 text-white transition-transform duration-300 group-hover:translate-x-1" />
           </WhatsAppContactLink>
 
           {/* Botón Instagram */}
@@ -101,18 +103,8 @@ export default function ContactSection() {
                 <p className="text-sm text-white/80">{BUSINESS.instagramHandle}</p>
               </div>
             </div>
-            <ArrowRightIcon className="h-6 w-6 text-white transition-transform duration-300 group-hover:translate-x-1" />
+            <ArrowRight className="h-6 w-6 text-white transition-transform duration-300 group-hover:translate-x-1" />
           </a>
-
-          {/* Separador */}
-          <div className="flex items-center justify-center py-2">
-            <span
-              className="text-sm font-medium"
-              style={{ color: "var(--color-dark)", opacity: 0.5 }}
-            >
-              o
-            </span>
-          </div>
 
           {/* Card de horario */}
           <div
