@@ -30,7 +30,9 @@ import { Client, Databases, ID } from 'node-appwrite';
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const CONCURRENCY = 10;
-const TEST_DOC_PREFIX = 'test-concurrency'; // keeps separate from real complaints-{YYYY}
+// Short prefix: Appwrite documentId max is 36 chars and ID.unique() is ~20, so
+// `tcc-<id>` stays under the limit. Keeps separate from real complaints-{YYYY}.
+const TEST_DOC_PREFIX = 'tcc';
 const APPWRITE_DATABASE_ID = 'kataleya';
 const COUNTERS_COLLECTION_ID = 'counters';
 

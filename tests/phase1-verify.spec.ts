@@ -95,7 +95,7 @@ test.describe("Phase 1 — A) Root metadata + fonts", () => {
       .locator('meta[property="og:url"]')
       .getAttribute("content");
     expect(ogUrl).toBeTruthy();
-    expect(ogUrl).toContain("kataleya-flawers.vercel.app");
+    expect(ogUrl).toContain("kataleya-flawers.appwrite.network");
 
     await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute(
       "content",
@@ -103,7 +103,7 @@ test.describe("Phase 1 — A) Root metadata + fonts", () => {
     );
   });
 
-  test("metadataBase resuelve a https://kataleya-flawers.vercel.app via og:url y canonical", async ({
+  test("metadataBase resuelve a https://kataleya-flawers.appwrite.network via og:url y canonical", async ({
     page,
   }) => {
     await page.goto("/");
@@ -112,7 +112,7 @@ test.describe("Phase 1 — A) Root metadata + fonts", () => {
       .locator('link[rel="canonical"]')
       .getAttribute("href");
     expect(canonical).toBeTruthy();
-    expect(canonical).toContain("kataleya-flawers.vercel.app");
+    expect(canonical).toContain("kataleya-flawers.appwrite.network");
   });
 
   test("link rel=canonical presente en /", async ({ page }) => {
@@ -182,8 +182,8 @@ test.describe("Phase 1 — B) File-Based Metadata API", () => {
     const body = await response.text();
 
     // Rutas estáticas esperadas (al menos / y /catalogo).
-    expect(body).toContain("kataleya-flawers.vercel.app/</loc>");
-    expect(body).toContain("kataleya-flawers.vercel.app/catalogo</loc>");
+    expect(body).toContain("kataleya-flawers.appwrite.network/</loc>");
+    expect(body).toContain("kataleya-flawers.appwrite.network/catalogo</loc>");
 
     // Al menos UNA categoría (formato /catalogo/{slug}, sin slug adicional).
     // Ejemplo de match: <loc>https://.../catalogo/amor-y-romance</loc>
