@@ -46,7 +46,7 @@ export const optionalLongText = z
   .optional()
   .nullable();
 
-/** UUID v4 (Supabase ids). */
+/** UUID v4 (record ids). */
 export const uuid = z.string().uuid('Identificador inválido');
 
 /** Slug normalizado: minúsculas, números, guiones. */

@@ -23,7 +23,7 @@ interface CatalogFilterColorsProps {
  * Bloque de filtro: chips de color (selección múltiple).
  *
  * Nota: el `style` para `backgroundColor: hex` viene de datos dinámicos de
- * Supabase (`product_colors.hex`) — no es un literal hex en el código fuente,
+ * la DB (`product_colors.hex`) — no es un literal hex en el código fuente,
  * así que no aplica la regla `no-restricted-syntax` (que bloquea hex literales
  * en JSX).
  */

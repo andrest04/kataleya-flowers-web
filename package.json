@@ -10,8 +10,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "lint:strict": "eslint . --max-warnings 0",
-    "test:e2e": "npx playwright test",
-    "db:types": "npx supabase gen types typescript --project-id lhromzqzcssgdfguejje > src/lib/supabase/types.ts"
+    "test:e2e": "npx playwright test"
   },
   "dependencies": {
     "@dnd-kit/helpers": "^0.3.2",

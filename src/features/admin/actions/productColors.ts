@@ -36,7 +36,7 @@ export async function deleteProductColor(name: string): Promise<ColorActionResul
       };
     }
 
-    // Mirror the Supabase FK-RESTRICT behaviour: check usage before deleting
+    // Enforce referential integrity: check usage before deleting
     const usage = await getColorUsage(parsed.data.name);
     if (usage.length > 0) {
       return {

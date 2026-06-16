@@ -68,12 +68,12 @@ src/
 │   ├── catalog/              # incl. utils/filterProducts.ts
 │   └── admin/                # actions (requireAdmin+zod+Result), schemas, utils/{auth,slugify,cloudinaryUrl}
 ├── data/products.ts          # LEGACY — no se usa
-└── lib/{constants,navigation}.ts · lib/appwrite/* (config · repositories · auth/session) · lib/supabase/types.ts (legacy: solo tipos de fila)
+└── lib/{constants,navigation}.ts · lib/appwrite/* (config · repositories · auth/session) · lib/db/rows.ts (tipos de fila)
 ```
 
 **Rutas:** landing usa anchors `#hero #catalogo #nosotros #contacto`. Catálogo `/catalogo/[categoria]/[slug]`. Rutas dinámicas exportan `generateStaticParams`.
 
-**Datos:** Appwrite es la fuente (landing pública + admin CRUD), vía `lib/appwrite/repositories/*`. Tipos dominio `Product`/`Category` en `features/catalog/types`; los repos Appwrite reusan las formas de fila de `lib/supabase/types.ts` (legacy, solo tipos — pendiente migrar a tipos nativos). Categorías base (6): Amor y Romance, Cumpleaños, Orquídeas Premium, Flores Amarillas, Corporativo y Eventos, Condolencias. Filtros client-side (texto, categoría, precio S/30–800, colores, flores) en `filterProducts.ts`.
+**Datos:** Appwrite es la fuente (landing pública + admin CRUD), vía `lib/appwrite/repositories/*`. Tipos dominio `Product`/`Category` en `features/catalog/types`; los repos Appwrite reusan las formas de fila de `lib/db/rows.ts` (tipos nativos). Categorías base (6): Amor y Romance, Cumpleaños, Orquídeas Premium, Flores Amarillas, Corporativo y Eventos, Condolencias. Filtros client-side (texto, categoría, precio S/30–800, colores, flores) en `filterProducts.ts`.
 
 ## Server Actions (admin) — patrón obligatorio
 

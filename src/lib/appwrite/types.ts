@@ -3,11 +3,11 @@ import type { Models } from 'node-appwrite';
 /**
  * Hand-written Appwrite collection document interfaces (Phase 1: Auth + DB).
  *
- * These replace the Supabase `db:types` codegen (`lib/supabase/types.ts`). They
- * model the document attributes as stored in Appwrite. Field names mirror the
- * Supabase column names where the value is reused downstream, so PR-2
- * repositories can compose these docs into the existing `JoinedProductRow`
- * shape (`features/catalog/queries/mappers.ts`) with no mapper changes.
+ * These are the hand-written DB document types. They model the document
+ * attributes as stored in Appwrite. Field names match the column names used
+ * downstream, so PR-2 repositories can compose these docs into the existing
+ * `JoinedProductRow` shape (`features/catalog/queries/mappers.ts`) with no
+ * mapper changes.
  *
  * Each doc extends `Models.Document`, which provides `$id`, `$collectionId`,
  * `$databaseId`, `$createdAt`, `$updatedAt`, and `$permissions`.
@@ -116,7 +116,7 @@ export interface CounterDoc extends Models.Document {
 /**
  * Appwrite-composed equivalent of `JoinedProductRow`. PR-2 repositories build
  * this by batch-fetching assignments and images, so `mapProductRow` consumes it
- * unchanged. Shapes mirror the Supabase nested-embed contract exactly.
+ * unchanged. Shape matches the `JoinedProductRow` contract exactly.
  */
 export interface JoinedProductDoc extends ProductDoc {
   product_color_assignments:

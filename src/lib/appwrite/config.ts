@@ -11,8 +11,8 @@
  *
  * These are deterministic, human-readable IDs chosen at provisioning time and
  * identical across every environment (the IaC snapshot reproduces them), so
- * they are code constants — the same contract as Supabase's `.from('products')`
- * table names. Only endpoint, project ID, and API key vary per environment.
+ * they are code constants — the same contract as table names in a relational
+ * backend. Only endpoint, project ID, and API key vary per environment.
  */
 export const APPWRITE_DATABASE_ID = 'kataleya';
 export const APPWRITE_TEAM_ADMINS_ID = 'admins';

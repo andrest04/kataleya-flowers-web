@@ -3,7 +3,7 @@
  *
  * These mirror the persisted record shape that the Appwrite repositories map to
  * (and that `mapProductRow` / `mapCategoryRow` consume). Named explicitly here so
- * the app no longer depends on the legacy Supabase-generated `Database` type.
+ * the app uses explicit, hand-written row types.
  */
 
 export type Json =

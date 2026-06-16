@@ -1,9 +1,9 @@
 // Server-only: Appwrite products repository.
 //
-// Returns rows shaped exactly like Supabase's `JoinedProductRow` (see
+// Returns rows shaped exactly like the `JoinedProductRow` contract (see
 // `features/catalog/queries/mappers.ts`) so `mapProductRow` consumes them
 // unchanged. Appwrite has no nested embeds, so related taxonomy and images are
-// batch-fetched and composed in Node, mirroring the PostgREST nested-select.
+// batch-fetched and composed in Node.
 import { randomUUID } from 'node:crypto';
 
 import { ID, Query } from 'node-appwrite';
@@ -31,10 +31,10 @@ import {
 const C = APPWRITE_COLLECTIONS;
 
 /**
- * `price_variants` is persisted as a JSON string in Appwrite (Supabase stored it
- * as native JSONB), so parse it back to the array/object shape `mapProductRow`
- * expects. A malformed or truncated value degrades to `null` (no price table)
- * instead of throwing and crashing the product page.
+ * `price_variants` is persisted as a JSON string in Appwrite, so parse it back
+ * to the array/object shape `mapProductRow` expects. A malformed or truncated
+ * value degrades to `null` (no price table) instead of throwing and crashing
+ * the product page.
  */
 function parsePriceVariants(value: ProductDoc['price_variants']): JsonValue | null {
   if (typeof value !== 'string') return value ?? null;
@@ -45,7 +45,7 @@ function parsePriceVariants(value: ProductDoc['price_variants']): JsonValue | nu
   }
 }
 
-/** Maps a raw Appwrite product document to the Supabase `products` row shape. */
+/** Maps a raw Appwrite product document to the `products` row shape. */
 function toProductRow(doc: ProductDoc): Omit<
   JoinedProductRow,
   | 'product_color_assignments'
@@ -509,7 +509,7 @@ export async function createProductDocument(
     databaseId,
     collectionId: C.products,
     // UUID (not ID.unique()) so admin actions' `uuid` schema accepts the id for
-    // later edit/delete/toggle — migrated rows keep their Supabase UUIDs too.
+    // later edit/delete/toggle — migrated rows keep their original UUIDs too.
     documentId: ID.custom(randomUUID()),
     data: {
       category_id: payload.categoryId,
@@ -636,7 +636,7 @@ interface TaxonomySyncInput {
 /**
  * Replaces taxonomy assignments and product_images for a product.
  *
- * Algorithm (mirrors the Supabase `set_product_taxonomy` RPC):
+ * Algorithm:
  *   1. Delete all existing assignments and image rows
  *   2. Resolve color names → ids (upsert new colors first if needed)
  *   3. Resolve flower-type names → ids

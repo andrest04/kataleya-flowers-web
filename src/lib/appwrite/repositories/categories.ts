@@ -1,7 +1,7 @@
 // Server-only: Appwrite categories repository.
 //
-// Returns rows shaped like Supabase's `categories` Row contract so the existing
-// `mapCategoryRow` and admin consumers stay unchanged. The Supabase
+// Returns rows shaped like the `categories` row contract so the existing
+// `mapCategoryRow` and admin consumers stay unchanged. The
 // `category_price_summary` view (min active-product price per category) has no
 // Appwrite equivalent, so `listCategoryPriceFrom` derives the same map in Node.
 import { randomUUID } from 'node:crypto';
@@ -16,7 +16,7 @@ import { getRepositoryContext, listAllDocuments } from './shared';
 
 const C = APPWRITE_COLLECTIONS;
 
-/** Row shape mirroring Supabase `categories` Row (snake_case, `id` not `$id`). */
+/** Row shape for `categories` (snake_case, `id` not `$id`). */
 export interface CategoryRepoRow {
   id: string;
   name: string;
@@ -159,7 +159,7 @@ export async function createCategoryDocument(
     databaseId,
     collectionId: C.categories,
     // UUID (not ID.unique()) so admin actions' `uuid` schema accepts the id for
-    // later edit/delete/toggle — migrated rows keep their Supabase UUIDs too.
+    // later edit/delete/toggle — migrated rows keep their original UUIDs too.
     documentId: ID.custom(randomUUID()),
     data: {
       name: payload.name,

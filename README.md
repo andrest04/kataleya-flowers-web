@@ -8,14 +8,13 @@ Sitio web oficial de **Kataleya Flawers** — florería con 32 años de experien
 - **UI:** React 19.2.3 + TypeScript 5 (strict mode)
 - **Estilos:** Tailwind CSS v4 configurado vía `globals.css` (sin `tailwind.config`)
 - **Animaciones:** Framer Motion 12 con `LazyMotion` + `domAnimation`
-- **Base de datos:** Supabase (PostgreSQL) — cliente SSR con `@supabase/ssr`
-- **Auth:** Supabase Auth — guard en middleware
+- **Base de datos:** Appwrite (único backend) — Auth + DB
+- **Auth:** Appwrite Auth — sesión en cookies SSR, guard en `proxy.ts` + RSC layout
 - **Drag & Drop:** @dnd-kit/react — reordenamiento visual de categorías
 - **Iconos:** react-icons 5 + lucide-react
-- **Charts:** Recharts 3 — gráficos del dashboard admin
 - **Tipografías:** Playfair Display (display/headings) + Lato (body) — vía Google Fonts
 - **Imágenes:** Cloudinary CDN (`res.cloudinary.com/dbjm18dqg`) — upload + destroy integrados
-- **Analytics:** Vercel Analytics + Speed Insights
+- **Email:** Resend — envío transaccional
 - **Testing:** Playwright — e2e tests para landing, catálogo y dashboard
 - **Deploy:** Vercel
 
@@ -51,7 +50,7 @@ src/
 │   ├── (admin)/
 │   │   ├── layout.tsx                      # Admin layout con sidebar + auth check
 │   │   └── admin/
-│   │       ├── page.tsx                    # Dashboard — métricas, KPIs, analíticas
+│   │       ├── page.tsx                    # Dashboard — métricas, KPIs
 │   │       ├── productos/                  # CRUD productos
 │   │       │   ├── page.tsx                # Lista con ProductTable
 │   │       │   ├── nuevo/page.tsx          # Crear producto
@@ -61,7 +60,7 @@ src/
 │   │           ├── nueva/page.tsx          # Crear categoría
 │   │           └── [id]/page.tsx           # Editar categoría
 │   └── (auth)/
-│       └── login/page.tsx                  # Login con Supabase Auth
+│       └── login/page.tsx                  # Login con Appwrite Auth
 ├── components/
 │   ├── shared/
 │   │   ├── Navbar/                         # Módulo Navbar (5 archivos)
@@ -86,61 +85,61 @@ src/
 │   │       ├── CatalogSection.tsx          # Vista previa del catálogo en landing
 │   │       ├── AboutSection.tsx
 │   │       ├── ContactSection.tsx          # WhatsApp, Instagram, mapa — sin form backend
-│   │       ├── TestimonialsSection.tsx     # Grid polaroid (desktop) / carousel (mobile)
-│   │       └── TrustBar.tsx               # Barra de confianza con métricas
+│   │       └── TestimonialsSection.tsx     # Grid polaroid (desktop) / carousel (mobile)
 │   ├── catalog/
 │   │   ├── components/                     # CatalogSearch, ProductGallery, ProductGrid, BackButton
 │   │   ├── hooks/                          # useProductFilter
-│   │   ├── queries/                        # Supabase queries (getProducts, getCategories, etc.)
+│   │   ├── queries/                        # Appwrite queries (getProducts, getCategories, etc.)
 │   │   ├── actions/                        # searchProducts server action
-│   │   ├── types/index.ts                  # Product, Category, PriceVariant, PriceVariantRow + enums
+│   │   ├── types/index.ts                  # Product, Category, PriceVariant + enums
 │   │   └── utils/filterProducts.ts         # Filtrado: texto, categoría, precio, colores, flores
 │   └── admin/
 │       ├── components/
 │       │   ├── AdminSidebar.tsx
-│       │   ├── ProductTable.tsx            # Tabla con filtro por categoría
-│       │   ├── ProductForm.tsx             # Formulario create/edit con arrays dinámicos
-│       │   ├── CategoryList.tsx            # Lista con drag-and-drop reorder (@dnd-kit)
+│       │   ├── ProductTable/               # Tabla con filtro por categoría
+│       │   ├── ProductForm/                # Formulario create/edit con arrays dinámicos
+│       │   ├── CategoryList/               # Lista con drag-and-drop reorder (@dnd-kit)
 │       │   ├── CategoryForm.tsx            # Formulario create/edit de categorías
 │       │   ├── ImageUploader.tsx           # Upload a Cloudinary con drag-and-drop
-│       │   ├── LogoutButton.tsx
-│       │   └── dashboard/                  # 16 componentes del dashboard
-│       │       ├── DashboardTabs.tsx        # Tabs: Resumen + Analíticas
-│       │       ├── ResumenTab.tsx           # KPIs, inventario, actividad reciente
-│       │       ├── AnaliticasTab.tsx        # Gráficos de conversión y tráfico
-│       │       ├── ActionableKpiGrid.tsx    # Insights accionables automáticos
-│       │       ├── InventoryDonut.tsx       # Donut chart de inventario
-│       │       ├── TopProductsChart.tsx     # Ranking de productos más vistos
-│       │       ├── TopCategoriesChart.tsx   # Ranking de categorías
-│       │       ├── ProductConversionRanking.tsx  # Vista → WhatsApp conversion
-│       │       ├── WhatsAppSourceChart.tsx  # Fuentes de clicks WhatsApp
-│       │       └── ...                     # AutomaticInsightsPanel, ChartCard, etc.
+│       │   └── LogoutButton.tsx
 │       ├── hooks/useImageUpload.ts         # Hook de upload a Cloudinary
 │       ├── queries/
 │       │   ├── products.ts                 # getAdminProducts, getAdminProductById
 │       │   ├── categories.ts               # getAdminCategories, getAdminCategoryById
-│       │   ├── dashboard.ts                # Inventario, actividad reciente, KPIs
-│       │   ├── analytics.ts                # Métricas de conversión, tráfico
-│       │   ├── dashboardInsights.ts        # Insights automáticos (detecta anomalías)
 │       │   └── adminFilters.ts             # Filtros dinámicos para el admin
 │       ├── actions/
 │       │   ├── products.ts                 # create, update, delete
-│       │   └── categories.ts               # create, update, delete (RPC), reorder (RPC), toggles
-│       ├── utils/slugify.ts                # Slugify compartido entre actions y forms
+│       │   ├── categories.ts               # create, update, delete, reorder, toggles
+│       │   └── flowerTypes.ts / productColors.ts
+│       ├── utils/
+│       │   ├── auth.ts                     # requireAdmin / withAdminAuth
+│       │   ├── adminMembership.appwrite.ts # isAdminUserAppwrite — verifica Team admins
+│       │   ├── slugify.ts                  # Slugify compartido entre actions y forms
+│       │   └── cloudinaryUrl.ts            # isAllowedCloudinaryUrl
 │       └── types/                          # ProductFormData, CategoryFormData
 ├── data/
 │   └── products.ts                         # Datos estáticos legacy (no se usa en código activo)
 ├── lib/
 │   ├── constants.ts                        # BUSINESS — datos de contacto y negocio
 │   ├── cloudinary.ts                       # destroyCloudinaryImage, destroyCloudinaryImages
-│   └── supabase/
-│       ├── client.ts                       # Browser client
-│       ├── server.ts                       # Server client (SSR)
-│       ├── static.ts                       # Client para static generation (sin cookies)
-│       ├── middleware.ts                    # Client para middleware de auth
-│       └── types.ts                        # Tipos auto-generados (npm run db:types)
+│   ├── resend.ts                           # Cliente Resend para email transaccional
+│   ├── db/rows.ts                          # Tipos de fila DB: CategoryRow, ProductRow, etc.
+│   └── appwrite/
+│       ├── config.ts                       # IDs de proyecto, base de datos y colecciones
+│       ├── account.ts                      # Cliente de cuenta Appwrite (SSR)
+│       ├── session.ts                      # Gestión de sesión en cookies
+│       ├── admin.ts                        # Cliente admin (server-side)
+│       ├── cookies.ts                      # Helpers de cookies para SSR
+│       ├── types.ts                        # Tipos internos de Appwrite
+│       └── repositories/
+│           ├── products.ts                 # CRUD + queries de productos
+│           ├── categories.ts               # CRUD + reorder + cascade/reassign de categorías
+│           ├── taxonomy.ts                 # Colores y tipos de flor (sync de taxonomía)
+│           ├── complaints.ts               # Gestión de reclamos
+│           └── shared.ts                   # Helpers compartidos entre repositorios
 └── types/
     └── index.ts                            # Tipos globales compartidos
+proxy.ts                                    # Next.js middleware (renombrado) — cookie-presence guard
 ```
 
 ## Estado actual
@@ -148,11 +147,10 @@ src/
 | Feature                 | Estado      | Notas                                                    |
 | ----------------------- | ----------- | -------------------------------------------------------- |
 | Landing page            | ✅ Completa | Hero, Catálogo, Testimonios, About, Contacto, TrustBar  |
-| Catálogo público        | ✅ Completa | Supabase, búsqueda + filtros, lightbox, URL shareables   |
-| Auth (login/logout)     | ✅ Completa | Supabase Auth, middleware guard                          |
+| Catálogo público        | ✅ Completa | Appwrite, búsqueda + filtros, lightbox, URL shareables   |
+| Auth (login/logout)     | ✅ Completa | Appwrite Auth, cookie-presence guard en proxy.ts         |
 | Admin — Productos CRUD  | ✅ Completa | Crear, editar, eliminar, tabla con filtros               |
 | Admin — Categorías CRUD | ✅ Completa | CRUD + drag-and-drop reorder + featured toggle           |
-| Admin — Dashboard       | ✅ Completa | KPIs, inventario, analíticas, insights automáticos       |
 | Admin — Image Upload    | ✅ Completa | Cloudinary con drag-and-drop, preview, progress          |
 | E2E Tests               | ✅ Activos  | Playwright: smoke, catálogo, dashboard                   |
 | Contacto backend        | ❌ No hay   | Solo links directos a WhatsApp e Instagram               |
@@ -161,7 +159,7 @@ src/
 
 **6 categorías:** Amor y Romance · Cumpleaños · Orquídeas Premium · Flores Amarillas · Corporativo y Eventos · Condolencias
 
-**Fuente de datos:** Supabase (PostgreSQL). Las 3 páginas del catálogo y todo el admin CRUD leen/escriben desde Supabase.
+**Fuente de datos:** Appwrite. Las 3 páginas del catálogo y todo el admin CRUD leen/escriben vía `src/lib/appwrite/repositories/*`.
 
 Los tipos de producto soportan:
 - Precios fijos o tabla de variantes (`priceTable`)
@@ -179,31 +177,28 @@ Los tipos de producto soportan:
 
 Los filtros son shareables por URL (query params).
 
-## Dashboard admin
-
-El dashboard tiene dos tabs:
-
-- **Resumen:** inventario (donut chart), actividad reciente, KPIs accionables con insights automáticos
-- **Analíticas:** productos más vistos, categorías top, conversión vista→WhatsApp, fuentes de clicks
-
-Las agregaciones corren como funciones RPC de Postgres para performance. Los insights se generan automáticamente detectando anomalías en los datos.
-
 ## Capa de datos
 
-**Supabase** es la fuente de datos. Operaciones críticas usan **funciones RPC transaccionales**:
+**Appwrite** es la fuente de datos. Operaciones que en el stack anterior usaban RPCs transaccionales de Postgres ahora están implementadas en Node dentro de los repositorios:
 
-| Función RPC                  | Propósito                                          |
-| ---------------------------- | -------------------------------------------------- |
-| `delete_category_cascade`    | Borra categoría + productos atómicamente           |
-| `delete_category_reassign`   | Reasigna productos + borra categoría atómicamente  |
-| `reorder_categories`         | Reordena categorías en una sola transacción        |
-| `get_inventory_status`       | Métricas de inventario para dashboard              |
-| `get_top_entities`           | Ranking de entidades por evento                    |
-| `get_product_conversion_metrics` | Métricas de conversión vista→WhatsApp          |
-| `get_event_type_counts`      | Conteo de eventos por tipo                         |
-| `get_whatsapp_source_counts` | Fuentes de clicks de WhatsApp                      |
+| Repositorio                          | Operaciones equivalentes                                   |
+| ------------------------------------ | ---------------------------------------------------------- |
+| `repositories/categories.ts`         | Borrado en cascada, reasignación de productos, reorder     |
+| `repositories/products.ts`           | CRUD completo, contador de correlativo                     |
+| `repositories/taxonomy.ts`           | Sync de colores y tipos de flor                            |
+| `repositories/complaints.ts`         | Gestión de reclamos                                        |
+| `repositories/shared.ts`             | Helpers compartidos (paginación, mappers, etc.)            |
 
-Los tipos generados de la DB están en `src/lib/supabase/types.ts` — regenerar con `npm run db:types`.
+Los tipos de fila de la base de datos están en `src/lib/db/rows.ts` (hand-written: `CategoryRow`, `ProductRow`, etc.) — no hay script de generación automática.
+
+## Autorización admin
+
+La autorización requiere dos condiciones simultáneas:
+
+1. **Sesión Appwrite válida** — `account.get()` sin lanzar excepción
+2. **Membresía en el Team `admins`** — verificada por `isAdminUserAppwrite` en `src/features/admin/utils/adminMembership.appwrite.ts`
+
+Ambas condiciones son verificadas por `requireAdmin()` / `withAdminAuth()` en `src/features/admin/utils/auth.ts`. Si alguna falla, la action devuelve `FORBIDDEN`. El Team `admins` debe estar seedeado en Appwrite o todos los admins quedarán bloqueados.
 
 ## Identidad de marca
 
@@ -227,7 +222,6 @@ npm run lint         # eslint .
 npm run lint:fix     # eslint . --fix
 npm run lint:strict  # eslint . --max-warnings 0
 npm run test:e2e     # Playwright e2e tests
-npm run db:types     # Regenerar tipos de Supabase (requiere SUPABASE_ACCESS_TOKEN en env)
 ```
 
 ## Convenciones

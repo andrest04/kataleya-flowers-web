@@ -1,6 +1,6 @@
 // Server-only: shared helpers for Appwrite repositories.
 //
-// Repositories return rows shaped exactly like the Supabase row contracts
+// Repositories return rows shaped exactly like the row contracts
 // (`JoinedProductRow`, `CategoryRow`, etc.) so the existing mappers and admin
 // consumers stay byte-for-byte unchanged. No Appwrite document types leak past
 // this boundary — `$id`/`$createdAt`/`$updatedAt` are translated to the
@@ -14,7 +14,7 @@ import { getAppwriteConfig } from '@/lib/appwrite/config';
 /**
  * Appwrite caps each `listDocuments` page at 100 documents (and Query.equal
  * `in`-lists at 100 values). Repositories paginate with this constant to fetch
- * complete result sets, matching Supabase's unbounded `select`.
+ * complete result sets.
  */
 export const APPWRITE_PAGE_SIZE = 100;
 

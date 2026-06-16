@@ -1,7 +1,7 @@
 // Server-only: Appwrite admin-membership check.
 //
-// Replaces the Supabase `admin_users` table lookup with membership in the
-// Appwrite `admins` Team. Same contract as `isAdminUser`: returns a boolean and
+// Resolves admin membership via the Appwrite `admins` Team. Same contract as
+// `isAdminUser`: returns a boolean and
 // never throws (logs and returns false on error), so callers fail closed.
 import { Query } from 'node-appwrite';
 

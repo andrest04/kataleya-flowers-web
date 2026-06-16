@@ -31,8 +31,8 @@ interface UseDesktopSearchResult {
  *
  * El server action `searchProducts` es fire-and-forget intencional desde
  * la perspectiva del effect: la respuesta entra por `setSearchResults`,
- * los errores los maneja el propio action (devuelve `[]` ante fallo de
- * Supabase). Por eso usamos `.catch()` para silenciar promesas rechazadas
+ * los errores los maneja el propio action (devuelve `[]` ante fallo).
+ * Por eso usamos `.catch()` para silenciar promesas rechazadas
  * en lugar de `void`, dejando un log de error en dev sin romper la UI.
  *
  * NOTA: el setter `setSearchQuery` que se expone es un WRAPPER que limpia

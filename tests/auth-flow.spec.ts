@@ -105,7 +105,7 @@ test.describe("Phase 4B — Auth flow (login form)", () => {
     await page.locator("#password").fill("wrongpassword");
     await page.getByRole("button", { name: /ingresar/i }).click();
 
-    // Esperamos a que aparezca el error tras la respuesta de Supabase.
+    // Esperamos a que aparezca el error tras la respuesta del backend.
     const errorMsg = page.getByText(/credenciales incorrectas/i);
     await expect(errorMsg).toBeVisible({ timeout: 15_000 });
 

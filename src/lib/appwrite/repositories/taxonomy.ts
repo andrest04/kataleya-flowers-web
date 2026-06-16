@@ -1,8 +1,8 @@
 // Server-only: Appwrite taxonomy repository (colors + flower types).
 //
-// Mirrors the Supabase taxonomy queries (`getProductColors`, `getFlowerTypes`,
-// and their admin/usage variants). Rows are shaped like the Supabase Row
-// contracts so existing consumers stay unchanged.
+// Taxonomy queries (`getProductColors`, `getFlowerTypes`, and their admin/usage
+// variants). Rows are shaped to match the existing row contracts so consumers
+// stay unchanged.
 import { ID, Query } from 'node-appwrite';
 
 import { APPWRITE_COLLECTIONS } from '@/lib/appwrite/config';
@@ -23,7 +23,7 @@ import {
 
 const C = APPWRITE_COLLECTIONS;
 
-/** Row shape mirroring Supabase `product_colors` Row. */
+/** Row shape for `product_colors` (snake_case, `id` not `$id`). */
 export interface ColorRepoRow {
   id: string;
   name: string;
@@ -34,7 +34,7 @@ export interface ColorRepoRow {
   updated_at: string;
 }
 
-/** Row shape mirroring Supabase `flower_types` Row. */
+/** Row shape for `flower_types` (snake_case, `id` not `$id`). */
 export interface FlowerTypeRepoRow {
   id: string;
   name: string;
@@ -198,7 +198,7 @@ async function getNextTaxonomyOrder(
 
 /**
  * Upserts colors by name (case-insensitive, lowercased). New colors are inserted;
- * existing ones (matched by name) are skipped — matches Supabase upsert behaviour.
+ * existing ones (matched by name) are skipped — idempotent upsert behaviour.
  * Returns the normalized names so callers can resolve them to ids.
  */
 export async function ensureColorsAppwrite(
@@ -264,8 +264,8 @@ export async function ensureFlowerTypesAppwrite(names: string[]): Promise<void> 
 
 /**
  * Deletes a color by name. Returns true if deleted, false if not found.
- * Throws if the color is still referenced (no ON DELETE RESTRICT in Appwrite, but
- * callers MUST check usage before deleting — mirrors Supabase FK-RESTRICT).
+ * Throws if the color is still referenced (no ON DELETE RESTRICT in Appwrite —
+ * callers MUST check usage before deleting to emulate FK-RESTRICT).
  */
 export async function deleteColorAppwrite(name: string): Promise<boolean> {
   const { databases, databaseId } = getRepositoryContext();
@@ -281,8 +281,7 @@ export async function deleteColorAppwrite(name: string): Promise<boolean> {
 
 /**
  * Renames a color (updates the `name` field). Returns false if the color is not
- * found. Uniqueness is enforced by checking existing names before writing —
- * mirrors the Supabase UNIQUE constraint.
+ * found. Uniqueness is enforced by checking existing names before writing.
  *
  * Returns 'duplicate' when the new name already exists, 'not_found' when the old
  * name does not exist, or null on success.

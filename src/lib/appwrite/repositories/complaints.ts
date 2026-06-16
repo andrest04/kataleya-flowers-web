@@ -1,8 +1,8 @@
 // Server-only: Appwrite complaints repository.
 //
-// Mirrors the Supabase complaints data layer: admin reads (`getComplaints`,
-// `getComplaintById`) and the public anonymous insert. The Supabase RPC
-// `create_complaint` (SECURITY DEFINER) is replaced by two server-side steps
+// Complaints data layer: admin reads (`getComplaints`, `getComplaintById`) and
+// the public anonymous insert. The previous `create_complaint` RPC logic
+// (SECURITY DEFINER, atomic correlativo) is replaced by two server-side steps
 // using the admin client: an ATOMIC correlativo allocation via
 // `incrementDocumentAttribute` (no read-then-write race), then a document
 // insert. Anonymous callers never touch the counter directly.
@@ -15,7 +15,7 @@ import { getRepositoryContext, listAllDocuments } from './shared';
 
 const C = APPWRITE_COLLECTIONS;
 
-/** Row shape mirroring Supabase `complaints` Row (snake_case, `id` not `$id`). */
+/** Row shape for `complaints` (snake_case, `id` not `$id`). */
 export interface ComplaintRepoRow {
   id: string;
   correlativo: number;
@@ -175,7 +175,7 @@ export interface ComplaintInsert {
   consumer_request: string;
 }
 
-/** Minimal result mirroring the Supabase RPC return consumed by `submitComplaint`. */
+/** Minimal result shape consumed by `submitComplaint`. */
 export interface ComplaintCreated {
   id: string;
   correlativo: number;
@@ -184,8 +184,7 @@ export interface ComplaintCreated {
 
 /**
  * Persists a complaint document via the admin client and returns the created
- * id/correlativo/created_at — the Appwrite equivalent of the
- * `create_complaint` RPC result. Defaults match the Supabase column defaults
+ * id/correlativo/created_at. Defaults match the column defaults
  * (`status='PENDIENTE'`, `email_sent=false`, no provider response yet).
  */
 export async function insertComplaint(
@@ -232,10 +231,8 @@ export interface ComplaintStatusUpdate {
 
 /**
  * Updates the status and provider response of an existing complaint (admin
- * only). Mirrors the Supabase `.update({ status, provider_response,
- * responded_at }).eq('id', id)` pattern — uses the admin client so the
- * operation is authorized even though `complaints` has no public write
- * permission.
+ * only). Uses the admin client so the operation is authorized even though
+ * `complaints` has no public write permission.
  */
 export async function updateComplaintDocument(
   id: string,

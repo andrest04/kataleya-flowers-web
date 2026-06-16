@@ -4,7 +4,7 @@
 // Appwrite `a_session` cookie and checks membership in the `admins` Team. It
 // throws the SAME `AdminAuthError` with the SAME `UNAUTHENTICATED`/`FORBIDDEN`
 // codes, so the `Result<T>` contract, error codes, and `failureFromUnknown`
-// mapping stay byte-for-byte identical to the Supabase path.
+// mapping stay stable.
 import type { AppwriteUser } from '@/lib/appwrite/account';
 import { getUser } from '@/lib/appwrite/account';
 import { createAdminClient } from '@/lib/appwrite/admin';
@@ -17,9 +17,8 @@ import { AdminAuthError } from './auth';
 type AdminDatabasesClient = ReturnType<typeof createAdminClient>['databases'];
 
 /**
- * Appwrite admin action context. Shape mirrors the Supabase
- * `AdminActionContext` (an authenticated `user` plus a privileged data client),
- * with the Appwrite admin `databases` client in place of the Supabase client.
+ * Appwrite admin action context. An authenticated `user` plus a privileged
+ * data client — used with the Appwrite admin `databases` client.
  */
 export interface AppwriteAdminActionContext {
   user: AppwriteUser;

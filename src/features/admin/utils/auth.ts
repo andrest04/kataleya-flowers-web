@@ -80,26 +80,6 @@ export function failureFromUnknown(err: unknown): AdminActionFailure {
 }
 
 /**
- * Mapea un error de base de datos a un mensaje genérico, sin exponer el detalle
- * interno (estructura de DB, índices, columnas) al cliente.
- *
- * Casos conocidos:
- *  - `23505` → conflicto de unique constraint (ej: slug duplicado)
- *  - `23503` → FK violation (ej: categoría inexistente)
- */
-export function describeSupabaseError(error: { code?: string; message?: string }): string {
-  console.error('[admin-action] db error:', error);
-  switch (error.code) {
-    case '23505':
-      return 'Ya existe un registro con esos datos.';
-    case '23503':
-      return 'Referencia inválida — el recurso relacionado no existe.';
-    default:
-      return 'No se pudo completar la operación. Intentá de nuevo.';
-  }
-}
-
-/**
  * Wrapper de Server Actions que exige sesión válida y valida el input
  * con un schema zod opcional ANTES de tocar la DB.
  *
