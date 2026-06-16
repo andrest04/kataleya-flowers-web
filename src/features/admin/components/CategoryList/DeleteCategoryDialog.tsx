@@ -12,12 +12,10 @@
  */
 
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
-import type { Database } from '@/lib/supabase/types';
+import type { CategoryRow } from '@/lib/db/rows';
 
 import DeleteModeOption from './DeleteModeOption';
 import type { DeleteMode, DeleteTarget } from './useCategoryDelete';
-
-type CategoryRow = Database['public']['Tables']['categories']['Row'];
 
 interface DeleteCategoryDialogProps {
   target: DeleteTarget | null;

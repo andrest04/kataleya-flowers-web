@@ -3,9 +3,9 @@ import {
   findCategoryById,
   listAllCategories,
 } from '@/lib/appwrite/repositories/categories';
-import type { Database } from '@/lib/supabase/types';
+import type { CategoryRow } from '@/lib/db/rows';
 
-export type CategoryRow = Database['public']['Tables']['categories']['Row'];
+export type { CategoryRow };
 export type { CategoryRepoRow };
 
 export async function getAdminCategories(): Promise<CategoryRow[]> {

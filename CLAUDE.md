@@ -6,7 +6,7 @@ Landing + admin para **Kataleya Flawers**, florería real en Lima, Perú. Negoci
 
 ## Stack
 
-Next.js 16 (App Router, RSC por defecto) · React 19 · TS 5 strict · Tailwind v4 (CSS-only, sin `tailwind.config.*`) · Framer Motion 12 · @dnd-kit · lucide-react · Radix primitives · zod · Supabase (Auth + DB SSR) · Cloudinary (`res.cloudinary.com/dbjm18dqg`) · Playwright · next/font/google (Playfair Display + Lato).
+Next.js 16 (App Router, RSC por defecto) · React 19 · TS 5 strict · Tailwind v4 (CSS-only, sin `tailwind.config.*`) · Framer Motion 12 · @dnd-kit · lucide-react · Radix primitives · zod · Appwrite (Auth + DB, único backend) · Cloudinary (`res.cloudinary.com/dbjm18dqg`) · Playwright · next/font/google (Playfair Display + Lato).
 
 ## Comandos
 
@@ -17,7 +17,6 @@ npm run lint:strict  # eslint . --max-warnings 0
 npx tsc --noEmit     # type-check
 npx playwright test  # e2e
 npx playwright test phase1-verify  # regression baseline (DEBE estar verde siempre)
-npm run db:types     # regenerar tipos Supabase (req. SUPABASE_ACCESS_TOKEN)
 ```
 
 Pre-commit (manual, no hay hooks): `npm run lint:strict` + `npx tsc --noEmit`.
@@ -69,18 +68,18 @@ src/
 │   ├── catalog/              # incl. utils/filterProducts.ts
 │   └── admin/                # actions (requireAdmin+zod+Result), schemas, utils/{auth,slugify,cloudinaryUrl}
 ├── data/products.ts          # LEGACY — no se usa
-└── lib/{constants,navigation}.ts · lib/supabase/*
+└── lib/{constants,navigation}.ts · lib/appwrite/* (config · repositories · auth/session) · lib/supabase/types.ts (legacy: solo tipos de fila)
 ```
 
 **Rutas:** landing usa anchors `#hero #catalogo #nosotros #contacto`. Catálogo `/catalogo/[categoria]/[slug]`. Rutas dinámicas exportan `generateStaticParams`.
 
-**Datos:** Supabase es la fuente (landing pública + admin CRUD). Tipos dominio `Product`/`Category` en `features/catalog/types`; tipos DB en `lib/supabase/types.ts`. Categorías base (6): Amor y Romance, Cumpleaños, Orquídeas Premium, Flores Amarillas, Corporativo y Eventos, Condolencias. Filtros client-side (texto, categoría, precio S/30–800, colores, flores) en `filterProducts.ts`.
+**Datos:** Appwrite es la fuente (landing pública + admin CRUD), vía `lib/appwrite/repositories/*`. Tipos dominio `Product`/`Category` en `features/catalog/types`; los repos Appwrite reusan las formas de fila de `lib/supabase/types.ts` (legacy, solo tipos — pendiente migrar a tipos nativos). Categorías base (6): Amor y Romance, Cumpleaños, Orquídeas Premium, Flores Amarillas, Corporativo y Eventos, Condolencias. Filtros client-side (texto, categoría, precio S/30–800, colores, flores) en `filterProducts.ts`.
 
 ## Server Actions (admin) — patrón obligatorio
 
 Toda action en `features/admin/actions/` **debe**:
 
-1. Envolverse con `requireAdmin()` / `withAdminAuth()` (`utils/auth.ts`) — verifican sesión (`auth.getUser()`) **y** membresía en tabla `admin_users` (`isAdminUser`, ver `adminMembership.ts`); si no, tira `FORBIDDEN`. *(Operacional: `admin_users` debe estar seedeada o todos los admins quedan bloqueados.)*
+1. Envolverse con `requireAdmin()` / `withAdminAuth()` (`utils/auth.ts`) — verifican sesión Appwrite (`account.get()`) **y** membresía en el Team `admins` de Appwrite (`isAdminUserAppwrite`, ver `adminMembership.appwrite.ts`); si no, tira `FORBIDDEN`. *(Operacional: el Team `admins` debe estar seedeado o todos los admins quedan bloqueados.)*
 2. Validar input con schema zod de `schemas/`.
 3. Devolver `Result<T>` discriminado:
    ```ts

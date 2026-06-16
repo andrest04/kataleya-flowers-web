@@ -3,9 +3,9 @@ import {
   getColorUsage,
   listColors,
 } from '@/lib/appwrite/repositories/taxonomy';
-import type { Database } from '@/lib/supabase/types';
+import type { ProductColorRow } from '@/lib/db/rows';
 
-export type ProductColorRow = Database['public']['Tables']['product_colors']['Row'];
+export type { ProductColorRow };
 export type { ColorRepoRow };
 
 export async function getProductColors(): Promise<ColorRepoRow[]> {

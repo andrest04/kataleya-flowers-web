@@ -55,18 +55,19 @@ const SECURITY_HEADERS = [
  *     a un servicio externo (Sentry, report-uri.com)
  *
  * Dominios permitidos:
- *   - va.vercel-scripts.com, *.vercel-insights.com  -> Vercel Analytics + Speed Insights
- *   - res.cloudinary.com                            -> CDN de imágenes de productos
- *   - *.supabase.co (https + wss)                   -> Supabase REST + Auth + Realtime
- *   - www.google.com                                -> iframe de Google Maps en /contacto
+ *   - res.cloudinary.com  -> CDN de imágenes de productos
+ *   - www.google.com      -> iframe de Google Maps en /contacto
+ *
+ * Appwrite se consume server-side (RSC + server actions), así que no requiere
+ * entradas de browser en connect-src.
  */
 const CSP_REPORT_ONLY = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com https://*.vercel-insights.com",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https://res.cloudinary.com https://*.supabase.co",
+  "img-src 'self' data: blob: https://res.cloudinary.com",
   "font-src 'self' data:",
-  "connect-src 'self' https://*.supabase.co https://vitals.vercel-insights.com https://va.vercel-scripts.com wss://*.supabase.co",
+  "connect-src 'self'",
   "frame-src 'self' https://www.google.com",
   "object-src 'none'",
   "base-uri 'self'",

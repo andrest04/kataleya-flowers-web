@@ -3,9 +3,9 @@ import {
   findAdminProductById,
   listAdminProducts,
 } from '@/lib/appwrite/repositories/products';
-import type { Database } from '@/lib/supabase/types';
+import type { ProductRow } from '@/lib/db/rows';
 
-export type ProductRow = Database['public']['Tables']['products']['Row'];
+export type { ProductRow };
 
 /** ProductRow augmented with relational taxonomy — used by admin edit form */
 export type AdminProductRow = ProductRow & {

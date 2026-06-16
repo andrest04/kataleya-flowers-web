@@ -5,11 +5,9 @@ import { useCallback, useMemo } from 'react';
 
 import type { AdminProductRow } from '@/features/admin/queries/products';
 import type { AdminProductFilter } from '@/features/admin/utils/adminFilters';
-import type { Database } from '@/lib/supabase/types';
+import type { CategoryRow } from '@/lib/db/rows';
 
 import ProductTable from './ProductTable';
-
-type CategoryRow = Database['public']['Tables']['categories']['Row'];
 
 interface ProductFilterMeta {
   label: string;

@@ -6,9 +6,7 @@
 
 import Image from 'next/image';
 
-import type { Database } from '@/lib/supabase/types';
-
-type CategoryRow = Database['public']['Tables']['categories']['Row'];
+import type { CategoryRow } from '@/lib/db/rows';
 
 interface CategoryRowImageProps {
   category: CategoryRow;

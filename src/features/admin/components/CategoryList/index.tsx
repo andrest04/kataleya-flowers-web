@@ -17,17 +17,15 @@ import { DragDropProvider } from '@dnd-kit/react';
 import Button from '@/components/ui/Button';
 import EmptyState from '@/components/ui/EmptyState';
 import { useDndAccessibility } from '@/features/admin/hooks/useDndAccessibility';
-import type { Database } from '@/lib/supabase/types';
+import type { CategoryRow } from '@/lib/db/rows';
 
 import DndLiveRegion from '../DndLiveRegion';
 import SaveOrderBar from '../SaveOrderBar';
 import CategoryListHeader from './CategoryListHeader';
-import CategoryRow from './CategoryRow';
+import CategoryRowItem from './CategoryRow';
 import DeleteCategoryDialog from './DeleteCategoryDialog';
 import { useCategoryDelete } from './useCategoryDelete';
 import { useCategoryReorder } from './useCategoryReorder';
-
-type CategoryRow = Database['public']['Tables']['categories']['Row'];
 
 interface CategoryListProps {
   categories: CategoryRow[];
@@ -85,7 +83,7 @@ export default function CategoryList({
           }}
         >
           {reorder.items.map((category, index) => (
-            <CategoryRow
+            <CategoryRowItem
               key={category.id}
               category={category}
               index={index}

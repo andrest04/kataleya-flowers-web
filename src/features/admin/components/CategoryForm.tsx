@@ -10,9 +10,7 @@ import { createCategory, updateCategory } from '@/features/admin/actions/categor
 import ImageUploader from '@/features/admin/components/ImageUploader';
 import type { CategoryFormData } from '@/features/admin/types';
 import { slugify } from '@/features/admin/utils/slugify';
-import type { Database } from '@/lib/supabase/types';
-
-type CategoryRow = Database['public']['Tables']['categories']['Row'];
+import type { CategoryRow } from '@/lib/db/rows';
 
 interface CategoryFormProps {
   category?: CategoryRow;

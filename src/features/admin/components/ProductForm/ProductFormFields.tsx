@@ -3,12 +3,10 @@
 import { FormField } from '@/components/ui/FormField';
 import { Input, Select,Textarea } from '@/components/ui/Input';
 import type { ProductFormData } from '@/features/admin/types';
-import type { Database } from '@/lib/supabase/types';
+import type { CategoryRow } from '@/lib/db/rows';
 
 import { FieldError } from './FieldError';
 import type { FieldErrors } from './validation';
-
-type CategoryRow = Database['public']['Tables']['categories']['Row'];
 
 interface Props {
   form: ProductFormData;

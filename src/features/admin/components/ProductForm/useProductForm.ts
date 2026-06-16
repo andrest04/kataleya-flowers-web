@@ -8,11 +8,9 @@ import type { AdminProductRow } from '@/features/admin/queries/products';
 import type { ProductFormData } from '@/features/admin/types';
 import { slugify } from '@/features/admin/utils/slugify';
 import type { PriceVariantRow } from '@/features/catalog/types';
-import type { Database } from '@/lib/supabase/types';
+import type { ProductRow } from '@/lib/db/rows';
 
 import { buildFieldErrors, type FieldErrors } from './validation';
-
-type ProductRow = Database['public']['Tables']['products']['Row'];
 
 /** Accept both the old flat row and the new relational AdminProductRow */
 type ProductInput = ProductRow | AdminProductRow;

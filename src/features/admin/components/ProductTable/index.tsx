@@ -20,15 +20,13 @@ import EmptyState from '@/components/ui/EmptyState';
 import { useDndAccessibility } from '@/features/admin/hooks/useDndAccessibility';
 import type { AdminProductRow } from '@/features/admin/queries/products';
 import type { AdminProductFilter } from '@/features/admin/utils/adminFilters';
-import type { Database } from '@/lib/supabase/types';
+import type { CategoryRow } from '@/lib/db/rows';
 
 import DndLiveRegion from '../DndLiveRegion';
 import SaveOrderBar from '../SaveOrderBar';
 import ProductTableHeader from './ProductTableHeader';
 import ProductTableRow from './ProductTableRow';
 import { useProductTable } from './useProductTable';
-
-type CategoryRow = Database['public']['Tables']['categories']['Row'];
 
 interface ProductTableProps {
   products: AdminProductRow[];

@@ -13,9 +13,7 @@ import { useRef, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 
 import { reorderCategories } from '@/features/admin/actions/categories';
-import type { Database } from '@/lib/supabase/types';
-
-type CategoryRow = Database['public']['Tables']['categories']['Row'];
+import type { CategoryRow } from '@/lib/db/rows';
 type DragEndHandler = NonNullable<DragDropEvents['dragend']>;
 
 interface UseCategoryReorderResult {

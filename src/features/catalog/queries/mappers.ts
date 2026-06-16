@@ -1,7 +1,7 @@
 import type { PriceVariant, Product } from '@/features/catalog/types';
-import type { Database } from '@/lib/supabase/types';
+import type { ProductRow } from '@/lib/db/rows';
 
-export type ProductRow = Database['public']['Tables']['products']['Row'];
+export type { ProductRow };
 
 /** Shape returned by PostgREST nested-embed queries in Phase C+ */
 export type JoinedProductRow = ProductRow & {

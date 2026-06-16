@@ -3,9 +3,9 @@ import {
   getFlowerTypeUsage as getFlowerTypeUsageAppwrite,
   listFlowerTypes,
 } from '@/lib/appwrite/repositories/taxonomy';
-import type { Database } from '@/lib/supabase/types';
+import type { FlowerTypeRow } from '@/lib/db/rows';
 
-export type FlowerTypeRow = Database['public']['Tables']['flower_types']['Row'];
+export type { FlowerTypeRow };
 export type { FlowerTypeRepoRow };
 
 export async function getFlowerTypes(): Promise<FlowerTypeRepoRow[]> {

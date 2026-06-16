@@ -16,13 +16,11 @@ import { useSortable } from '@dnd-kit/react/sortable';
 import { GripVertical } from 'lucide-react';
 
 import Button from '@/components/ui/Button';
-import type { Database } from '@/lib/supabase/types';
+import type { CategoryRow } from '@/lib/db/rows';
 
 import CategoryRowImage from './CategoryRowImage';
 import CategoryToggleFeatured from './CategoryToggleFeatured';
 import CategoryToggleStatus from './CategoryToggleStatus';
-
-type CategoryRow = Database['public']['Tables']['categories']['Row'];
 
 interface CategoryRowProps {
   category: CategoryRow;
