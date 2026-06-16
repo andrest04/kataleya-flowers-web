@@ -165,7 +165,7 @@ export default function ImageUploader(props: ImageUploaderProps) {
             <span className="text-sm">
               {isDragOver
                 ? 'Soltá la imagen acá'
-                : 'Arrastrá una imagen o hacé click'}
+                : 'Arrastra una imagen o haz clic'}
             </span>
             {props.multiple && (
               <span className="text-xs">

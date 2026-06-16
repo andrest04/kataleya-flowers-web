@@ -195,7 +195,7 @@ export default function MobileDrawer({
           <button
             type="button"
             onClick={() => handleNavigate("#contacto")}
-            className="w-full cursor-pointer rounded-full border border-primary px-6 py-3 font-body text-[0.8rem] tracking-[0.08em] text-primary uppercase transition-colors duration-300 hover:bg-primary hover:text-cream"
+            className="w-full cursor-pointer rounded-full bg-primary px-6 py-3 font-body text-[0.8rem] font-semibold tracking-[0.08em] text-cream uppercase shadow-sm transition-opacity duration-300 hover:opacity-90"
           >
             Hacer pedido
           </button>

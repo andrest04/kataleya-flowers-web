@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-06-05T18:05:00Z",
+  "title": "Design System: Kataleya Flawers",
+  "extensions": {
+    "colorMeta": {
+      "rojo-tulipan": { "role": "primary", "displayName": "Rojo Tulipán", "canonical": "#c0392b", "tonalRamp": ["#2e0b07", "#551710", "#7c221a", "#a32d22", "#c0392b", "#d6604e", "#e89181", "#f6c3b8"] },
+      "dorado": { "role": "secondary", "displayName": "Dorado", "canonical": "#e8b84b", "tonalRamp": ["#3f2e08", "#6b4e0e", "#977015", "#c3931f", "#e8b84b", "#eec873", "#f4d99c", "#faecc9"] },
+      "verde-tallo": { "role": "tertiary", "displayName": "Verde Tallo", "canonical": "#2d5a1b", "tonalRamp": ["#0e1d08", "#1a350f", "#264c16", "#2d5a1b", "#3f7a28", "#5c9c40", "#8abf70", "#c2dfb0"] },
+      "crema": { "role": "neutral", "displayName": "Crema", "canonical": "#fdfcfa", "tonalRamp": ["#262422", "#4d4a45", "#757069", "#9c968d", "#c3beb5", "#dad6cf", "#efede9", "#fdfcfa"] },
+      "tinta": { "role": "neutral", "displayName": "Tinta", "canonical": "#1a1a1a", "tonalRamp": ["#0d0d0d", "#1a1a1a", "#333333", "#4d4d4d", "#666666", "#999999", "#cccccc", "#f2f2f2"] },
+      "verde-whatsapp": { "role": "channel", "displayName": "Verde WhatsApp", "canonical": "#25d366", "tonalRamp": ["#073f1e", "#0b6630", "#128c43", "#1aad55", "#25d366", "#5ce08c", "#93ebb3", "#cbf5d9"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Solo el H1 del hero. Playfair 700 con text-balance." },
+      "headline": { "displayName": "Headline", "purpose": "H2 de sección en Rojo Tulipán." },
+      "title": { "displayName": "Title", "purpose": "Headings de tiles, cards y H3." },
+      "body": { "displayName": "Body", "purpose": "Párrafos Lato, máx ~70ch." },
+      "label": { "displayName": "Label", "purpose": "Kickers (uso contado, máx 1-2 por página) y botones lg uppercase." }
+    },
+    "shadows": [
+      { "name": "papel-polaroid", "value": "0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)", "purpose": "Polaroids en reposo — materialidad de papel físico." },
+      { "name": "papel-levantado", "value": "0 25px 50px -12px rgba(0,0,0,0.25)", "purpose": "Polaroid en hover — la foto que se mira de cerca." },
+      { "name": "navbar-despierta", "value": "0 2px 14px rgba(26,26,26,0.08)", "purpose": "Header al separarse del hero (scroll). Nunca en reposo." }
+    ],
+    "motion": [
+      { "name": "ease-out-suave", "value": "cubic-bezier(0, 0, 0.2, 1)", "purpose": "Easing default de estados (200-300ms)." },
+      { "name": "zoom-foto", "value": "transform 700ms cubic-bezier(0, 0, 0.2, 1)", "purpose": "Zoom 1.06 de fotos en tiles. Siempre motion-safe." },
+      { "name": "ken-burns-hero", "value": "scale 6s linear + opacity 1.1s ease-out", "purpose": "Crossfade del carrusel hero; reduced-motion lo reemplaza por fade 0.4s." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Botón primario",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "CTA principal — Rojo Tulipán en pill, uppercase en tamaño lg.",
+      "html": "<button class=\"ds-btn-primary\">Pedir por WhatsApp</button>",
+      "css": ".ds-btn-primary { background: var(--color-primary, #c0392b); color: var(--color-cream, #fdfcfa); padding: 0.75rem 1.75rem; border: none; border-radius: 9999px; font-family: Lato, system-ui, sans-serif; font-size: 0.875rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; transition: background 0.2s cubic-bezier(0,0,0.2,1), transform 0.2s cubic-bezier(0,0,0.2,1); } .ds-btn-primary:hover { background: #a32d22; } .ds-btn-primary:focus-visible { outline: 2px solid var(--color-primary, #c0392b); outline-offset: 2px; } .ds-btn-primary:active { transform: scale(0.98); }"
+    },
+    {
+      "name": "Botón secundario",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "CTA de apoyo — outline pill, hereda el color del contexto (crema sobre fotos, primario sobre crema).",
+      "html": "<button class=\"ds-btn-secondary\">Explorar catálogo</button>",
+      "css": ".ds-btn-secondary { background: transparent; color: var(--color-cream, #fdfcfa); padding: 0.75rem 1.75rem; border: 1px solid currentColor; border-radius: 9999px; font-family: Lato, system-ui, sans-serif; font-size: 0.875rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; transition: background 0.2s cubic-bezier(0,0,0.2,1); } .ds-btn-secondary:hover { background: rgba(253,252,250,0.12); } .ds-btn-secondary:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }"
+    },
+    {
+      "name": "Botón WhatsApp",
+      "kind": "button",
+      "refersTo": "button-whatsapp",
+      "description": "Acción de pedido — verde de canal, exclusivo de WhatsApp. Contraste del texto pendiente de fix (QA/audit/10 P2-1).",
+      "html": "<button class=\"ds-btn-whatsapp\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"currentColor\" aria-hidden=\"true\"><path d=\"M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.52.149-.174.198-.298.297-.497.1-.198.05-.371-.025-.52-.074-.149-.668-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z\"/></svg>Pedir por WhatsApp</button>",
+      "css": ".ds-btn-whatsapp { display: inline-flex; align-items: center; gap: 0.5rem; background: var(--color-whatsapp, #25d366); color: #ffffff; padding: 0.75rem 1.75rem; border: none; border-radius: 9999px; font-family: Lato, system-ui, sans-serif; font-size: 0.875rem; font-weight: 700; cursor: pointer; transition: background 0.2s cubic-bezier(0,0,0.2,1); } .ds-btn-whatsapp:hover { background: #1aad55; } .ds-btn-whatsapp:focus-visible { outline: 2px solid var(--color-whatsapp, #25d366); outline-offset: 2px; }"
+    },
+    {
+      "name": "Category Tile",
+      "kind": "card",
+      "description": "Tile signature del catálogo: foto full-bleed 3:4, scrim inferior, nombre Playfair + precio dorado (permitido: scrim oscuro). Hover: zoom + CTA asciende.",
+      "html": "<a href=\"#\" class=\"ds-tile\"><div class=\"ds-tile-img\" role=\"img\" aria-label=\"Ramo de flores amarillas\"></div><div class=\"ds-tile-scrim\"></div><div class=\"ds-tile-label\"><h3 class=\"ds-tile-name\">Flores Amarillas</h3><p class=\"ds-tile-price\">Desde S/ 30</p></div></a>",
+      "css": ".ds-tile { position: relative; display: block; width: 240px; aspect-ratio: 3/4; border-radius: 1.125rem; overflow: hidden; text-decoration: none; } .ds-tile-img { position: absolute; inset: 0; background: linear-gradient(135deg, #c3931f, #7c221a); transition: transform 700ms cubic-bezier(0,0,0.2,1); } .ds-tile:hover .ds-tile-img { transform: scale(1.06); } .ds-tile-scrim { position: absolute; inset: 0; background: linear-gradient(to top, rgba(26,26,26,0.62), rgba(26,26,26,0.24) 40%, transparent 72%); } .ds-tile-label { position: absolute; left: 1rem; right: 1rem; bottom: 1rem; } .ds-tile-name { margin: 0; font-family: 'Playfair Display', Georgia, serif; font-size: 1.5rem; font-weight: 600; color: var(--color-cream, #fdfcfa); } .ds-tile-price { margin: 0.25rem 0 0; font-family: Lato, system-ui, sans-serif; font-size: 0.875rem; font-weight: 600; color: var(--color-secondary, #e8b84b); } .ds-tile:focus-visible { outline: 2px solid var(--color-secondary, #e8b84b); outline-offset: 2px; }"
+    },
+    {
+      "name": "Polaroid",
+      "kind": "custom",
+      "description": "EL diferencial visual: foto real de clienta con borde blanco, rotación leve y sombra de papel. Hover la endereza y la acerca.",
+      "html": "<figure class=\"ds-polaroid\"><div class=\"ds-polaroid-img\" role=\"img\" aria-label=\"Clienta con su ramo en Lima\"></div></figure>",
+      "css": ".ds-polaroid { margin: 0; width: 160px; height: 220px; padding: 0; border: 4px solid #ffffff; border-radius: 0.375rem; transform: rotate(-2deg); box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1); transition: transform 0.3s cubic-bezier(0,0,0.2,1), box-shadow 0.3s cubic-bezier(0,0,0.2,1); } .ds-polaroid-img { width: 100%; height: 100%; background: linear-gradient(160deg, #dad6cf, #9c968d); } .ds-polaroid:hover { transform: rotate(0deg) scale(1.05); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); } @media (prefers-reduced-motion: reduce) { .ds-polaroid { transition: none; } .ds-polaroid:hover { transform: rotate(-2deg); } }"
+    },
+    {
+      "name": "Hours Badge",
+      "kind": "chip",
+      "description": "Pill de estado del negocio: Verde Tallo ABIERTO / Rojo Tulipán CERRADO, hora de Perú.",
+      "html": "<span class=\"ds-hours-badge\">ABIERTO</span>",
+      "css": ".ds-hours-badge { display: inline-block; background: var(--color-accent, #2d5a1b); color: var(--color-cream, #fdfcfa); padding: 0.25rem 0.75rem; border-radius: 9999px; font-family: Lato, system-ui, sans-serif; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.05em; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "El Taller de la Florista",
+    "overview": "El sistema visual nace de la mesa de trabajo: tallos elegidos uno a uno, tijeras, papel, el ramo componiéndose delante del cliente. Todo lo que se ve debe sentirse hecho a mano por alguien que sabe — elegante, romántico, artesanal — nunca generado, nunca de plantilla. La fotografía real es la materia prima del sistema: ramos reales en el hero, clientas reales de Lima en polaroids, la mesa de la florista en el About. La paleta y la tipografía son el marco del taller; las flores son el cuadro. La densidad es generosa en aire: una idea dominante por fold, scroll pausado, secciones que respiran.",
+    "keyCharacteristics": [
+      "Fotografía real protagonista; la UI es marco, no decoración",
+      "Serif romántica (Playfair) solo para hablar; sans (Lato) para explicar",
+      "Crema como lienzo, rojo tulipán como voz, dorado como destello escaso",
+      "Pills suaves, bordes delicados, sombras solo donde hay foto o estado",
+      "WhatsApp es la caja: cada fold acerca al pedido sin fricción"
+    ],
+    "rules": [
+      { "name": "La Regla del Dorado-No-Es-Texto", "body": "El dorado #e8b84b está prohibido como color de texto sobre crema, blanco o fotos claras (contraste 1.8:1, falla WCAG AA). Sobre fondos claros, el texto dorado usa la variante AA-safe (--color-gold-text, pendiente de crear). El dorado vivo vive en fills, íconos y texto sobre scrims oscuros verificados.", "section": "colors" },
+      { "name": "La Regla de la Foto Real", "body": "La calidez de la página la pone la fotografía, no el fondo. El lienzo se queda crema y neutro; jamás compensar 'calidez de marca' tiñendo fondos.", "section": "colors" },
+      { "name": "La Regla Serif-Habla-Sans-Explica", "body": "Playfair solo donde la marca habla (display, headlines, nombres). Todo lo funcional (body, labels, precios, formularios) es Lato. Nunca Playfair en texto largo ni Lato en el titular del hero.", "section": "typography" },
+      { "name": "La Regla Plano-Por-Defecto", "body": "Las superficies de UI (cards, botones, inputs) viven planas con borde --color-border. Si un elemento de UI pide sombra en reposo, la respuesta es no; solo la fotografía y los cambios de estado proyectan sombra.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do usar SIEMPRE var(--color-*) o color-mix(...) — cero hex/rgb hardcodeado en clases o style (regla ESLint del proyecto).",
+      "Do dejar que la fotografía cargue la emoción; la UI enmarca con crema, borde fino y aire (5rem/7rem entre secciones).",
+      "Do verificar contraste real (≥4.5:1 texto, 3:1 large/íconos) sobre el FONDO REAL, incluida cada foto del carrusel.",
+      "Do LazyMotion + m para Framer Motion, motion-safe:/prefers-reduced-motion en toda animación, next/image siempre.",
+      "Do respetar la escala z-index documentada: FAB z-50 → Navbar z-[90] → Lightbox z-[100] → skip link 200.",
+      "Do un solo verbo de pedido repetido verbatim en toda la página (pendiente de unificar, QA/audit/10 P2-2)."
+    ],
+    "donts": [
+      "Don't parecer 'florería genérica de plantilla' (WordPress/Wix, stock cliché, carruseles por defecto) — anti-referencia literal de PRODUCT.md.",
+      "Don't parecer 'e-commerce frío tipo marketplace' (grilla impersonal densa estilo Linio/Amazon).",
+      "Don't recargar ni saturar: la paleta respira sobre crema; si el rojo, el dorado y el verde compiten en un mismo fold, sobra uno.",
+      "Don't estética 'hecha con IA': gradientes violeta, glassmorphism, gradient text, hero-metric template, card grids idénticas, eyebrow uppercase en CADA sección (máximo 1-2 kickers deliberados por página).",
+      "Don't dorado #e8b84b como texto sobre fondos claros (La Regla del Dorado-No-Es-Texto).",
+      "Don't tocar la paleta, agregar dependencias, ni modificar app/layout.tsx sin aprobación explícita (CLAUDE.md).",
+      "Don't modales custom (usar LightboxDialog/ConfirmDialog), SVG inline para íconos comunes (usar lucide-react), ni side-stripe borders como acento.",
+      "Don't español sin tildes en NINGÚN string visible — 'español peruano correcto' es principio de marca."
+    ]
+  }
+}

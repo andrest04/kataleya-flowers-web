@@ -4,8 +4,8 @@ import SectionHeader from "@/components/ui/SectionHeader";
 import { BUSINESS } from "@/lib/constants";
 
 // TODO: reemplazar con foto profesional del local cuando el dueño la provea.
-// Mientras tanto usamos un placeholder SVG con la paleta de marca.
-const ABOUT_IMAGE_SRC = "/about-placeholder.svg";
+// Mientras tanto usamos una imagen ambiental generada con la paleta de marca.
+const ABOUT_IMAGE_SRC = "/about-florist-table.jpg";
 
 interface Highlight {
   readonly value: string;
@@ -73,9 +73,9 @@ export default function AboutSection() {
         <div className="relative overflow-hidden rounded-[2rem]">
           <Image
             src={ABOUT_IMAGE_SRC}
-            alt="Nuestra historia"
-            width={600}
-            height={400}
+            alt="Mesa de trabajo con rosas rojas, orquídeas blancas y eucalipto"
+            width={1168}
+            height={784}
             className="h-auto w-full"
             loading="lazy"
           />

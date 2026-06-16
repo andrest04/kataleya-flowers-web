@@ -1,117 +1,52 @@
-"use client";
-
-import { animate, useInView, useMotionValue } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
+import type { LucideIcon } from "lucide-react";
+import { Flower2, ShieldCheck, Sparkles, Truck } from "lucide-react";
 
 import { BUSINESS } from "@/lib/constants";
 
-type Stat =
-  | { kind: "numeric"; target: number; suffix: string; label: string }
-  | { kind: "static"; display: string; label: string };
-
-const stats: Stat[] = [
-  {
-    kind: "numeric",
-    target: parseInt(BUSINESS.experience, 10),
-    suffix: " años",
-    label: "de experiencia en Lima",
-  },
-  {
-    kind: "numeric",
-    target: 500,
-    suffix: "+",
-    label: "arreglos al mes",
-  },
-  {
-    kind: "static",
-    display: "Entrega",
-    label: "el mismo día en Lima",
-  },
-  {
-    kind: "numeric",
-    target: 100,
-    suffix: "%",
-    label: "satisfacción garantizada",
-  },
-];
-
-function AnimatedStat({
-  stat,
-  showSeparator,
-}: {
-  stat: Stat;
-  showSeparator: boolean;
-}) {
-  const ref = useRef<HTMLLIElement>(null);
-  const inView = useInView(ref, { once: true });
-  const count = useMotionValue(0);
-  const [value, setValue] = useState(0);
-
-  useEffect(() => {
-    return count.on("change", (v) => setValue(Math.round(v)));
-  }, [count]);
-
-  useEffect(() => {
-    if (inView && stat.kind === "numeric") {
-      animate(count, stat.target, { duration: 1.5, ease: "easeOut" });
-    }
-  }, [inView, stat, count]);
-
-  const displayText =
-    stat.kind === "numeric" ? `${value}${stat.suffix}` : stat.display;
-
-  return (
-    <li ref={ref} className="flex flex-col items-center text-center relative">
-      {showSeparator && (
-        <span
-          className="hidden md:block absolute left-0 top-1/2 -translate-y-1/2 h-10 w-px"
-          style={{
-            backgroundColor:
-              "color-mix(in srgb, var(--color-cream) 20%, transparent)",
-          }}
-          aria-hidden="true"
-        />
-      )}
-      <span
-        className="text-2xl md:text-3xl font-bold"
-        style={{
-          fontFamily: "var(--font-heading)",
-          color: "var(--color-secondary)",
-        }}
-      >
-        {displayText}
-      </span>
-      <span
-        className="text-sm mt-1 opacity-75"
-        style={{ color: "var(--color-cream)" }}
-      >
-        {stat.label}
-      </span>
-    </li>
-  );
+interface TrustItem {
+  readonly Icon: LucideIcon;
+  readonly text: string;
 }
 
+const TRUST_ITEMS: readonly TrustItem[] = [
+  { Icon: Flower2, text: "Flores frescas a diario" },
+  { Icon: Truck, text: "Entrega el mismo día" },
+  { Icon: Sparkles, text: `${BUSINESS.experience} años de experiencia` },
+  { Icon: ShieldCheck, text: "Calidad garantizada" },
+];
+
+/**
+ * Cinta de confianza al pie del Hero. Señales escaneables (icono + frase
+ * corta) en lugar del "dashboard" de métricas grandes: la confianza de una
+ * florería se transmite con frescura y servicio, no con un tablero de KPIs.
+ * Server Component — texto estático, sin JS.
+ */
 export default function TrustBar() {
   return (
-    <section
-      aria-label="Razones para elegirnos"
-      style={{
-        background:
-          "linear-gradient(to right, var(--color-dark), color-mix(in srgb, var(--color-primary) 18%, var(--color-dark)), var(--color-dark))",
-        borderTop: "2px solid var(--color-secondary)",
-      }}
-    >
-      <div className="max-w-5xl mx-auto px-6 py-8">
-        <ul className="grid grid-cols-2 md:grid-cols-4 gap-y-8 md:gap-y-0">
-          {stats.map((stat, index) => (
-            <AnimatedStat
-              key={stat.kind === "numeric" ? stat.target : stat.display}
-              stat={stat}
-              showSeparator={index > 0}
+    <div className="relative mx-auto w-full max-w-7xl px-4 pb-24 sm:px-6 sm:pb-6 lg:px-8">
+      {/*
+        Mobile: grid 2×2 para que los 4 signals sean visibles sin scroll, con
+        pb-24 que despeja el FAB de WhatsApp (fixed bottom-right). Desde sm:
+        una sola fila que envuelve.
+      */}
+      <ul
+        aria-label="Por qué elegirnos"
+        className="grid grid-cols-2 gap-x-4 gap-y-3 border-t pt-5 text-xs text-(--color-cream) sm:flex sm:flex-wrap sm:items-center sm:gap-x-7 sm:gap-y-2 sm:text-sm"
+        style={{
+          borderColor: "color-mix(in srgb, var(--color-cream) 24%, transparent)",
+        }}
+      >
+        {TRUST_ITEMS.map(({ Icon, text }) => (
+          <li key={text} className="flex items-center gap-2">
+            <Icon
+              className="h-4 w-4 shrink-0 text-(--color-secondary)"
+              aria-hidden="true"
+              strokeWidth={2}
             />
-          ))}
-        </ul>
-      </div>
-    </section>
+            <span>{text}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }

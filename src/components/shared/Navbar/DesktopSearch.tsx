@@ -15,6 +15,8 @@ interface DesktopSearchProps {
   searchResults: SearchResult[];
   handleResultClick: (categorySlug: string, productSlug: string) => void;
   isScrolled: boolean;
+  /** True sobre el hero oscuro: search translúcido con texto crema. */
+  overHero: boolean;
   desktopSearchRef: RefObject<HTMLDivElement | null>;
   clearSearch: () => void;
 }
@@ -26,6 +28,7 @@ export default function DesktopSearch({
   searchResults,
   handleResultClick,
   isScrolled,
+  overHero,
   desktopSearchRef,
   clearSearch,
 }: DesktopSearchProps) {
@@ -39,10 +42,14 @@ export default function DesktopSearch({
         role="search"
         className="flex items-center gap-2 rounded-full px-4 py-2 transition-all duration-300"
         style={{
-          backgroundColor: isScrolled
-            ? "var(--color-surface)"
-            : "color-mix(in srgb, var(--color-cream) 80%, transparent)",
-          border: "1px solid var(--color-border)",
+          backgroundColor: overHero
+            ? "color-mix(in srgb, var(--color-cream) 12%, transparent)"
+            : isScrolled
+              ? "var(--color-surface)"
+              : "color-mix(in srgb, var(--color-cream) 80%, transparent)",
+          border: overHero
+            ? "1px solid color-mix(in srgb, var(--color-cream) 35%, transparent)"
+            : "1px solid var(--color-border)",
         }}
       >
         <input
@@ -50,7 +57,11 @@ export default function DesktopSearch({
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Buscar flores..."
-          className="w-32 bg-transparent font-body text-sm text-(--color-dark) outline-none lg:w-48"
+          className={`w-32 bg-transparent font-body text-sm outline-none lg:w-48 ${
+            overHero
+              ? "text-(--color-cream) placeholder:text-(--color-cream)/70"
+              : "text-(--color-dark)"
+          }`}
           aria-label="Buscar productos"
           // ARIA combobox pattern: input controla un listbox externo.
           role="combobox"
@@ -60,7 +71,7 @@ export default function DesktopSearch({
         />
         <button
           type="submit"
-          className="shrink-0 cursor-pointer text-(--color-muted)"
+          className={`shrink-0 cursor-pointer ${overHero ? "text-(--color-cream)" : "text-(--color-muted)"}`}
           aria-label="Buscar"
         >
           <Search className="h-4 w-4" aria-hidden="true" strokeWidth={2} />
