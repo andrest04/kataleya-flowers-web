@@ -1,34 +1,35 @@
 'use server';
 
 import type { SearchResult } from '@/components/shared/Navbar/constants';
-import { createClient } from '@/lib/supabase/server';
+import { listActiveCategories } from '@/lib/appwrite/repositories/categories';
+import { listActiveJoinedProducts } from '@/lib/appwrite/repositories/products';
 
 export async function searchProducts(query: string): Promise<SearchResult[]> {
   const q = query.trim();
   if (!q) return [];
 
-  const supabase = await createClient();
+  const needle = q.toLowerCase();
+  const [rows, categories] = await Promise.all([
+    listActiveJoinedProducts(),
+    listActiveCategories(),
+  ]);
+  const categoryById = new Map(categories.map((c) => [c.id, c]));
 
-  const { data, error } = await supabase
-    .from('products')
-    .select('name, slug, price, price_variants, image_url, category_id, categories!inner(slug, name)')
-    .ilike('name', `%${q}%`)
-    .eq('is_active', true)
-    .order('display_order', { ascending: true })
-    .limit(6);
-
-  if (error) return [];
-
-  return (data ?? []).map((row) => {
-    const category = row.categories as unknown as { slug: string; name: string };
-    return {
-      name: row.name,
-      slug: row.slug,
-      categorySlug: category.slug,
-      categoryName: category.name,
-      price: Number(row.price),
-      hasVariants: Array.isArray(row.price_variants) && row.price_variants.length > 0,
-      imageUrl: row.image_url,
-    };
-  });
+  return rows
+    .filter((row) => row.name.toLowerCase().includes(needle))
+    .sort((a, b) => a.display_order - b.display_order)
+    .slice(0, 6)
+    .map((row) => {
+      const category = categoryById.get(row.category_id);
+      return {
+        name: row.name,
+        slug: row.slug,
+        categorySlug: category?.slug ?? '',
+        categoryName: category?.name ?? '',
+        price: Number(row.price),
+        hasVariants:
+          Array.isArray(row.price_variants) && row.price_variants.length > 0,
+        imageUrl: row.image_url ?? '',
+      };
+    });
 }

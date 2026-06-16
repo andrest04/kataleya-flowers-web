@@ -1,1 +1,0 @@
-export const MIN_FRICTION_PRODUCT_VIEWS = 3;

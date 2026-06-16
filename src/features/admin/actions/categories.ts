@@ -12,14 +12,11 @@ import { reorderSchema } from '@/features/admin/schemas/reorder';
 import type { CategoryFormData } from '@/features/admin/types';
 import {
   type AdminActionFailure,
-  type AdminSupabaseClient,
-  describeSupabaseError,
   failureFromUnknown,
   requireAdmin,
 } from '@/features/admin/utils/auth';
 import { isAllowedCloudinaryUrl } from '@/features/admin/utils/cloudinaryUrl';
 import { slugify } from '@/features/admin/utils/slugify';
-import { isAppwriteBackend } from '@/lib/appwrite/config';
 import {
   countProductsInCategory,
   createCategoryDocument,
@@ -34,10 +31,6 @@ import {
   updateCategoryDocument,
 } from '@/lib/appwrite/repositories/categories';
 import { destroyCloudinaryImage, destroyCloudinaryImages } from '@/lib/cloudinary';
-import type { Database } from '@/lib/supabase/types';
-
-type CategoryInsert = Database['public']['Tables']['categories']['Insert'];
-
 interface SuccessResult {
   success: true;
 }
@@ -50,42 +43,7 @@ type CountResult = CountSuccess | (AdminActionFailure & { count: 0 });
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function toInsertPayload(data: CategoryFormData, slug: string): CategoryInsert {
-  return {
-    name: data.name,
-    slug,
-    description: data.description,
-    occasion: data.occasion || null,
-    image_url: data.imageUrl || null,
-    display_order: data.displayOrder,
-    is_active: data.isActive,
-    is_featured: data.isFeatured,
-  };
-}
-
 async function revalidateAllCategoryPaths(
-  supabase: AdminSupabaseClient,
-  affectedSlugs?: string[],
-): Promise<void> {
-  revalidatePath('/');
-  revalidatePath('/catalogo');
-  revalidatePath('/admin/categorias');
-  revalidatePath('/admin/productos');
-
-  // Si conocemos el slug afectado lo revalidamos puntualmente —
-  // si no, traemos todas las activas y las revalidamos para cubrir cambios bulk
-  // como reorder o cambios masivos.
-  let slugs: string[] = affectedSlugs ?? [];
-  if (slugs.length === 0) {
-    const { data } = await supabase.from('categories').select('slug');
-    slugs = (data ?? []).map((row) => row.slug);
-  }
-  for (const slug of slugs) {
-    if (slug) revalidatePath(`/catalogo/${slug}`);
-  }
-}
-
-async function revalidateAllCategoryPathsAppwrite(
   affectedSlugs?: string[],
 ): Promise<void> {
   revalidatePath('/');
@@ -105,7 +63,7 @@ export async function createCategory(
   data: CategoryFormData,
 ): Promise<CategoryActionResult> {
   try {
-    const ctx = await requireAdmin();
+    await requireAdmin();
 
     const parsed = categoryCreateSchema.safeParse(data);
     if (!parsed.success) {
@@ -128,58 +86,26 @@ export async function createCategory(
 
     const slug = parsed.data.slug?.trim() || slugify(parsed.data.name);
 
-    if (isAppwriteBackend()) {
-      const nextOrder = parsed.data.displayOrder || (await getNextCategoryOrder());
-      try {
-        await createCategoryDocument({
-          name: parsed.data.name,
-          slug,
-          description: parsed.data.description,
-          occasion: (parsed.data as CategoryFormData).occasion || null,
-          imageUrl: parsed.data.imageUrl || null,
-          displayOrder: nextOrder,
-          isActive: (parsed.data as CategoryFormData).isActive,
-          isFeatured: (parsed.data as CategoryFormData).isFeatured,
-        });
-      } catch (writeErr) {
-        if (writeErr instanceof AppwriteException && writeErr.code === 409) {
-          return { success: false, error: 'Ya existe un registro con esos datos.', code: 'INTERNAL' };
-        }
-        throw writeErr;
+    const nextOrder = parsed.data.displayOrder || (await getNextCategoryOrder());
+    try {
+      await createCategoryDocument({
+        name: parsed.data.name,
+        slug,
+        description: parsed.data.description,
+        occasion: (parsed.data as CategoryFormData).occasion || null,
+        imageUrl: parsed.data.imageUrl || null,
+        displayOrder: nextOrder,
+        isActive: (parsed.data as CategoryFormData).isActive,
+        isFeatured: (parsed.data as CategoryFormData).isFeatured,
+      });
+    } catch (writeErr) {
+      if (writeErr instanceof AppwriteException && writeErr.code === 409) {
+        return { success: false, error: 'Ya existe un registro con esos datos.', code: 'INTERNAL' };
       }
-
-      await revalidateAllCategoryPathsAppwrite([slug]);
-      return { success: true };
+      throw writeErr;
     }
 
-    // ── Supabase path ─────────────────────────────────────────────────────────
-    const { supabase } = ctx as { supabase: AdminSupabaseClient };
-
-    // Auto-assign next display order
-    const { data: all } = await supabase
-      .from('categories')
-      .select('display_order')
-      .order('display_order', { ascending: false })
-      .limit(1);
-
-    const nextOrder = all && all.length > 0 ? all[0].display_order + 1 : 1;
-
-    const payload = toInsertPayload(
-      { ...(parsed.data as CategoryFormData), displayOrder: nextOrder },
-      slug,
-    );
-
-    const { error } = await supabase.from('categories').insert(payload);
-
-    if (error) {
-      return {
-        success: false,
-        error: describeSupabaseError(error),
-        code: 'INTERNAL',
-      };
-    }
-
-    await revalidateAllCategoryPaths(supabase, [slug]);
+    await revalidateAllCategoryPaths([slug]);
     return { success: true };
   } catch (err) {
     return failureFromUnknown(err);
@@ -191,7 +117,7 @@ export async function updateCategory(
   data: CategoryFormData,
 ): Promise<CategoryActionResult> {
   try {
-    const ctx = await requireAdmin();
+    await requireAdmin();
 
     const idParsed = uuid.safeParse(id);
     if (!idParsed.success) {
@@ -222,77 +148,30 @@ export async function updateCategory(
       };
     }
 
-    if (isAppwriteBackend()) {
-      const current = await findCategoryById(idParsed.data);
+    const current = await findCategoryById(idParsed.data);
 
-      const incomingSlug = parsed.data.slug?.trim() ?? '';
-      const slug =
-        incomingSlug && incomingSlug !== current?.slug
-          ? incomingSlug
-          : (current?.slug ?? slugify(parsed.data.name));
-
-      try {
-        await updateCategoryDocument(idParsed.data, {
-          name: parsed.data.name,
-          slug,
-          description: parsed.data.description,
-          occasion: (parsed.data as CategoryFormData).occasion || null,
-          imageUrl: parsed.data.imageUrl || null,
-          displayOrder: (parsed.data as CategoryFormData).displayOrder,
-          isActive: (parsed.data as CategoryFormData).isActive,
-          isFeatured: (parsed.data as CategoryFormData).isFeatured,
-        });
-      } catch (writeErr) {
-        if (writeErr instanceof AppwriteException && writeErr.code === 409) {
-          return { success: false, error: 'Ya existe un registro con esos datos.', code: 'INTERNAL' };
-        }
-        throw writeErr;
-      }
-
-      // Cleanup replaced image from Cloudinary (best-effort)
-      if (current?.image_url && current.image_url !== parsed.data.imageUrl) {
-        void destroyCloudinaryImage(current.image_url);
-      }
-
-      const affected = [current?.slug, slug].filter(
-        (value): value is string => typeof value === 'string',
-      );
-      await revalidateAllCategoryPathsAppwrite(affected);
-      return { success: true };
-    }
-
-    // ── Supabase path ─────────────────────────────────────────────────────────
-    const { supabase } = ctx as { supabase: AdminSupabaseClient };
-
-    // Fetch current image + slug to detect replacement
-    const { data: current } = await supabase
-      .from('categories')
-      .select('image_url, slug')
-      .eq('id', idParsed.data)
-      .single();
-
-    // SEO: preservar el slug ya indexado a menos que el user explícitamente lo cambie.
-    // - Si el payload viene vacío → mantener el slug actual de la DB.
-    // - Si viene exactamente igual al actual → no regenerar (evita drift por slugify(name)).
-    // - Solo aceptamos un slug nuevo si difiere del actual y vino con valor.
     const incomingSlug = parsed.data.slug?.trim() ?? '';
     const slug =
       incomingSlug && incomingSlug !== current?.slug
         ? incomingSlug
         : (current?.slug ?? slugify(parsed.data.name));
-    const payload = toInsertPayload(parsed.data as CategoryFormData, slug);
 
-    const { error } = await supabase
-      .from('categories')
-      .update(payload)
-      .eq('id', idParsed.data);
-
-    if (error) {
-      return {
-        success: false,
-        error: describeSupabaseError(error),
-        code: 'INTERNAL',
-      };
+    try {
+      await updateCategoryDocument(idParsed.data, {
+        name: parsed.data.name,
+        slug,
+        description: parsed.data.description,
+        occasion: (parsed.data as CategoryFormData).occasion || null,
+        imageUrl: parsed.data.imageUrl || null,
+        displayOrder: (parsed.data as CategoryFormData).displayOrder,
+        isActive: (parsed.data as CategoryFormData).isActive,
+        isFeatured: (parsed.data as CategoryFormData).isFeatured,
+      });
+    } catch (writeErr) {
+      if (writeErr instanceof AppwriteException && writeErr.code === 409) {
+        return { success: false, error: 'Ya existe un registro con esos datos.', code: 'INTERNAL' };
+      }
+      throw writeErr;
     }
 
     // Cleanup replaced image from Cloudinary (best-effort)
@@ -303,7 +182,7 @@ export async function updateCategory(
     const affected = [current?.slug, slug].filter(
       (value): value is string => typeof value === 'string',
     );
-    await revalidateAllCategoryPaths(supabase, affected);
+    await revalidateAllCategoryPaths(affected);
     return { success: true };
   } catch (err) {
     return failureFromUnknown(err);
@@ -314,7 +193,7 @@ export async function reorderCategories(
   orderedIds: string[],
 ): Promise<CategoryActionResult> {
   try {
-    const ctx = await requireAdmin();
+    await requireAdmin();
 
     const parsed = reorderSchema.safeParse({ ids: orderedIds });
     if (!parsed.success) {
@@ -326,28 +205,8 @@ export async function reorderCategories(
       };
     }
 
-    if (isAppwriteBackend()) {
-      await reorderCategoryDocuments(parsed.data.ids);
-      await revalidateAllCategoryPathsAppwrite();
-      return { success: true };
-    }
-
-    // ── Supabase path ─────────────────────────────────────────────────────────
-    const { supabase } = ctx as { supabase: AdminSupabaseClient };
-
-    const { error } = await supabase.rpc('reorder_categories', {
-      p_ordered_ids: parsed.data.ids,
-    });
-
-    if (error) {
-      return {
-        success: false,
-        error: describeSupabaseError(error),
-        code: 'INTERNAL',
-      };
-    }
-
-    await revalidateAllCategoryPaths(supabase);
+    await reorderCategoryDocuments(parsed.data.ids);
+    await revalidateAllCategoryPaths();
     return { success: true };
   } catch (err) {
     return failureFromUnknown(err);
@@ -358,7 +217,7 @@ export async function getCategoryProductCount(
   categoryId: string,
 ): Promise<CountResult> {
   try {
-    const ctx = await requireAdmin();
+    await requireAdmin();
 
     const idParsed = uuid.safeParse(categoryId);
     if (!idParsed.success) {
@@ -371,28 +230,8 @@ export async function getCategoryProductCount(
       };
     }
 
-    if (isAppwriteBackend()) {
-      const count = await countProductsInCategory(idParsed.data);
-      return { count };
-    }
-
-    // ── Supabase path ─────────────────────────────────────────────────────────
-    const { supabase } = ctx as { supabase: AdminSupabaseClient };
-
-    const { count, error } = await supabase
-      .from('products')
-      .select('*', { count: 'exact', head: true })
-      .eq('category_id', idParsed.data);
-
-    if (error) {
-      return {
-        success: false,
-        error: describeSupabaseError(error),
-        code: 'INTERNAL',
-        count: 0,
-      };
-    }
-    return { count: count ?? 0 };
+    const count = await countProductsInCategory(idParsed.data);
+    return { count };
   } catch (err) {
     const failure = failureFromUnknown(err);
     return { ...failure, count: 0 };
@@ -405,7 +244,7 @@ export async function deleteCategory(
   reassignTo?: string,
 ): Promise<CategoryActionResult> {
   try {
-    const ctx = await requireAdmin();
+    await requireAdmin();
 
     const idParsed = uuid.safeParse(id);
     if (!idParsed.success) {
@@ -424,76 +263,23 @@ export async function deleteCategory(
       };
     }
 
-    if (isAppwriteBackend()) {
-      if (mode === 'cascade') {
-        const imageUrls = await deleteCategoryCascadeAppwrite(idParsed.data);
-        if (imageUrls.length > 0) void destroyCloudinaryImages(imageUrls);
-      } else {
-        const reassignParsed = uuid.safeParse(reassignTo);
-        if (!reassignParsed.success) {
-          return {
-            success: false,
-            error: 'Seleccioná una categoría destino válida para reasignar los productos.',
-            code: 'VALIDATION',
-          };
-        }
-        const imageUrl = await deleteCategoryReassignAppwrite(idParsed.data, reassignParsed.data);
-        if (imageUrl) void destroyCloudinaryImage(imageUrl);
-      }
-
-      await revalidateAllCategoryPathsAppwrite();
-      return { success: true };
-    }
-
-    // ── Supabase path ─────────────────────────────────────────────────────────
-    const { supabase } = ctx as { supabase: AdminSupabaseClient };
-
     if (mode === 'cascade') {
-      const { data: imageUrls, error } = await supabase.rpc(
-        'delete_category_cascade',
-        { p_category_id: idParsed.data },
-      );
-
-      if (error) {
-        return {
-          success: false,
-          error: describeSupabaseError(error),
-          code: 'INTERNAL',
-        };
-      }
-
-      if (imageUrls?.length) void destroyCloudinaryImages(imageUrls);
+      const imageUrls = await deleteCategoryCascadeAppwrite(idParsed.data);
+      if (imageUrls.length > 0) void destroyCloudinaryImages(imageUrls);
     } else {
       const reassignParsed = uuid.safeParse(reassignTo);
       if (!reassignParsed.success) {
         return {
           success: false,
-          error:
-            'Seleccioná una categoría destino válida para reasignar los productos.',
+          error: 'Seleccioná una categoría destino válida para reasignar los productos.',
           code: 'VALIDATION',
         };
       }
-
-      const { data: imageUrl, error } = await supabase.rpc(
-        'delete_category_reassign',
-        {
-          p_category_id: idParsed.data,
-          p_reassign_to: reassignParsed.data,
-        },
-      );
-
-      if (error) {
-        return {
-          success: false,
-          error: describeSupabaseError(error),
-          code: 'INTERNAL',
-        };
-      }
-
+      const imageUrl = await deleteCategoryReassignAppwrite(idParsed.data, reassignParsed.data);
       if (imageUrl) void destroyCloudinaryImage(imageUrl);
     }
 
-    await revalidateAllCategoryPaths(supabase);
+    await revalidateAllCategoryPaths();
     return { success: true };
   } catch (err) {
     return failureFromUnknown(err);
@@ -505,7 +291,7 @@ export async function toggleCategoryStatus(
   isActive: boolean,
 ): Promise<CategoryActionResult> {
   try {
-    const ctx = await requireAdmin();
+    await requireAdmin();
 
     const idParsed = uuid.safeParse(id);
     if (!idParsed.success) {
@@ -524,36 +310,9 @@ export async function toggleCategoryStatus(
       };
     }
 
-    if (isAppwriteBackend()) {
-      const current = await findCategoryById(idParsed.data);
-      await setCategoryActive(idParsed.data, isActive);
-      await revalidateAllCategoryPathsAppwrite(current?.slug ? [current.slug] : undefined);
-      return { success: true };
-    }
-
-    // ── Supabase path ─────────────────────────────────────────────────────────
-    const { supabase } = ctx as { supabase: AdminSupabaseClient };
-
-    const { data: row } = await supabase
-      .from('categories')
-      .select('slug')
-      .eq('id', idParsed.data)
-      .single();
-
-    const { error } = await supabase
-      .from('categories')
-      .update({ is_active: isActive })
-      .eq('id', idParsed.data);
-
-    if (error) {
-      return {
-        success: false,
-        error: describeSupabaseError(error),
-        code: 'INTERNAL',
-      };
-    }
-
-    await revalidateAllCategoryPaths(supabase, row?.slug ? [row.slug] : undefined);
+    const current = await findCategoryById(idParsed.data);
+    await setCategoryActive(idParsed.data, isActive);
+    await revalidateAllCategoryPaths(current?.slug ? [current.slug] : undefined);
     return { success: true };
   } catch (err) {
     return failureFromUnknown(err);
@@ -565,7 +324,7 @@ export async function toggleCategoryFeatured(
   isFeatured: boolean,
 ): Promise<CategoryActionResult> {
   try {
-    const ctx = await requireAdmin();
+    await requireAdmin();
 
     const idParsed = uuid.safeParse(id);
     if (!idParsed.success) {
@@ -584,36 +343,9 @@ export async function toggleCategoryFeatured(
       };
     }
 
-    if (isAppwriteBackend()) {
-      const current = await findCategoryById(idParsed.data);
-      await setCategoryFeatured(idParsed.data, isFeatured);
-      await revalidateAllCategoryPathsAppwrite(current?.slug ? [current.slug] : undefined);
-      return { success: true };
-    }
-
-    // ── Supabase path ─────────────────────────────────────────────────────────
-    const { supabase } = ctx as { supabase: AdminSupabaseClient };
-
-    const { data: row } = await supabase
-      .from('categories')
-      .select('slug')
-      .eq('id', idParsed.data)
-      .single();
-
-    const { error } = await supabase
-      .from('categories')
-      .update({ is_featured: isFeatured })
-      .eq('id', idParsed.data);
-
-    if (error) {
-      return {
-        success: false,
-        error: describeSupabaseError(error),
-        code: 'INTERNAL',
-      };
-    }
-
-    await revalidateAllCategoryPaths(supabase, row?.slug ? [row.slug] : undefined);
+    const current = await findCategoryById(idParsed.data);
+    await setCategoryFeatured(idParsed.data, isFeatured);
+    await revalidateAllCategoryPaths(current?.slug ? [current.slug] : undefined);
     return { success: true };
   } catch (err) {
     return failureFromUnknown(err);

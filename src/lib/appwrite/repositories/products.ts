@@ -4,6 +4,8 @@
 // `features/catalog/queries/mappers.ts`) so `mapProductRow` consumes them
 // unchanged. Appwrite has no nested embeds, so related taxonomy and images are
 // batch-fetched and composed in Node, mirroring the PostgREST nested-select.
+import { randomUUID } from 'node:crypto';
+
 import { ID, Query } from 'node-appwrite';
 
 import type { JoinedProductRow } from '@/features/catalog/queries/mappers';
@@ -14,6 +16,7 @@ import type {
   ColorDoc,
   FlowerTypeAssignmentDoc,
   FlowerTypeDoc,
+  JsonValue,
   ProductDoc,
   ProductImageDoc,
 } from '@/lib/appwrite/types';
@@ -26,6 +29,21 @@ import {
 } from './shared';
 
 const C = APPWRITE_COLLECTIONS;
+
+/**
+ * `price_variants` is persisted as a JSON string in Appwrite (Supabase stored it
+ * as native JSONB), so parse it back to the array/object shape `mapProductRow`
+ * expects. A malformed or truncated value degrades to `null` (no price table)
+ * instead of throwing and crashing the product page.
+ */
+function parsePriceVariants(value: ProductDoc['price_variants']): JsonValue | null {
+  if (typeof value !== 'string') return value ?? null;
+  try {
+    return JSON.parse(value) as JsonValue;
+  } catch {
+    return null;
+  }
+}
 
 /** Maps a raw Appwrite product document to the Supabase `products` row shape. */
 function toProductRow(doc: ProductDoc): Omit<
@@ -48,7 +66,7 @@ function toProductRow(doc: ProductDoc): Omit<
     flower_types: doc.flower_types,
     occasion: doc.occasion,
     note: doc.note,
-    price_variants: doc.price_variants,
+    price_variants: parsePriceVariants(doc.price_variants),
     display_order: doc.display_order,
     is_active: doc.is_active,
     is_featured: doc.is_featured,
@@ -490,7 +508,9 @@ export async function createProductDocument(
   const doc = await databases.createDocument<ProductDoc>({
     databaseId,
     collectionId: C.products,
-    documentId: ID.unique(),
+    // UUID (not ID.unique()) so admin actions' `uuid` schema accepts the id for
+    // later edit/delete/toggle — migrated rows keep their Supabase UUIDs too.
+    documentId: ID.custom(randomUUID()),
     data: {
       category_id: payload.categoryId,
       name: payload.name,

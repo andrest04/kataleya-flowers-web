@@ -2,16 +2,13 @@ import { createHash } from 'node:crypto';
 
 import { NextResponse } from 'next/server';
 
-import { isAdminUser } from '@/features/admin/utils/adminMembership';
 import { isAdminUserAppwrite } from '@/features/admin/utils/adminMembership.appwrite';
 import {
   ALLOWED_FOLDERS,
   isAllowedFolder,
 } from '@/features/admin/utils/cloudinaryUrl';
 import { getUser } from '@/lib/appwrite/account';
-import { isAppwriteBackend } from '@/lib/appwrite/config';
 import { getSessionCookie } from '@/lib/appwrite/cookies';
-import { createClient } from '@/lib/supabase/server';
 
 interface SignRequestBody {
   folder?: unknown;
@@ -30,34 +27,17 @@ interface SignRequestBody {
  */
 export async function POST(request: Request) {
   // ── 1. Auth ───────────────────────────────────────────────────────────────
-  if (isAppwriteBackend()) {
-    const sessionSecret = await getSessionCookie();
-    if (!sessionSecret) {
-      return NextResponse.json({ error: 'unauthenticated' }, { status: 401 });
-    }
-    const appwriteUser = await getUser(sessionSecret);
-    if (!appwriteUser) {
-      return NextResponse.json({ error: 'unauthenticated' }, { status: 401 });
-    }
-    const isAdmin = await isAdminUserAppwrite(appwriteUser.$id);
-    if (!isAdmin) {
-      return NextResponse.json({ error: 'forbidden' }, { status: 403 });
-    }
-  } else {
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return NextResponse.json({ error: 'unauthenticated' }, { status: 401 });
-    }
-
-    const isAdmin = await isAdminUser(supabase, user.id);
-    if (!isAdmin) {
-      return NextResponse.json({ error: 'forbidden' }, { status: 403 });
-    }
+  const sessionSecret = await getSessionCookie();
+  if (!sessionSecret) {
+    return NextResponse.json({ error: 'unauthenticated' }, { status: 401 });
+  }
+  const appwriteUser = await getUser(sessionSecret);
+  if (!appwriteUser) {
+    return NextResponse.json({ error: 'unauthenticated' }, { status: 401 });
+  }
+  const isAdmin = await isAdminUserAppwrite(appwriteUser.$id);
+  if (!isAdmin) {
+    return NextResponse.json({ error: 'forbidden' }, { status: 403 });
   }
 
   // ── 2. Parsear body con manejo defensivo ──────────────────────────────────

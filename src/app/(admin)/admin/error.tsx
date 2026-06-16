@@ -12,7 +12,7 @@ export default function Error({
   return (
     <div className="flex flex-col items-center justify-center py-24">
       <EmptyState
-        message="No se pudo cargar el dashboard. Por favor, intentá de nuevo."
+        message="No se pudo cargar la sección de administración. Por favor, intentá de nuevo."
         action={
           <Button variant="primary" onClick={reset}>
             Reintentar

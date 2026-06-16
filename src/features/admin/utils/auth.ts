@@ -1,10 +1,5 @@
-import type { User } from '@supabase/supabase-js';
 import type { ZodIssue, ZodSchema } from 'zod';
 
-import { isAppwriteBackend } from '@/lib/appwrite/config';
-import { createClient } from '@/lib/supabase/server';
-
-import { isAdminUser } from './adminMembership';
 import type { AppwriteAdminActionContext } from './auth.appwrite';
 import { requireAdminAppwrite } from './auth.appwrite';
 
@@ -12,20 +7,13 @@ import { requireAdminAppwrite } from './auth.appwrite';
 
 export type { AppwriteAdminActionContext };
 
-export type AdminSupabaseClient = Awaited<ReturnType<typeof createClient>>;
-
-export interface AdminActionContext {
-  user: User;
-  supabase: AdminSupabaseClient;
-}
-
 /**
  * Resultado canónico de las Server Actions admin.
  *
  * Conservamos `success` + `error` para no romper la API pública existente
  * (componentes que ya consumen las actions). Agregamos `code` e `issues`
  * para diferenciar errores de auth, validación e infraestructura sin filtrar
- * detalles internos de Supabase al cliente.
+ * detalles internos al cliente.
  */
 export interface AdminActionFailure {
   success: false;
@@ -57,35 +45,16 @@ export class AdminAuthError extends Error {
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
 /**
- * Verifica que haya sesión válida y membresía explícita en `admin_users` (Supabase)
- * o en el Team `admins` (Appwrite). Dispatches to the Appwrite path automatically
- * when `BACKEND=appwrite` — call sites remain unchanged.
- *
- * Se prefiere `auth.getUser()` (no `getSession()`) para forzar verificación
- * contra Supabase Auth Server, igual que en `(admin)/layout.tsx` y `proxy.ts`.
+ * Verifica que haya sesión válida y membresía en el Team `admins` (Appwrite).
+ * Throws `AdminAuthError` with `UNAUTHENTICATED` or `FORBIDDEN` — callers unchanged.
  */
-export async function requireAdmin(): Promise<AdminActionContext | AppwriteAdminActionContext> {
-  if (isAppwriteBackend()) {
-    return requireAdminAppwrite();
-  }
-
-  const supabase = await createClient();
-  const { data, error } = await supabase.auth.getUser();
-  if (error || !data.user) {
-    throw new AdminAuthError('UNAUTHENTICATED', 'Sesión inválida o expirada');
-  }
-
-  const isAdmin = await isAdminUser(supabase, data.user.id);
-  if (!isAdmin) {
-    throw new AdminAuthError('FORBIDDEN', 'No tenés permisos de administrador');
-  }
-
-  return { user: data.user, supabase };
+export async function requireAdmin(): Promise<AppwriteAdminActionContext> {
+  return requireAdminAppwrite();
 }
 
 /**
  * Convierte un error desconocido en un `AdminActionFailure` con mensaje
- * genérico — NO filtra mensajes crudos de Supabase al cliente.
+ * genérico — NO filtra mensajes crudos al cliente.
  *
  * Logueamos el error completo en el server (visible en Vercel) y devolvemos
  * un mensaje genérico apto para mostrar al usuario.
@@ -111,7 +80,7 @@ export function failureFromUnknown(err: unknown): AdminActionFailure {
 }
 
 /**
- * Mapea un error de Supabase a un mensaje genérico, sin exponer el detalle
+ * Mapea un error de base de datos a un mensaje genérico, sin exponer el detalle
  * interno (estructura de DB, índices, columnas) al cliente.
  *
  * Casos conocidos:
@@ -119,7 +88,7 @@ export function failureFromUnknown(err: unknown): AdminActionFailure {
  *  - `23503` → FK violation (ej: categoría inexistente)
  */
 export function describeSupabaseError(error: { code?: string; message?: string }): string {
-  console.error('[admin-action] supabase error:', error);
+  console.error('[admin-action] db error:', error);
   switch (error.code) {
     case '23505':
       return 'Ya existe un registro con esos datos.';
@@ -137,7 +106,7 @@ export function describeSupabaseError(error: { code?: string; message?: string }
  * Uso:
  * ```ts
  * export const createProduct = withAdminAuth(productCreateSchema)(
- *   async (data, { supabase, user }) => {
+ *   async (data, { databases, user }) => {
  *     // data ya validado por zod
  *     // ...
  *   }
@@ -155,11 +124,11 @@ export function withAdminAuth<TInput, TOutput extends { success: boolean }>(
   schema: ZodSchema<TInput> | null,
 ) {
   return function bind(
-    fn: (input: TInput, ctx: AdminActionContext | AppwriteAdminActionContext) => Promise<TOutput>,
+    fn: (input: TInput, ctx: AppwriteAdminActionContext) => Promise<TOutput>,
   ): (input: unknown) => Promise<TOutput | AdminActionFailure> {
     return async (rawInput: unknown) => {
       // 1) Auth check (defense-in-depth)
-      let ctx: AdminActionContext | AppwriteAdminActionContext;
+      let ctx: AppwriteAdminActionContext;
       try {
         ctx = await requireAdmin();
       } catch (err) {

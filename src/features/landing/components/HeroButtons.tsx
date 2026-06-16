@@ -1,7 +1,6 @@
 "use client";
 
 import Button from "@/components/ui/Button";
-import { clientTrackEvent } from "@/features/analytics/lib/clientTrack";
 import { BUSINESS } from "@/lib/constants";
 
 type CampaignMode = "contact" | "catalog";
@@ -42,7 +41,6 @@ export default function HeroButtons({
             href={BUSINESS.whatsapp}
             external
             className="text-center"
-            onClick={() => clientTrackEvent({ eventType: 'whatsapp_click', metadata: { source: 'hero' } })}
           >
             Pedir por WhatsApp
           </Button>

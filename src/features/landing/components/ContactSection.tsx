@@ -3,7 +3,6 @@ import { FaInstagram, FaWhatsapp } from "react-icons/fa";
 
 import BusinessHoursBadge from "@/components/shared/BusinessHoursBadge";
 import SectionHeader from "@/components/ui/SectionHeader";
-import WhatsAppContactLink from "@/features/analytics/components/WhatsAppContactLink";
 import { BUSINESS } from "@/lib/constants";
 
 
@@ -63,8 +62,10 @@ export default function ContactSection() {
           </div>
 
           {/* Botón WhatsApp */}
-          <WhatsAppContactLink
+          <a
             href={BUSINESS.whatsapp}
+            target="_blank"
+            rel="noopener noreferrer"
             className="group flex items-center justify-between rounded-2xl p-4 transition-all duration-300 hover:opacity-95"
             style={{ backgroundColor: "var(--color-whatsapp)" }}
           >
@@ -80,7 +81,7 @@ export default function ContactSection() {
               </div>
             </div>
             <ArrowRightIcon className="h-6 w-6 text-white transition-transform duration-300 group-hover:translate-x-1" />
-          </WhatsAppContactLink>
+          </a>
 
           {/* Botón Instagram */}
           <a

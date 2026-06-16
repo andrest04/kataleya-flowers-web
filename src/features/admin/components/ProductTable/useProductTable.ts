@@ -24,16 +24,11 @@ type DragEndHandler = NonNullable<DragDropEvents['dragend']>;
 function matchesActiveFilter(
   product: AdminProductRow,
   filter: AdminProductFilter | null | undefined,
-  viewedProductIds: Set<string>,
 ): boolean {
   switch (filter) {
     case 'missing-gallery':
       // <= 1 means only the primary (or no images at all) — no gallery
       return product.is_active && (product.product_images?.length ?? 0) <= 1;
-    case 'featured-without-views':
-      return product.is_featured && !viewedProductIds.has(product.id);
-    case 'active-without-views':
-      return product.is_active && !viewedProductIds.has(product.id);
     default:
       return true;
   }
@@ -42,7 +37,6 @@ function matchesActiveFilter(
 interface UseProductTableParams {
   initial: AdminProductRow[];
   activeFilter: AdminProductFilter | null;
-  viewedProductIds: Set<string>;
 }
 
 export interface DeleteTarget {
@@ -50,7 +44,7 @@ export interface DeleteTarget {
   name: string;
 }
 
-export function useProductTable({ initial, activeFilter, viewedProductIds }: UseProductTableParams) {
+export function useProductTable({ initial, activeFilter }: UseProductTableParams) {
   const [items, setItems] = useState<AdminProductRow[]>(initial);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null);
@@ -62,7 +56,7 @@ export function useProductTable({ initial, activeFilter, viewedProductIds }: Use
     const previousItems = items;
     const nextItems = items
       .map((product) => (product.id === id ? { ...product, is_active: isActive } : product))
-      .filter((product) => matchesActiveFilter(product, activeFilter, viewedProductIds));
+      .filter((product) => matchesActiveFilter(product, activeFilter));
     setItems(nextItems);
 
     const result = await toggleProductStatus(id, isActive);

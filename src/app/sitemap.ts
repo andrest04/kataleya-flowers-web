@@ -2,8 +2,9 @@ import type { MetadataRoute } from "next";
 
 import { getCategories } from "@/features/catalog/queries/getCategories";
 import { getSitemapProducts } from "@/features/catalog/queries/getSitemapProducts";
+import { BUSINESS } from "@/lib/constants";
 
-const SITE_URL = "https://kataleya-flawers.vercel.app";
+const SITE_URL = BUSINESS.website;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();

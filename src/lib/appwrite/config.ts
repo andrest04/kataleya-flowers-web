@@ -1,24 +1,10 @@
 /**
  * Appwrite environment configuration and collection IDs.
  *
- * This module is additive: Supabase remains the live backend until the
- * `BACKEND=appwrite` cutover. Therefore env validation MUST be lazy — it only
- * fails loudly when Appwrite is actually selected (`BACKEND=appwrite`) or when a
- * consumer explicitly resolves the config. Importing this file with
- * `BACKEND=supabase` or unset MUST NOT throw, so the live Supabase build is
- * never broken by missing Appwrite env vars.
+ * Appwrite is the sole backend. Env validation is lazy — importing this file
+ * never throws; `getAppwriteConfig()` fails loudly only when a consumer actually
+ * resolves the config and a required variable is missing.
  */
-
-/** Active backend selector. Defaults to `supabase` while Appwrite is staged. */
-export type Backend = 'supabase' | 'appwrite';
-
-export function getBackend(): Backend {
-  return process.env.BACKEND === 'appwrite' ? 'appwrite' : 'supabase';
-}
-
-export function isAppwriteBackend(): boolean {
-  return getBackend() === 'appwrite';
-}
 
 /**
  * Stable Appwrite resource IDs.
@@ -59,35 +45,9 @@ export interface AppwriteConfig {
 function requireEnv(name: string): string {
   const value = process.env[name];
   if (!value) {
-    throw new Error(
-      `Missing Appwrite environment variable: ${name} is required when BACKEND=appwrite.`,
-    );
+    throw new Error(`Missing Appwrite environment variable: ${name} is required.`);
   }
   return value;
-}
-
-/**
- * Development-only backend consistency check.
- *
- * Logs a clear operator error when BACKEND and NEXT_PUBLIC_BACKEND are both
- * set but do not match. This indicates a split-brain deployment configuration
- * that would route the client (login form, LogoutButton) to the wrong path.
- *
- * NEVER throws at import time — config.ts must remain lazy/import-safe so that
- * Supabase builds are never broken by missing Appwrite env vars. Only emits a
- * console.error; enforcement is intentionally soft (dev warning, not a fatal).
- */
-export function assertBackendConsistency(): void {
-  if (process.env.NODE_ENV !== 'development') return;
-  const server = process.env.BACKEND;
-  const client = process.env.NEXT_PUBLIC_BACKEND;
-  if (server && client && server !== client) {
-    console.error(
-      `[appwrite/config] BACKEND_MISMATCH detected: BACKEND="${server}" but ` +
-        `NEXT_PUBLIC_BACKEND="${client}". Both vars must be identical at cutover. ` +
-        'Login and logout will route to different backends — this is a deployment error.',
-    );
-  }
 }
 
 /**

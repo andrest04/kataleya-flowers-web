@@ -4,6 +4,8 @@
 // `mapCategoryRow` and admin consumers stay unchanged. The Supabase
 // `category_price_summary` view (min active-product price per category) has no
 // Appwrite equivalent, so `listCategoryPriceFrom` derives the same map in Node.
+import { randomUUID } from 'node:crypto';
+
 import { ID, Query } from 'node-appwrite';
 
 import { APPWRITE_COLLECTIONS } from '@/lib/appwrite/config';
@@ -156,7 +158,9 @@ export async function createCategoryDocument(
   const doc = await databases.createDocument<CategoryDoc>({
     databaseId,
     collectionId: C.categories,
-    documentId: ID.unique(),
+    // UUID (not ID.unique()) so admin actions' `uuid` schema accepts the id for
+    // later edit/delete/toggle — migrated rows keep their Supabase UUIDs too.
+    documentId: ID.custom(randomUUID()),
     data: {
       name: payload.name,
       slug: payload.slug,

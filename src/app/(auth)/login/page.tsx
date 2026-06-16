@@ -5,14 +5,6 @@ import { Suspense, useState } from 'react';
 
 import { loginAction } from '@/features/admin/actions/auth';
 import { BUSINESS } from '@/lib/constants';
-import { createClient } from '@/lib/supabase/client';
-
-// Determined once at server render; `NEXT_PUBLIC_BACKEND` exposes the same
-// `BACKEND` env var to the client bundle so the login page can skip the
-// server-action call when Supabase is active. When `NEXT_PUBLIC_BACKEND` is
-// unset the value is `undefined`, which is treated as `supabase`.
-const isAppwriteBackend =
-  process.env.NEXT_PUBLIC_BACKEND === 'appwrite';
 
 /**
  * Isolated child that reads useSearchParams().
@@ -48,39 +40,20 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
 
-    if (isAppwriteBackend) {
-      // Appwrite path: server action creates the session cookie server-side.
-      const result = await loginAction({ email, password });
-      if (!result.ok) {
-        // Never render raw sentinel strings or internal codes. Map to a
-        // user-safe message; VALIDATION and INVALID_CREDENTIALS already carry
-        // one; anything else gets a generic fallback.
-        const safeError =
-          result.code === 'VALIDATION' || result.code === 'INVALID_CREDENTIALS'
-            ? result.error
-            : 'No se pudo iniciar sesión. Intenta de nuevo.';
-        setError(safeError);
-        setLoading(false);
-        return;
-      }
-      router.push('/admin');
-      router.refresh();
-      return;
-    }
-
-    // Supabase path (default): unchanged client-side SDK flow.
-    const supabase = createClient();
-    const { error: authError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (authError) {
-      setError('Credenciales incorrectas. Intentá de nuevo.');
+    // Server action creates the session cookie server-side.
+    const result = await loginAction({ email, password });
+    if (!result.ok) {
+      // Never render raw sentinel strings or internal codes. Map to a
+      // user-safe message; VALIDATION and INVALID_CREDENTIALS already carry
+      // one; anything else gets a generic fallback.
+      const safeError =
+        result.code === 'VALIDATION' || result.code === 'INVALID_CREDENTIALS'
+          ? result.error
+          : 'No se pudo iniciar sesión. Intenta de nuevo.';
+      setError(safeError);
       setLoading(false);
       return;
     }
-
     router.push('/admin');
     router.refresh();
   }

@@ -1,6 +1,4 @@
-import { isAppwriteBackend } from "@/lib/appwrite/config";
 import { listSitemapProducts } from "@/lib/appwrite/repositories/products";
-import { createStaticClient } from "@/lib/supabase/static";
 
 /**
  * Datos mínimos por producto que el sitemap necesita:
@@ -19,48 +17,5 @@ export interface SitemapProduct {
 }
 
 export async function getSitemapProducts(): Promise<SitemapProduct[]> {
-  if (isAppwriteBackend()) {
-    // listSitemapProducts returns the same { slug, categorySlug, updatedAt } shape
-    return listSitemapProducts();
-  }
-
-  const supabase = createStaticClient();
-
-  // !inner garantiza que solo se devuelvan productos con categoría activa
-  const { data, error } = await supabase
-    .from("products")
-    .select("slug, updated_at, categories!inner(slug, is_active)")
-    .eq("is_active", true)
-    .eq("categories.is_active", true)
-    .order("updated_at", { ascending: false });
-
-  if (error) {
-    throw new Error(`getSitemapProducts failed: ${error.message}`);
-  }
-
-  const rows = data ?? [];
-
-  return rows.flatMap((row): SitemapProduct[] => {
-    // Supabase types the relation as array or object depending on inference.
-    // Normalize to a single object.
-    const rawCategory: unknown = (row as { categories: unknown }).categories;
-    const category = Array.isArray(rawCategory) ? rawCategory[0] : rawCategory;
-
-    if (!category || typeof category !== "object") {
-      return [];
-    }
-
-    const categorySlug = (category as { slug?: unknown }).slug;
-    if (typeof categorySlug !== "string") {
-      return [];
-    }
-
-    return [
-      {
-        slug: row.slug,
-        categorySlug,
-        updatedAt: row.updated_at,
-      },
-    ];
-  });
+  return listSitemapProducts();
 }

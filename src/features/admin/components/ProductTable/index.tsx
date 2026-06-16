@@ -35,7 +35,6 @@ interface ProductTableProps {
   categories: CategoryRow[];
   reorderable?: boolean;
   activeFilter?: AdminProductFilter | null;
-  viewedProductIds?: string[];
   emptyMessage?: string;
   clearFilterHref?: string;
 }
@@ -45,12 +44,10 @@ export default function ProductTable({
   categories,
   reorderable = false,
   activeFilter = null,
-  viewedProductIds = [],
   emptyMessage,
   clearFilterHref,
 }: ProductTableProps) {
-  const viewedSet = new Set(viewedProductIds);
-  const table = useProductTable({ initial: products, activeFilter, viewedProductIds: viewedSet });
+  const table = useProductTable({ initial: products, activeFilter });
   const dndA11y = useDndAccessibility(table.items, (p) => p.name);
   const categoryMap = new Map(categories.map((c) => [c.id, c.name]));
 

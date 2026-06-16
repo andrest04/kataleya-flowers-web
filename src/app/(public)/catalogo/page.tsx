@@ -11,7 +11,7 @@ import { getProductColors } from "@/features/catalog/queries/getProductColors";
 import { getProducts } from "@/features/catalog/queries/getProducts";
 import { BUSINESS } from "@/lib/constants";
 
-const SITE_URL = "https://kataleya-flawers.vercel.app";
+const SITE_URL = BUSINESS.website;
 
 // ISR backstop: pages refresh instantly on-demand via revalidatePath in admin actions;
 // this self-heals any missed path (e.g. color/flower-type renames) within 1 hour.

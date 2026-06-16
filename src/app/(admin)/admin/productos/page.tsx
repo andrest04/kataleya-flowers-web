@@ -1,9 +1,7 @@
 import Link from 'next/link';
 import { Suspense } from 'react';
 
-import { parseAnalyticsRange } from '@/features/admin/components/dashboard/analyticsRange';
 import ProductListClient from '@/features/admin/components/ProductListClient';
-import { getProductIdsWithViewsInRange } from '@/features/admin/queries/adminFilters';
 import { getAdminCategories } from '@/features/admin/queries/categories';
 import { getAdminProducts } from '@/features/admin/queries/products';
 import {
@@ -21,31 +19,23 @@ export default async function AdminProductosPage({
 }: AdminProductosPageProps) {
   const resolvedSearchParams = await searchParams;
   const activeFilter = parseAdminProductFilter(resolvedSearchParams.filter);
-  const analyticsRange = parseAnalyticsRange(resolvedSearchParams.range);
 
-  const [products, categories, viewedProductIds] = await Promise.all([
+  const [products, categories] = await Promise.all([
     getAdminProducts(),
     getAdminCategories(),
-    activeFilter === 'featured-without-views' || activeFilter === 'active-without-views'
-      ? getProductIdsWithViewsInRange(analyticsRange)
-      : Promise.resolve(new Set<string>()),
   ]);
 
   const baseFilteredProducts = products.filter((product) => {
     switch (activeFilter) {
       case 'missing-gallery':
         return product.is_active && (product.product_images?.length ?? 0) <= 1;
-      case 'featured-without-views':
-        return product.is_featured && !viewedProductIds.has(product.id);
-      case 'active-without-views':
-        return product.is_active && !viewedProductIds.has(product.id);
       default:
         return true;
     }
   });
 
   const filterMeta = activeFilter
-    ? getAdminProductFilterMeta(activeFilter, analyticsRange)
+    ? getAdminProductFilterMeta(activeFilter)
     : null;
   const clearFilterHref = buildAdminProductsHref({ categorySlug: null });
 
@@ -83,7 +73,6 @@ export default async function AdminProductosPage({
           activeFilter={activeFilter}
           filterMeta={filterMeta}
           clearFilterHref={clearFilterHref}
-          viewedProductIds={[...viewedProductIds]}
         />
       </Suspense>
     </div>

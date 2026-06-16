@@ -1,7 +1,5 @@
 import "./globals.css";
 
-import { Analytics } from "@vercel/analytics/next";
-import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata, Viewport } from "next";
 import { Lato, Playfair_Display } from "next/font/google";
 import type React from "react";
@@ -10,7 +8,7 @@ import { JsonLd } from "@/components/ui/JsonLd";
 import { Toaster } from "@/components/ui/primitives/sonner";
 import { BUSINESS } from "@/lib/constants";
 
-const SITE_URL = "https://kataleya-flawers.vercel.app";
+const SITE_URL = BUSINESS.website;
 
 const floristJsonLd = {
   "@context": "https://schema.org",
@@ -60,7 +58,7 @@ const lato = Lato({
 const baseDescription = `Floristería en ${BUSINESS.location} con ${BUSINESS.experience} años de experiencia en arreglos florales y orquídeas. Encargos para celebraciones, homenajes y regalos.`;
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://kataleya-flawers.vercel.app"),
+  metadataBase: new URL(BUSINESS.website),
   // Las páginas hijas devuelven `title` como string plain — el `template`
   // agrega el sufijo `| Kataleya Flawers`. NO concatenar `BUSINESS.name` en
   // los títulos hijos: duplica el sufijo. Si una página necesita evitar el
@@ -125,8 +123,6 @@ export default function RootLayout({
         </a>
         {children}
         <Toaster />
-        <Analytics />
-        <SpeedInsights />
       </body>
     </html>
   );

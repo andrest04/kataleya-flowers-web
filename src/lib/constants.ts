@@ -1,6 +1,6 @@
 export const BUSINESS = {
   name: "Kataleya Flawers",
-  website: "https://kataleyaflawers.com",
+  website: "https://kataleya-flawers.appwrite.network",
   phone: "51990051041",
   whatsapp: "https://wa.me/51990051041",
   whatsappWithMessage: (msg: string) =>

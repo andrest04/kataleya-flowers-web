@@ -1,10 +1,4 @@
-import type { DashboardInsight } from '@/features/admin/queries/dashboardInsights';
-
-export const ADMIN_PRODUCT_FILTER_VALUES = [
-  'missing-gallery',
-  'featured-without-views',
-  'active-without-views',
-] as const;
+export const ADMIN_PRODUCT_FILTER_VALUES = ['missing-gallery'] as const;
 
 export type AdminProductFilter = (typeof ADMIN_PRODUCT_FILTER_VALUES)[number];
 
@@ -18,21 +12,12 @@ function getSingleValue(value: string | string[] | undefined): string | undefine
 
 export function buildAdminProductsHref(params: {
   filter?: AdminProductFilter | null;
-  range?: number;
   categorySlug?: string | null;
 }): string {
   const searchParams = new URLSearchParams();
 
   if (params.filter) {
     searchParams.set('filter', params.filter);
-  }
-
-  if (
-    params.range !== undefined
-    && params.filter
-    && (params.filter === 'featured-without-views' || params.filter === 'active-without-views')
-  ) {
-    searchParams.set('range', String(params.range));
   }
 
   if (params.categorySlug) {
@@ -71,10 +56,7 @@ interface CategoryFilterMeta {
   emptyMessage: string;
 }
 
-export function getAdminProductFilterMeta(
-  filter: AdminProductFilter,
-  range: number,
-): ProductFilterMeta {
+export function getAdminProductFilterMeta(filter: AdminProductFilter): ProductFilterMeta {
   switch (filter) {
     case 'missing-gallery':
       return {
@@ -84,67 +66,26 @@ export function getAdminProductFilterMeta(
         emptyMessage:
           'No hay productos activos con galerías incompletas en este momento.',
       };
-    case 'featured-without-views':
-      return {
-        label: 'Destacados sin vistas',
-        description: `Mostrando productos destacados que no recibieron vistas en los últimos ${range} días.`,
-        emptyMessage:
-          'No hay productos destacados sin vistas dentro del rango seleccionado.',
-      };
-    case 'active-without-views':
-      return {
-        label: 'Activos sin vistas',
-        description: `Mostrando productos activos que no recibieron vistas en los últimos ${range} días.`,
-        emptyMessage:
-          'No hay productos activos sin vistas dentro del rango seleccionado.',
-      };
   }
 }
 
-export function getAdminCategoryFilterMeta(
-  filter: AdminCategoryFilter,
-): CategoryFilterMeta {
+export function getAdminCategoryFilterMeta(filter: AdminCategoryFilter): CategoryFilterMeta {
   switch (filter) {
     case 'without-active-products':
       return {
         label: 'Categorías vacías',
         description:
           'Mostrando categorías que hoy no tienen productos activos publicados en el catálogo.',
-        emptyMessage:
-          'No hay categorías sin productos activos en este momento.',
+        emptyMessage: 'No hay categorías sin productos activos en este momento.',
       };
   }
 }
 
-export function getAdminProductFilterHref(
-  filter: AdminProductFilter,
-  range?: number,
-): string {
-  return buildAdminProductsHref({ filter, range });
+export function getAdminProductFilterHref(filter: AdminProductFilter): string {
+  return buildAdminProductsHref({ filter });
 }
 
 export function getAdminCategoryFilterHref(filter: AdminCategoryFilter): string {
   const params = new URLSearchParams({ filter });
   return `/admin/categorias?${params.toString()}`;
-}
-
-export function getDashboardInsightActionHref(
-  insightId: DashboardInsight['id'],
-  range: number,
-): string | null {
-  switch (insightId) {
-    case 'active-without-additional-images':
-      return getAdminProductFilterHref('missing-gallery');
-    case 'categories-without-active-products':
-      return getAdminCategoryFilterHref('without-active-products');
-    case 'featured-without-views':
-      return getAdminProductFilterHref('featured-without-views', range);
-    case 'active-without-views':
-    case 'interest-without-contact':
-      return getAdminProductFilterHref('active-without-views', range);
-    case 'product-interest-without-whatsapp':
-      return `/admin?tab=analiticas&range=${range}`;
-    default:
-      return null;
-  }
 }

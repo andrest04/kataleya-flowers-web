@@ -23,7 +23,6 @@ interface ProductListClientProps {
   activeFilter: AdminProductFilter | null;
   filterMeta: ProductFilterMeta | null;
   clearFilterHref: string;
-  viewedProductIds: string[];
 }
 
 export default function ProductListClient({
@@ -32,7 +31,6 @@ export default function ProductListClient({
   activeFilter,
   filterMeta,
   clearFilterHref,
-  viewedProductIds,
 }: ProductListClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -191,7 +189,6 @@ export default function ProductListClient({
         categories={categories}
         reorderable={activeCategory !== null}
         activeFilter={activeFilter}
-        viewedProductIds={viewedProductIds}
         emptyMessage={filterMeta?.emptyMessage}
         clearFilterHref={filterMeta ? clearFilterHref : undefined}
       />
