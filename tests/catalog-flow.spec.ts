@@ -97,13 +97,14 @@ test.describe("Phase 4B — Catalog flow", () => {
 
     await expect(minInput).toBeVisible();
 
-    await minInput.focus();
-    await page.keyboard.type("50", { delay: 30 });
+    // `.fill()` dispara un único onChange con el valor completo — más estable que
+    // tipear char-por-char, donde el input se remonta (key={`min-${precioMin}`})
+    // al cruzar el umbral de commit y se pierde el foco a mitad de la secuencia.
+    await minInput.fill("50");
 
     await expect(page).toHaveURL(/precio_min=50/, { timeout: 8_000 });
 
-    await maxInput.focus();
-    await page.keyboard.type("200", { delay: 30 });
+    await maxInput.fill("200");
 
     await expect(page).toHaveURL(/precio_max=200/, { timeout: 8_000 });
 

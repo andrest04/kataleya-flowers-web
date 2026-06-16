@@ -114,7 +114,7 @@ test.describe('Phase 4C — Admin productos CRUD', () => {
 
     await expect(page.getByRole('heading', { name: 'Nuevo producto' })).toBeVisible();
     // Fields requeridos.
-    await expect(page.getByLabel('Nombre')).toBeVisible();
+    await expect(page.getByLabel(/^Nombre/)).toBeVisible();
     await expect(page.getByLabel('Descripción')).toBeVisible();
     await expect(page.getByLabel('Categoría')).toBeVisible();
     await expect(page.getByLabel('Precio base (S/)')).toBeVisible();
@@ -165,7 +165,7 @@ test.describe('Phase 4C — Admin productos CRUD', () => {
     await page.goto(product.href);
     await expect(page.getByRole('heading', { name: 'Editar producto' })).toBeVisible();
 
-    const nameInput = page.getByLabel('Nombre');
+    const nameInput = page.getByLabel(/^Nombre/);
     await expect(nameInput).toHaveValue(product.name);
 
     const tempName = `${product.name} [E2E_TMP_${Date.now()}]`;
@@ -177,7 +177,7 @@ test.describe('Phase 4C — Admin productos CRUD', () => {
 
     // Refrescar y revertir: tomar el mismo producto y restaurar el nombre.
     await page.goto(product.href);
-    const nameInputBack = page.getByLabel('Nombre');
+    const nameInputBack = page.getByLabel(/^Nombre/);
     await expect(nameInputBack).toHaveValue(tempName);
     await nameInputBack.fill(product.name);
     await page.getByRole('button', { name: /Guardar producto/i }).click();
