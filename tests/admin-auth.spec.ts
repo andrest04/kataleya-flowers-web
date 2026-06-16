@@ -6,7 +6,7 @@ import { getAdminCredentials, loginAsAdmin } from './helpers/adminAuth';
  * Phase 4C — Admin auth E2E.
  *
  * Cubre:
- *  - Login exitoso (renderiza dashboard, sidebar visible)
+ *  - Login exitoso (redirige a /admin/productos, sidebar visible)
  *  - Logout (vuelve a /login y la sesión queda invalidada)
  *  - Acceso sin sesión a /admin/* redirige a /login (proxy.ts)
  *  - Acceso sin sesión a /api/cloudinary/sign devuelve 401

@@ -23,6 +23,7 @@ export async function loginAsAdmin(page: Page, credentials: AdminCredentials): P
   await page.getByLabel('Contraseña').fill(credentials.password);
   await page.getByRole('button', { name: 'Ingresar' }).click();
 
-  await expect(page).toHaveURL(/\/admin(?:\?|$)/);
-  await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible();
+  // /admin has no dashboard of its own — it redirects to /admin/productos.
+  await expect(page).toHaveURL(/\/admin\/productos/);
+  await expect(page.getByRole('heading', { name: 'Productos' })).toBeVisible();
 }

@@ -23,9 +23,8 @@ async function navigateToFirstProduct(page: Page): Promise<{
 }> {
   await page.goto("/catalogo");
 
-  // Tomamos el href de la primera categoría y navegamos directo (los <Link>
-  // de CategoryCard / ProductCard disparan clientTrackEvent en onClick, lo
-  // que hace flake en dev).
+  // Tomamos el href de la primera categoría y navegamos directo por URL
+  // (equivalente al click, evita flake de transición en dev).
   const firstCategoryLink = page
     .locator('a[href^="/catalogo/"]:not([href="/catalogo"])')
     .first();

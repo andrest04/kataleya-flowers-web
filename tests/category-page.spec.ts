@@ -26,10 +26,8 @@ test.describe("Phase 4B — Category page", () => {
     const href = await firstCategoryLink.getAttribute("href");
     expect(href).toMatch(/^\/catalogo\/[a-z0-9-]+$/);
 
-    // Navegamos directamente al href: el click en el <Link> de CategoryCard
-    // dispara clientTrackEvent (analytics) ANTES del navigation. En dev, ese
-    // tracking puede retrasar la transición lo suficiente para hacer flake al
-    // waitForURL. Visitar el href directo es equivalente y elimina el flake.
+    // Navegamos directamente al href en vez de clickear el <Link>: es
+    // equivalente y evita flake de transición en dev.
     await page.goto(href ?? "/catalogo");
     await expect(page).toHaveURL(/\/catalogo\/[a-z0-9-]+$/);
 
@@ -54,9 +52,8 @@ test.describe("Phase 4B — Category page", () => {
   }) => {
     await page.goto("/catalogo");
 
-    // Tomamos el href de la primera categoría y navegamos directamente.
-    // (CategoryCard dispara clientTrackEvent en el onClick — preferimos navegar
-    // por URL para evitar flake en dev.)
+    // Tomamos el href de la primera categoría y navegamos directamente por URL
+    // (equivalente al click, evita flake de transición en dev).
     const firstCategoryLink = page
       .locator('a[href^="/catalogo/"]:not([href="/catalogo"])')
       .first();
