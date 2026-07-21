@@ -4,6 +4,7 @@ import type { Metadata, Viewport } from "next";
 import { Lato, Playfair_Display } from "next/font/google";
 import type React from "react";
 
+import { MotionProvider } from "@/components/shared/MotionProvider";
 import { JsonLd } from "@/components/ui/JsonLd";
 import { Toaster } from "@/components/ui/primitives/sonner";
 import { BUSINESS } from "@/lib/constants";
@@ -121,7 +122,7 @@ export default function RootLayout({
         >
           Saltar al contenido principal
         </a>
-        {children}
+        <MotionProvider>{children}</MotionProvider>
         <Toaster />
       </body>
     </html>
