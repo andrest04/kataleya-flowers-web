@@ -1,12 +1,12 @@
 import { z } from 'zod';
 
 import {
-  cloudinaryUrl,
   longText,
   nonEmptyString,
   nonNegativeInt,
   optionalTrimmedString,
   slug,
+  storedImageUrl,
 } from './common';
 
 /**
@@ -24,7 +24,7 @@ const baseCategoryShape = {
   description: longText,
   occasion: optionalTrimmedString.transform((value) => value ?? ''),
   imageUrl: z
-    .union([z.literal(''), cloudinaryUrl])
+    .union([z.literal(''), storedImageUrl])
     .optional()
     .transform((value) => value ?? ''),
   displayOrder: nonNegativeInt.optional().default(0),

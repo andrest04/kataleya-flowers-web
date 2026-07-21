@@ -615,7 +615,7 @@ export async function deleteProductRelations(productId: string): Promise<void> {
   ]);
 }
 
-/** Returns all current product_images URLs for a product (for Cloudinary cleanup). */
+/** Returns all current product_images URLs for a product (for storage cleanup). */
 export async function getProductImageUrls(productId: string): Promise<string[]> {
   const { databases, databaseId } = getRepositoryContext();
   const docs = await listAllDocuments<ProductImageDoc>(databases, databaseId, C.productImages, [

@@ -29,8 +29,17 @@ export const APPWRITE_COLLECTIONS = {
   counters: 'counters',
 } as const;
 
+/** Stable Appwrite Storage bucket IDs — same rationale as `APPWRITE_COLLECTIONS`. */
+export const APPWRITE_BUCKETS = {
+  products: 'product_images',
+  categories: 'category_images',
+} as const;
+
 /** Names of the Appwrite collections used by Phase 1 (Auth + DB). */
 export type AppwriteCollectionIds = typeof APPWRITE_COLLECTIONS;
+
+/** Names of the Appwrite Storage buckets used for product/category images. */
+export type AppwriteBucketIds = typeof APPWRITE_BUCKETS;
 
 /** Fully resolved, validated Appwrite configuration. */
 export interface AppwriteConfig {
@@ -40,6 +49,7 @@ export interface AppwriteConfig {
   databaseId: string;
   teamAdminsId: string;
   collections: AppwriteCollectionIds;
+  buckets: AppwriteBucketIds;
 }
 
 function requireEnv(name: string): string {
@@ -65,5 +75,6 @@ export function getAppwriteConfig(): AppwriteConfig {
     databaseId: APPWRITE_DATABASE_ID,
     teamAdminsId: APPWRITE_TEAM_ADMINS_ID,
     collections: APPWRITE_COLLECTIONS,
+    buckets: APPWRITE_BUCKETS,
   };
 }

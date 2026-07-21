@@ -7,10 +7,10 @@ import { getAdminCredentials, loginAsAdmin } from './helpers/adminAuth';
  *
  * IMPORTANTE — alcance defensivo:
  *
- * El form de productos exige `imageUrl` servido desde Cloudinary, validado por
- * zod (`CLOUDINARY_URL_REGEX`). El upload real requiere firma server-side y
- * mover bytes hacia Cloudinary, lo cual NO es práctico en E2E (cuesta créditos
- * y deja basura). Por eso estos specs:
+ * El form de productos exige `imageUrl` servido desde el storage propio,
+ * validado por zod (`storedImageUrl`). El upload real escribe archivos reales
+ * en el bucket de Appwrite Storage y deja basura, lo cual NO es práctico en
+ * E2E. Por eso estos specs:
  *
  *  1) NO crean productos persistentes — verificamos validación zod (camino de
  *     error) y que el form llega a montarse correctamente.

@@ -9,7 +9,7 @@ import { getAdminCredentials, loginAsAdmin } from './helpers/adminAuth';
  *  - Login exitoso (redirige a /admin/productos, sidebar visible)
  *  - Logout (vuelve a /login y la sesión queda invalidada)
  *  - Acceso sin sesión a /admin/* redirige a /login (proxy.ts)
- *  - Acceso sin sesión a /api/cloudinary/sign devuelve 401
+ *  - Acceso sin sesión a /api/images/upload devuelve 401
  *
  * Requiere E2E_ADMIN_EMAIL + E2E_ADMIN_PASSWORD en env.
  */
@@ -30,12 +30,11 @@ test.describe('Phase 4C — Admin auth (sin sesión)', () => {
     await ctx.close();
   });
 
-  test('acceso sin sesión a /api/cloudinary/sign devuelve 401', async ({ browser }) => {
+  test('acceso sin sesión a /api/images/upload devuelve 401', async ({ browser }) => {
     // Request context independiente — sin cookies.
     const ctx = await browser.newContext();
-    const response = await ctx.request.post('/api/cloudinary/sign', {
-      data: { folder: 'productos' },
-      headers: { 'content-type': 'application/json' },
+    const response = await ctx.request.post('/api/images/upload', {
+      multipart: { folder: 'productos' },
     });
 
     // Phase 2 endurece el endpoint con auth obligatoria.

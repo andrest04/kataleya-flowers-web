@@ -11,7 +11,7 @@ import { expect, type Page, test } from "@playwright/test";
  * Covers:
  *  Group 1 — Catalog grid renders products (unfiltered → category grid;
  *             with filters → filtered products + count)
- *  Group 2 — Product detail page: primary image from Cloudinary,
+ *  Group 2 — Product detail page: primary image from Appwrite Storage,
  *             gallery thumbnails, h1 title, price
  *  Group 3 — Client-side filters: color + flower-type chips narrow
  *             results; "Limpiar filtros" restores grid
@@ -135,7 +135,7 @@ test.describe("Taxonomy baseline — Group 1: catalog grid", () => {
     expect(hasResults).toBe(true);
   });
 
-  test("category page shows product cards with Cloudinary images", async ({
+  test("category page shows product cards with Appwrite Storage images", async ({
     page,
   }) => {
     await page.goto("/catalogo");
@@ -186,7 +186,7 @@ test.describe("Taxonomy baseline — Group 1: catalog grid", () => {
 // ---------------------------------------------------------------------------
 
 test.describe("Taxonomy baseline — Group 2: product detail", () => {
-  test("product detail: h1, Cloudinary primary image, price", async ({
+  test("product detail: h1, Appwrite Storage primary image, price", async ({
     page,
   }) => {
     await navigateToFirstProduct(page);
@@ -202,15 +202,15 @@ test.describe("Taxonomy baseline — Group 2: product detail", () => {
     const mainImageButton = page.locator('button[aria-haspopup="dialog"]');
     await expect(mainImageButton).toBeVisible();
 
-    // The image inside should come from Cloudinary CDN.
+    // The image inside should come from Appwrite Storage.
     const mainImg = mainImageButton.locator("img").first();
     await expect(mainImg).toBeVisible();
     const src = await mainImg.getAttribute("src");
     expect(src).toBeTruthy();
-    // next/image encodes the URL — verify the original Cloudinary domain is
+    // next/image encodes the URL — verify the Appwrite Storage path is
     // present either raw or URL-encoded.
     const decodedSrc = decodeURIComponent(src ?? "");
-    expect(decodedSrc).toMatch(/cloudinary\.com|res\.cloudinary/i);
+    expect(decodedSrc).toMatch(/storage\/buckets\//i);
   });
 
   test("product detail: gallery thumbnails render when product has multiple images", async ({

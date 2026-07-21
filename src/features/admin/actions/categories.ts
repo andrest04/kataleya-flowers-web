@@ -16,7 +16,6 @@ import {
   failureFromUnknown,
   requireAdmin,
 } from '@/features/admin/utils/auth';
-import { isAllowedCloudinaryUrl } from '@/features/admin/utils/cloudinaryUrl';
 import { slugify } from '@/features/admin/utils/slugify';
 import {
   countProductsInCategory,
@@ -31,7 +30,7 @@ import {
   setCategoryFeatured,
   updateCategoryDocument,
 } from '@/lib/appwrite/repositories/categories';
-import { destroyCloudinaryImage, destroyCloudinaryImages } from '@/lib/cloudinary';
+import { imageStorage } from '@/lib/imageStorage';
 interface SuccessResult {
   success: true;
 }
@@ -77,7 +76,7 @@ export async function createCategory(
       };
     }
 
-    if (parsed.data.imageUrl && !isAllowedCloudinaryUrl(parsed.data.imageUrl)) {
+    if (parsed.data.imageUrl && !imageStorage.isOwnedUrl(parsed.data.imageUrl)) {
       return {
         success: false,
         error: 'URL de imagen no permitida.',
@@ -141,7 +140,7 @@ export async function updateCategory(
       };
     }
 
-    if (parsed.data.imageUrl && !isAllowedCloudinaryUrl(parsed.data.imageUrl)) {
+    if (parsed.data.imageUrl && !imageStorage.isOwnedUrl(parsed.data.imageUrl)) {
       return {
         success: false,
         error: 'URL de imagen no permitida.',
@@ -175,9 +174,9 @@ export async function updateCategory(
       throw writeErr;
     }
 
-    // Cleanup replaced image from Cloudinary (best-effort)
+    // Cleanup replaced image from storage (best-effort)
     if (current?.image_url && current.image_url !== parsed.data.imageUrl) {
-      void destroyCloudinaryImage(current.image_url);
+      void imageStorage.delete(current.image_url);
     }
 
     const affected = [current?.slug, slug].filter(
@@ -266,7 +265,7 @@ export async function deleteCategory(
 
     if (mode === 'cascade') {
       const imageUrls = await deleteCategoryCascadeAppwrite(idParsed.data);
-      if (imageUrls.length > 0) void destroyCloudinaryImages(imageUrls);
+      if (imageUrls.length > 0) void imageStorage.deleteMany(imageUrls);
     } else {
       const reassignParsed = uuid.safeParse(reassignTo);
       if (!reassignParsed.success) {
@@ -277,7 +276,7 @@ export async function deleteCategory(
         };
       }
       const imageUrl = await deleteCategoryReassignAppwrite(idParsed.data, reassignParsed.data);
-      if (imageUrl) void destroyCloudinaryImage(imageUrl);
+      if (imageUrl) void imageStorage.delete(imageUrl);
     }
 
     await revalidateAllCategoryPaths();

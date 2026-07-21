@@ -173,7 +173,7 @@ test.describe("Phase 4B — SEO metadata + JSON-LD", () => {
     // La imagen del producto NO debe ser la imagen genérica del root
     // (next/metadata genera /opengraph-image cuando no se setea openGraph.images).
     expect(productOgImage).not.toContain("/opengraph-image");
-    // Debe ser una URL absoluta — Cloudinary CDN o fallback a public/.
+    // Debe ser una URL absoluta — Appwrite Storage o fallback a public/.
     expect(productOgImage).toMatch(/^https?:\/\//);
   });
 });

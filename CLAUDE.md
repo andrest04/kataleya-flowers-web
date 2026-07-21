@@ -6,7 +6,7 @@ Landing + admin para **Kataleya Flawers**, florería real en Lima, Perú. Negoci
 
 ## Stack
 
-Next.js 16 (App Router, RSC por defecto) · React 19 · TS 5 strict · Tailwind v4 (CSS-only, sin `tailwind.config.*`) · Framer Motion 12 · @dnd-kit · lucide-react · Radix primitives · zod · Appwrite (Auth + DB, único backend) · Cloudinary (`res.cloudinary.com/dbjm18dqg`) · Playwright · next/font/google (Playfair Display + Lato).
+Next.js 16 (App Router, RSC por defecto) · React 19 · TS 5 strict · Tailwind v4 (CSS-only, sin `tailwind.config.*`) · Framer Motion 12 · @dnd-kit · lucide-react · Radix primitives · zod · Appwrite (Auth + DB + Storage, único backend) · Playwright · next/font/google (Playfair Display + Lato).
 
 ## Comandos
 
@@ -59,14 +59,14 @@ src/
 │   ├── (public)/             # landing (page.tsx) + catalogo/[categoria]/[slug]
 │   ├── (admin)/admin/        # page · productos · categorias (auth)
 │   ├── (auth)/login/
-│   └── api/cloudinary/sign · api/admin/*
+│   └── api/images/upload · api/admin/*
 ├── components/
 │   ├── shared/               # Navbar, Footer, WhatsAppFloat, BusinessHoursBadge
 │   └── ui/                   # design system + primitives/ (shadcn/Radix)
 ├── features/
 │   ├── landing/components/   # HeroSection/, AboutSection, ContactSection…
 │   ├── catalog/              # incl. utils/filterProducts.ts
-│   └── admin/                # actions (requireAdmin+zod+Result), schemas, utils/{auth,slugify,cloudinaryUrl}
+│   └── admin/                # actions (requireAdmin+zod+Result), schemas, utils/{auth,slugify}
 ├── data/products.ts          # LEGACY — no se usa
 └── lib/{constants,navigation}.ts · lib/appwrite/* (config · repositories · auth/session) · lib/db/rows.ts (tipos de fila)
 ```
@@ -87,14 +87,14 @@ Toda action en `features/admin/actions/` **debe**:
      | { ok: true; data: T }
      | { ok: false; error: { code: string; message: string; issues?: ZodIssue[] } };
    ```
-4. URLs de imagen pasan por `isAllowedCloudinaryUrl` (`utils/cloudinaryUrl.ts`) o el schema `cloudinaryUrl` de `schemas/common.ts`.
+4. URLs de imagen pasan por `imageStorage.isOwnedUrl` (`@/lib/imageStorage`) o el schema `storedImageUrl` de `schemas/common.ts`.
 5. `revalidatePath` — **Productos:** `/`, `/catalogo`, `/catalogo/{cat.slug}`, `/catalogo/{cat.slug}/{slug}`, `/admin/productos`. **Categorías:** `/`, `/catalogo`, `/catalogo/{slug}` (cada slug afectado), `/admin/categorias`.
 
 No cambiar el contrato `Result<T>` ni la firma al evolucionar autorización.
 
 **Slugs en edición:** preservar el original (no regenerar al cambiar `name`); regenerar solo opt-in (botón explícito). Server: mismo slug → no regenera; distinto → acepta. Impl: `useProductForm.autoSlug`, `CategoryForm` `readOnly`+botón.
 
-**API routes** (`/api/cloudinary/sign`): `auth.getUser()` o 401 · validar folder con `isAllowedFolder` (allowlist `productos`, `categorias`) · firmar `allowed_formats`/`max_file_size` server-side · logs sin secretos.
+**API routes** (`/api/images/upload`): `auth.getUser()` o 401 · validar folder con `isAllowedImageFolder` (allowlist `productos`, `categorias`) · valida tipo/tamaño server-side, sube vía `imageStorage.upload` · logs sin secretos.
 
 ## Convenciones Next 16 + estilos
 

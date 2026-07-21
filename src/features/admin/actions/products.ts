@@ -13,7 +13,6 @@ import {
   failureFromUnknown,
   requireAdmin,
 } from '@/features/admin/utils/auth';
-import { isAllowedCloudinaryUrl } from '@/features/admin/utils/cloudinaryUrl';
 import { slugify } from '@/features/admin/utils/slugify';
 import { APPWRITE_COLLECTIONS } from '@/lib/appwrite/config';
 import {
@@ -35,7 +34,7 @@ import {
   ensureColorsAppwrite,
   ensureFlowerTypesAppwrite,
 } from '@/lib/appwrite/repositories/taxonomy';
-import { destroyCloudinaryImages } from '@/lib/cloudinary';
+import { imageStorage } from '@/lib/imageStorage';
 interface SuccessResult {
   success: true;
 }
@@ -44,11 +43,11 @@ type ProductActionResult = SuccessResult | AdminActionFailure;
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 async function validateImageUrls(data: ProductFormData): Promise<AdminActionFailure | null> {
-  if (!isAllowedCloudinaryUrl(data.imageUrl)) {
+  if (!imageStorage.isOwnedUrl(data.imageUrl)) {
     return { success: false, error: 'URL de imagen no permitida.', code: 'VALIDATION' };
   }
   for (const url of data.images) {
-    if (!isAllowedCloudinaryUrl(url)) {
+    if (!imageStorage.isOwnedUrl(url)) {
       return { success: false, error: 'Una de las imágenes adicionales tiene una URL no permitida.', code: 'VALIDATION' };
     }
   }
@@ -213,10 +212,10 @@ export async function updateProduct(
       throw writeErr;
     }
 
-    // Cloudinary cleanup — best-effort for removed images
+    // Storage cleanup — best-effort for removed images
     const newUrls = new Set([formData.imageUrl, ...formData.images]);
     const removed = currentImageUrls.filter((url) => !newUrls.has(url));
-    if (removed.length > 0) void destroyCloudinaryImages(removed);
+    if (removed.length > 0) void imageStorage.deleteMany(removed);
 
     const syncErr = await syncProductTaxonomyAppwrite({
       productId: idParsed.data,
@@ -262,7 +261,7 @@ export async function deleteProduct(id: string): Promise<ProductActionResult> {
     await deleteProductRelations(idParsed.data);
     await deleteProductDocument(idParsed.data);
 
-    if (imageUrls.length > 0) void destroyCloudinaryImages(imageUrls);
+    if (imageUrls.length > 0) void imageStorage.deleteMany(imageUrls);
 
     await revalidateProductPaths(productSlug ?? undefined, meta?.categoryId);
     return { success: true };

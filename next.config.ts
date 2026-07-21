@@ -55,17 +55,18 @@ const SECURITY_HEADERS = [
  *     a un servicio externo (Sentry, report-uri.com)
  *
  * Dominios permitidos:
- *   - res.cloudinary.com  -> CDN de imágenes de productos
- *   - www.google.com      -> iframe de Google Maps en /contacto
+ *   - nyc.cloud.appwrite.io -> Appwrite Storage (imágenes de productos/categorías)
+ *   - www.google.com        -> iframe de Google Maps en /contacto
  *
- * Appwrite se consume server-side (RSC + server actions), así que no requiere
- * entradas de browser en connect-src.
+ * Appwrite DB/Auth se consume server-side (RSC + server actions); Storage sí
+ * se sirve al browser (URLs de imagen en `<Image>`), de ahí la entrada en
+ * img-src.
  */
 const CSP_REPORT_ONLY = [
   "default-src 'self'",
   "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https://res.cloudinary.com",
+  "img-src 'self' data: blob: https://nyc.cloud.appwrite.io",
   "font-src 'self' data:",
   "connect-src 'self'",
   "frame-src 'self' https://www.google.com",
@@ -85,8 +86,8 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "res.cloudinary.com",
-        pathname: "/dbjm18dqg/**",
+        hostname: "nyc.cloud.appwrite.io",
+        pathname: "/v1/storage/buckets/**",
       },
     ],
   },

@@ -13,7 +13,7 @@ Sitio web oficial de **Kataleya Flawers** — florería con 32 años de experien
 - **Drag & Drop:** @dnd-kit/react — reordenamiento visual de categorías
 - **Iconos:** react-icons 5 + lucide-react
 - **Tipografías:** Playfair Display (display/headings) + Lato (body) — vía Google Fonts
-- **Imágenes:** Cloudinary CDN (`res.cloudinary.com/dbjm18dqg`) — upload + destroy integrados
+- **Imágenes:** Appwrite Storage — upload + destroy integrados, buckets `product_images`/`category_images`
 - **Email:** Resend — envío transaccional
 - **Testing:** Playwright — e2e tests para landing, catálogo y dashboard
 - **Deploy:** Vercel
@@ -100,9 +100,9 @@ src/
 │       │   ├── ProductForm/                # Formulario create/edit con arrays dinámicos
 │       │   ├── CategoryList/               # Lista con drag-and-drop reorder (@dnd-kit)
 │       │   ├── CategoryForm.tsx            # Formulario create/edit de categorías
-│       │   ├── ImageUploader.tsx           # Upload a Cloudinary con drag-and-drop
+│       │   ├── ImageUploader.tsx           # Upload a Appwrite Storage con drag-and-drop
 │       │   └── LogoutButton.tsx
-│       ├── hooks/useImageUpload.ts         # Hook de upload a Cloudinary
+│       ├── hooks/useImageUpload.ts         # Hook de upload a Appwrite Storage
 │       ├── queries/
 │       │   ├── products.ts                 # getAdminProducts, getAdminProductById
 │       │   ├── categories.ts               # getAdminCategories, getAdminCategoryById
@@ -114,14 +114,13 @@ src/
 │       ├── utils/
 │       │   ├── auth.ts                     # requireAdmin / withAdminAuth
 │       │   ├── adminMembership.appwrite.ts # isAdminUserAppwrite — verifica Team admins
-│       │   ├── slugify.ts                  # Slugify compartido entre actions y forms
-│       │   └── cloudinaryUrl.ts            # isAllowedCloudinaryUrl
+│       │   └── slugify.ts                  # Slugify compartido entre actions y forms
 │       └── types/                          # ProductFormData, CategoryFormData
 ├── data/
 │   └── products.ts                         # Datos estáticos legacy (no se usa en código activo)
 ├── lib/
 │   ├── constants.ts                        # BUSINESS — datos de contacto y negocio
-│   ├── cloudinary.ts                       # destroyCloudinaryImage, destroyCloudinaryImages
+│   ├── imageStorage/                       # Abstracción de storage (types, appwriteProvider, urlValidation)
 │   ├── resend.ts                           # Cliente Resend para email transaccional
 │   ├── db/rows.ts                          # Tipos de fila DB: CategoryRow, ProductRow, etc.
 │   └── appwrite/
@@ -151,7 +150,7 @@ proxy.ts                                    # Next.js middleware (renombrado) �
 | Auth (login/logout)     | ✅ Completa | Appwrite Auth, cookie-presence guard en proxy.ts         |
 | Admin — Productos CRUD  | ✅ Completa | Crear, editar, eliminar, tabla con filtros               |
 | Admin — Categorías CRUD | ✅ Completa | CRUD + drag-and-drop reorder + featured toggle           |
-| Admin — Image Upload    | ✅ Completa | Cloudinary con drag-and-drop, preview, progress          |
+| Admin — Image Upload    | ✅ Completa | Appwrite Storage con drag-and-drop, preview, progress    |
 | E2E Tests               | ✅ Activos  | Playwright: smoke, catálogo, dashboard                   |
 | Contacto backend        | ❌ No hay   | Solo links directos a WhatsApp e Instagram               |
 

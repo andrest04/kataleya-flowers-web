@@ -1,20 +1,6 @@
 import { z } from 'zod';
 
-/**
- * Cloud name autorizado para Cloudinary. Mantener sincronizado con
- * `next.config.ts` (`remotePatterns`) y `CLAUDE.md`.
- *
- * Si cambia, exportarlo desde `lib/constants` y reusar acá.
- */
-export const CLOUDINARY_CLOUD_NAME = 'dbjm18dqg';
-
-/** Carpetas Cloudinary permitidas para uploads desde el admin. */
-export const ALLOWED_CLOUDINARY_FOLDERS = ['productos', 'categorias'] as const;
-
-/** Regex que matchea solo URLs servidas desde nuestro Cloudinary. */
-export const CLOUDINARY_URL_REGEX = new RegExp(
-  `^https://res\\.cloudinary\\.com/${CLOUDINARY_CLOUD_NAME}/.+`,
-);
+import { isAppwriteStorageUrl } from '@/lib/imageStorage/urlValidation';
 
 /** String requerido, sin espacios al borde, máx 255. */
 export const nonEmptyString = z
@@ -49,15 +35,15 @@ export const slug = z
   .max(120, 'Slug demasiado largo')
   .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug inválido (solo a-z, 0-9 y guiones)');
 
-/** URL servida desde nuestro Cloudinary (CDN whitelist). */
-export const cloudinaryUrl = z
+/** URL servida desde nuestro storage propio (Appwrite Storage whitelist). */
+export const storedImageUrl = z
   .string()
   .trim()
   .url('URL inválida')
   .max(2048, 'URL demasiado larga')
   .refine(
-    (value) => CLOUDINARY_URL_REGEX.test(value),
-    `La imagen debe servirse desde res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}`,
+    (value) => isAppwriteStorageUrl(value),
+    'La imagen debe servirse desde el storage propio del proyecto',
   );
 
 /** Variante de precio (label libre + monto >= 0). */

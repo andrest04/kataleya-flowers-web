@@ -1,6 +1,6 @@
 // Server-only: this module must never be imported into client code — the
 // Appwrite API key would otherwise be bundled into the browser.
-import { Account, Client, Databases, Teams, Users } from 'node-appwrite';
+import { Account, Client, Databases, Storage, Teams, Users } from 'node-appwrite';
 
 import { getAppwriteConfig } from '@/lib/appwrite/config';
 
@@ -23,6 +23,7 @@ export function createAdminClient() {
     users: new Users(client),
     teams: new Teams(client),
     account: new Account(client),
+    storage: new Storage(client),
   };
 }
 

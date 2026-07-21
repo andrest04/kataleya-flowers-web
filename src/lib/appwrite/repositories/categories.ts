@@ -215,7 +215,7 @@ export async function countProductsInCategory(categoryId: string): Promise<numbe
 /**
  * Cascades a category delete: fetches all product image URLs, deletes all
  * product_images rows, deletes all product documents, then deletes the category.
- * Returns the list of Cloudinary URLs (primary + gallery) for caller cleanup.
+ * Returns the list of image URLs (primary + gallery) for caller cleanup.
  */
 export async function deleteCategoryCascadeAppwrite(
   categoryId: string,
@@ -226,7 +226,7 @@ export async function deleteCategoryCascadeAppwrite(
     Query.equal('category_id', [categoryId]),
   ]);
 
-  // Collect image URLs before deletion (for Cloudinary cleanup by caller).
+  // Collect image URLs before deletion (for storage cleanup by caller).
   // deleteProductRelations handles colorAssignments + flowerTypeAssignments + productImages.
   // Each product's cascade (fetch images -> delete relations -> delete doc) is independent
   // of the others, so the products are processed concurrently.
@@ -259,7 +259,7 @@ export async function deleteCategoryCascadeAppwrite(
 
 /**
  * Reassigns all products of `categoryId` to `reassignToId`, then deletes the
- * category. Returns the category's image URL (for Cloudinary cleanup).
+ * category. Returns the category's image URL (for storage cleanup).
  */
 export async function deleteCategoryReassignAppwrite(
   categoryId: string,

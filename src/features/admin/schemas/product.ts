@@ -1,13 +1,13 @@
 import { z } from 'zod';
 
 import {
-  cloudinaryUrl,
   hexColor,
   longText,
   nonEmptyString,
   nonNegativeInt,
   priceVariant,
   slug,
+  storedImageUrl,
   taxonomyName,
   uuid,
 } from './common';
@@ -30,8 +30,8 @@ const baseProductShape = {
     .nonnegative('El precio no puede ser negativo')
     .max(1_000_000, 'Precio fuera de rango'),
   categoryId: uuid,
-  imageUrl: cloudinaryUrl,
-  images: z.array(cloudinaryUrl).max(10, 'Máximo 10 imágenes adicionales'),
+  imageUrl: storedImageUrl,
+  images: z.array(storedImageUrl).max(10, 'Máximo 10 imágenes adicionales'),
   colors: z.array(taxonomyName).max(50, 'Demasiados colores'),
   flowerTypes: z.array(taxonomyName).max(50, 'Demasiados tipos de flor'),
   includes: z.array(nonEmptyString.max(255)).max(30, 'Demasiados ítems'),

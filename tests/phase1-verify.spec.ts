@@ -293,7 +293,7 @@ test.describe("Phase 1 — C) Security headers en /", () => {
     expect(pp).toContain("geolocation=()");
   });
 
-  test("CSP en Report-Only (no enforced) y permite res.cloudinary.com en img-src", async ({
+  test("CSP en Report-Only (no enforced) y permite nyc.cloud.appwrite.io en img-src", async ({
     request,
   }) => {
     const response = await request.get("/");
@@ -306,10 +306,10 @@ test.describe("Phase 1 — C) Security headers en /", () => {
     // CSP enforced NO debe estar presente (Fase 1 es solo report-only).
     expect(headers["content-security-policy"]).toBeUndefined();
 
-    // img-src debe permitir res.cloudinary.com (CDN de productos).
+    // img-src debe permitir nyc.cloud.appwrite.io (Appwrite Storage de productos).
     const imgSrcMatch = (cspReportOnly ?? "").match(/img-src[^;]*/);
     expect(imgSrcMatch, "img-src debe estar definido en CSP").not.toBeNull();
-    expect(imgSrcMatch?.[0]).toContain("https://res.cloudinary.com");
+    expect(imgSrcMatch?.[0]).toContain("https://nyc.cloud.appwrite.io");
   });
 
   test("NO existe X-Powered-By: Next.js (poweredByHeader: false)", async ({

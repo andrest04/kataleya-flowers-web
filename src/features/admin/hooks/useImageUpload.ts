@@ -4,18 +4,8 @@ import { useCallback, useRef, useState } from 'react';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 
-interface SignResponse {
-  signature: string;
-  timestamp: number;
-  apiKey: string;
-  cloudName: string;
-  folder: string;
-  allowedFormats?: string;
-  maxFileSize?: number;
-}
-
 interface UploadResult {
-  secure_url: string;
+  url: string;
 }
 
 export function useImageUpload() {
@@ -42,20 +32,6 @@ export function useImageUpload() {
     setError(null);
 
     try {
-      // 1. Get signature from our API
-      const signRes = await fetch('/api/cloudinary/sign', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ folder }),
-      });
-
-      if (!signRes.ok) {
-        throw new Error('Error al obtener firma de upload');
-      }
-
-      const sign: SignResponse = await signRes.json();
-
-      // 2. Upload to Cloudinary via XMLHttpRequest (supports progress)
       const result = await new Promise<UploadResult>((resolve, reject) => {
         const xhr = new XMLHttpRequest();
         xhrRef.current = xhr;
@@ -70,7 +46,7 @@ export function useImageUpload() {
           if (xhr.status >= 200 && xhr.status < 300) {
             resolve(JSON.parse(xhr.responseText) as UploadResult);
           } else {
-            reject(new Error('Error al subir imagen a Cloudinary'));
+            reject(new Error('Error al subir imagen'));
           }
         });
 
@@ -80,20 +56,14 @@ export function useImageUpload() {
 
         const formData = new FormData();
         formData.append('file', file);
-        formData.append('api_key', sign.apiKey);
-        formData.append('timestamp', String(sign.timestamp));
-        formData.append('signature', sign.signature);
-        if (sign.folder) formData.append('folder', sign.folder);
-        // Reenviamos los params firmados — Cloudinary los aplica server-side
-        if (sign.allowedFormats) formData.append('allowed_formats', sign.allowedFormats);
-        if (sign.maxFileSize) formData.append('max_file_size', String(sign.maxFileSize));
+        if (folder) formData.append('folder', folder);
 
-        xhr.open('POST', `https://api.cloudinary.com/v1_1/${sign.cloudName}/image/upload`);
+        xhr.open('POST', '/api/images/upload');
         xhr.send(formData);
       });
 
       setProgress(100);
-      return result.secure_url;
+      return result.url;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Error desconocido';
       setError(message);
