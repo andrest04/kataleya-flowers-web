@@ -812,11 +812,15 @@ export async function getCategorySlugsForProducts(
 
   const slugMap = new Map<string, string>();
   const chunks = chunkIds(categoryIds);
-  for (const chunk of chunks) {
-    const categoryDocs = await listAllDocuments<CategoryDoc>(databases, databaseId, C.categories, [
-      Query.equal('$id', chunk),
-      Query.select(['$id', 'slug']),
-    ]);
+  const chunkResults = await Promise.all(
+    chunks.map((chunk) =>
+      listAllDocuments<CategoryDoc>(databases, databaseId, C.categories, [
+        Query.equal('$id', chunk),
+        Query.select(['$id', 'slug']),
+      ]),
+    ),
+  );
+  for (const categoryDocs of chunkResults) {
     for (const cat of categoryDocs) {
       slugMap.set(cat.$id, cat.slug);
     }

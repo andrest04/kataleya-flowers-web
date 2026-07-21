@@ -1,6 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { after } from 'next/server';
 import { AppwriteException } from 'node-appwrite';
 
 import { uuid } from '@/features/admin/schemas/common';
@@ -95,7 +96,7 @@ export async function createProduct(data: ProductFormData): Promise<ProductActio
 
     const parsed = productCreateSchema.safeParse(data);
     if (!parsed.success) {
-      console.warn('[createProduct] validation failed:', parsed.error.issues);
+      after(() => console.warn('[createProduct] validation failed:', parsed.error.issues));
       return { success: false, error: 'Datos inválidos. Revisá el formulario.', code: 'VALIDATION', issues: parsed.error.issues };
     }
 
@@ -166,7 +167,7 @@ export async function updateProduct(
 
     const parsed = productUpdateSchema.safeParse(data);
     if (!parsed.success) {
-      console.warn('[updateProduct] validation failed:', parsed.error.issues);
+      after(() => console.warn('[updateProduct] validation failed:', parsed.error.issues));
       return { success: false, error: 'Datos inválidos. Revisá el formulario.', code: 'VALIDATION', issues: parsed.error.issues };
     }
 
@@ -177,9 +178,11 @@ export async function updateProduct(
     if (formData.newFlowerTypes?.length) await ensureFlowerTypesAppwrite(formData.newFlowerTypes);
     if (formData.newColors?.length) await ensureColorsAppwrite(formData.newColors);
 
-    const meta = await getProductCategorySlug(idParsed.data);
-    const currentSlug = await getAppwriteProductSlug(idParsed.data);
-    const currentImageUrls = await getProductImageUrls(idParsed.data);
+    const [meta, currentSlug, currentImageUrls] = await Promise.all([
+      getProductCategorySlug(idParsed.data),
+      getAppwriteProductSlug(idParsed.data),
+      getProductImageUrls(idParsed.data),
+    ]);
 
     const incomingSlug = formData.slug?.trim() ?? '';
     const slug =

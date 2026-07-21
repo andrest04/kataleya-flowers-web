@@ -201,15 +201,6 @@ export async function updateCategoryDocument(
 }
 
 /**
- * Deletes a category document. The caller handles product reassignment or
- * cascade delete BEFORE calling this.
- */
-export async function deleteCategoryDocument(id: string): Promise<void> {
-  const { databases, databaseId } = getRepositoryContext();
-  await databases.deleteDocument({ databaseId, collectionId: C.categories, documentId: id });
-}
-
-/**
  * Returns the count of products in a category (for the delete confirmation UI).
  */
 export async function countProductsInCategory(categoryId: string): Promise<number> {
@@ -237,24 +228,28 @@ export async function deleteCategoryCascadeAppwrite(
 
   // Collect image URLs before deletion (for Cloudinary cleanup by caller).
   // deleteProductRelations handles colorAssignments + flowerTypeAssignments + productImages.
-  const imageUrls: string[] = [];
+  // Each product's cascade (fetch images -> delete relations -> delete doc) is independent
+  // of the others, so the products are processed concurrently.
+  const perProductImageUrls = await Promise.all(
+    products.map(async (product) => {
+      // Fetch image URLs before deleting relations (productImages rows are removed inside deleteProductRelations)
+      const productImageDocs = await listAllDocuments<ProductImageDoc>(
+        databases,
+        databaseId,
+        C.productImages,
+        [Query.equal('product_id', [product.$id])],
+      );
 
-  for (const product of products) {
-    // Fetch image URLs before deleting relations (productImages rows are removed inside deleteProductRelations)
-    const productImageDocs = await listAllDocuments<ProductImageDoc>(
-      databases,
-      databaseId,
-      C.productImages,
-      [Query.equal('product_id', [product.$id])],
-    );
-    imageUrls.push(...productImageDocs.map((img) => img.url));
+      // Delete color assignments, flower-type assignments, and product_images rows
+      await deleteProductRelations(product.$id);
 
-    // Delete color assignments, flower-type assignments, and product_images rows
-    await deleteProductRelations(product.$id);
+      // Delete the product document
+      await databases.deleteDocument({ databaseId, collectionId: C.products, documentId: product.$id });
 
-    // Delete the product document
-    await databases.deleteDocument({ databaseId, collectionId: C.products, documentId: product.$id });
-  }
+      return productImageDocs.map((img) => img.url);
+    }),
+  );
+  const imageUrls: string[] = perProductImageUrls.flat();
 
   // Delete the category itself
   await databases.deleteDocument({ databaseId, collectionId: C.categories, documentId: categoryId });
@@ -347,5 +342,5 @@ export async function listAllCategorySlugs(): Promise<string[]> {
   const docs = await listAllDocuments<CategoryDoc>(databases, databaseId, C.categories, [
     Query.select(['slug']),
   ]);
-  return docs.map((d) => d.slug).filter(Boolean);
+  return docs.flatMap((d) => (d.slug ? [d.slug] : []));
 }

@@ -110,11 +110,15 @@ async function resolveProductNames(
   const { databases, databaseId } = getRepositoryContext();
   const usage: TaxonomyUsage[] = [];
 
-  for (const chunk of chunkIds(productIds)) {
-    const products = await listAllDocuments<ProductDoc>(databases, databaseId, C.products, [
-      Query.equal('$id', chunk),
-      Query.select(['$id', 'name']),
-    ]);
+  const chunkResults = await Promise.all(
+    chunkIds(productIds).map((chunk) =>
+      listAllDocuments<ProductDoc>(databases, databaseId, C.products, [
+        Query.equal('$id', chunk),
+        Query.select(['$id', 'name']),
+      ]),
+    ),
+  );
+  for (const products of chunkResults) {
     for (const product of products) {
       usage.push({ product_id: product.$id, product_name: product.name });
     }

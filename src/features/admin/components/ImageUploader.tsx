@@ -46,8 +46,12 @@ export default function ImageUploader(props: ImageUploaderProps) {
     const slots = maxFiles - urls.length;
     const toUpload = fileArray.slice(0, slots);
 
-    for (const file of toUpload) {
-      const url = await uploadImage(file, folder);
+    // Uploads themselves are independent network calls; fan them out concurrently.
+    // The resulting onChange calls stay sequential (same order as toUpload) so
+    // state updates are unaffected.
+    const uploadedUrls = await Promise.all(toUpload.map((file) => uploadImage(file, folder)));
+
+    for (const url of uploadedUrls) {
       if (!url) continue;
 
       if (props.multiple) {

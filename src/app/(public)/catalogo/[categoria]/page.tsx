@@ -83,9 +83,10 @@ export async function generateMetadata({
 export default async function CategoriaPage({
   params,
 }: CategoriaPageProps): Promise<React.ReactElement> {
-  const { categoria } = await params;
-
-  const categories = await getCategories();
+  const [{ categoria }, categories] = await Promise.all([
+    params,
+    getCategories(),
+  ]);
   const category = categories.find((cat) => cat.slug === categoria);
 
   if (!category) {

@@ -1,6 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { after } from 'next/server';
 import { AppwriteException } from 'node-appwrite';
 
 import {
@@ -67,7 +68,7 @@ export async function createCategory(
 
     const parsed = categoryCreateSchema.safeParse(data);
     if (!parsed.success) {
-      console.warn('[createCategory] validation failed:', parsed.error.issues);
+      after(() => console.warn('[createCategory] validation failed:', parsed.error.issues));
       return {
         success: false,
         error: 'Datos inválidos. Revisá el formulario.',
@@ -131,7 +132,7 @@ export async function updateCategory(
 
     const parsed = categoryUpdateSchema.safeParse(data);
     if (!parsed.success) {
-      console.warn('[updateCategory] validation failed:', parsed.error.issues);
+      after(() => console.warn('[updateCategory] validation failed:', parsed.error.issues));
       return {
         success: false,
         error: 'Datos inválidos. Revisá el formulario.',
