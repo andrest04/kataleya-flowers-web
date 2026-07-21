@@ -10,6 +10,19 @@ interface PillToggleProps {
   className?: string;
 }
 
+const inactiveStyle: React.CSSProperties = {
+  backgroundColor: 'var(--color-surface)',
+  color: 'var(--color-dark)',
+  border: '1px solid var(--color-border)',
+};
+
+// For non-filled inactive, use white bg (admin form style)
+const inactiveStyleAlt: React.CSSProperties = {
+  background: 'var(--color-white)',
+  color: 'var(--color-dark)',
+  border: '1px solid var(--color-border)',
+};
+
 export default function PillToggle({
   label,
   active,
@@ -24,19 +37,6 @@ export default function PillToggle({
   const activeStyle: React.CSSProperties = filled
     ? { backgroundColor: colorVar, color: 'var(--color-white)', border: `1px solid ${colorVar}` }
     : { background: `color-mix(in srgb, ${colorVar} 10%, transparent)`, color: colorVar, border: `1px solid ${colorVar}` };
-
-  const inactiveStyle: React.CSSProperties = {
-    backgroundColor: 'var(--color-surface)',
-    color: 'var(--color-dark)',
-    border: '1px solid var(--color-border)',
-  };
-
-  // For non-filled inactive, use white bg (admin form style)
-  const inactiveStyleAlt: React.CSSProperties = {
-    background: 'var(--color-white)',
-    color: 'var(--color-dark)',
-    border: '1px solid var(--color-border)',
-  };
 
   return (
     <button

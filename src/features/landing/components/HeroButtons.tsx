@@ -11,27 +11,27 @@ interface HeroButtonsProps {
   onDark?: boolean;
 }
 
+function handleScroll(targetId: string) {
+  const cleanId = targetId.startsWith("#") ? targetId.slice(1) : targetId;
+  const target = document.getElementById(cleanId);
+
+  if (!target) {
+    console.warn(
+      `[HeroButtons] Target element with id "${cleanId}" not found`,
+    );
+    return;
+  }
+
+  target.scrollIntoView({
+    behavior: "smooth",
+    block: "start",
+  });
+}
+
 export default function HeroButtons({
   campaignMode = "contact",
   onDark = false,
 }: HeroButtonsProps) {
-  const handleScroll = (targetId: string) => {
-    const cleanId = targetId.startsWith("#") ? targetId.slice(1) : targetId;
-    const target = document.getElementById(cleanId);
-
-    if (!target) {
-      console.warn(
-        `[HeroButtons] Target element with id "${cleanId}" not found`,
-      );
-      return;
-    }
-
-    target.scrollIntoView({
-      behavior: "smooth",
-      block: "start",
-    });
-  };
-
   const isPrimaryContact = campaignMode === "contact";
 
   // Secundario discreto: sobre la foto oscura, borde crema tenue + texto crema

@@ -13,6 +13,25 @@ import { BUSINESS } from "@/lib/constants";
 
 const SITE_URL = BUSINESS.website;
 
+const BREADCRUMB_LD = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    {
+      "@type": "ListItem",
+      position: 1,
+      name: "Inicio",
+      item: `${SITE_URL}/`,
+    },
+    {
+      "@type": "ListItem",
+      position: 2,
+      name: "Catálogo",
+      item: `${SITE_URL}/catalogo`,
+    },
+  ],
+};
+
 // ISR backstop: pages refresh instantly on-demand via revalidatePath in admin actions;
 // this self-heals any missed path (e.g. color/flower-type renames) within 1 hour.
 export const revalidate = 3600;
@@ -56,25 +75,6 @@ export default async function CatalogoPage(): Promise<React.ReactElement> {
     </div>
   );
 
-  const breadcrumbLd = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      {
-        "@type": "ListItem",
-        position: 1,
-        name: "Inicio",
-        item: `${SITE_URL}/`,
-      },
-      {
-        "@type": "ListItem",
-        position: 2,
-        name: "Catálogo",
-        item: `${SITE_URL}/catalogo`,
-      },
-    ],
-  };
-
   const itemListLd = {
     "@context": "https://schema.org",
     "@type": "ItemList",
@@ -91,7 +91,7 @@ export default async function CatalogoPage(): Promise<React.ReactElement> {
       id="main-content"
       className="min-h-screen bg-cream pt-28 pb-12 px-4 sm:px-6 lg:px-8"
     >
-      <JsonLd data={[breadcrumbLd, itemListLd]} />
+      <JsonLd data={[BREADCRUMB_LD, itemListLd]} />
       <div className="max-w-7xl mx-auto">
         <BreadcrumbNav items={[
           { label: 'Inicio', href: '/' },
