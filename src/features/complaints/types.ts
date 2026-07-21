@@ -22,6 +22,6 @@ export type ComplaintSubmitResult =
   | {
       success: false;
       error: string;
-      code: 'VALIDATION' | 'INTERNAL';
+      code: 'VALIDATION' | 'INTERNAL' | 'RATE_LIMITED';
       issues?: ZodIssue[];
     };

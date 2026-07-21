@@ -9,6 +9,7 @@ import { sendComplaintEmails } from '../email/sendComplaintEmails';
 import { complaintSubmitSchema } from '../schemas/complaint';
 import type { ComplaintSubmitResult } from '../types';
 import { formatComplaintNumber } from '../utils/format';
+import { checkComplaintRateLimit, getClientIp } from '../utils/rateLimit';
 
 /**
  * Action PÚBLICA (sin auth) del Libro de Reclamaciones.
@@ -21,6 +22,15 @@ import { formatComplaintNumber } from '../utils/format';
 export async function submitComplaint(
   input: unknown,
 ): Promise<ComplaintSubmitResult> {
+  const ip = await getClientIp();
+  if (!checkComplaintRateLimit(ip)) {
+    return {
+      success: false,
+      error: 'Alcanzaste el límite de reclamos por ahora. Intenta de nuevo en unos minutos.',
+      code: 'RATE_LIMITED',
+    };
+  }
+
   const parsed = complaintSubmitSchema.safeParse(input);
   if (!parsed.success) {
     return {
