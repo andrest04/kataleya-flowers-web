@@ -67,7 +67,6 @@ src/
 │   ├── landing/components/   # HeroSection/, AboutSection, ContactSection…
 │   ├── catalog/              # incl. utils/filterProducts.ts
 │   └── admin/                # actions (requireAdmin+zod+Result), schemas, utils/{auth,slugify}
-├── data/products.ts          # LEGACY — no se usa
 └── lib/{constants,navigation}.ts · lib/appwrite/* (config · repositories · auth/session) · lib/db/rows.ts (tipos de fila)
 ```
 

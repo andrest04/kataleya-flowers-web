@@ -116,8 +116,6 @@ src/
 │       │   ├── adminMembership.appwrite.ts # isAdminUserAppwrite — verifica Team admins
 │       │   └── slugify.ts                  # Slugify compartido entre actions y forms
 │       └── types/                          # ProductFormData, CategoryFormData
-├── data/
-│   └── products.ts                         # Datos estáticos legacy (no se usa en código activo)
 ├── lib/
 │   ├── constants.ts                        # BUSINESS — datos de contacto y negocio
 │   ├── imageStorage/                       # Abstracción de storage (types, appwriteProvider, urlValidation)
