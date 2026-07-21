@@ -29,6 +29,16 @@ function formatDate(value: string | Date): string {
   });
 }
 
+/** Escapa HTML — todo dato de `ComplaintEmailData` viene del formulario público. */
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 function row(label: string, value: string): string {
   return `<tr>
     <td style="padding:6px 12px 6px 0;color:#666;font-size:13px;vertical-align:top;white-space:nowrap;">${label}</td>
@@ -40,19 +50,19 @@ function hojaTable(data: ComplaintEmailData): string {
   const amount =
     data.claimedAmount != null ? `S/ ${data.claimedAmount.toFixed(2)}` : '—';
   return `<table style="border-collapse:collapse;width:100%;margin:16px 0;">
-    ${row('N° de hoja', `<strong>${data.complaintNumber}</strong>`)}
+    ${row('N° de hoja', `<strong>${escapeHtml(data.complaintNumber)}</strong>`)}
     ${row('Fecha', formatDate(data.createdAt))}
     ${row('Tipo', TYPE_LABEL[data.complaintType])}
-    ${row('Consumidor', data.consumerName)}
-    ${row('Documento', `${data.consumerDocType} ${data.consumerDocNumber}`)}
-    ${row('Domicilio', data.consumerAddress)}
-    ${row('Email', data.consumerEmail)}
-    ${data.consumerPhone ? row('Teléfono', data.consumerPhone) : ''}
-    ${data.isMinor && data.guardianName ? row('Apoderado', data.guardianName) : ''}
-    ${row('Bien contratado', `${data.itemType} — ${data.itemDescription}`)}
+    ${row('Consumidor', escapeHtml(data.consumerName))}
+    ${row('Documento', `${data.consumerDocType} ${escapeHtml(data.consumerDocNumber)}`)}
+    ${row('Domicilio', escapeHtml(data.consumerAddress))}
+    ${row('Email', escapeHtml(data.consumerEmail))}
+    ${data.consumerPhone ? row('Teléfono', escapeHtml(data.consumerPhone)) : ''}
+    ${data.isMinor && data.guardianName ? row('Apoderado', escapeHtml(data.guardianName)) : ''}
+    ${row('Bien contratado', `${data.itemType} — ${escapeHtml(data.itemDescription)}`)}
     ${row('Monto reclamado', amount)}
-    ${row('Detalle', data.detail)}
-    ${row('Pedido del consumidor', data.consumerRequest)}
+    ${row('Detalle', escapeHtml(data.detail))}
+    ${row('Pedido del consumidor', escapeHtml(data.consumerRequest))}
   </table>`;
 }
 

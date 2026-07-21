@@ -14,10 +14,13 @@ interface JsonLdProps {
  * objetos (para emitir múltiples bloques en un solo `<script>`).
  */
 export function JsonLd({ data }: JsonLdProps): React.ReactElement {
+  // JSON.stringify no escapa HTML — un `</script>` (o `<`) en el JSON
+  // rompería el sink. < neutraliza `<` sin alterar el JSON-LD.
+  const json = JSON.stringify(data).replace(/</g, "\\u003c");
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
+      dangerouslySetInnerHTML={{ __html: json }}
     />
   );
 }
