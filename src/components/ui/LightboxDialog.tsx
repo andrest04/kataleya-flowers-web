@@ -4,7 +4,7 @@ import { AnimatePresence, domAnimation, LazyMotion, m } from 'framer-motion';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import Image from 'next/image';
 import { Dialog as DialogPrimitive } from 'radix-ui';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react';
 
 interface LightboxDialogProps {
   open: boolean;
@@ -107,20 +107,21 @@ function LightboxInner({
   }, [hasMultiple, total]);
 
   // Navegación con teclado ← / → mientras el modal está abierto.
+  const onKeyNav = useEffectEvent((e: KeyboardEvent) => {
+    if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      goPrev();
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      goNext();
+    }
+  });
+
   useEffect(() => {
     if (!open || !hasMultiple) return;
-    function onKey(e: KeyboardEvent) {
-      if (e.key === 'ArrowLeft') {
-        e.preventDefault();
-        goPrev();
-      } else if (e.key === 'ArrowRight') {
-        e.preventDefault();
-        goNext();
-      }
-    }
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [open, hasMultiple, goPrev, goNext]);
+    document.addEventListener('keydown', onKeyNav);
+    return () => document.removeEventListener('keydown', onKeyNav);
+  }, [open, hasMultiple]);
 
   function handleTouchStart(e: React.TouchEvent) {
     touchStartX.current = e.touches[0]?.clientX ?? null;

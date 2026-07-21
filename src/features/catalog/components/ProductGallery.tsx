@@ -45,6 +45,7 @@ export function ProductGallery({ imageUrl, images, name }: ProductGalleryProps) 
             {allImages.map((img, i) => (
               <button
                 key={img}
+                type="button"
                 onClick={() => setSelected(img)}
                 aria-pressed={selected === img}
                 className={`relative flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-colors ${

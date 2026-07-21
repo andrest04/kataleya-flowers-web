@@ -38,6 +38,7 @@ export default function ProductGrid({ initialProducts, categorySlug }: ProductGr
           {sortedProducts.length === 1 ? 'producto' : 'productos'}
         </p>
         <select
+          aria-label="Ordenar productos"
           value={sortOption}
           onChange={(e) => setSortOption(e.target.value as SortOption)}
           className="font-body text-sm rounded-lg px-3 py-2 outline-none cursor-pointer"

@@ -11,6 +11,8 @@
  * cierre por backdrop.
  */
 
+import type React from 'react';
+
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import type { CategoryRow } from '@/lib/db/rows';
 
@@ -87,6 +89,7 @@ export default function DeleteCategoryDialog({
             {deleteMode === 'reassign' && (
               <select
                 id="reassign-category"
+                aria-label="Categoría de destino para reasignar productos"
                 value={reassignTo}
                 onChange={(e) => onSelectReassignTarget(e.target.value)}
                 className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-(--color-primary)"
@@ -97,13 +100,16 @@ export default function DeleteCategoryDialog({
                 }}
               >
                 <option value="">Seleccionar categoría…</option>
-                {candidates
-                  .filter((c) => c.id !== target.id)
-                  .map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
-                    </option>
-                  ))}
+                {candidates.reduce<React.ReactElement[]>((options, c) => {
+                  if (c.id !== target.id) {
+                    options.push(
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                      </option>,
+                    );
+                  }
+                  return options;
+                }, [])}
               </select>
             )}
 

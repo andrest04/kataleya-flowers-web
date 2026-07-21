@@ -30,20 +30,22 @@ export default function CatalogActiveChips({
   onRemove,
   onClear,
 }: CatalogActiveChipsProps) {
-  const chips: { label: string; onRemove: () => void }[] = [];
+  const chips: { key: string; label: string; onRemove: () => void }[] = [];
 
   if (filters.q) {
-    chips.push({ label: `"${filters.q}"`, onRemove: () => onRemove('q') });
+    chips.push({ key: 'q', label: `"${filters.q}"`, onRemove: () => onRemove('q') });
   }
   if (filters.categoria) {
     const cat = categories.find((c) => c.slug === filters.categoria);
     chips.push({
+      key: 'categoria',
       label: cat?.name ?? filters.categoria,
       onRemove: () => onRemove('categoria'),
     });
   }
   if (filters.precioMin > PRICE_MIN || filters.precioMax < PRICE_MAX) {
     chips.push({
+      key: 'precio',
       label: `S/ ${filters.precioMin} – S/ ${filters.precioMax}`,
       onRemove: () => {
         onRemove('precioMin');
@@ -54,12 +56,14 @@ export default function CatalogActiveChips({
   filters.colors.forEach((c) => {
     const colorDef = productColors.find((pc) => pc.name === c);
     chips.push({
+      key: `color:${c}`,
       label: colorDef?.label ?? c,
       onRemove: () => onRemove('colors', c),
     });
   });
   filters.flowerTypes.forEach((t) => {
     chips.push({
+      key: `flowerType:${t}`,
       label: t.charAt(0).toUpperCase() + t.slice(1),
       onRemove: () => onRemove('flowerTypes', t),
     });
@@ -69,8 +73,8 @@ export default function CatalogActiveChips({
 
   return (
     <div className="flex flex-wrap items-center gap-2 mb-4">
-      {chips.map((chip, i) => (
-        <FilterChip key={i} label={chip.label} onRemove={chip.onRemove} />
+      {chips.map((chip) => (
+        <FilterChip key={chip.key} label={chip.label} onRemove={chip.onRemove} />
       ))}
       <button
         type="button"
