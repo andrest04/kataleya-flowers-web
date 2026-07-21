@@ -1,6 +1,5 @@
 import {
   ALLOWED_CLOUDINARY_FOLDERS,
-  CLOUDINARY_CLOUD_NAME,
   CLOUDINARY_URL_REGEX,
 } from '@/features/admin/schemas/common';
 
@@ -27,5 +26,3 @@ export function isAllowedFolder(value: unknown): value is AllowedCloudinaryFolde
   );
 }
 
-/** Cloud name configurado (mantener sincronizado con `next.config.ts`). */
-export const ALLOWED_CLOUD_NAME = CLOUDINARY_CLOUD_NAME;

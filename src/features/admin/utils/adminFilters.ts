@@ -81,11 +81,3 @@ export function getAdminCategoryFilterMeta(filter: AdminCategoryFilter): Categor
   }
 }
 
-export function getAdminProductFilterHref(filter: AdminProductFilter): string {
-  return buildAdminProductsHref({ filter });
-}
-
-export function getAdminCategoryFilterHref(filter: AdminCategoryFilter): string {
-  const params = new URLSearchParams({ filter });
-  return `/admin/categorias?${params.toString()}`;
-}

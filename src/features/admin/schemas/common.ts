@@ -38,16 +38,8 @@ export const longText = z
   .min(1, 'La descripción es obligatoria')
   .max(5000, 'Máximo 5000 caracteres');
 
-/** Texto largo opcional (descripciones de categorías, etc.). */
-export const optionalLongText = z
-  .string()
-  .trim()
-  .max(5000, 'Máximo 5000 caracteres')
-  .optional()
-  .nullable();
-
 /** UUID v4 (record ids). */
-export const uuid = z.string().uuid('Identificador inválido');
+export const uuid = z.uuid('Identificador inválido');
 
 /** Slug normalizado: minúsculas, números, guiones. */
 export const slug = z

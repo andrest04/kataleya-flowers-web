@@ -27,6 +27,3 @@ export function buildFieldErrors(issues: ZodIssue[] | undefined): FieldErrors {
   return errors;
 }
 
-export function getFieldError(errors: FieldErrors, path: string): string | undefined {
-  return errors[path];
-}
