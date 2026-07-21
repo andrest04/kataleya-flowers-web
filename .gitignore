@@ -49,6 +49,7 @@ yarn-error.log*
 next-env.d.ts
 
 # local tooling
+.codegraph/
 .atl/
 .gga
 .claude/

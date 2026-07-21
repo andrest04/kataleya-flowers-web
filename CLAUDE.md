@@ -6,7 +6,7 @@ Landing + admin para **Kataleya Flawers**, florería real en Lima, Perú. Negoci
 
 ## Stack
 
-Next.js 16 (App Router, RSC por defecto) · React 19 · TS 5 strict · Tailwind v4 (CSS-only, sin `tailwind.config.*`) · Framer Motion 12 · @dnd-kit · lucide-react · Radix primitives · zod · Appwrite (Auth + DB + Storage, único backend) · Playwright · next/font/google (Playfair Display + Lato).
+Next.js 16 (App Router, RSC por defecto) · React 19 · TS 5 strict · Tailwind v4 (CSS-only, sin `tailwind.config.*`) · Framer Motion 12 · @dnd-kit · lucide-react · Radix primitives · zod · Appwrite (Auth + DB + Storage, único backend) · Resend (emails transaccionales) · Playwright · next/font/google (Playfair Display + Lato).
 
 ## Comandos
 
@@ -15,7 +15,7 @@ npm run dev          # localhost:3000
 npm run build        # prod build
 npm run lint:strict  # eslint . --max-warnings 0
 npx tsc --noEmit     # type-check
-npx playwright test  # e2e
+npm run test:e2e     # e2e
 npx playwright test phase1-verify  # regression baseline (DEBE estar verde siempre)
 ```
 
@@ -56,8 +56,8 @@ src/
 │   ├── layout.tsx            # metadata, fonts, JSON-LD Florist, skip link → #main-content
 │   ├── globals.css           # Tailwind v4 + CSS custom properties
 │   ├── sitemap.ts robots.ts manifest.ts opengraph-image.tsx   # file-based metadata API
-│   ├── (public)/             # landing (page.tsx) + catalogo/[categoria]/[slug]
-│   ├── (admin)/admin/        # page · productos · categorias (auth)
+│   ├── (public)/             # landing (page.tsx), catálogo y libro-de-reclamaciones
+│   ├── (admin)/admin/        # page · productos · categorias · reclamos (auth)
 │   ├── (auth)/login/
 │   └── api/images/upload · api/admin/*
 ├── components/
@@ -66,7 +66,8 @@ src/
 ├── features/
 │   ├── landing/components/   # HeroSection/, AboutSection, ContactSection…
 │   ├── catalog/              # incl. utils/filterProducts.ts
-│   └── admin/                # actions (requireAdmin+zod+Result), schemas, utils/{auth,slugify}
+│   ├── admin/                # actions (requireAdmin+zod+Result), schemas, utils/{auth,slugify}
+│   └── complaints/           # libro de reclamaciones: formulario, panel admin y emails
 └── lib/{constants,navigation}.ts · lib/appwrite/* (config · repositories · auth/session) · lib/db/rows.ts (tipos de fila)
 ```
 
@@ -94,6 +95,13 @@ No cambiar el contrato `Result<T>` ni la firma al evolucionar autorización.
 **Slugs en edición:** preservar el original (no regenerar al cambiar `name`); regenerar solo opt-in (botón explícito). Server: mismo slug → no regenera; distinto → acepta. Impl: `useProductForm.autoSlug`, `CategoryForm` `readOnly`+botón.
 
 **API routes** (`/api/images/upload`): `auth.getUser()` o 401 · validar folder con `isAllowedImageFolder` (allowlist `productos`, `categorias`) · valida tipo/tamaño server-side, sube vía `imageStorage.upload` · logs sin secretos.
+
+## Libro de Reclamaciones
+
+- Ruta pública: `/libro-de-reclamaciones`; panel autenticado: `/admin/reclamos` y `/admin/reclamos/[id]`.
+- El dominio vive en `features/complaints/`. Al registrar una hoja, se envía por Resend una copia al consumidor y una notificación al negocio.
+- El plazo operativo es de 15 días hábiles. El cálculo excluye sábados y domingos, pero **no** feriados peruanos; no lo presentes como cómputo legal exacto sin revisar ese límite.
+- No alterar los datos de la hoja ni las plantillas de email sin preservar el escape HTML de toda entrada pública.
 
 ## Convenciones Next 16 + estilos
 
