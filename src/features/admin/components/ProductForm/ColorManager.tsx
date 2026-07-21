@@ -46,17 +46,21 @@ export default function ColorManager({
   onError,
 }: Props) {
   // Construye la lista visible: DB colors + pendientes que aún no estén en DB.
-  const dbNames = productColors.map((c) => c.name);
+  const dbNames = new Set(productColors.map((c) => c.name));
   const items: ColorOption[] = [
     ...productColors,
-    ...pendingNewColors
-      .filter((pc) => !dbNames.includes(pc.name))
-      .map((pc) => ({
-        id: pc.name,
-        name: pc.name,
-        label: pc.name.charAt(0).toUpperCase() + pc.name.slice(1),
-        hex: pc.hex,
-      })),
+    ...pendingNewColors.flatMap((pc) =>
+      dbNames.has(pc.name)
+        ? []
+        : [
+            {
+              id: pc.name,
+              name: pc.name,
+              label: pc.name.charAt(0).toUpperCase() + pc.name.slice(1),
+              hex: pc.hex,
+            },
+          ],
+    ),
   ];
   const pendingNames = pendingNewColors.map((pc) => pc.name);
 

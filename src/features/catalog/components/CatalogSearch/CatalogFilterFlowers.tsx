@@ -19,12 +19,14 @@ export default function CatalogFilterFlowers({
   selected,
   onToggle,
 }: CatalogFilterFlowersProps) {
+  const selectedSet = new Set(selected);
+
   return (
     <div>
       <p className={FILTER_LABEL_CLS}>Tipo de flor</p>
       <div className="flex flex-wrap gap-2">
         {flowerTypes.map((type) => {
-          const active = selected.includes(type);
+          const active = selectedSet.has(type);
           return (
             <button
               key={type}

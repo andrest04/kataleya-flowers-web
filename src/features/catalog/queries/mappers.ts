@@ -35,7 +35,7 @@ export function mapProductRow(row: JoinedProductRow): Product {
   );
   const primary = imgs.find((i) => i.is_primary) ?? imgs[0];
   // Exclude the primary image so ProductGallery's [imageUrl, ...images] does not duplicate it.
-  const gallery = imgs.filter((i) => !i.is_primary).map((i) => i.url);
+  const gallery = imgs.flatMap((i) => (i.is_primary ? [] : [i.url]));
 
   return {
     id: row.id,

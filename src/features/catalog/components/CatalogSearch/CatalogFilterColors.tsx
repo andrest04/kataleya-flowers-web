@@ -32,12 +32,14 @@ export default function CatalogFilterColors({
   selected,
   onToggle,
 }: CatalogFilterColorsProps) {
+  const selectedSet = new Set(selected);
+
   return (
     <div>
       <p className={FILTER_LABEL_CLS}>Color</p>
       <div className="flex flex-wrap gap-2">
         {colors.map((colorDef) => {
-          const active = selected.includes(colorDef.name);
+          const active = selectedSet.has(colorDef.name);
           return (
             <button
               key={colorDef.name}

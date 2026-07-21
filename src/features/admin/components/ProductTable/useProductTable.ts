@@ -54,9 +54,10 @@ export function useProductTable({ initial, activeFilter }: UseProductTableParams
 
   async function handleToggleStatus(id: string, isActive: boolean) {
     const previousItems = items;
-    const nextItems = items
-      .map((product) => (product.id === id ? { ...product, is_active: isActive } : product))
-      .filter((product) => matchesActiveFilter(product, activeFilter));
+    const nextItems = items.flatMap((product) => {
+      const updated = product.id === id ? { ...product, is_active: isActive } : product;
+      return matchesActiveFilter(updated, activeFilter) ? [updated] : [];
+    });
     setItems(nextItems);
 
     const result = await toggleProductStatus(id, isActive);

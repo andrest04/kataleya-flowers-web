@@ -41,12 +41,12 @@ export default function FlowerTypeManager({
   onItemRemovedFromForm,
   onError,
 }: Props) {
-  const dbNames = flowerTypes.map((ft) => ft.name);
+  const dbNames = new Set(flowerTypes.map((ft) => ft.name));
   const items: FlowerTypeOption[] = [
     ...flowerTypes.map((ft) => ({ id: ft.id, name: ft.name, label: ft.name })),
-    ...pendingNewTypes
-      .filter((t) => !dbNames.includes(t))
-      .map((name) => ({ id: name, name, label: name })),
+    ...pendingNewTypes.flatMap((t) =>
+      dbNames.has(t) ? [] : [{ id: t, name: t, label: t }],
+    ),
   ];
 
   return (

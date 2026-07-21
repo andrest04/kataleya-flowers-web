@@ -65,15 +65,15 @@ export function filterProducts(
 
     // Color filter (OR: product must have at least one of the selected colors)
     if (filters.colors.length > 0) {
-      const productColors = product.colors ?? [];
-      const hasColor = filters.colors.some((c) => productColors.includes(c));
+      const productColorSet = new Set(product.colors ?? []);
+      const hasColor = filters.colors.some((c) => productColorSet.has(c));
       if (!hasColor) return false;
     }
 
     // Flower type filter (OR: product must have at least one of the selected types)
     if (filters.flowerTypes.length > 0) {
-      const productTypes = product.flowerTypes ?? [];
-      const hasType = filters.flowerTypes.some((t) => productTypes.includes(t));
+      const productTypeSet = new Set(product.flowerTypes ?? []);
+      const hasType = filters.flowerTypes.some((t) => productTypeSet.has(t));
       if (!hasType) return false;
     }
 

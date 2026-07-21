@@ -44,7 +44,8 @@ export default function CategoryForm({ category }: CategoryFormProps) {
   const [imageUrl, setImageUrl] = useState(initial.imageUrl);
   // En modo create, el slug se deriva live del nombre.
   // En modo edit, NO se toca el slug original a menos que el user lo regenere a propósito.
-  const [autoSlug, setAutoSlug] = useState(!isEditing);
+  // No se lee durante render (solo dentro de handlers) → ref, no state.
+  const autoSlugRef = useRef(!isEditing);
 
   const [state, formAction, isPending] = useActionState<FormState, FormData>(
     async (_prev: FormState, formData: FormData) => {
@@ -87,7 +88,7 @@ export default function CategoryForm({ category }: CategoryFormProps) {
             aria-required="true"
             defaultValue={initial.name}
             onChange={(e) => {
-              if (autoSlug && slugRef.current) {
+              if (autoSlugRef.current && slugRef.current) {
                 slugRef.current.value = slugify(e.target.value);
               }
             }}
@@ -114,7 +115,7 @@ export default function CategoryForm({ category }: CategoryFormProps) {
                   const nameInput = document.getElementById('name') as HTMLInputElement | null;
                   if (slugRef.current && nameInput) {
                     slugRef.current.value = slugify(nameInput.value);
-                    setAutoSlug(true);
+                    autoSlugRef.current = true;
                   }
                 }}
                 className="text-xs underline text-(--color-primary) hover:opacity-80 cursor-pointer"
