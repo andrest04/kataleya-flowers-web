@@ -1,10 +1,5 @@
 'use client';
 
-/**
- * ProductTableImage — celda de imagen con fallback "—" si no hay URL.
- * Reusa entre la fila reorderable (40x40) y la fila estática (48x48).
- */
-
 import Image from 'next/image';
 
 import type { AdminProductRow } from '@/features/admin/queries/products';
@@ -16,7 +11,6 @@ interface ProductTableImageProps {
 }
 
 export default function ProductTableImage({ product, sizeClass, sizes }: ProductTableImageProps) {
-  // Resolve primary image from relational product_images (Phase C+)
   const sortedImages = product.product_images
     ? [...product.product_images].sort((a, b) => a.display_order - b.display_order)
     : [];

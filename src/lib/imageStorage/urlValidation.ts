@@ -1,10 +1,5 @@
-// Pure URL validation — no `node-appwrite` import. This file must stay safe
-// to bundle client-side: `schemas/common.ts` is reachable from the public
-// complaints form, so anything it imports (transitively) can end up in the
-// browser bundle. Only `appwriteProvider.ts` (server-only) may import the SDK.
 import { APPWRITE_BUCKETS, getAppwriteConfig } from '@/lib/appwrite/config';
 
-/** Matches the view URL shape Appwrite Storage generates for uploaded files. */
 const VIEW_URL_PATTERN = /\/storage\/buckets\/([^/]+)\/files\/([^/]+)\/view/;
 
 export function parseAppwriteStorageUrl(url: string): { bucketId: string; fileId: string } | null {

@@ -1,10 +1,5 @@
 'use client';
 
-/**
- * CategoryToggleFeatured — botón estrella para alternar `is_featured`.
- * Optimista con rollback + toast (consistente con CategoryToggleStatus).
- */
-
 import { Star } from 'lucide-react';
 import { toast } from 'sonner';
 

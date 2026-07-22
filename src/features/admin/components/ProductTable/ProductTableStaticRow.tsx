@@ -1,11 +1,5 @@
 'use client';
 
-/**
- * ProductTableStaticRow — fila HTML `<tr>` para la tabla nativa, sin DnD.
- * Hover declarativo via Tailwind (`hover:bg-(--color-surface)`) en lugar de
- * la manipulación imperativa con `onMouseEnter`/`onMouseLeave` de la versión 1.x.
- */
-
 import ToggleSwitch from '@/components/ui/ToggleSwitch';
 
 import ProductTableActions from './ProductTableActions';

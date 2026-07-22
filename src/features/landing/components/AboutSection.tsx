@@ -3,8 +3,6 @@ import Image from "next/image";
 import SectionHeader from "@/components/ui/SectionHeader";
 import { BUSINESS } from "@/lib/constants";
 
-// TODO: reemplazar con foto profesional del local cuando el dueño la provea.
-// Mientras tanto usamos una imagen ambiental generada con la paleta de marca.
 const ABOUT_IMAGE_SRC = "/about-florist-table.jpg";
 
 interface Highlight {

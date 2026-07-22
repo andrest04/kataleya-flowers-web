@@ -8,9 +8,6 @@ interface Bucket {
   resetAt: number;
 }
 
-// Módulo en memoria del proceso: suficiente para frenar spam de script en un
-// solo server, no es un límite distribuido. Combinado con la validación zod
-// existente, cubre el caso real (nadie legítimo envía 3+ reclamos en 15min).
 const buckets = new Map<string, Bucket>();
 
 export function checkComplaintRateLimit(key: string): boolean {

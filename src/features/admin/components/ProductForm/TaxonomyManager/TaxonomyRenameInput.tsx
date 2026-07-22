@@ -14,12 +14,6 @@ interface Props {
   readonly onCancel: () => void;
 }
 
-/**
- * Input inline para renombrar una pill existente.
- *  - Enter → commit
- *  - Escape → cancel
- *  - Botón X → cancel
- */
 export default function TaxonomyRenameInput({
   value,
   inputRef,

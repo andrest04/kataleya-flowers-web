@@ -11,10 +11,6 @@ interface CatalogSearchInputProps {
   placeholder?: string;
 }
 
-/**
- * Input de búsqueda con icono de lupa, botón "limpiar" y label sr-only.
- * El debounce hacia la URL vive en `useCatalogFilters`.
- */
 export default function CatalogSearchInput({
   value,
   onChange,

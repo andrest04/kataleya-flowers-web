@@ -30,11 +30,6 @@ const ITEMS = [
   },
 ];
 
-/**
- * Grid editorial de 3 propuestas de valor reales de Kataleya — sin inventar
- * servicios que el negocio no ofrece (nada de "suscripciones" ni "diseño a
- * medida" estilo e-commerce grande).
- */
 export default function DiscoverMoreSection() {
   return (
     <section className="px-4 py-16 sm:px-6 lg:px-8">

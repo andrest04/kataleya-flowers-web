@@ -12,7 +12,6 @@ export default function ContactSection() {
       id="contacto"
       className="relative scroll-mt-20 flex items-center justify-center px-4 py-20 sm:px-6 lg:px-8 lg:py-28"
     >
-      {/* Fondo ambiental sutil; el scrim cream garantiza contraste del contenido */}
       <Image
         src="/contact-floral-texture.jpg"
         alt=""
@@ -31,7 +30,6 @@ export default function ContactSection() {
       />
 
       <div className="relative mx-auto grid max-w-7xl gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
-        {/* Lado izquierdo - Mapa */}
         <div className="space-y-6">
           <SectionHeader
             subtitle="Atención cercana"
@@ -53,7 +51,6 @@ export default function ContactSection() {
           />
         </div>
 
-        {/* Lado derecho - Botones y horario */}
         <div className="space-y-6">
           <div className="space-y-3">
             <h3 className="text-3xl sm:text-4xl font-heading text-primary">
@@ -64,7 +61,6 @@ export default function ContactSection() {
             </p>
           </div>
 
-          {/* Botón WhatsApp */}
           <a
             href={BUSINESS.whatsapp}
             target="_blank"
@@ -86,7 +82,6 @@ export default function ContactSection() {
             <ArrowRight className="h-6 w-6 text-white transition-transform duration-300 group-hover:translate-x-1" />
           </a>
 
-          {/* Botón Instagram */}
           <a
             href={BUSINESS.instagram}
             target="_blank"
@@ -108,7 +103,6 @@ export default function ContactSection() {
             <ArrowRight className="h-6 w-6 text-white transition-transform duration-300 group-hover:translate-x-1" />
           </a>
 
-          {/* Card de horario */}
           <div
             className="flex items-center justify-between rounded-xl border p-4"
             style={{

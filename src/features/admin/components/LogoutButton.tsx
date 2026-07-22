@@ -11,13 +11,10 @@ export default function LogoutButton() {
     if (loading) return;
     setLoading(true);
 
-    // Appwrite path: server action deletes the session and clears the cookie,
-    // then redirects to /login via `redirect()` in the action.
     try {
       await logoutAction();
-    } catch {
-      // `redirect()` throws internally — this is expected Next.js behaviour.
-      // No toast needed: the page will navigate to /login.
+    } catch (error) {
+      void error;
     } finally {
       setLoading(false);
     }

@@ -2,12 +2,10 @@ import { z } from 'zod';
 
 import { taxonomyName } from './common';
 
-/** Borrar un color por su `name` normalizado. */
 export const deleteColorSchema = z.object({
   name: taxonomyName,
 });
 
-/** Renombrar un color (oldName → newName). */
 export const renameColorSchema = z
   .object({
     oldName: taxonomyName,

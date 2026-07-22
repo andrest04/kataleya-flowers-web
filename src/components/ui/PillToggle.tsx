@@ -16,7 +16,6 @@ const inactiveStyle: React.CSSProperties = {
   border: '1px solid var(--color-border)',
 };
 
-// For non-filled inactive, use white bg (admin form style)
 const inactiveStyleAlt: React.CSSProperties = {
   background: 'var(--color-white)',
   color: 'var(--color-dark)',

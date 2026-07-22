@@ -12,8 +12,6 @@ import { BUSINESS } from "@/lib/constants";
 
 const SITE_URL = BUSINESS.website;
 
-// ISR backstop: pages refresh instantly on-demand via revalidatePath in admin actions;
-// this self-heals any missed path (e.g. color/flower-type renames) within 1 hour.
 export const revalidate = 3600;
 
 interface CategoriaPageProps {
@@ -42,7 +40,6 @@ export async function generateMetadata({
 
     if (!category) {
       return {
-        // El template del root layout agrega `| Kataleya Flawers`.
         title: "Categoría no encontrada",
         description: "La categoría solicitada no existe en nuestro catálogo.",
       };
@@ -52,7 +49,6 @@ export async function generateMetadata({
     const ogImages = category.imageUrl ? [category.imageUrl] : undefined;
 
     return {
-      // El template del root layout agrega `| Kataleya Flawers` automáticamente.
       title: `${category.name} | Catálogo`,
       description,
       alternates: {

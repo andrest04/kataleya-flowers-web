@@ -1,11 +1,3 @@
-// Server-only: Appwrite complaints repository.
-//
-// Complaints data layer: admin reads (`getComplaints`, `getComplaintById`) and
-// the public anonymous insert. The previous `create_complaint` RPC logic
-// (SECURITY DEFINER, atomic correlativo) is replaced by two server-side steps
-// using the admin client: an ATOMIC correlativo allocation via
-// `incrementDocumentAttribute` (no read-then-write race), then a document
-// insert. Anonymous callers never touch the counter directly.
 import { AppwriteException, ID, Query } from 'node-appwrite';
 
 import { APPWRITE_COLLECTIONS } from '@/lib/appwrite/config';
@@ -15,7 +7,6 @@ import { getRepositoryContext, listAllDocuments } from './shared';
 
 const C = APPWRITE_COLLECTIONS;
 
-/** Row shape for `complaints` (snake_case, `id` not `$id`). */
 export interface ComplaintRepoRow {
   id: string;
   correlativo: number;
@@ -68,7 +59,6 @@ function toComplaintRow(doc: ComplaintDoc): ComplaintRepoRow {
   };
 }
 
-/** Lists complaints newest-first — Appwrite equivalent of `getComplaints()`. */
 export async function listComplaints(): Promise<ComplaintRepoRow[]> {
   const { databases, databaseId } = getRepositoryContext();
 
@@ -79,7 +69,6 @@ export async function listComplaints(): Promise<ComplaintRepoRow[]> {
   return docs.map(toComplaintRow);
 }
 
-/** Returns a single complaint by id, or null — `getComplaintById()`. */
 export async function findComplaintById(
   id: string,
 ): Promise<ComplaintRepoRow | null> {
@@ -97,17 +86,10 @@ export async function findComplaintById(
   }
 }
 
-/** Counter document id for a given year, e.g. `complaints-2026`. */
 function counterDocId(year: number): string {
   return `complaints-${year}`;
 }
 
-/**
- * Atomically allocates the next correlativo for `year`, creating the year's
- * counter doc on first use. Uses `incrementDocumentAttribute` — a server-side
- * atomic read-modify-write — so concurrent submissions each receive a distinct,
- * gap-free value. Returns the post-increment value.
- */
 export async function allocateCorrelativo(year: number): Promise<number> {
   const { databases, databaseId } = getRepositoryContext();
   const documentId = counterDocId(year);
@@ -122,15 +104,8 @@ export async function allocateCorrelativo(year: number): Promise<number> {
     });
     return updated.value;
   } catch (err) {
-    // Only handle "document not found" (404) — counter doc does not exist for
-    // this year yet. All other errors (auth, network, etc.) must propagate.
     if (!(err instanceof AppwriteException) || err.code !== 404) throw err;
 
-    // First submission of the year: create the counter seeded at 1.
-    // Under concurrent year-rollover, multiple callers may reach this branch
-    // simultaneously. The first createDocument succeeds; subsequent ones get
-    // a 409 (document already exists). On 409, retry incrementDocumentAttribute
-    // — the doc now exists and the increment will succeed atomically.
     try {
       const created = await databases.createDocument<CounterDoc>({
         databaseId,
@@ -143,7 +118,6 @@ export async function allocateCorrelativo(year: number): Promise<number> {
       if (!(createErr instanceof AppwriteException) || createErr.code !== 409) {
         throw createErr;
       }
-      // Another concurrent request created the doc first — increment normally.
       const retried = await databases.incrementDocumentAttribute<CounterDoc>({
         databaseId,
         collectionId: C.counters,
@@ -156,7 +130,6 @@ export async function allocateCorrelativo(year: number): Promise<number> {
   }
 }
 
-/** Fields required to persist a new complaint (correlativo allocated separately). */
 export interface ComplaintInsert {
   correlativo: number;
   complaint_type: string;
@@ -175,18 +148,12 @@ export interface ComplaintInsert {
   consumer_request: string;
 }
 
-/** Minimal result shape consumed by `submitComplaint`. */
 export interface ComplaintCreated {
   id: string;
   correlativo: number;
   created_at: string;
 }
 
-/**
- * Persists a complaint document via the admin client and returns the created
- * id/correlativo/created_at. Defaults match the column defaults
- * (`status='PENDIENTE'`, `email_sent=false`, no provider response yet).
- */
 export async function insertComplaint(
   input: ComplaintInsert,
 ): Promise<ComplaintCreated> {
@@ -222,18 +189,12 @@ export async function insertComplaint(
   return { id: doc.$id, correlativo: doc.correlativo, created_at: doc.$createdAt };
 }
 
-/** Fields accepted by the admin status-update operation. */
 export interface ComplaintStatusUpdate {
   status: string;
   provider_response: string | null;
   responded_at: string | null;
 }
 
-/**
- * Updates the status and provider response of an existing complaint (admin
- * only). Uses the admin client so the operation is authorized even though
- * `complaints` has no public write permission.
- */
 export async function updateComplaintDocument(
   id: string,
   data: ComplaintStatusUpdate,

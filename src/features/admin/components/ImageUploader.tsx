@@ -5,8 +5,6 @@ import { useCallback, useRef, useState } from 'react';
 
 import { useImageUpload } from '@/features/admin/hooks/useImageUpload';
 
-// ── Types ────────────────────────────────────────────────────────────────────
-
 interface BaseProps {
   folder?: string;
   className?: string;
@@ -27,8 +25,6 @@ interface MultiProps extends BaseProps {
 
 type ImageUploaderProps = SingleProps | MultiProps;
 
-// ── Component ────────────────────────────────────────────────────────────────
-
 export default function ImageUploader(props: ImageUploaderProps) {
   const { folder, className = '' } = props;
   const { uploadImage, cancelUpload, isUploading, progress, error } = useImageUpload();
@@ -39,16 +35,11 @@ export default function ImageUploader(props: ImageUploaderProps) {
   const maxFiles = props.multiple ? (props.maxFiles ?? 10) : 1;
   const canAddMore = urls.length < maxFiles && !isUploading;
 
-  // ── Handlers ─────────────────────────────────────────────────────────────
-
   const handleFiles = useCallback(async (files: FileList | File[]) => {
     const fileArray = Array.from(files);
     const slots = maxFiles - urls.length;
     const toUpload = fileArray.slice(0, slots);
 
-    // Uploads themselves are independent network calls; fan them out concurrently.
-    // The resulting onChange calls stay sequential (same order as toUpload) so
-    // state updates are unaffected.
     const uploadedUrls = await Promise.all(toUpload.map((file) => uploadImage(file, folder)));
 
     for (const url of uploadedUrls) {
@@ -93,11 +84,8 @@ export default function ImageUploader(props: ImageUploaderProps) {
     }
   }, [props]);
 
-  // ── Render ───────────────────────────────────────────────────────────────
-
   return (
     <div className={className}>
-      {/* Previews */}
       {urls.length > 0 && (
         <div className="flex flex-wrap gap-3 mb-3">
           {urls.map((url, i) => (
@@ -134,7 +122,6 @@ export default function ImageUploader(props: ImageUploaderProps) {
         </div>
       )}
 
-      {/* Drop zone */}
       {canAddMore && (
         <button
           type="button"
@@ -180,7 +167,6 @@ export default function ImageUploader(props: ImageUploaderProps) {
         </button>
       )}
 
-      {/* Hidden file input */}
       <input
         ref={inputRef}
         type="file"
@@ -190,7 +176,6 @@ export default function ImageUploader(props: ImageUploaderProps) {
         className="hidden"
       />
 
-      {/* Progress bar */}
       {isUploading && (
         <div className="mt-3">
           <div
@@ -224,7 +209,6 @@ export default function ImageUploader(props: ImageUploaderProps) {
         </div>
       )}
 
-      {/* Error message */}
       {error && (
         <p
           className="mt-2 text-sm"

@@ -9,15 +9,6 @@ import {
   storedImageUrl,
 } from './common';
 
-/**
- * Shape canónico de `createCategory` / `updateCategory`.
- *
- * Reglas:
- * - `imageUrl` puede ser string vacío o `null` (categoría sin imagen) — si tiene
- *   valor, debe ser una URL del CDN configurado.
- * - `slug` se deriva del `name` en el server pero puede llegar pre-calculado.
- * - `displayOrder` es opcional en CREATE (lo asigna `createCategory`).
- */
 const baseCategoryShape = {
   name: nonEmptyString,
   slug: slug.optional(),

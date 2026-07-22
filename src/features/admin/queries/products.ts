@@ -7,7 +7,6 @@ import type { ProductRow } from '@/lib/db/rows';
 
 export type { ProductRow };
 
-/** ProductRow augmented with relational taxonomy — used by admin edit form */
 export type AdminProductRow = ProductRow & {
   product_color_assignments:
     | { color_id: string; product_colors: { id: string; name: string; hex: string | null; label: string } | null }[]

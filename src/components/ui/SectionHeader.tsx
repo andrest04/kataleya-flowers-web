@@ -3,10 +3,6 @@ interface SectionHeaderProps {
   title: string;
   description?: string;
   align?: 'center' | 'left';
-  /**
-   * Heading level for the title. Defaults to 'h2' (section heading nested under
-   * a page's h1). Use 'h1' when this is the page's main title.
-   */
   as?: 'h1' | 'h2';
 }
 

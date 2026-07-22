@@ -11,13 +11,6 @@ interface Props {
   readonly onCancel: () => void;
 }
 
-/**
- * Pill de confirmación de delete. Muestra cuántos productos usan el item
- * y dos botones: "Confirmar" y "X" cancelar.
- *
- * A11y: `role="status"` + `aria-live="polite"` para que el screen reader
- * anuncie el contador cuando aparece.
- */
 export default function TaxonomyDeleteConfirm({
   name,
   label,

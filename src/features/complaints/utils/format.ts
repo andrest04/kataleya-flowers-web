@@ -1,9 +1,5 @@
-/** Días hábiles que tiene el proveedor para responder (norma INDECOPI). */
 export const RESPONSE_BUSINESS_DAYS = 15;
 
-/**
- * Formatea el número de hoja como `00001-2026` (correlativo con padding + año).
- */
 export function formatComplaintNumber(
   correlativo: number,
   createdAt: string | Date,
@@ -12,10 +8,6 @@ export function formatComplaintNumber(
   return `${String(correlativo).padStart(5, '0')}-${year}`;
 }
 
-/**
- * Suma `days` días hábiles (excluye sábados y domingos) a una fecha.
- * Nota: no contempla feriados peruanos — es una aproximación.
- */
 export function addBusinessDays(from: string | Date, days: number): Date {
   const date = new Date(from);
   let added = 0;
@@ -27,12 +19,10 @@ export function addBusinessDays(from: string | Date, days: number): Date {
   return date;
 }
 
-/** Fecha límite de respuesta (15 días hábiles desde la creación). */
 export function responseDeadline(createdAt: string | Date): Date {
   return addBusinessDays(createdAt, RESPONSE_BUSINESS_DAYS);
 }
 
-/** ¿Está vencido el plazo de respuesta y aún sin responder? */
 export function isResponseOverdue(
   createdAt: string | Date,
   respondedAt: string | null,

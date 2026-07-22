@@ -18,31 +18,19 @@ type ConfirmVariant = 'destructive' | 'default';
 
 interface ConfirmDialogProps {
   open: boolean;
-  /**
-   * Radix-style controlled handler. Recibe `false` cuando el usuario cierra
-   * con ESC, click backdrop o el botón cancel.
-   */
   onOpenChange?: (open: boolean) => void;
   title: string;
   description: string;
   confirmLabel?: string;
   cancelLabel?: string;
-  /** Loading state — deshabilita ambos botones y muestra "Eliminando…". */
   loading?: boolean;
-  /** Sin loading: solo deshabilita el confirm (ej. validación pendiente). */
   confirmDisabled?: boolean;
-  /** `destructive` agrega ícono de advertencia + botón rojo; `default` mantiene neutro. */
   variant?: ConfirmVariant;
   onConfirm: () => void;
-  /** @deprecated usar `onOpenChange(false)` o sólo Radix close (Esc/backdrop). Mantengo para retrocompatibilidad. */
   onCancel?: () => void;
   children?: React.ReactNode;
 }
 
-/**
- * Confirmación modal accesible (Radix AlertDialog) — focus inicial en cancel,
- * cierre con ESC y click backdrop, focus trap y restore focus integrados.
- */
 export default function ConfirmDialog({
   open,
   onOpenChange,

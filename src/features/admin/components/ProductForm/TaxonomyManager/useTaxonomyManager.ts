@@ -14,15 +14,6 @@ interface Params<TItem extends TaxonomyItem> {
   onError: (msg: string) => void;
 }
 
-/**
- * Estado y handlers del TaxonomyManager.
- *
- * Agrupa:
- *  - Modo "gestionar" (manage / rename / delete-confirm + usage count)
- *  - Modo "agregar" (input nuevo + extra)
- *
- * Devuelve refs para focus auto en los inputs cuando entran en escena.
- */
 export function useTaxonomyManager<TItem extends TaxonomyItem>({
   items,
   initialExtra,
@@ -34,7 +25,6 @@ export function useTaxonomyManager<TItem extends TaxonomyItem>({
   onAddPending,
   onError,
 }: Params<TItem>) {
-  // Modo "gestionar"
   const [manageMode, setManageMode] = useState(false);
   const [renaming, setRenaming] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState('');
@@ -42,7 +32,6 @@ export function useTaxonomyManager<TItem extends TaxonomyItem>({
   const [usageCount, setUsageCount] = useState<number | null>(null);
   const renameInputRef = useRef<HTMLInputElement>(null);
 
-  // Modo "agregar"
   const [showNewInput, setShowNewInput] = useState(false);
   const [newInput, setNewInput] = useState('');
   const [extra, setExtra] = useState<{ hex: string }>(initialExtra ?? { hex: '' });

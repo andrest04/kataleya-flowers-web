@@ -15,12 +15,6 @@ const TRUST_ITEMS: readonly TrustItem[] = [
   { Icon: ShieldCheck, text: "Calidad garantizada" },
 ];
 
-/**
- * Franja de confianza independiente entre Catálogo y Testimonios. Señales
- * escaneables (icono + frase corta) en lugar de un "dashboard" de métricas:
- * la confianza de una florería se transmite con frescura y servicio, no con
- * un tablero de KPIs. Server Component — texto estático, sin JS.
- */
 export default function TrustBar() {
   return (
     <div

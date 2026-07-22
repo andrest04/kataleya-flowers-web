@@ -69,11 +69,6 @@ function PriceInput({
   );
 }
 
-/**
- * Filtro de rango de precio (S/ min — S/ max).
- * Vacío = sentinela `PRICE_MIN`/`PRICE_MAX`. La URL solo se setea cuando el
- * valor difiere del default.
- */
 export default function CatalogFilterPrice({
   precioMin,
   precioMax,

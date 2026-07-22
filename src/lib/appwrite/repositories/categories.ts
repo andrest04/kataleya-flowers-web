@@ -1,9 +1,3 @@
-// Server-only: Appwrite categories repository.
-//
-// Returns rows shaped like the `categories` row contract so the existing
-// `mapCategoryRow` and admin consumers stay unchanged. The
-// `category_price_summary` view (min active-product price per category) has no
-// Appwrite equivalent, so `listCategoryPriceFrom` derives the same map in Node.
 import { randomUUID } from 'node:crypto';
 
 import { ID, Query } from 'node-appwrite';
@@ -16,7 +10,6 @@ import { getRepositoryContext, listAllDocuments } from './shared';
 
 const C = APPWRITE_COLLECTIONS;
 
-/** Row shape for `categories` (snake_case, `id` not `$id`). */
 export interface CategoryRepoRow {
   id: string;
   name: string;
@@ -47,11 +40,6 @@ function toCategoryRow(doc: CategoryDoc): CategoryRepoRow {
   };
 }
 
-/**
- * Returns active categories ordered by `display_order` ascending — the Appwrite
- * equivalent of the public `getCategories()` query (price-from computed
- * separately via `listCategoryPriceFrom`).
- */
 export async function listActiveCategories(): Promise<CategoryRepoRow[]> {
   const { databases, databaseId } = getRepositoryContext();
 
@@ -63,10 +51,6 @@ export async function listActiveCategories(): Promise<CategoryRepoRow[]> {
   return docs.map(toCategoryRow);
 }
 
-/**
- * Returns all categories (active + inactive) ordered by `display_order` — the
- * Appwrite equivalent of admin `getAdminCategories()`.
- */
 export async function listAllCategories(): Promise<CategoryRepoRow[]> {
   const { databases, databaseId } = getRepositoryContext();
 
@@ -77,7 +61,6 @@ export async function listAllCategories(): Promise<CategoryRepoRow[]> {
   return docs.map(toCategoryRow);
 }
 
-/** Returns a single category by id, or null — admin `getAdminCategoryById()`. */
 export async function findCategoryById(
   id: string,
 ): Promise<CategoryRepoRow | null> {
@@ -95,11 +78,6 @@ export async function findCategoryById(
   }
 }
 
-/**
- * Derives the `category_price_summary` view: minimum price among each
- * category's active products. Returns a `Map<categoryId, priceFrom>`; absent
- * keys mean the category has no active products (matches the view's null).
- */
 export async function listCategoryPriceFrom(): Promise<Map<string, number>> {
   const { databases, databaseId } = getRepositoryContext();
 
@@ -119,9 +97,6 @@ export async function listCategoryPriceFrom(): Promise<Map<string, number>> {
   return priceFromByCategory;
 }
 
-// ─── Admin write operations ───────────────────────────────────────────────────
-
-/** Write payload for create/update category. */
 export interface CategoryWritePayload {
   name: string;
   slug: string;
@@ -133,10 +108,6 @@ export interface CategoryWritePayload {
   isFeatured: boolean;
 }
 
-/**
- * Returns the next display_order for a new category
- * (max existing + 1, or 1 if no categories exist yet).
- */
 export async function getNextCategoryOrder(): Promise<number> {
   const { databases, databaseId } = getRepositoryContext();
   const page = await databases.listDocuments<CategoryDoc>({
@@ -148,9 +119,6 @@ export async function getNextCategoryOrder(): Promise<number> {
   return maxOrder + 1;
 }
 
-/**
- * Creates a category document. Returns the new document id.
- */
 export async function createCategoryDocument(
   payload: CategoryWritePayload,
 ): Promise<string> {
@@ -158,8 +126,6 @@ export async function createCategoryDocument(
   const doc = await databases.createDocument<CategoryDoc>({
     databaseId,
     collectionId: C.categories,
-    // UUID (not ID.unique()) so admin actions' `uuid` schema accepts the id for
-    // later edit/delete/toggle — migrated rows keep their original UUIDs too.
     documentId: ID.custom(randomUUID()),
     data: {
       name: payload.name,
@@ -175,9 +141,6 @@ export async function createCategoryDocument(
   return doc.$id;
 }
 
-/**
- * Updates an existing category document.
- */
 export async function updateCategoryDocument(
   id: string,
   payload: CategoryWritePayload,
@@ -200,9 +163,6 @@ export async function updateCategoryDocument(
   });
 }
 
-/**
- * Returns the count of products in a category (for the delete confirmation UI).
- */
 export async function countProductsInCategory(categoryId: string): Promise<number> {
   const { databases, databaseId } = getRepositoryContext();
   const products = await listAllDocuments<ProductDoc>(databases, databaseId, C.products, [
@@ -212,11 +172,6 @@ export async function countProductsInCategory(categoryId: string): Promise<numbe
   return products.length;
 }
 
-/**
- * Cascades a category delete: fetches all product image URLs, deletes all
- * product_images rows, deletes all product documents, then deletes the category.
- * Returns the list of image URLs (primary + gallery) for caller cleanup.
- */
 export async function deleteCategoryCascadeAppwrite(
   categoryId: string,
 ): Promise<string[]> {
@@ -226,13 +181,8 @@ export async function deleteCategoryCascadeAppwrite(
     Query.equal('category_id', [categoryId]),
   ]);
 
-  // Collect image URLs before deletion (for storage cleanup by caller).
-  // deleteProductRelations handles colorAssignments + flowerTypeAssignments + productImages.
-  // Each product's cascade (fetch images -> delete relations -> delete doc) is independent
-  // of the others, so the products are processed concurrently.
   const perProductImageUrls = await Promise.all(
     products.map(async (product) => {
-      // Fetch image URLs before deleting relations (productImages rows are removed inside deleteProductRelations)
       const productImageDocs = await listAllDocuments<ProductImageDoc>(
         databases,
         databaseId,
@@ -240,10 +190,8 @@ export async function deleteCategoryCascadeAppwrite(
         [Query.equal('product_id', [product.$id])],
       );
 
-      // Delete color assignments, flower-type assignments, and product_images rows
       await deleteProductRelations(product.$id);
 
-      // Delete the product document
       await databases.deleteDocument({ databaseId, collectionId: C.products, documentId: product.$id });
 
       return productImageDocs.map((img) => img.url);
@@ -251,16 +199,11 @@ export async function deleteCategoryCascadeAppwrite(
   );
   const imageUrls: string[] = perProductImageUrls.flat();
 
-  // Delete the category itself
   await databases.deleteDocument({ databaseId, collectionId: C.categories, documentId: categoryId });
 
   return imageUrls;
 }
 
-/**
- * Reassigns all products of `categoryId` to `reassignToId`, then deletes the
- * category. Returns the category's image URL (for storage cleanup).
- */
 export async function deleteCategoryReassignAppwrite(
   categoryId: string,
   reassignToId: string,
@@ -283,16 +226,12 @@ export async function deleteCategoryReassignAppwrite(
     ),
   );
 
-  // Fetch the category image before deleting
   const catDoc = await findCategoryById(categoryId);
   await databases.deleteDocument({ databaseId, collectionId: C.categories, documentId: categoryId });
 
   return catDoc?.image_url ?? null;
 }
 
-/**
- * Updates only the `is_active` flag of a category.
- */
 export async function setCategoryActive(id: string, isActive: boolean): Promise<void> {
   const { databases, databaseId } = getRepositoryContext();
   await databases.updateDocument<CategoryDoc>({
@@ -303,9 +242,6 @@ export async function setCategoryActive(id: string, isActive: boolean): Promise<
   });
 }
 
-/**
- * Updates only the `is_featured` flag of a category.
- */
 export async function setCategoryFeatured(id: string, isFeatured: boolean): Promise<void> {
   const { databases, databaseId } = getRepositoryContext();
   await databases.updateDocument<CategoryDoc>({
@@ -316,10 +252,6 @@ export async function setCategoryFeatured(id: string, isFeatured: boolean): Prom
   });
 }
 
-/**
- * Updates `display_order` for a list of category ids in the given order.
- * The Appwrite equivalent of the `reorder_categories` RPC.
- */
 export async function reorderCategoryDocuments(orderedIds: string[]): Promise<void> {
   const { databases, databaseId } = getRepositoryContext();
   await Promise.all(
@@ -334,9 +266,6 @@ export async function reorderCategoryDocuments(orderedIds: string[]): Promise<vo
   );
 }
 
-/**
- * Returns all category slugs (used for bulk revalidation after reorder/delete).
- */
 export async function listAllCategorySlugs(): Promise<string[]> {
   const { databases, databaseId } = getRepositoryContext();
   const docs = await listAllDocuments<CategoryDoc>(databases, databaseId, C.categories, [

@@ -14,11 +14,6 @@ export type {
   TaxonomyManagerProps,
 } from './types';
 
-/**
- * Manager genérico de taxonomías inline (colores y tipos de flor).
- * Orquesta header + lista de items (4 modos via `TaxonomyItemRow`) +
- * add input. Toda la lógica de estado vive en `useTaxonomyManager`.
- */
 export default function TaxonomyManager<TItem extends TaxonomyItem>(
   props: TaxonomyManagerProps<TItem>,
 ) {

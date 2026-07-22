@@ -20,10 +20,6 @@ interface CatalogFilterSectionsProps {
   onClearAll: () => void;
 }
 
-/**
- * Composición de los 4 bloques de filtros + botón "Limpiar filtros".
- * Renderizado tanto por el sidebar desktop como por el panel mobile.
- */
 export default function CatalogFilterSections({
   categories,
   productColors,

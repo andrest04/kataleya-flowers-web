@@ -12,18 +12,9 @@ import {
   uuid,
 } from './common';
 
-/**
- * Shape canónico de los datos que llegan a `createProduct` / `updateProduct`.
- *
- * Notas:
- * - `colors` y `flower_types` viajan como nombres normalizados (string), no UUIDs —
- *   así está modelado en `Database['products']['Row']` y mantiene compatibilidad.
- * - `imageUrl` y cada item de `images` se restringen al CDN configurado.
- * - `priceVariants` puede ser `null` (precio fijo) o un array no vacío.
- */
 const baseProductShape = {
   name: nonEmptyString,
-  slug: slug.optional(), // si llega vacío lo deriva el server desde `name`
+  slug: slug.optional(),
   description: longText,
   price: z
     .number({ message: 'El precio debe ser un número' })
@@ -44,7 +35,6 @@ const baseProductShape = {
   isActive: z.boolean(),
   isFeatured: z.boolean(),
   displayOrder: nonNegativeInt,
-  // Pendientes nuevos creados desde el form
   newFlowerTypes: z.array(taxonomyName).max(50).optional(),
   newColors: z
     .array(

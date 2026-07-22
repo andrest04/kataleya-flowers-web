@@ -1,9 +1,3 @@
-// Server-only: Appwrite products repository.
-//
-// Returns rows shaped exactly like the `JoinedProductRow` contract (see
-// `features/catalog/queries/mappers.ts`) so `mapProductRow` consumes them
-// unchanged. Appwrite has no nested embeds, so related taxonomy and images are
-// batch-fetched and composed in Node.
 import { randomUUID } from 'node:crypto';
 
 import { ID, Query } from 'node-appwrite';
@@ -30,12 +24,6 @@ import {
 
 const C = APPWRITE_COLLECTIONS;
 
-/**
- * `price_variants` is persisted as a JSON string in Appwrite, so parse it back
- * to the array/object shape `mapProductRow` expects. A malformed or truncated
- * value degrades to `null` (no price table) instead of throwing and crashing
- * the product page.
- */
 function parsePriceVariants(value: ProductDoc['price_variants']): JsonValue | null {
   if (typeof value !== 'string') return value ?? null;
   try {
@@ -45,7 +33,6 @@ function parsePriceVariants(value: ProductDoc['price_variants']): JsonValue | nu
   }
 }
 
-/** Maps a raw Appwrite product document to the `products` row shape. */
 function toProductRow(doc: ProductDoc): Omit<
   JoinedProductRow,
   | 'product_color_assignments'
@@ -94,12 +81,6 @@ interface RelatedData {
   >;
 }
 
-/**
- * Batch-fetches color assignments, flower-type assignments, and images for the
- * given product ids and indexes them by product id. Taxonomy assignment docs
- * store ids, so colors/flower types are resolved to their `name` to match the
- * nested-embed shape (`product_colors.name`, `flower_types.name`).
- */
 async function fetchRelated(productIds: string[]): Promise<RelatedData> {
   const { databases, databaseId } = getRepositoryContext();
 
@@ -129,7 +110,6 @@ async function fetchRelated(productIds: string[]): Promise<RelatedData> {
     };
   }
 
-  // Fetch the full taxonomy once and index id -> name (small, fixed sets).
   const [colors, flowerTypes] = await Promise.all([
     listAllDocuments<ColorDoc>(databases, databaseId, C.colors),
     listAllDocuments<FlowerTypeDoc>(databases, databaseId, C.flowerTypes),
@@ -137,7 +117,6 @@ async function fetchRelated(productIds: string[]): Promise<RelatedData> {
   const colorNameById = new Map(colors.map((c) => [c.$id, c.name]));
   const flowerNameById = new Map(flowerTypes.map((f) => [f.$id, f.name]));
 
-  // Batch-fetch assignments and images for all products (chunked in-lists).
   const idChunks = chunkIds(productIds);
 
   for (const chunk of idChunks) {
@@ -189,11 +168,6 @@ async function fetchRelated(productIds: string[]): Promise<RelatedData> {
   };
 }
 
-/**
- * Admin row shape with richer taxonomy data for the admin edit form.
- * Mirrors `AdminProductRow` from `features/admin/queries/products.ts`.
- * product_images includes `id` so the admin form can key image rows.
- */
 export type AdminProductAppwriteRow = Omit<JoinedProductRow, 'product_color_assignments' | 'product_flower_type_assignments' | 'product_images'> & {
   product_color_assignments:
     | { color_id: string; product_colors: { id: string; name: string; hex: string | null; label: string } | null }[]
@@ -206,7 +180,6 @@ export type AdminProductAppwriteRow = Omit<JoinedProductRow, 'product_color_assi
     | null;
 };
 
-/** Composes base product docs + related data into `JoinedProductRow` objects. */
 function composeRows(products: ProductDoc[], related: RelatedData): JoinedProductRow[] {
   return products.map((doc) => ({
     ...toProductRow(doc),
@@ -218,11 +191,6 @@ function composeRows(products: ProductDoc[], related: RelatedData): JoinedProduc
   }));
 }
 
-/**
- * Returns all active products under active categories, ordered by
- * `display_order` ascending — the Appwrite equivalent of `getProducts()`.
- * Active-category filtering is applied in Node (no DB inner join).
- */
 export async function listActiveJoinedProducts(): Promise<JoinedProductRow[]> {
   const { databases, databaseId } = getRepositoryContext();
 
@@ -246,10 +214,6 @@ export async function listActiveJoinedProducts(): Promise<JoinedProductRow[]> {
   return composeRows(visible, related);
 }
 
-/**
- * Returns a single active product by slug as a `JoinedProductRow`, or null when
- * no active product matches — the Appwrite equivalent of `getProductBySlug()`.
- */
 export async function findActiveJoinedProductBySlug(
   slug: string,
 ): Promise<JoinedProductRow | null> {
@@ -267,11 +231,6 @@ export async function findActiveJoinedProductBySlug(
   return composeRows([product], related)[0] ?? null;
 }
 
-/**
- * Returns active products for an active category slug, ordered by
- * `display_order` ascending — the Appwrite equivalent of
- * `getProductsByCategory()`. Returns `[]` when the category is missing/inactive.
- */
 export async function listActiveJoinedProductsByCategorySlug(
   categorySlug: string,
 ): Promise<JoinedProductRow[]> {
@@ -296,17 +255,12 @@ export async function listActiveJoinedProductsByCategorySlug(
   return composeRows(products, related);
 }
 
-/** Minimal product row for the sitemap (Appwrite equivalent of getSitemapProducts). */
 export interface SitemapProductRow {
   slug: string;
   categorySlug: string;
   updatedAt: string | null;
 }
 
-/**
- * Returns slug/categorySlug/updatedAt for every active product under an active
- * category, newest first — the Appwrite equivalent of `getSitemapProducts()`.
- */
 export async function listSitemapProducts(): Promise<SitemapProductRow[]> {
   const { databases, databaseId } = getRepositoryContext();
 
@@ -331,12 +285,6 @@ export async function listSitemapProducts(): Promise<SitemapProductRow[]> {
   });
 }
 
-// ─── Admin-only: richer taxonomy fetch (includes ids) ────────────────────────
-
-/**
- * Batch-fetches color and flower-type assignments keyed by product id,
- * including the referenced taxonomy ids and doc data — for the admin edit form.
- */
 async function fetchAdminRelated(productIds: string[]): Promise<{
   colorAssignmentsByProduct: Map<
     string,
@@ -429,10 +377,6 @@ async function fetchAdminRelated(productIds: string[]): Promise<{
   return { colorAssignmentsByProduct, flowerAssignmentsByProduct, imagesByProduct };
 }
 
-/**
- * Returns all products (active + inactive) ordered by `display_order` for the
- * admin product table — the Appwrite equivalent of `getAdminProducts()`.
- */
 export async function listAdminProducts(): Promise<AdminProductAppwriteRow[]> {
   const { databases, databaseId } = getRepositoryContext();
 
@@ -450,10 +394,6 @@ export async function listAdminProducts(): Promise<AdminProductAppwriteRow[]> {
   })) as AdminProductAppwriteRow[];
 }
 
-/**
- * Returns a single product by id with full taxonomy — the Appwrite equivalent
- * of `getAdminProductById()`. Returns null when not found.
- */
 export async function findAdminProductById(
   id: string,
 ): Promise<AdminProductAppwriteRow | null> {
@@ -473,7 +413,6 @@ export async function findAdminProductById(
   }
 }
 
-/** Scalar product fields for create/update. All normalized names (not ids). */
 export interface ProductWritePayload {
   name: string;
   slug: string;
@@ -490,11 +429,6 @@ export interface ProductWritePayload {
   displayOrder: number;
 }
 
-/**
- * Creates a product document and returns its new id.
- * The caller is responsible for creating taxonomy assignments and image rows
- * immediately after (via `syncProductTaxonomyAppwrite`).
- */
 export async function createProductDocument(
   payload: ProductWritePayload,
 ): Promise<string> {
@@ -508,8 +442,6 @@ export async function createProductDocument(
   const doc = await databases.createDocument<ProductDoc>({
     databaseId,
     collectionId: C.products,
-    // UUID (not ID.unique()) so admin actions' `uuid` schema accepts the id for
-    // later edit/delete/toggle — migrated rows keep their original UUIDs too.
     documentId: ID.custom(randomUUID()),
     data: {
       category_id: payload.categoryId,
@@ -518,7 +450,6 @@ export async function createProductDocument(
       description: payload.description,
       price: payload.price,
       image_url: payload.imageUrl,
-      // denormalized caches maintained by syncProductTaxonomyAppwrite after create
       images: [],
       includes: payload.includes,
       colors: [],
@@ -535,10 +466,6 @@ export async function createProductDocument(
   return doc.$id;
 }
 
-/**
- * Updates scalar fields of an existing product document.
- * Taxonomy assignments and image rows are replaced by `syncProductTaxonomyAppwrite`.
- */
 export async function updateProductDocument(
   id: string,
   payload: ProductWritePayload,
@@ -572,21 +499,11 @@ export async function updateProductDocument(
   });
 }
 
-/**
- * Deletes a product document (junctions cascade-deletes via Appwrite
- * relationship cleanup are NOT automatic — caller must call
- * `deleteProductRelations` first to remove assignment/image docs).
- */
 export async function deleteProductDocument(id: string): Promise<void> {
   const { databases, databaseId } = getRepositoryContext();
   await databases.deleteDocument({ databaseId, collectionId: C.products, documentId: id });
 }
 
-/**
- * Deletes all color assignments, flower-type assignments, and product_images
- * rows for a product. Call before `deleteProductDocument` or before re-syncing
- * taxonomy.
- */
 export async function deleteProductRelations(productId: string): Promise<void> {
   const { databases, databaseId } = getRepositoryContext();
 
@@ -615,7 +532,6 @@ export async function deleteProductRelations(productId: string): Promise<void> {
   ]);
 }
 
-/** Returns all current product_images URLs for a product (for storage cleanup). */
 export async function getProductImageUrls(productId: string): Promise<string[]> {
   const { databases, databaseId } = getRepositoryContext();
   const docs = await listAllDocuments<ProductImageDoc>(databases, databaseId, C.productImages, [
@@ -633,18 +549,6 @@ interface TaxonomySyncInput {
   galleryImages: string[];
 }
 
-/**
- * Replaces taxonomy assignments and product_images for a product.
- *
- * Algorithm:
- *   1. Delete all existing assignments and image rows
- *   2. Resolve color names → ids (upsert new colors first if needed)
- *   3. Resolve flower-type names → ids
- *   4. Insert new color assignments, flower-type assignments, and image rows
- *   5. Update denormalized cache arrays on the product document
- *
- * Returns an error descriptor on failure; null on success.
- */
 export async function syncProductTaxonomyAppwrite(
   input: TaxonomySyncInput,
 ): Promise<{ code: string; message: string } | null> {
@@ -652,20 +556,16 @@ export async function syncProductTaxonomyAppwrite(
   const { productId, productName, colorNames, flowerTypeNames, imageUrl, galleryImages } = input;
 
   try {
-    // 1. Delete existing relations
     await deleteProductRelations(productId);
 
-    // 2. Resolve colors (all existing colors indexed by name)
     const allColors = await listAllDocuments<ColorDoc>(databases, databaseId, C.colors);
     const colorByName = new Map(allColors.map((c) => [c.name, c.$id]));
     const colorIds = colorNames.map((n) => colorByName.get(n)).filter((id): id is string => id !== undefined);
 
-    // 3. Resolve flower types
     const allFlowers = await listAllDocuments<FlowerTypeDoc>(databases, databaseId, C.flowerTypes);
     const flowerByName = new Map(allFlowers.map((f) => [f.name, f.$id]));
     const flowerIds = flowerTypeNames.map((n) => flowerByName.get(n)).filter((id): id is string => id !== undefined);
 
-    // 4. Build image list (primary first, deduped)
     const imageDocs: { url: string; altText: string; isPrimary: boolean; displayOrder: number }[] = [];
     if (imageUrl) {
       imageDocs.push({ url: imageUrl, altText: productName, isPrimary: true, displayOrder: 0 });
@@ -676,7 +576,6 @@ export async function syncProductTaxonomyAppwrite(
       }
     });
 
-    // 5. Insert new relations in parallel batches
     await Promise.all([
       ...colorIds.map((colorId) =>
         databases.createDocument({ databaseId, collectionId: C.colorAssignments, documentId: ID.unique(), data: { product_id: productId, color_id: colorId } }),
@@ -689,7 +588,6 @@ export async function syncProductTaxonomyAppwrite(
       ),
     ]);
 
-    // 6. Update denormalized cache arrays on the product doc
     await databases.updateDocument<ProductDoc>({
       databaseId,
       collectionId: C.products,
@@ -707,10 +605,6 @@ export async function syncProductTaxonomyAppwrite(
   }
 }
 
-/**
- * Updates only the `is_active` flag of a product — the Appwrite equivalent of
- * toggling product status.
- */
 export async function setProductActive(id: string, isActive: boolean): Promise<void> {
   const { databases, databaseId } = getRepositoryContext();
   await databases.updateDocument<ProductDoc>({
@@ -721,10 +615,6 @@ export async function setProductActive(id: string, isActive: boolean): Promise<v
   });
 }
 
-/**
- * Updates `display_order` for a list of product ids in the given order.
- * The Appwrite equivalent of the `reorder_products` RPC.
- */
 export async function reorderProductDocuments(orderedIds: string[]): Promise<void> {
   const { databases, databaseId } = getRepositoryContext();
   await Promise.all(
@@ -739,10 +629,6 @@ export async function reorderProductDocuments(orderedIds: string[]): Promise<voi
   );
 }
 
-/**
- * Returns the next display_order value for a new product
- * (max existing + 1, or 1 if no products exist yet).
- */
 export async function getNextProductOrder(): Promise<number> {
   const { databases, databaseId } = getRepositoryContext();
   const page = await databases.listDocuments<ProductDoc>({
@@ -754,10 +640,6 @@ export async function getNextProductOrder(): Promise<number> {
   return maxOrder + 1;
 }
 
-/**
- * Returns the category slug for a product id (used for revalidation).
- * Resolves product → category_id → category slug in two lookups.
- */
 export async function getProductCategorySlug(
   productId: string,
 ): Promise<{ categoryId: string; categorySlug: string | null } | null> {
@@ -772,9 +654,6 @@ export async function getProductCategorySlug(
   }
 }
 
-/**
- * Returns category slug by category id (used for revalidation in create/update).
- */
 export async function getCategorySlugById(categoryId: string): Promise<string | null> {
   const { databases, databaseId } = getRepositoryContext();
   try {
@@ -785,10 +664,6 @@ export async function getCategorySlugById(categoryId: string): Promise<string | 
   }
 }
 
-/**
- * Returns category id → slug map for a set of product ids.
- * Used in reorderProducts to revalidate affected category pages.
- */
 export async function getCategorySlugsForProducts(
   productIds: string[],
 ): Promise<Map<string, string>> {

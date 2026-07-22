@@ -9,13 +9,9 @@ export interface FlowerTypeOption extends TaxonomyItem {
 }
 
 interface Props {
-  /** Flower types cargados desde la DB. */
   flowerTypes: { id: string; name: string }[];
-  /** Tipos pendientes de creación (creados localmente, aún no en DB). */
   pendingNewTypes: string[];
-  /** Tipos actualmente seleccionados (form.flowerTypes). */
   selected: string[];
-  /** Callbacks al hook del form. */
   onToggle: (name: string) => void;
   onAddPending: (name: string) => void;
   onItemRenamedInForm: (oldName: string, newName: string) => void;

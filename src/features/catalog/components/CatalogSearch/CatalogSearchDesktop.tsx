@@ -22,7 +22,6 @@ interface CatalogSearchDesktopProps {
   onClearAll: () => void;
 }
 
-/** Sidebar desktop (md+): input + filtros sticky. */
 export default function CatalogSearchDesktop({
   categories,
   productColors,

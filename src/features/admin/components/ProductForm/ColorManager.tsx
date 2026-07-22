@@ -13,13 +13,9 @@ export interface ColorOption {
 }
 
 interface Props {
-  /** Colores cargados desde la DB. */
   productColors: ColorOption[];
-  /** Colores pendientes de creación (creados localmente, aún no en DB). */
   pendingNewColors: { name: string; hex: string }[];
-  /** Colores actualmente seleccionados (form.colors). */
   selected: string[];
-  /** Callbacks al hook del form. */
   onToggle: (name: string) => void;
   onAddPending: (color: { name: string; hex: string }) => void;
   onItemRenamedInForm: (oldName: string, newName: string) => void;
@@ -45,7 +41,6 @@ export default function ColorManager({
   onItemRemovedFromForm,
   onError,
 }: Props) {
-  // Construye la lista visible: DB colors + pendientes que aún no estén en DB.
   const dbNames = new Set(productColors.map((c) => c.name));
   const items: ColorOption[] = [
     ...productColors,

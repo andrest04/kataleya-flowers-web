@@ -2,7 +2,6 @@ import { z } from 'zod';
 
 import { uuid } from './common';
 
-/** Reordenamiento bulk: lista de UUIDs en el orden deseado. */
 export const reorderSchema = z.object({
   ids: z
     .array(uuid)

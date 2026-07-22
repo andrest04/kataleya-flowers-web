@@ -5,7 +5,7 @@ export const PRICE_MAX = 800;
 
 export interface ProductFilters {
   q: string;
-  categoria: string; // category slug
+  categoria: string;
   precioMin: number;
   precioMax: number;
   colors: string[];
@@ -38,7 +38,6 @@ export function filterProducts(
   const q = filters.q.trim().toLowerCase();
 
   return allProducts.filter((product) => {
-    // Text search
     if (q) {
       const searchable = [
         product.name,
@@ -51,26 +50,22 @@ export function filterProducts(
       if (!searchable.includes(q)) return false;
     }
 
-    // Category filter
     if (filters.categoria) {
       const category = categories.find((c) => c.slug === filters.categoria);
       if (!category || product.categoryId !== category.id) return false;
     }
 
-    // Price range
     const effectivePrice = getEffectivePrice(product);
     if (effectivePrice < filters.precioMin || effectivePrice > filters.precioMax) {
       return false;
     }
 
-    // Color filter (OR: product must have at least one of the selected colors)
     if (filters.colors.length > 0) {
       const productColorSet = new Set(product.colors ?? []);
       const hasColor = filters.colors.some((c) => productColorSet.has(c));
       if (!hasColor) return false;
     }
 
-    // Flower type filter (OR: product must have at least one of the selected types)
     if (filters.flowerTypes.length > 0) {
       const productTypeSet = new Set(product.flowerTypes ?? []);
       const hasType = filters.flowerTypes.some((t) => productTypeSet.has(t));

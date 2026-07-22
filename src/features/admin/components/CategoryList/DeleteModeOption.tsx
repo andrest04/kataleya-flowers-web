@@ -1,11 +1,5 @@
 'use client';
 
-/**
- * DeleteModeOption — radio "tarjeta" para elegir entre los dos modos de
- * eliminación de categoría (reassign / cascade). Se usa solo dentro de
- * `DeleteCategoryDialog`.
- */
-
 import type { DeleteMode } from './useCategoryDelete';
 
 interface DeleteModeOptionProps {
@@ -14,7 +8,6 @@ interface DeleteModeOptionProps {
   onSelect: () => void;
   title: string;
   hint: string;
-  /** Aplica color de énfasis (rojo) al título — para el modo cascade. */
   titleEmphasis?: boolean;
 }
 

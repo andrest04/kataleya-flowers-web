@@ -15,7 +15,6 @@ interface Props {
 
 export default function ProductFormImages({ form, fieldErrors, setField }: Props) {
   const imageUrlError = fieldErrors.imageUrl;
-  // imágenes adicionales: zod emite errores en `images.<idx>` — agregamos un mensaje agrupado si hay alguno.
   const imagesError = Object.entries(fieldErrors).find(([key]) => key.startsWith('images'))?.[1];
 
   return (

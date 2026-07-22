@@ -11,7 +11,6 @@ export default function WhatsAppFloat() {
   return (
     <LazyMotion features={domAnimation}>
       <div className="fixed bottom-6 right-6 z-50 group">
-        {/* Tooltip */}
         <span
           className="
             absolute bottom-full right-0 mb-2
@@ -30,14 +29,12 @@ export default function WhatsAppFloat() {
           Pedir por WhatsApp
         </span>
 
-        {/* Pulse ring */}
         <span
           className="absolute inset-0 rounded-full animate-pulse motion-reduce:animate-none"
           style={{ backgroundColor: "var(--color-whatsapp)", opacity: 0.35 }}
           aria-hidden="true"
         />
 
-        {/* Button */}
         <m.a
           href={href}
           target="_blank"

@@ -6,11 +6,6 @@ import { Suspense, useState } from 'react';
 import { loginAction } from '@/features/admin/actions/auth';
 import { BUSINESS } from '@/lib/constants';
 
-/**
- * Isolated child that reads useSearchParams().
- * Must be wrapped in <Suspense> in the parent to avoid opting the page out of
- * static prerendering in Next.js App Router.
- */
 function ForbiddenBanner({ error }: { error: string | null }) {
   const searchParams = useSearchParams();
   const message =
@@ -40,12 +35,8 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
 
-    // Server action creates the session cookie server-side.
     const result = await loginAction({ email, password });
     if (!result.ok) {
-      // Never render raw sentinel strings or internal codes. Map to a
-      // user-safe message; VALIDATION and INVALID_CREDENTIALS already carry
-      // one; anything else gets a generic fallback.
       const safeError =
         result.code === 'VALIDATION' || result.code === 'INVALID_CREDENTIALS'
           ? result.error

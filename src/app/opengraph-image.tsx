@@ -1,18 +1,9 @@
 import { ImageResponse } from "next/og";
 
-// File-Based Metadata API — Open Graph image
-// https://nextjs.org/docs/app/api-reference/file-conventions/metadata/opengraph-image
-//
-// TODO: actualmente usa system serif. Para alinear con la marca convendría
-// cargar Playfair Display (heading) y Lato (body) vía fetch a Google Fonts
-// y pasarlas en `fonts` del ImageResponse. Se omite ahora por simplicidad
-// y porque agrega latencia en el build de la imagen.
-
 export const alt = "Kataleya Flawers — Floristería en Lima, Perú";
 export const size = { width: 1200, height: 630 } as const;
 export const contentType = "image/png";
 
-// Paleta de marca (espejo de globals.css — no podemos importar CSS vars desde edge)
 const COLOR_CREAM = "#fdfcfa";
 const COLOR_PRIMARY = "#c0392b";
 const COLOR_SECONDARY = "#e8b84b";
@@ -36,7 +27,6 @@ export default async function Image(): Promise<ImageResponse> {
           position: "relative",
         }}
       >
-        {/* Acento dorado superior */}
         <div
           style={{
             position: "absolute",
@@ -49,7 +39,6 @@ export default async function Image(): Promise<ImageResponse> {
           }}
         />
 
-        {/* Etiqueta superior */}
         <div
           style={{
             display: "flex",
@@ -65,7 +54,6 @@ export default async function Image(): Promise<ImageResponse> {
           Floristería · Lima, Perú
         </div>
 
-        {/* Título principal */}
         <div
           style={{
             display: "flex",
@@ -80,7 +68,6 @@ export default async function Image(): Promise<ImageResponse> {
           Kataleya Flawers
         </div>
 
-        {/* Tagline */}
         <div
           style={{
             display: "flex",
@@ -96,7 +83,6 @@ export default async function Image(): Promise<ImageResponse> {
           Flores que cuentan historias en Lima
         </div>
 
-        {/* Acento rojo inferior */}
         <div
           style={{
             position: "absolute",

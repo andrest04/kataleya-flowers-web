@@ -26,7 +26,6 @@ interface CatalogSearchMobileProps {
   onClearAll: () => void;
 }
 
-/** Panel mobile (<md): input + toggle colapsable de filtros. */
 export default function CatalogSearchMobile({
   categories,
   productColors,

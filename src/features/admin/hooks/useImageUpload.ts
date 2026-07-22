@@ -2,7 +2,7 @@
 
 import { useCallback, useRef, useState } from 'react';
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
 interface UploadResult {
   url: string;
@@ -15,13 +15,11 @@ export function useImageUpload() {
   const xhrRef = useRef<XMLHttpRequest | null>(null);
 
   const uploadImage = useCallback(async (file: File, folder?: string): Promise<string | null> => {
-    // Validate file type
     if (!file.type.startsWith('image/')) {
       setError('El archivo debe ser una imagen');
       return null;
     }
 
-    // Validate file size
     if (file.size > MAX_FILE_SIZE) {
       setError('La imagen no puede superar 10 MB');
       return null;

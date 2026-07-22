@@ -1,11 +1,5 @@
 'use client';
 
-/**
- * useProductTable — orquesta los efectos colaterales del listado de productos:
- * toggle de status optimista (con rollback si falla), eliminación con dialog,
- * y reorder drag-and-drop con `@dnd-kit/react`.
- */
-
 import { move } from '@dnd-kit/helpers';
 import type { DragDropEvents } from '@dnd-kit/react';
 import { useRef, useState, useTransition } from 'react';
@@ -27,7 +21,6 @@ function matchesActiveFilter(
 ): boolean {
   switch (filter) {
     case 'missing-gallery':
-      // <= 1 means only the primary (or no images at all) — no gallery
       return product.is_active && (product.product_images?.length ?? 0) <= 1;
     default:
       return true;

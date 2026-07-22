@@ -71,7 +71,6 @@ export default function ProductListClient({
 
   return (
     <>
-      {/* Category pills */}
       <div
         className="rounded-xl p-4 space-y-3"
         style={{
@@ -139,7 +138,6 @@ export default function ProductListClient({
         </div>
       </div>
 
-      {/* Active filter banner */}
       {filterMeta ? (
         <div
           className="rounded-xl p-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between"
@@ -180,7 +178,6 @@ export default function ProductListClient({
         </div>
       ) : null}
 
-      {/* Product table — key forces re-mount on category change so useState(products) resets */}
       <ProductTable
         key={activeCategory?.id ?? 'all'}
         products={filteredProducts}

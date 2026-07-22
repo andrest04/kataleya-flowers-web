@@ -19,8 +19,6 @@ interface CategoryFormProps {
 function rowToFormData(row: CategoryRow): Omit<CategoryFormData, 'displayOrder'> {
   return {
     name: row.name,
-    // SEO: en edit preservamos el slug existente — regenerar a partir del nombre rompería
-    // URLs ya indexadas. Solo se regenera para categorías nuevas o si el user lo pide.
     slug: row.slug,
     description: row.description,
     occasion: row.occasion ?? '',
@@ -42,9 +40,6 @@ export default function CategoryForm({ category }: CategoryFormProps) {
     ? rowToFormData(category)
     : { name: '', slug: '', description: '', occasion: '', imageUrl: '', isActive: true, isFeatured: false };
   const [imageUrl, setImageUrl] = useState(initial.imageUrl);
-  // En modo create, el slug se deriva live del nombre.
-  // En modo edit, NO se toca el slug original a menos que el user lo regenere a propósito.
-  // No se lee durante render (solo dentro de handlers) → ref, no state.
   const autoSlugRef = useRef(!isEditing);
 
   const [state, formAction, isPending] = useActionState<FormState, FormData>(

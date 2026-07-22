@@ -1,14 +1,5 @@
 'use client';
 
-/**
- * ProductTableHeader — encabezado del listado de productos. Tiene dos formas:
- *
- * - `reorderable: true` → header en flex (para alinear con `ProductTableRow`
- *   reorderable que también es flex, no `<tr>`). Incluye columnas extras de
- *   numeración de orden y handle.
- * - `reorderable: false` → header en `<thead><tr>` para la tabla nativa.
- */
-
 const HEADER_BASE_STYLE: React.CSSProperties = {
   background: 'var(--color-surface)',
   borderBottom: '1px solid var(--color-border)',

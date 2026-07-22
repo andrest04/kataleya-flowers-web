@@ -1,10 +1,5 @@
 'use client';
 
-/**
- * SaveOrderBar — banda inferior con CTA "Guardar / Cancelar" tras un reorder.
- * Reusable entre `ProductTable` y `CategoryList`.
- */
-
 import Button from '@/components/ui/Button';
 
 interface SaveOrderBarProps {

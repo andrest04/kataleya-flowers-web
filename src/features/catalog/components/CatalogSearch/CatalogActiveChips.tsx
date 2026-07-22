@@ -18,11 +18,6 @@ interface CatalogActiveChipsProps {
   onClear: () => void;
 }
 
-/**
- * Renderiza chips de los filtros actualmente activos + botón "Limpiar todo".
- * Cada chip dispara `onRemove` con la clave del filtro y el valor (cuando
- * el filtro es lista — colores, tipos de flor).
- */
 export default function CatalogActiveChips({
   filters,
   categories,

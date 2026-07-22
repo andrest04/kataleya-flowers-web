@@ -3,7 +3,6 @@ import type { ProductRow } from '@/lib/db/rows';
 
 export type { ProductRow };
 
-/** Shape returned by PostgREST nested-embed queries in Phase C+ */
 export type JoinedProductRow = ProductRow & {
   product_color_assignments:
     | { product_colors: { name: string } | null }[]
@@ -34,7 +33,6 @@ export function mapProductRow(row: JoinedProductRow): Product {
     (a, b) => a.display_order - b.display_order,
   );
   const primary = imgs.find((i) => i.is_primary) ?? imgs[0];
-  // Exclude the primary image so ProductGallery's [imageUrl, ...images] does not duplicate it.
   const gallery = imgs.flatMap((i) => (i.is_primary ? [] : [i.url]));
 
   return {

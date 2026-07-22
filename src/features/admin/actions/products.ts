@@ -40,8 +40,6 @@ interface SuccessResult {
 }
 type ProductActionResult = SuccessResult | AdminActionFailure;
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
 async function validateImageUrls(data: ProductFormData): Promise<AdminActionFailure | null> {
   if (!imageStorage.isOwnedUrl(data.imageUrl)) {
     return { success: false, error: 'URL de imagen no permitida.', code: 'VALIDATION' };
@@ -72,7 +70,6 @@ async function revalidateProductPaths(
   revalidatePath('/admin/productos');
 }
 
-/** Fetches the slug of a product from Appwrite, returns null if not found. */
 async function getAppwriteProductSlug(productId: string): Promise<string | null> {
   try {
     const { databases, databaseId } = getRepositoryContext();
@@ -86,8 +83,6 @@ async function getAppwriteProductSlug(productId: string): Promise<string | null>
     return null;
   }
 }
-
-// ─── Server Actions ──────────────────────────────────────────────────────────
 
 export async function createProduct(data: ProductFormData): Promise<ProductActionResult> {
   try {
@@ -212,7 +207,6 @@ export async function updateProduct(
       throw writeErr;
     }
 
-    // Storage cleanup — best-effort for removed images
     const newUrls = new Set([formData.imageUrl, ...formData.images]);
     const removed = currentImageUrls.filter((url) => !newUrls.has(url));
     if (removed.length > 0) void imageStorage.deleteMany(removed);
@@ -232,7 +226,6 @@ export async function updateProduct(
     const resolvedCategoryId = formData.categoryId ?? meta?.categoryId;
     await revalidateProductPaths(slug, resolvedCategoryId);
 
-    // Revalidate OLD paths if slug or category changed
     const slugChanged = currentSlug && currentSlug !== slug;
     const categoryChanged = meta?.categoryId && meta.categoryId !== resolvedCategoryId;
     if (slugChanged || categoryChanged) {

@@ -9,10 +9,6 @@ interface CatalogResultsProps {
   onClearAll: () => void;
 }
 
-/**
- * Resultados de un filtrado activo: contador (con `aria-live`) + grid de
- * `ProductCard`, o estado vacío con CTA para limpiar filtros.
- */
 export default function CatalogResults({
   products,
   categories,

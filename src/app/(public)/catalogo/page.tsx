@@ -32,12 +32,9 @@ const BREADCRUMB_LD = {
   ],
 };
 
-// ISR backstop: pages refresh instantly on-demand via revalidatePath in admin actions;
-// this self-heals any missed path (e.g. color/flower-type renames) within 1 hour.
 export const revalidate = 3600;
 
 export const metadata: Metadata = {
-  // El `template` del root layout agrega `| Kataleya Flawers` — no duplicar.
   title: "Catálogo de Flores",
   description: `Explora nuestro catálogo de arreglos florales, orquídeas y regalos premium disponibles en ${BUSINESS.location}.`,
   alternates: {
@@ -64,9 +61,6 @@ export default async function CatalogoPage(): Promise<React.ReactElement> {
     getProductColors(),
   ]);
 
-  // Grid de categorías renderizado por el server: se pasa como children al
-  // client component y se muestra cuando no hay filtros activos. Evita el
-  // grid duplicado entre fallback SSR y client (single source of truth).
   const categoryGrid = (
     <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
       {categories.map((category) => (

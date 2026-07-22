@@ -1,17 +1,5 @@
 'use client';
 
-/**
- * CategoryList — listado admin de categorías con drag-and-drop, toggles y
- * eliminación con dos modos (reassign / cascade).
- *
- * Composición: la lógica vive en hooks (`useCategoryReorder`,
- * `useCategoryDelete`) y los pedazos visuales en componentes hermanos.
- *
- * Nota a11y: el plugin `Accessibility` por defecto de @dnd-kit lee los IDs
- * (UUIDs) — para que NVDA/JAWS lean el nombre de la categoría usamos un
- * `<DndLiveRegion>` propio alimentado por `useDndAccessibility`.
- */
-
 import { DragDropProvider } from '@dnd-kit/react';
 
 import Button from '@/components/ui/Button';

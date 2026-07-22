@@ -1,14 +1,3 @@
-/**
- * useDndAccessibility — anuncia eventos de drag-and-drop en español vía un
- * `aria-live` region propio. Pensado para `@dnd-kit/react` v0.3.2, donde la
- * configuración del plugin `Accessibility` por defecto no expone announcements
- * traducibles a través de la API pública.
- *
- * Estrategia: enchufar handlers en `DragDropProvider` que actualizan un mensaje
- * en español. El consumidor renderiza un `<DndLiveRegion message={message} />`
- * adyacente para que NVDA/JAWS lo lea.
- */
-
 import type { DragDropEvents } from '@dnd-kit/react';
 import { useCallback, useState } from 'react';
 

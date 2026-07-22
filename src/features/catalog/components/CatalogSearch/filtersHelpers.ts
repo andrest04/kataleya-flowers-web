@@ -1,8 +1,3 @@
-/**
- * Helpers puros para el slice de catalog filters.
- * Sin dependencias de React — testeables aislados.
- */
-
 import type { Category, Product } from '@/features/catalog/types';
 import type { ProductFilters } from '@/features/catalog/utils/filterProducts';
 
@@ -24,17 +19,14 @@ export interface UseCatalogFiltersArgs {
 }
 
 export interface UseCatalogFiltersResult {
-  // Estado derivado
   filters: ProductFilters;
   isFiltersActive: boolean;
   activeFilterCount: number;
   filteredProducts: Product[];
 
-  // Input de texto local (debounced -> URL)
   inputValue: string;
   setInputValue: (value: string) => void;
 
-  // Mutadores
   updateParam: (key: string, value: string) => void;
   updateListParam: (key: string, list: string[]) => void;
   toggleColor: (color: string) => void;

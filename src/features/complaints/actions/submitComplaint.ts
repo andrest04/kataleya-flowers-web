@@ -11,14 +11,6 @@ import type { ComplaintSubmitResult } from '../types';
 import { formatComplaintNumber } from '../utils/format';
 import { checkComplaintRateLimit, getClientIp } from '../utils/rateLimit';
 
-/**
- * Action PÚBLICA (sin auth) del Libro de Reclamaciones.
- *
- * Persiste el reclamo vía atomic correlativo allocation + document insert
- * (Appwrite), luego envía los correos de forma síncrona. Si el correo falla,
- * el reclamo ya quedó guardado: devolvemos `emailSent: false` para avisar al
- * consumidor.
- */
 export async function submitComplaint(
   input: unknown,
 ): Promise<ComplaintSubmitResult> {

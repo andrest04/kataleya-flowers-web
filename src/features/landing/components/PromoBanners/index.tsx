@@ -28,11 +28,6 @@ const BANNERS = [
   },
 ];
 
-/**
- * Dos tarjetas promocionales foto+CTA (estilo banners de e-commerce), con
- * ofertas reales del negocio — no hay fotografía lifestyle dedicada aún, se
- * reusan fotos del carousel del Hero en un recorte distinto.
- */
 export default function PromoBanners() {
   return (
     <section className="px-4 py-16 sm:px-6 lg:px-8">

@@ -1,16 +1,5 @@
 'use client';
 
-/**
- * DeleteCategoryDialog — dialog primario + segunda confirmación para eliminar
- * una categoría con dos modos: `reassign` (mover productos a otra categoría)
- * y `cascade` (borrar todo).
- *
- * Se mantiene como dialog custom (no se migra a `ConfirmDialog` simple) porque
- * el escenario tiene 2 variantes y un cuerpo no trivial (radio + select). Sí
- * reusa `ConfirmDialog` como contenedor para conservar focus trap, ESC y
- * cierre por backdrop.
- */
-
 import type React from 'react';
 
 import ConfirmDialog from '@/components/ui/ConfirmDialog';

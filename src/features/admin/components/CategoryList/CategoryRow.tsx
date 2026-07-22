@@ -1,17 +1,5 @@
 'use client';
 
-/**
- * CategoryRow — fila sortable de una categoría.
- *
- * Notas drag-and-drop:
- * - `useSortable({ id, index })` registra el item en el `DragDropProvider`.
- * - La API moderna de `@dnd-kit/react` v0.3.2 aplica el transform de los
- *   vecinos vía DOM directo: NO se aplica `transform`/`transition` manual.
- * - `transition: { idle: true }` activa la animación cuando el índice cambia
- *   sin drag activo (las vecinas se desplazan suavemente).
- * - El handle es un `<button>` separado: solo él inicia drag.
- */
-
 import { useSortable } from '@dnd-kit/react/sortable';
 import { GripVertical } from 'lucide-react';
 

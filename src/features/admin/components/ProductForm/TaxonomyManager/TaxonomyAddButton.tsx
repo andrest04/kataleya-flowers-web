@@ -7,7 +7,6 @@ interface Props {
   readonly onClick: () => void;
 }
 
-/** Botón cerrado con borde dasheado: "+ Nuevo X". Abre el form de add. */
 export default function TaxonomyAddButton({ label, onClick }: Props) {
   return (
     <button

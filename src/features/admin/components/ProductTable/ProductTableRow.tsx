@@ -1,12 +1,5 @@
 'use client';
 
-/**
- * ProductTableRow — fachada que decide entre la fila reorderable (flex + DnD)
- * y la fila estática (HTML `<tr>` con zebra striping). Mantener la decisión
- * en un solo punto evita la duplicación de la versión 1.x donde cada celda
- * existía en dos render trees casi idénticos.
- */
-
 import type { AdminProductRow } from '@/features/admin/queries/products';
 
 import ProductTableSortableRow from './ProductTableSortableRow';

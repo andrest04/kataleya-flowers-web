@@ -23,7 +23,6 @@ export default function ProductFormFlags({ form, fieldErrors, setField }: Props)
 
   return (
     <>
-      {/* Ocasión + Nota */}
       <div className="grid grid-cols-2 gap-4">
         <FormField label="Ocasión" htmlFor={ID_OCCASION}>
           <Input
@@ -45,7 +44,6 @@ export default function ProductFormFlags({ form, fieldErrors, setField }: Props)
         </FormField>
       </div>
 
-      {/* Visibilidad y orden */}
       <div className="grid grid-cols-2 gap-4 items-start">
         <div className="flex flex-col gap-3">
           <div className="flex items-center justify-between">

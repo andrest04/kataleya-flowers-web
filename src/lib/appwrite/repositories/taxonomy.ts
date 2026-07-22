@@ -1,8 +1,3 @@
-// Server-only: Appwrite taxonomy repository (colors + flower types).
-//
-// Taxonomy queries (`getProductColors`, `getFlowerTypes`, and their admin/usage
-// variants). Rows are shaped to match the existing row contracts so consumers
-// stay unchanged.
 import { ID, Query } from 'node-appwrite';
 
 import { APPWRITE_COLLECTIONS } from '@/lib/appwrite/config';
@@ -23,7 +18,6 @@ import {
 
 const C = APPWRITE_COLLECTIONS;
 
-/** Row shape for `product_colors` (snake_case, `id` not `$id`). */
 export interface ColorRepoRow {
   id: string;
   name: string;
@@ -34,7 +28,6 @@ export interface ColorRepoRow {
   updated_at: string;
 }
 
-/** Row shape for `flower_types` (snake_case, `id` not `$id`). */
 export interface FlowerTypeRepoRow {
   id: string;
   name: string;
@@ -65,10 +58,6 @@ function toFlowerTypeRow(doc: FlowerTypeDoc): FlowerTypeRepoRow {
   };
 }
 
-/**
- * Returns colors ordered by `display_order` ascending — the Appwrite equivalent
- * of both the public (`name, label, hex`) and admin (`*`) color queries.
- */
 export async function listColors(): Promise<ColorRepoRow[]> {
   const { databases, databaseId } = getRepositoryContext();
 
@@ -79,10 +68,6 @@ export async function listColors(): Promise<ColorRepoRow[]> {
   return docs.map(toColorRow);
 }
 
-/**
- * Returns flower types ordered by `display_order` ascending — the Appwrite
- * equivalent of the public and admin flower-type queries.
- */
 export async function listFlowerTypes(): Promise<FlowerTypeRepoRow[]> {
   const { databases, databaseId } = getRepositoryContext();
 
@@ -93,13 +78,11 @@ export async function listFlowerTypes(): Promise<FlowerTypeRepoRow[]> {
   return docs.map(toFlowerTypeRow);
 }
 
-/** Product reference for a taxonomy usage lookup. */
 export interface TaxonomyUsage {
   product_id: string;
   product_name: string;
 }
 
-/** Resolves product names for a set of product ids (chunked in-lists). */
 async function resolveProductNames(
   productIds: string[],
 ): Promise<TaxonomyUsage[]> {
@@ -127,11 +110,6 @@ async function resolveProductNames(
   return usage;
 }
 
-/**
- * Returns the products using a color (by name) — the Appwrite equivalent of
- * `getProductColorUsage()`. Resolves the color name to its id, then the
- * assignments, then product names.
- */
 export async function getColorUsage(name: string): Promise<TaxonomyUsage[]> {
   const { databases, databaseId } = getRepositoryContext();
 
@@ -154,10 +132,6 @@ export async function getColorUsage(name: string): Promise<TaxonomyUsage[]> {
   return resolveProductNames(assignments.map((a) => a.product_id));
 }
 
-/**
- * Returns the products using a flower type (by name) — the Appwrite equivalent
- * of `getFlowerTypeUsage()`.
- */
 export async function getFlowerTypeUsage(
   name: string,
 ): Promise<TaxonomyUsage[]> {
@@ -182,11 +156,6 @@ export async function getFlowerTypeUsage(
   return resolveProductNames(assignments.map((a) => a.product_id));
 }
 
-// ─── Admin write operations ───────────────────────────────────────────────────
-
-/**
- * Returns the next display_order for a new color or flower type.
- */
 async function getNextTaxonomyOrder(
   collectionId: string,
 ): Promise<number> {
@@ -200,11 +169,6 @@ async function getNextTaxonomyOrder(
   return maxOrder + 1;
 }
 
-/**
- * Upserts colors by name (case-insensitive, lowercased). New colors are inserted;
- * existing ones (matched by name) are skipped — idempotent upsert behaviour.
- * Returns the normalized names so callers can resolve them to ids.
- */
 export async function ensureColorsAppwrite(
   colors: { name: string; hex: string }[],
 ): Promise<void> {
@@ -236,9 +200,6 @@ export async function ensureColorsAppwrite(
   );
 }
 
-/**
- * Upserts flower types by name. New entries are inserted; existing ones skipped.
- */
 export async function ensureFlowerTypesAppwrite(names: string[]): Promise<void> {
   if (names.length === 0) return;
   const { databases, databaseId } = getRepositoryContext();
@@ -266,11 +227,6 @@ export async function ensureFlowerTypesAppwrite(names: string[]): Promise<void> 
   );
 }
 
-/**
- * Deletes a color by name. Returns true if deleted, false if not found.
- * Throws if the color is still referenced (no ON DELETE RESTRICT in Appwrite —
- * callers MUST check usage before deleting to emulate FK-RESTRICT).
- */
 export async function deleteColorAppwrite(name: string): Promise<boolean> {
   const { databases, databaseId } = getRepositoryContext();
 
@@ -283,13 +239,6 @@ export async function deleteColorAppwrite(name: string): Promise<boolean> {
   return true;
 }
 
-/**
- * Renames a color (updates the `name` field). Returns false if the color is not
- * found. Uniqueness is enforced by checking existing names before writing.
- *
- * Returns 'duplicate' when the new name already exists, 'not_found' when the old
- * name does not exist, or null on success.
- */
 export async function renameColorAppwrite(
   oldName: string,
   newName: string,
@@ -302,7 +251,6 @@ export async function renameColorAppwrite(
   ]);
   if (!color) return 'not_found';
 
-  // Check for duplicate
   const duplicate = await findOneDocument<ColorDoc>(databases, databaseId, C.colors, [
     Query.equal('name', normalized),
   ]);
@@ -318,9 +266,6 @@ export async function renameColorAppwrite(
   return null;
 }
 
-/**
- * Deletes a flower type by name. Returns true if deleted, false if not found.
- */
 export async function deleteFlowerTypeAppwrite(name: string): Promise<boolean> {
   const { databases, databaseId } = getRepositoryContext();
 
@@ -333,9 +278,6 @@ export async function deleteFlowerTypeAppwrite(name: string): Promise<boolean> {
   return true;
 }
 
-/**
- * Renames a flower type. Returns 'duplicate' | 'not_found' | null (success).
- */
 export async function renameFlowerTypeAppwrite(
   oldName: string,
   newName: string,

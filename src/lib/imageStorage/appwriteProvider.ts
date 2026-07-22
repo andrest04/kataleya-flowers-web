@@ -1,5 +1,3 @@
-// Server-only: this module goes through `createAdminClient()`, which holds the
-// Appwrite API key. Never import it into client code.
 import { ID } from 'node-appwrite';
 import { InputFile } from 'node-appwrite/file';
 
@@ -13,10 +11,6 @@ function folderToBucketId(folder: AllowedImageFolder): string {
   return folder === 'productos' ? APPWRITE_BUCKETS.products : APPWRITE_BUCKETS.categories;
 }
 
-/**
- * `ImageStorageProvider` backed by Appwrite Storage. Talks to `node-appwrite`
- * directly — this is the only file in `lib/imageStorage` allowed to do so.
- */
 class AppwriteImageStorageProvider implements ImageStorageProvider {
   async upload(input: {
     folder: AllowedImageFolder;
@@ -44,8 +38,8 @@ class AppwriteImageStorageProvider implements ImageStorageProvider {
     try {
       const { storage } = createAdminClient();
       await storage.deleteFile({ bucketId: parsed.bucketId, fileId: parsed.fileId });
-    } catch {
-      // Best-effort — deleting from storage should never block DB operations.
+    } catch (error) {
+      void error;
     }
   }
 

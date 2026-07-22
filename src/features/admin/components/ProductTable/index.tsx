@@ -1,17 +1,5 @@
 'use client';
 
-/**
- * ProductTable — listado admin de productos. Soporta dos modos visuales:
- *
- * - `reorderable: true` → wrapper flex con drag-and-drop (`@dnd-kit/react`),
- *   barra de save/cancel y handle de orden. Pensado para vista por categoría.
- * - `reorderable: false` → tabla HTML nativa, sin DnD, con zebra striping.
- *
- * En ambos modos se usa la MISMA fila (`ProductTableRow`) parametrizada por
- * `reorderable` — evita la duplicación de la versión 1.x donde había dos
- * render trees casi idénticos para cada celda.
- */
-
 import { DragDropProvider } from '@dnd-kit/react';
 
 import Button from '@/components/ui/Button';

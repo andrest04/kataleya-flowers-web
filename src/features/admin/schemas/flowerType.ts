@@ -2,12 +2,10 @@ import { z } from 'zod';
 
 import { taxonomyName } from './common';
 
-/** Borrar un tipo de flor por su `name` normalizado. */
 export const deleteFlowerTypeSchema = z.object({
   name: taxonomyName,
 });
 
-/** Renombrar un tipo de flor. */
 export const renameFlowerTypeSchema = z
   .object({
     oldName: taxonomyName,

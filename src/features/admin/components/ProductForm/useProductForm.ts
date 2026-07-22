@@ -12,10 +12,7 @@ import type { ProductRow } from '@/lib/db/rows';
 
 import { buildFieldErrors, type FieldErrors } from './validation';
 
-/** Accept both the old flat row and the new relational AdminProductRow */
 type ProductInput = ProductRow | AdminProductRow;
-
-// ─── Tipos públicos del hook ────────────────────────────────────────────────
 
 export interface ProductFormState {
   form: ProductFormData;
@@ -29,39 +26,22 @@ export interface ProductFormState {
 }
 
 export interface ProductFormApi {
-  /** Actualiza un campo simple del form. */
   setField: <K extends keyof ProductFormData>(key: K, value: ProductFormData[K]) => void;
-  /**
-   * Cambia el `name`. En modo create, el slug se deriva automáticamente.
-   * En modo edit, el slug se preserva (no rompemos URLs indexadas).
-   */
   setName: (name: string) => void;
-  /** Regenera el slug desde el `name` actual. Solo se ofrece en modo edit. */
   regenerateSlug: () => void;
-  /** True cuando el form está en modo edit (hay un product). */
   isEditing: boolean;
-  /** Toggle declarativo para arrays de strings (colores, flowerTypes). */
   toggleArrayItem: <K extends 'colors' | 'flowerTypes'>(key: K, item: string) => void;
-  /** Pendientes de nuevos tipos/colores que viajan al server action. */
   addPendingFlowerType: (name: string) => void;
   addPendingColor: (color: { name: string; hex: string }) => void;
-  /** Lo dispara el TaxonomyManager cuando un rename del backend tiene éxito. */
   renameInForm: <K extends 'colors' | 'flowerTypes'>(key: K, oldName: string, newName: string) => void;
   removeFromForm: <K extends 'colors' | 'flowerTypes'>(key: K, item: string) => void;
-  /** Includes (lista dinámica). */
   addInclude: () => void;
   updateInclude: (i: number, val: string) => void;
   removeInclude: (i: number) => void;
-  /** Price variants (lista dinámica). */
   addPriceVariant: () => void;
   updateVariantField: (i: number, field: 'label' | 'price', val: string) => void;
   removeVariant: (i: number) => void;
-  /** Flujo de submit. Devuelve void; el hook maneja el resultado internamente. */
   submit: () => void;
-  /**
-   * Reporta un error transitorio (ej: fallo de rename/delete de una taxonomía)
-   * en el banner de error global, sin tocar `fieldErrors`.
-   */
   reportTransientError: (msg: string) => void;
 }
 
@@ -69,8 +49,6 @@ interface UseProductFormParams {
   product?: ProductInput;
   onSuccess?: () => void;
 }
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function buildInitialState(product?: ProductInput): ProductFormData {
   if (!product) {
@@ -94,7 +72,6 @@ function buildInitialState(product?: ProductInput): ProductFormData {
     };
   }
 
-  // Resolve taxonomy from relational tables (Phase C+) when present, else fall back to old columns.
   const relational = product as AdminProductRow;
 
   const colors: string[] = relational.product_color_assignments
@@ -121,8 +98,6 @@ function buildInitialState(product?: ProductInput): ProductFormData {
 
   return {
     name: product.name,
-    // SEO: preservar el slug existente en edit. Cambiar el name no regenera el slug
-    // (rompería URLs ya indexadas). El user puede regenerar a propósito.
     slug: product.slug,
     description: product.description,
     price: Number(product.price),
@@ -145,8 +120,6 @@ function makeKeys(length: number): string[] {
   return Array.from({ length }, () => crypto.randomUUID());
 }
 
-// ─── Hook ────────────────────────────────────────────────────────────────────
-
 export function useProductForm({
   product,
   onSuccess,
@@ -155,7 +128,6 @@ export function useProductForm({
   const isEditing = Boolean(product);
 
   const [form, setForm] = useState<ProductFormData>(() => buildInitialState(product));
-  // En create el slug se deriva del name; en edit no se toca a menos que el user lo regenere.
   const [autoSlug, setAutoSlug] = useState(!isEditing);
   const [includeKeys, setIncludeKeys] = useState<string[]>(() =>
     makeKeys((product?.includes as unknown as string[] | null | undefined)?.length ?? 0),
@@ -171,8 +143,6 @@ export function useProductForm({
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [isPending, startTransition] = useTransition();
 
-  // ── Setters básicos ────────────────────────────────────────────────────────
-
   const setField = useCallback(
     <K extends keyof ProductFormData>(key: K, value: ProductFormData[K]) => {
       setForm((prev) => ({ ...prev, [key]: value }));
@@ -185,7 +155,6 @@ export function useProductForm({
       setForm((prev) => ({
         ...prev,
         name,
-        // Solo derivamos el slug si autoSlug está activo (create, o edit con regenerar pedido).
         slug: autoSlug ? slugify(name) : prev.slug,
       }));
     },
@@ -207,8 +176,6 @@ export function useProductForm({
     },
     [],
   );
-
-  // ── Pendientes de creación ─────────────────────────────────────────────────
 
   const addPendingFlowerType = useCallback((name: string) => {
     setPendingNewTypes((prev) => [...prev, name]);
@@ -238,8 +205,6 @@ export function useProductForm({
     [],
   );
 
-  // ── Includes ───────────────────────────────────────────────────────────────
-
   const addInclude = useCallback(() => {
     setForm((prev) => ({ ...prev, includes: [...prev.includes, ''] }));
     setIncludeKeys((prev) => [...prev, crypto.randomUUID()]);
@@ -260,8 +225,6 @@ export function useProductForm({
     }));
     setIncludeKeys((prev) => prev.filter((_, idx) => idx !== i));
   }, []);
-
-  // ── Price variants ─────────────────────────────────────────────────────────
 
   const addPriceVariant = useCallback(() => {
     setForm((prev) => {
@@ -292,8 +255,6 @@ export function useProductForm({
     });
     setVariantKeys((prev) => prev.filter((_, idx) => idx !== i));
   }, []);
-
-  // ── Submit ─────────────────────────────────────────────────────────────────
 
   const submit = useCallback(() => {
     setError(null);
@@ -329,7 +290,6 @@ export function useProductForm({
   }, []);
 
   return {
-    // state
     form,
     includeKeys,
     variantKeys,
@@ -338,7 +298,6 @@ export function useProductForm({
     error,
     fieldErrors,
     isPending,
-    // api
     setField,
     setName,
     regenerateSlug,

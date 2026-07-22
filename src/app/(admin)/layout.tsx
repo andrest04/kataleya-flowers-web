@@ -10,7 +10,6 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // Appwrite path: resolve session cookie → validate user → check admin membership.
   const sessionSecret = await getSessionCookie();
   if (!sessionSecret) {
     redirect('/login');

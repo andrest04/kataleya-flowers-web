@@ -16,13 +16,6 @@ interface Props<TItem extends TaxonomyItem> {
   readonly onStartDelete: (name: string) => void;
 }
 
-/**
- * Pill en modo "gestionar" (vista normal, con botones rename/delete).
- *
- * Se renderiza cuando `manageMode` está activo y el item NO está siendo
- * renombrado ni siendo confirmado para borrar — esas dos ramas viven en
- * `TaxonomyRenameInput` y `TaxonomyDeleteConfirm`.
- */
 export default function TaxonomyPillManage<TItem extends TaxonomyItem>({
   item,
   isSelected,

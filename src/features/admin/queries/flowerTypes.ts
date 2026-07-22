@@ -12,10 +12,6 @@ export async function getFlowerTypes(): Promise<FlowerTypeRepoRow[]> {
   return listFlowerTypes();
 }
 
-/**
- * Returns the list of products that use a given flower type (by name).
- * Counts via junction table — does NOT use the old array-based RPC.
- */
 export async function getFlowerTypeUsage(
   name: string
 ): Promise<{ product_id: string; product_name: string }[]> {

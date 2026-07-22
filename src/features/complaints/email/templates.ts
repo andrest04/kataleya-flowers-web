@@ -29,7 +29,6 @@ function formatDate(value: string | Date): string {
   });
 }
 
-/** Escapa HTML — todo dato de `ComplaintEmailData` viene del formulario público. */
 function escapeHtml(value: string): string {
   return value
     .replace(/&/g, '&amp;')
@@ -79,7 +78,6 @@ function shell(title: string, inner: string): string {
   </div>`;
 }
 
-/** Copia de la hoja que recibe el consumidor (requisito legal). */
 export function consumerCopyEmail(data: ComplaintEmailData): EmailContent {
   const inner = `
     <p style="color:#1a1a1a;font-size:14px;line-height:1.6;">
@@ -97,7 +95,6 @@ export function consumerCopyEmail(data: ComplaintEmailData): EmailContent {
   };
 }
 
-/** Aviso interno al negocio con link al panel admin. */
 export function businessNotificationEmail(
   data: ComplaintEmailData,
   complaintId: string,

@@ -16,13 +16,6 @@ interface Props<TItem extends TaxonomyItem> {
   readonly props: TaxonomyManagerProps<TItem>;
 }
 
-/**
- * Resuelve qué sub-componente renderizar para un item según el modo:
- *  - manage + renaming → TaxonomyRenameInput
- *  - manage + deleting → TaxonomyDeleteConfirm
- *  - manage          → TaxonomyPillManage
- *  - normal          → PillToggle
- */
 export default function TaxonomyItemRow<TItem extends TaxonomyItem>({
   item,
   state,

@@ -41,8 +41,6 @@ interface CountSuccess {
 }
 type CountResult = CountSuccess | (AdminActionFailure & { count: 0 });
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
 async function revalidateAllCategoryPaths(
   affectedSlugs?: string[],
 ): Promise<void> {
@@ -56,8 +54,6 @@ async function revalidateAllCategoryPaths(
     if (slug) revalidatePath(`/catalogo/${slug}`);
   }
 }
-
-// ─── Server Actions ──────────────────────────────────────────────────────────
 
 export async function createCategory(
   data: CategoryFormData,
@@ -174,7 +170,6 @@ export async function updateCategory(
       throw writeErr;
     }
 
-    // Cleanup replaced image from storage (best-effort)
     if (current?.image_url && current.image_url !== parsed.data.imageUrl) {
       void imageStorage.delete(current.image_url);
     }

@@ -14,8 +14,6 @@ import { BUSINESS } from "@/lib/constants";
 
 const SITE_URL = BUSINESS.website;
 
-// ISR backstop: pages refresh instantly on-demand via revalidatePath in admin actions;
-// this self-heals any missed path (e.g. color/flower-type renames) within 1 hour.
 export const revalidate = 3600;
 
 interface ProductoPageProps {
@@ -63,7 +61,6 @@ export async function generateMetadata({
 
     if (!product) {
       return {
-        // El template del root layout agrega `| Kataleya Flawers`.
         title: "Producto no encontrado",
         description: "El producto solicitado no está disponible en el catálogo.",
       };
@@ -86,7 +83,6 @@ export async function generateMetadata({
       : `/catalogo/${categoria}/${slug}`;
 
     return {
-      // El template del root layout agrega `| Kataleya Flawers`.
       title: titleBase,
       description,
       alternates: {
@@ -146,8 +142,6 @@ export default async function ProductoPage({
       ? product.images
       : [product.imageUrl];
 
-  // Si el producto tiene tabla de precios variable, usamos AggregateOffer con
-  // min/max. Si no, una Offer simple con el precio fijo. Moneda PEN (sol peruano).
   const offers =
     product.priceTable && product.priceTable.length > 0
       ? {
@@ -231,14 +225,12 @@ export default async function ProductoPage({
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* Imagen / galería del producto */}
           <ProductGallery
             imageUrl={product.imageUrl}
             images={product.images}
             name={product.name}
           />
 
-          {/* Información del producto */}
           <div className="flex flex-col">
             <h1 className="font-heading text-3xl md:text-4xl text-primary mb-4">
               {product.name}

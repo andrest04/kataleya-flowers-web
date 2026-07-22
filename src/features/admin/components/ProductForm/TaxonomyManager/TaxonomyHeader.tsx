@@ -8,12 +8,6 @@ interface Props {
   readonly onToggleManageMode: () => void;
 }
 
-/**
- * Header del manager: label del fieldset + botón "Gestionar/Listo".
- *
- * Reemplaza el hack previo `<FormField label={label}><></></FormField>`
- * usando el primitive `Label` directamente.
- */
 export default function TaxonomyHeader({
   label,
   manageMode,

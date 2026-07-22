@@ -8,11 +8,6 @@ import {
   consumerCopyEmail,
 } from './templates';
 
-/**
- * Envía (en una sola llamada batch) la copia de la hoja al consumidor y el
- * aviso al negocio. Nunca lanza: devuelve `false` si falla, para que la action
- * pueda avisar al consumidor sin perder el reclamo ya persistido.
- */
 export async function sendComplaintEmails(
   data: ComplaintEmailData,
   complaintId: string,
@@ -35,7 +30,6 @@ export async function sendComplaintEmails(
         to: [data.consumerEmail],
         subject: consumer.subject,
         html: consumer.html,
-        // Evita que Gmail agrupe los correos en un mismo hilo.
         headers: { 'X-Entity-Ref-ID': randomUUID() },
       },
       {

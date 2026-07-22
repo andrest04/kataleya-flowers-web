@@ -1,19 +1,5 @@
 import type { Models } from 'node-appwrite';
 
-/**
- * Hand-written Appwrite collection document interfaces (Phase 1: Auth + DB).
- *
- * These are the hand-written DB document types. They model the document
- * attributes as stored in Appwrite. Field names match the column names used
- * downstream, so PR-2 repositories can compose these docs into the existing
- * `JoinedProductRow` shape (`features/catalog/queries/mappers.ts`) with no
- * mapper changes.
- *
- * Each doc extends `Models.Document`, which provides `$id`, `$collectionId`,
- * `$databaseId`, `$createdAt`, `$updatedAt`, and `$permissions`.
- */
-
-/** Arbitrary JSON value stored in flexible attributes (e.g. price_variants). */
 export type JsonValue =
   | string
   | number
@@ -104,20 +90,10 @@ export interface ComplaintDoc extends Models.Document {
   email_sent: boolean;
 }
 
-/**
- * Single-document atomic counter keyed by year (`complaints-{YYYY}`). `value`
- * is mutated only via `databases.incrementDocumentAttribute` (server-atomic),
- * which guarantees gap-free, duplicate-free correlativos under concurrency.
- */
 export interface CounterDoc extends Models.Document {
   value: number;
 }
 
-/**
- * Appwrite-composed equivalent of `JoinedProductRow`. PR-2 repositories build
- * this by batch-fetching assignments and images, so `mapProductRow` consumes it
- * unchanged. Shape matches the `JoinedProductRow` contract exactly.
- */
 export interface JoinedProductDoc extends ProductDoc {
   product_color_assignments:
     | { product_colors: { name: string } | null }[]

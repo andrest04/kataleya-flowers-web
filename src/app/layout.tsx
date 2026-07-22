@@ -60,10 +60,6 @@ const baseDescription = `Floristería en ${BUSINESS.location} con ${BUSINESS.exp
 
 export const metadata: Metadata = {
   metadataBase: new URL(BUSINESS.website),
-  // Las páginas hijas devuelven `title` como string plain — el `template`
-  // agrega el sufijo `| Kataleya Flawers`. NO concatenar `BUSINESS.name` en
-  // los títulos hijos: duplica el sufijo. Si una página necesita evitar el
-  // template, usar `title: { absolute: '...' }`.
   title: {
     default: `${BUSINESS.name} — Floristería en ${BUSINESS.location}`,
     template: `%s | ${BUSINESS.name}`,
@@ -108,13 +104,6 @@ export default function RootLayout({
         <JsonLd data={floristJsonLd} />
       </head>
       <body className="antialiased">
-        {/*
-         * Skip link de a11y. Debe quedar arriba de TODO el z-stack del proyecto
-         * (Navbar z-[90], WhatsAppFloat z-50, Lightbox z-[100]). El whitelist de
-         * la regla ESLint `no-restricted-syntax` solo permite z-50, z-[90] y
-         * z-[100] en `className`, así que usamos `style` inline (no matcheado)
-         * para zIndex 200 — caso único del skip link.
-         */}
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:bg-(--color-primary) focus:text-(--color-white) focus:px-4 focus:py-2 focus:rounded focus:font-body focus:text-sm focus:font-medium focus:outline-2 focus:outline-(--color-primary)"

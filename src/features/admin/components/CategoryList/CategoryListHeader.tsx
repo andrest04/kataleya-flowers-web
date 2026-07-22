@@ -1,11 +1,5 @@
 'use client';
 
-/**
- * CategoryListHeader — encabezado del listado en flex (alineado con
- * `CategoryRow`). Cuando hay cambios pendientes, oculta la columna de
- * acciones para que coincida con la fila (que también las oculta).
- */
-
 interface CategoryListHeaderProps {
   hasChanges: boolean;
 }

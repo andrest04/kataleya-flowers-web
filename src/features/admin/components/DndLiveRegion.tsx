@@ -1,16 +1,5 @@
 'use client';
 
-/**
- * DndLiveRegion — región `aria-live` visualmente oculta para anunciar eventos
- * de drag-and-drop a lectores de pantalla en español. Se usa junto a
- * `useDndAccessibility`.
- *
- * Notas:
- * - `aria-live="assertive"` para que NVDA/JAWS interrumpan otros anuncios.
- * - `role="status"` complementa para mejor compatibilidad cross-AT.
- * - Estilo "sr-only" inline para no depender de un util en el bundle.
- */
-
 interface DndLiveRegionProps {
   message: string;
 }

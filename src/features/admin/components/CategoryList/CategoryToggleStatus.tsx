@@ -1,11 +1,5 @@
 'use client';
 
-/**
- * CategoryToggleStatus — toggle optimistic de `is_active` con rollback + toast
- * en caso de fallo. Aislado del row para que el resto del row no re-renderee
- * cuando solo cambia este estado.
- */
-
 import { toast } from 'sonner';
 
 import ToggleSwitch from '@/components/ui/ToggleSwitch';

@@ -1,15 +1,5 @@
 'use client';
 
-/**
- * ProductTableSortableRow — fila flex con drag handle (`useSortable`).
- *
- * Notas drag-and-drop:
- * - `transition: { idle: true }` activa la animación cuando el índice cambia
- *   sin drag activo (los vecinos se desplazan suavemente).
- * - El handle es un `<button>` aislado: solo él inicia drag, los demás
- *   controles del row reciben clicks normales.
- */
-
 import { useSortable } from '@dnd-kit/react/sortable';
 import { GripVertical } from 'lucide-react';
 

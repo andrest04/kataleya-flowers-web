@@ -2,14 +2,12 @@ import { z } from 'zod';
 
 import { isAppwriteStorageUrl } from '@/lib/imageStorage/urlValidation';
 
-/** String requerido, sin espacios al borde, máx 255. */
 export const nonEmptyString = z
   .string()
   .trim()
   .min(1, 'Campo obligatorio')
   .max(255, 'Máximo 255 caracteres');
 
-/** String opcional con `null` permitido y trim aplicado. */
 export const optionalTrimmedString = z
   .string()
   .trim()
@@ -17,17 +15,14 @@ export const optionalTrimmedString = z
   .optional()
   .nullable();
 
-/** Texto largo (descripciones). */
 export const longText = z
   .string()
   .trim()
   .min(1, 'La descripción es obligatoria')
   .max(5000, 'Máximo 5000 caracteres');
 
-/** UUID v4 (record ids). */
 export const uuid = z.uuid('Identificador inválido');
 
-/** Slug normalizado: minúsculas, números, guiones. */
 export const slug = z
   .string()
   .trim()
@@ -35,7 +30,6 @@ export const slug = z
   .max(120, 'Slug demasiado largo')
   .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug inválido (solo a-z, 0-9 y guiones)');
 
-/** URL servida desde nuestro storage propio (Appwrite Storage whitelist). */
 export const storedImageUrl = z
   .string()
   .trim()
@@ -46,7 +40,6 @@ export const storedImageUrl = z
     'La imagen debe servirse desde el storage propio del proyecto',
   );
 
-/** Variante de precio (label libre + monto >= 0). */
 export const priceVariant = z.object({
   label: nonEmptyString,
   price: z
@@ -55,26 +48,22 @@ export const priceVariant = z.object({
     .max(1_000_000, 'Precio fuera de rango'),
 });
 
-/** Entero >= 0 para `display_order`. */
 export const nonNegativeInt = z
   .number({ message: 'Debe ser numérico' })
   .int('Debe ser un entero')
   .nonnegative('No puede ser negativo');
 
-/** Color hex (#RGB / #RRGGBB) — opcional. */
 export const hexColor = z
   .string()
   .trim()
   .regex(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i, 'Hex inválido (ej: #c0392b)');
 
-/** Nombre normalizado (slug-like sin guiones forzados) usado como key de color/tipo. */
 export const taxonomyName = z
   .string()
   .trim()
   .min(1, 'Nombre obligatorio')
   .max(60, 'Nombre demasiado largo');
 
-/** Email normalizado (lowercase + trim). */
 export const email = z
   .string()
   .trim()
@@ -83,13 +72,11 @@ export const email = z
   .email('Email inválido')
   .max(255, 'Email demasiado largo');
 
-/** Teléfono — solo formato (dígitos, +, espacios y separadores comunes). */
 export const peruPhone = z
   .string()
   .trim()
   .regex(/^[0-9+\s()-]{6,20}$/, 'Teléfono inválido');
 
-/** Documento de identidad (DNI/CE/Pasaporte) — solo formato. */
 export const docNumber = z
   .string()
   .trim()

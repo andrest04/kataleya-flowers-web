@@ -11,11 +11,10 @@ import {
 
 interface CatalogFilterCategoryProps {
   categories: Category[];
-  selected: string; // slug
+  selected: string;
   onToggle: (slug: string) => void;
 }
 
-/** Bloque de filtro: chips de categoría (selección única). */
 export default function CatalogFilterCategory({
   categories,
   selected,

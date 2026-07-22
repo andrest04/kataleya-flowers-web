@@ -97,7 +97,6 @@ export default function Footer() {
               {BUSINESS.hours.weekdays} {BUSINESS.hours.time}
             </p>
             <p className="opacity-80">WhatsApp: +{BUSINESS.phone}</p>
-            {/* --color-gold-text-dark: 5.01:1 on footer green #2d5a1b — WCAG AA */}
             <Link
               href="/#contacto"
               className="inline-block rounded-sm font-semibold transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2"

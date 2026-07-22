@@ -13,7 +13,6 @@ interface CatalogFilterFlowersProps {
   onToggle: (type: string) => void;
 }
 
-/** Bloque de filtro: chips de tipo de flor (selección múltiple). */
 export default function CatalogFilterFlowers({
   flowerTypes,
   selected,

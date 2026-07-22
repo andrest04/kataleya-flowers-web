@@ -36,7 +36,6 @@ export async function deleteProductColor(name: string): Promise<ColorActionResul
       };
     }
 
-    // Enforce referential integrity: check usage before deleting
     const usage = await getColorUsage(parsed.data.name);
     if (usage.length > 0) {
       return {

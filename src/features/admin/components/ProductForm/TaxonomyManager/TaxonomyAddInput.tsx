@@ -23,7 +23,6 @@ interface Props {
   readonly onCommit: () => void;
 }
 
-/** Form abierto: input + slot extra (color picker) + Agregar/Cancelar. */
 export default function TaxonomyAddInput({
   value,
   placeholder,

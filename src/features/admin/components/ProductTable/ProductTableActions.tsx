@@ -1,11 +1,5 @@
 'use client';
 
-/**
- * ProductTableActions — botones Editar / Eliminar de una fila de producto.
- * Aislado en su propio componente para reusarse entre la fila reorderable y
- * la fila standard sin duplicación.
- */
-
 import Button from '@/components/ui/Button';
 
 interface ProductTableActionsProps {

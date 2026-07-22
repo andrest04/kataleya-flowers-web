@@ -1,15 +1,5 @@
 'use client';
 
-/**
- * useCategoryDelete — flujo de eliminación de categoría con dos modos:
- * `reassign` (mover productos a otra categoría) y `cascade` (borrar todo).
- *
- * Maneja:
- * - Fetch del conteo de productos para decidir si pedir confirmación elaborada.
- * - Estado del dialog primario y del segundo confirm cuando es cascade.
- * - Reset completo al cerrar o al terminar.
- */
-
 import { useState } from 'react';
 import { toast } from 'sonner';
 
@@ -62,8 +52,6 @@ export function useCategoryDelete({
 
   async function requestDelete(id: string, name: string): Promise<void> {
     const result = await getCategoryProductCount(id);
-    // CountResult es `{ count } | (AdminActionFailure & { count: 0 })` — el
-    // discriminante es `success: false` en la rama de error.
     if ('success' in result && result.success === false) {
       toast.error(`No se pudo verificar productos: ${result.error}`);
       return;

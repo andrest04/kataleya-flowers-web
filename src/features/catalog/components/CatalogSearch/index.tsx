@@ -16,21 +16,9 @@ interface CatalogSearchProps {
   products: Product[];
   flowerTypes: string[];
   productColors: ColorDef[];
-  /**
-   * Contenido a mostrar cuando NO hay filtros activos. Pensado para que el
-   * Server Component renderice el grid de categorías una sola vez (evita
-   * flicker entre el Suspense fallback y el cliente).
-   */
   children?: ReactNode;
 }
 
-/**
- * Componente cliente principal del catálogo. Compone:
- * - sidebar desktop con input + filtros (sticky)
- * - panel mobile colapsable con input + filtros
- * - chips de filtros activos
- * - resultados o `children` (grid SSR de categorías) según si hay filtros
- */
 export default function CatalogSearch({
   categories,
   products,
@@ -40,7 +28,6 @@ export default function CatalogSearch({
 }: CatalogSearchProps) {
   const f = useCatalogFilters({ products, categories });
 
-  // Props compartidas entre los dos paneles (desktop / mobile).
   const panelProps = {
     categories,
     productColors,

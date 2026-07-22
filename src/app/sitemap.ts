@@ -36,8 +36,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ];
 
-  // Si las queries fallan (DB caída, etc.) devolvemos al menos las rutas
-  // estáticas para que el sitemap siga siendo válido.
   let categoryEntries: MetadataRoute.Sitemap = [];
   let productEntries: MetadataRoute.Sitemap = [];
 

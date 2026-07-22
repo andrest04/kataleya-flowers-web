@@ -1,11 +1,3 @@
-/**
- * Row shapes for the domain entities.
- *
- * These mirror the persisted record shape that the Appwrite repositories map to
- * (and that `mapProductRow` / `mapCategoryRow` consume). Named explicitly here so
- * the app uses explicit, hand-written row types.
- */
-
 export type Json =
   | string
   | number

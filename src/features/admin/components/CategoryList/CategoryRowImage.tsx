@@ -1,9 +1,5 @@
 'use client';
 
-/**
- * CategoryRowImage — celda de imagen de la fila de categoría con fallback "—".
- */
-
 import Image from 'next/image';
 
 import type { CategoryRow } from '@/lib/db/rows';

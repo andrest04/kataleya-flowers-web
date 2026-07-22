@@ -1,12 +1,5 @@
 'use client';
 
-/**
- * useCategoryReorder — encapsula el reordenamiento drag-and-drop con
- * `@dnd-kit/react` + helper `move`. Mantiene snapshot del último orden guardado
- * para hacer rollback correcto si una segunda corrida falla, en lugar de
- * volver al snapshot inicial de página.
- */
-
 import { move } from '@dnd-kit/helpers';
 import type { DragDropEvents } from '@dnd-kit/react';
 import { useRef, useState, useTransition } from 'react';
@@ -30,8 +23,6 @@ export function useCategoryReorder(initial: CategoryRow[]): UseCategoryReorderRe
   const [items, setItems] = useState<CategoryRow[]>(initial);
   const [hasChanges, setHasChanges] = useState(false);
   const [isSaving, startTransition] = useTransition();
-  // Snapshot del último orden persistido — tras un save exitoso se actualiza,
-  // por lo que el rollback siempre lleva al último estado seguro.
   const lastSavedRef = useRef<CategoryRow[]>(initial);
 
   const handleDragEnd: DragEndHandler = (event) => {

@@ -12,8 +12,6 @@ interface CatalogSectionProps {
 }
 
 export default function CatalogSection({ categories }: CatalogSectionProps) {
-  // Featured first (admin-controlled prominence: index 0 takes the hero tile),
-  // then the rest, capped at 6 tiles.
   const featured = categories.filter((category) => category.isFeatured);
   const rest = categories.filter((category) => !category.isFeatured);
   const tiles = [...featured, ...rest].slice(0, 6);
@@ -24,22 +22,14 @@ export default function CatalogSection({ categories }: CatalogSectionProps) {
 
   const layout = getLayout(tiles.length);
 
-  // ≤2 tiles: skip the snap-carousel (no real overflow — dead swipe on mobile)
-  // and render a centered, max-width-contained grid instead of full-bleed bento.
   const isSparseLayout = tiles.length <= 2;
 
-  // Sparse fallback classes: 1 tile → single centered column; 2 tiles → two equal columns.
-  // Literals required so Tailwind's static extractor picks them up.
   const sparseCols =
     tiles.length === 1 ? 'max-w-2xl sm:grid-cols-1' : 'max-w-3xl sm:grid-cols-2';
   const gridContainerClass = isSparseLayout
-    ? // Centered fallback: contained, symmetric grid (tile owns its own aspect).
-      `mx-auto grid grid-cols-1 gap-x-4 gap-y-8 ${sparseCols}`
-    : // Standard uniform grid + mobile snap-carousel for 3–6 tiles.
-      `-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-4 scrollbar-hide sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-x-4 sm:gap-y-8 sm:overflow-visible sm:px-0 sm:pb-0 ${layout.grid}`;
+    ? `mx-auto grid grid-cols-1 gap-x-4 gap-y-8 ${sparseCols}`
+    : `-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-4 scrollbar-hide sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-x-4 sm:gap-y-8 sm:overflow-visible sm:px-0 sm:pb-0 ${layout.grid}`;
 
-  // Layout-context classes for each tile — width/col-span only; the tile owns
-  // its own image aspect-ratio internally.
   const carouselTileClasses = 'w-[72vw] shrink-0 snap-start sm:w-auto';
   const sparseTileClasses = 'w-full';
 
@@ -63,7 +53,6 @@ export default function CatalogSection({ categories }: CatalogSectionProps) {
 
         <div
           className={gridContainerClass}
-          // The snap rail is an implicit scroll region on mobile; name it for SRs.
           {...(!isSparseLayout && {
             role: 'region',
             'aria-label': 'Colecciones de flores',

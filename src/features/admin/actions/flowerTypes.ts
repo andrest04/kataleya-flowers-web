@@ -36,7 +36,6 @@ export async function deleteFlowerType(name: string): Promise<FlowerTypeActionRe
       };
     }
 
-    // Enforce referential integrity: check usage before deleting
     const usage = await getFlowerTypeUsage(parsed.data.name);
     if (usage.length > 0) {
       return {

@@ -6,7 +6,6 @@ import type { Category } from '@/features/catalog/types';
 
 interface CategoryTileProps {
   category: Category;
-  /** Layout-context classes (width/col-span) — owned by the orchestrator. */
   layoutClasses: string;
 }
 

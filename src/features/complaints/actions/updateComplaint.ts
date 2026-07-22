@@ -16,9 +16,6 @@ interface SuccessResult {
 }
 type ComplaintActionResult = SuccessResult | AdminActionFailure;
 
-/**
- * Actualiza el estado y la respuesta del proveedor de un reclamo (solo admin).
- */
 export async function updateComplaint(
   input: unknown,
 ): Promise<ComplaintActionResult> {

@@ -8,14 +8,10 @@ export default function manifest(): MetadataRoute.Manifest {
       "Floristería en Lima, Perú. Arreglos florales y orquídeas para celebraciones, homenajes y regalos.",
     start_url: "/",
     display: "standalone",
-    background_color: "#fdfcfa", // --color-cream
-    theme_color: "#c0392b", // --color-primary
+    background_color: "#fdfcfa",
+    theme_color: "#c0392b",
     lang: "es-PE",
     icons: [
-      // TODO: cuando el usuario provea los iconos PWA, agregar:
-      //   { src: "/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" }
-      //   { src: "/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" }
-      //   { src: "/icon-maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" }
       {
         src: "/favicon.ico",
         sizes: "any",
