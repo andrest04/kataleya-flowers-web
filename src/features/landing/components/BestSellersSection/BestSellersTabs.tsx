@@ -1,0 +1,77 @@
+'use client';
+
+import Link from 'next/link';
+import { useState } from 'react';
+
+import type { Category, Product } from '@/features/catalog/types';
+
+import BestSellerProductCard from './BestSellerProductCard';
+
+interface BestSellersTabsProps {
+  products: Product[];
+  categoryById: Record<string, Category>;
+  tabCategories: Category[];
+}
+
+export default function BestSellersTabs({
+  products,
+  categoryById,
+  tabCategories,
+}: BestSellersTabsProps) {
+  const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null);
+
+  const visibleProducts = activeCategoryId
+    ? products.filter((product) => product.categoryId === activeCategoryId)
+    : products;
+
+  return (
+    <>
+      <div className="mt-7 flex items-end justify-between gap-6 border-b border-(--color-border) pb-4 sm:mt-8">
+        <nav
+          aria-label="Categorías de productos más vendidos"
+          className="flex min-w-0 gap-5 overflow-x-auto whitespace-nowrap pr-2 font-body text-xs font-semibold uppercase tracking-[0.12em] text-(--color-muted) sm:gap-7 sm:text-sm"
+        >
+          <button
+            type="button"
+            onClick={() => setActiveCategoryId(null)}
+            aria-current={activeCategoryId === null ? 'true' : undefined}
+            className="shrink-0 transition-colors hover:text-(--color-primary) focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-(--color-secondary) aria-[current=true]:text-(--color-dark)"
+          >
+            Todos
+          </button>
+          {tabCategories.map((category) => (
+            <button
+              key={category.id}
+              type="button"
+              onClick={() => setActiveCategoryId(category.id)}
+              aria-current={activeCategoryId === category.id ? 'true' : undefined}
+              className="shrink-0 transition-colors hover:text-(--color-primary) focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-(--color-secondary) aria-[current=true]:text-(--color-dark)"
+            >
+              {category.name}
+            </button>
+          ))}
+        </nav>
+        <Link
+          href="/catalogo"
+          className="shrink-0 border-b border-(--color-primary) pb-1 font-body text-xs font-semibold uppercase tracking-[0.14em] text-(--color-primary) transition-colors hover:border-(--color-accent) hover:text-(--color-accent) focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-(--color-secondary) sm:text-sm"
+        >
+          Ver todo
+        </Link>
+      </div>
+
+      <div
+        className="mt-8 flex snap-x snap-mandatory gap-4 overflow-x-scroll pb-6 sm:mt-10 sm:gap-6"
+        role="region"
+        aria-label="Productos más vendidos"
+      >
+        {visibleProducts.map((product) => (
+          <BestSellerProductCard
+            key={product.id}
+            product={product}
+            categorySlug={categoryById[product.categoryId]?.slug}
+          />
+        ))}
+      </div>
+    </>
+  );
+}

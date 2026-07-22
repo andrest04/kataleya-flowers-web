@@ -1,4 +1,4 @@
-import { ArrowRight, Flower2 } from 'lucide-react';
+import { Flower2 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -9,7 +9,7 @@ interface CategoryTileProps {
   layoutClasses: string;
 }
 
-const SIZES = '(max-width: 639px) 72vw, (max-width: 1023px) 45vw, 22vw';
+const SIZES = '(max-width: 639px) 70vw, (max-width: 1023px) 42vw, 296px';
 
 export default function CategoryTile({ category, layoutClasses }: CategoryTileProps) {
   return (
@@ -17,7 +17,7 @@ export default function CategoryTile({ category, layoutClasses }: CategoryTilePr
       href={`/catalogo/${category.slug}`}
       className={`group block focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-secondary) ${layoutClasses}`}
     >
-      <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-(--color-surface)">
+      <div className="relative aspect-[4/5] overflow-hidden rounded-lg bg-(--color-surface)">
         {category.imageUrl ? (
           <Image
             src={category.imageUrl}
@@ -33,17 +33,10 @@ export default function CategoryTile({ category, layoutClasses }: CategoryTilePr
         )}
       </div>
 
-      <div className="pt-4">
-        <h3 className="font-heading text-lg text-(--color-dark)">{category.name}</h3>
-        {category.priceFrom !== undefined && category.priceFrom > 0 && (
-          <p className="mt-1 text-sm text-(--color-muted)">
-            Desde S/ {Math.round(category.priceFrom)}
-          </p>
-        )}
-        <span className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold tracking-[0.1em] text-(--color-primary) uppercase transition-colors group-hover:text-(--color-accent)">
-          Ver arreglos
-          <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
-        </span>
+      <div className="pt-4 text-center">
+        <h3 className="font-heading text-xl text-(--color-dark) transition-colors group-hover:text-(--color-primary)">
+          {category.name}
+        </h3>
       </div>
     </Link>
   );

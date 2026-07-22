@@ -1,10 +1,7 @@
-import { ArrowRight } from 'lucide-react';
-import Link from 'next/link';
-
-import SectionHeader from '@/components/ui/SectionHeader';
-import ProductCard from '@/features/catalog/components/ProductCard';
 import { getFeaturedProducts } from '@/features/catalog/queries/getFeaturedProducts';
 import type { Category } from '@/features/catalog/types';
+
+import BestSellersTabs from './BestSellersTabs';
 
 interface BestSellersSectionProps {
   categories: Category[];
@@ -17,39 +14,22 @@ export default async function BestSellersSection({ categories }: BestSellersSect
     return null;
   }
 
-  const categoryById = new Map(categories.map((category) => [category.id, category]));
+  const categoryById = Object.fromEntries(categories.map((category) => [category.id, category]));
+  const featuredCategoryIds = new Set(products.map((product) => product.categoryId));
+  const tabCategories = categories.filter((category) => featuredCategoryIds.has(category.id));
 
   return (
-    <section className="px-4 py-16 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl space-y-10">
-        <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
-          <SectionHeader
-            align="left"
-            subtitle="Los favoritos"
-            title="Nuestros más pedidos"
-          />
-          <Link
-            href="/catalogo"
-            className="group inline-flex items-center gap-2 pb-1 text-sm font-semibold tracking-wide text-(--color-primary) transition-colors hover:text-(--color-accent) focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-(--color-secondary)"
-          >
-            Ver todo el catálogo
-            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-          </Link>
-        </div>
+    <section className="py-16 sm:py-20">
+      <div className="mx-auto max-w-[110rem] px-4 sm:px-6 lg:px-8">
+        <h2 className="font-heading text-4xl leading-tight text-(--color-primary) sm:text-5xl lg:text-6xl">
+          Más vendidos
+        </h2>
 
-        <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
-          {products.map((product) => {
-            const category = categoryById.get(product.categoryId);
-            return (
-              <ProductCard
-                key={product.id}
-                product={product}
-                categorySlug={category?.slug}
-                categoryName={category?.name}
-              />
-            );
-          })}
-        </div>
+        <BestSellersTabs
+          products={products}
+          categoryById={categoryById}
+          tabCategories={tabCategories}
+        />
       </div>
     </section>
   );
