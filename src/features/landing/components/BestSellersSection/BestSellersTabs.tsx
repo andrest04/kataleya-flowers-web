@@ -60,7 +60,7 @@ export default function BestSellersTabs({
       </div>
 
       <div
-        className="mt-8 flex snap-x snap-mandatory gap-4 overflow-x-scroll pb-6 sm:mt-10 sm:gap-6"
+        className="scrollbar-hide mt-8 flex snap-x snap-mandatory gap-4 overflow-x-scroll pb-6 sm:mt-10 sm:gap-6"
         role="region"
         aria-label="Productos más vendidos"
       >

@@ -19,15 +19,15 @@ export default function BestSellerProductCard({
   return (
     <Link
       href={`/catalogo/${categorySlug ?? ''}/${product.slug}`}
-      className="group block w-[76vw] shrink-0 snap-start sm:w-[20rem] lg:w-[22rem]"
+      className="group block w-[80vw] shrink-0 snap-start sm:w-[23rem] lg:w-[25rem]"
     >
-      <div className="relative aspect-[4/5] overflow-hidden bg-(--color-surface)">
+      <div className="relative aspect-[4/5] overflow-hidden rounded-md bg-(--color-surface)">
         <Image
           src={product.imageUrl}
           alt={product.name}
           fill
           className="object-cover transition-transform duration-500 group-hover:scale-105"
-          sizes="(max-width: 640px) 76vw, (max-width: 1024px) 20rem, 22rem"
+          sizes="(max-width: 640px) 80vw, (max-width: 1024px) 23rem, 25rem"
         />
       </div>
       <div className="pt-4 text-center">

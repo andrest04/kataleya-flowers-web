@@ -23,7 +23,7 @@ export default function CatalogSection({ categories }: CatalogSectionProps) {
         </h2>
 
         <div
-          className="mt-7 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-6 pr-4 sm:mt-8 sm:gap-5 sm:pb-7"
+          className="scrollbar-hide mt-7 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-6 pr-4 sm:mt-8 sm:gap-5 sm:pb-7"
           role="region"
           aria-label="Catálogos de flores por ocasión"
         >
