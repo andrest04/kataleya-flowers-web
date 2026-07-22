@@ -16,7 +16,3 @@ export const secondaryLinks: readonly NavLink[] = [
 ] as const;
 
 export const allNavLinks: readonly NavLink[] = [...primaryLinks, ...secondaryLinks] as const;
-
-export function withRoot(href: string): string {
-  return href.startsWith('#') ? `/${href}` : href;
-}

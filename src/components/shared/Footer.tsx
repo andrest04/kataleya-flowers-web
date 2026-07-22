@@ -3,9 +3,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { FaInstagram, FaWhatsapp } from "react-icons/fa";
 
+import FooterAnchorLink from "@/components/shared/FooterAnchorLink";
 import { getCategories } from "@/features/catalog/queries/getCategories";
 import { BUSINESS } from "@/lib/constants";
-import { allNavLinks, withRoot } from "@/lib/navigation";
+import { allNavLinks } from "@/lib/navigation";
 
 const WHATSAPP_LINK = BUSINESS.whatsappWithMessage(BUSINESS.messages.whatsappDefault);
 const COPYRIGHT_YEAR = 2026;
@@ -14,7 +15,7 @@ export default async function Footer() {
   const categories = await getCategories();
 
   return (
-    <footer className="border-t border-(--color-primary) bg-(--color-cream) text-(--color-dark)">
+    <footer className="border-t border-(--color-primary) bg-(--color-surface) text-(--color-dark)">
       <div className="px-4 pt-[74px] sm:px-6 lg:px-[77px]">
         <div className="grid gap-10 lg:grid-cols-[1.3fr_2fr] lg:gap-20 xl:grid-cols-[1fr_2.4fr]">
           <div className="space-y-6 lg:pb-[74px]">
@@ -67,16 +68,27 @@ export default async function Footer() {
                 Navegación
               </p>
               <ul className="space-y-2 font-body text-sm">
-                {allNavLinks.map((link) => (
-                  <li key={link.href}>
-                    <Link
-                      href={withRoot(link.href)}
-                      className="transition-colors hover:text-(--color-primary) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-secondary)"
-                    >
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
+                {allNavLinks.map((link) =>
+                  link.isRoute ? (
+                    <li key={link.href}>
+                      <Link
+                        href={link.href}
+                        className="transition-colors hover:text-(--color-primary) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-secondary)"
+                      >
+                        {link.label}
+                      </Link>
+                    </li>
+                  ) : (
+                    <li key={link.href}>
+                      <FooterAnchorLink
+                        href={link.href}
+                        className="transition-colors hover:text-(--color-primary) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-secondary)"
+                      >
+                        {link.label}
+                      </FooterAnchorLink>
+                    </li>
+                  ),
+                )}
               </ul>
             </nav>
 
@@ -117,12 +129,12 @@ export default async function Footer() {
               </p>
               <ul className="space-y-2 font-body text-sm">
                 <li>
-                  <Link
-                    href="/#nosotros"
+                  <FooterAnchorLink
+                    href="#nosotros"
                     className="transition-colors hover:text-(--color-primary) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-secondary)"
                   >
                     Nosotros
-                  </Link>
+                  </FooterAnchorLink>
                 </li>
                 <li className="opacity-80">
                   {BUSINESS.hours.weekdays} · {BUSINESS.hours.time}
@@ -159,13 +171,13 @@ export default async function Footer() {
 
       <div className="border-t border-(--color-primary)">
         <div className="px-4 pt-5 pb-[18px] sm:px-6 lg:px-[77px]">
-          <Link
-            href="/#contacto"
+          <FooterAnchorLink
+            href="#contacto"
             className="inline-flex items-center gap-1 font-body text-sm font-semibold transition-colors hover:text-(--color-primary) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-secondary)"
           >
             Entregas en {BUSINESS.location}
             <ChevronRight className="h-4 w-4" aria-hidden="true" />
-          </Link>
+          </FooterAnchorLink>
         </div>
       </div>
 

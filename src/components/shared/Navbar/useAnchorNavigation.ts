@@ -4,14 +4,14 @@ import { usePathname } from "next/navigation";
 import { useCallback } from "react";
 
 interface UseAnchorNavigationOptions {
-  isDrawerOpen: boolean;
-  closeDrawer: () => void;
+  isDrawerOpen?: boolean;
+  closeDrawer?: () => void;
 }
 
 export function useAnchorNavigation({
-  isDrawerOpen,
+  isDrawerOpen = false,
   closeDrawer,
-}: UseAnchorNavigationOptions) {
+}: UseAnchorNavigationOptions = {}) {
   const pathname = usePathname();
   const isLandingPage = pathname === "/";
 
@@ -22,12 +22,12 @@ export function useAnchorNavigation({
         : href.split("#")[1];
 
       if (!targetId) {
-        closeDrawer();
+        closeDrawer?.();
         return;
       }
 
       if (!isLandingPage) {
-        closeDrawer();
+        closeDrawer?.();
         window.location.href = `/#${targetId}`;
         return;
       }
@@ -35,7 +35,7 @@ export function useAnchorNavigation({
       const target = document.getElementById(targetId);
       if (!target) {
         console.warn(`[Navbar] Target element with id "${targetId}" not found`);
-        closeDrawer();
+        closeDrawer?.();
         return;
       }
 
@@ -44,7 +44,7 @@ export function useAnchorNavigation({
       };
 
       if (isDrawerOpen) {
-        closeDrawer();
+        closeDrawer?.();
         window.setTimeout(scrollToTarget, 320);
         return;
       }
