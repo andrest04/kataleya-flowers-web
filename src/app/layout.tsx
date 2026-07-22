@@ -1,7 +1,7 @@
 import "./globals.css";
 
 import type { Metadata, Viewport } from "next";
-import { Lato, Playfair_Display } from "next/font/google";
+import { Crimson_Text, Mulish } from "next/font/google";
 import type React from "react";
 
 import { MotionProvider } from "@/components/shared/MotionProvider";
@@ -42,14 +42,14 @@ const floristJsonLd = {
   priceRange: "S/30 — S/800",
 } as const;
 
-const playfair = Playfair_Display({
+const crimsonText = Crimson_Text({
   subsets: ["latin"],
   weight: ["400", "600", "700"],
   display: "swap",
   variable: "--font-heading",
 });
 
-const lato = Lato({
+const mulish = Mulish({
   subsets: ["latin"],
   weight: ["400", "700"],
   display: "swap",
@@ -99,7 +99,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es-PE" className={`${playfair.variable} ${lato.variable}`}>
+    <html lang="es-PE" className={`${crimsonText.variable} ${mulish.variable}`}>
       <head>
         <JsonLd data={floristJsonLd} />
       </head>
