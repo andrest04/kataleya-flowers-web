@@ -1,149 +1,180 @@
+import { ArrowRight, ChevronRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { FaInstagram, FaWhatsapp } from "react-icons/fa";
 
-import Button from "@/components/ui/Button";
+import { getCategories } from "@/features/catalog/queries/getCategories";
 import { BUSINESS } from "@/lib/constants";
 import { allNavLinks, withRoot } from "@/lib/navigation";
 
 const WHATSAPP_LINK = BUSINESS.whatsappWithMessage(BUSINESS.messages.whatsappDefault);
-
 const COPYRIGHT_YEAR = 2026;
 
-export default function Footer() {
+export default async function Footer() {
+  const categories = await getCategories();
+
   return (
-    <footer className="bg-accent text-cream px-4 py-10 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl space-y-8">
-        <div className="grid gap-8 text-center md:grid-cols-[1.1fr_0.9fr] md:items-center md:text-left">
-          <div className="space-y-3">
-            <h2 className="text-2xl leading-none sm:text-3xl font-heading">
-              {BUSINESS.name}
-            </h2>
-            <p className="max-w-md text-sm opacity-90 sm:text-base">
-              Arreglos florales hechos con amor para cada ocasión especial.
-            </p>
-            <p className="text-sm opacity-80">
-              {BUSINESS.location} · {BUSINESS.hours.weekdays} {BUSINESS.hours.time}
-            </p>
-          </div>
+    <footer className="border-t border-(--color-primary) bg-(--color-cream) text-(--color-dark)">
+      <div className="mx-auto max-w-[110rem] px-4 pt-[74px] sm:px-6 lg:px-[77px]">
+        <div className="grid gap-10 lg:grid-cols-[1.3fr_2fr] lg:gap-8">
+          <div className="space-y-6">
+            <h2 className="font-heading text-2xl tracking-[0.1em] uppercase">{BUSINESS.name}</h2>
 
-          <div className="flex flex-col gap-3 sm:flex-row md:justify-end">
-            <Button
-              variant="whatsapp"
-              size="md"
-              href={WHATSAPP_LINK}
-              external
-              aria-label={`Escribir a ${BUSINESS.name} por WhatsApp`}
-              className="w-full sm:w-auto focus-visible:outline-2 focus-visible:outline-offset-2"
-              style={{ outlineColor: "var(--color-secondary)" }}
-            >
-              <FaWhatsapp aria-hidden="true" size={18} />
-              Pedir por WhatsApp
-            </Button>
+            <p className="font-heading text-2xl leading-tight sm:text-3xl">
+              Flores frescas para cada momento especial en {BUSINESS.location}.
+            </p>
 
-            <Button
-              variant="secondary"
-              size="md"
-              href={BUSINESS.instagram}
-              external
-              aria-label={`Seguir a ${BUSINESS.name} en Instagram`}
-              className="w-full sm:w-auto focus-visible:outline-2 focus-visible:outline-offset-2"
-              style={{
-                borderColor: "color-mix(in srgb, var(--color-cream) 45%, transparent)",
-                color: "var(--color-cream)",
-                outlineColor: "var(--color-secondary)",
-              }}
-            >
-              <FaInstagram aria-hidden="true" size={17} />
-              Instagram
-            </Button>
-          </div>
-        </div>
-
-        <div
-          className="grid gap-8 border-t pt-6 text-center sm:grid-cols-3 sm:text-left"
-          style={{
-            borderColor:
-              "color-mix(in srgb, var(--color-cream) 20%, transparent)",
-          }}
-        >
-          <nav aria-label="Navegación del sitio" className="space-y-2">
-            <p className="text-xs font-semibold tracking-[0.2em] uppercase opacity-80">
-              Navegación
-            </p>
-            <ul className="flex flex-col items-center gap-y-2 text-sm sm:items-start">
-              {allNavLinks.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    href={withRoot(link.href)}
-                    className="inline-block rounded-sm py-0.5 opacity-90 transition-opacity hover:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2"
-                    style={{ outlineColor: "var(--color-secondary)" }}
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
-
-          <div className="space-y-2 text-sm">
-            <p className="text-xs font-semibold tracking-[0.2em] uppercase opacity-80">
-              Contacto
-            </p>
-            <p className="opacity-90">
-              Atención en {BUSINESS.location} para entregas y recojo.
-            </p>
-            <p className="opacity-80">
-              {BUSINESS.hours.weekdays} {BUSINESS.hours.time}
-            </p>
-            <p className="opacity-80">WhatsApp: +{BUSINESS.phone}</p>
             <Link
-              href="/#contacto"
-              className="inline-block rounded-sm font-semibold transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2"
-              style={{
-                color: "var(--color-gold-text-dark)",
-                outlineColor: "var(--color-gold-text-dark)",
-              }}
-            >
-              Ver ubicación y mapa
-            </Link>
-          </div>
-
-          <div className="space-y-3 text-sm">
-            <p className="text-xs font-semibold tracking-[0.2em] uppercase opacity-80">
-              Confianza
-            </p>
-            <a
-              href={BUSINESS.instagram}
+              href={WHATSAPP_LINK}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-block rounded-sm opacity-90 transition-opacity hover:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2"
-              style={{ outlineColor: "var(--color-secondary)" }}
+              className="flex w-full max-w-sm items-center justify-between border border-(--color-dark) bg-white px-4 py-3 text-sm font-semibold transition-colors hover:bg-(--color-surface) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-secondary)"
             >
-              {BUSINESS.instagramHandle} en Instagram
-            </a>
-            <Link
-              href="/libro-de-reclamaciones"
-              aria-label="Libro de Reclamaciones — registra tu queja o reclamo"
-              className="mx-auto block w-fit rounded-sm bg-white p-1 transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 sm:mx-0"
-              style={{ outlineColor: "var(--color-secondary)" }}
-            >
-              <span className="relative block h-[72px] w-[120px]">
-                <Image
-                  src="/libro-reclamaciones-indecopi.png"
-                  alt="Aviso del Libro de Reclamaciones (INDECOPI)"
-                  fill
-                  sizes="120px"
-                  className="object-contain"
-                />
-              </span>
+              Escríbenos por WhatsApp
+              <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </Link>
           </div>
-        </div>
 
-        <p className="text-center text-xs opacity-80 sm:text-left sm:text-sm">
-          © {COPYRIGHT_YEAR} {BUSINESS.name} · Hecho con amor en {BUSINESS.location}
-        </p>
+          <div className="grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-4 sm:gap-x-8">
+            <nav aria-label="Catálogo" className="space-y-3">
+              <p className="font-body text-xs font-semibold tracking-[0.15em] uppercase opacity-70">
+                Catálogo
+              </p>
+              <ul className="space-y-2 font-body text-sm">
+                {categories.map((category) => (
+                  <li key={category.id}>
+                    <Link
+                      href={`/catalogo/${category.slug}`}
+                      className="transition-colors hover:text-(--color-primary) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-secondary)"
+                    >
+                      {category.name}
+                    </Link>
+                  </li>
+                ))}
+                <li>
+                  <Link
+                    href="/catalogo"
+                    className="transition-colors hover:text-(--color-primary) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-secondary)"
+                  >
+                    Ver todo
+                  </Link>
+                </li>
+              </ul>
+            </nav>
+
+            <nav aria-label="Navegación del sitio" className="space-y-3">
+              <p className="font-body text-xs font-semibold tracking-[0.15em] uppercase opacity-70">
+                Navegación
+              </p>
+              <ul className="space-y-2 font-body text-sm">
+                {allNavLinks.map((link) => (
+                  <li key={link.href}>
+                    <Link
+                      href={withRoot(link.href)}
+                      className="transition-colors hover:text-(--color-primary) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-secondary)"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+
+            <div className="space-y-3">
+              <p className="font-body text-xs font-semibold tracking-[0.15em] uppercase opacity-70">
+                Ayuda
+              </p>
+              <ul className="space-y-2 font-body text-sm">
+                <li>
+                  <Link
+                    href="/libro-de-reclamaciones"
+                    className="transition-colors hover:text-(--color-primary) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-secondary)"
+                  >
+                    Libro de Reclamaciones
+                  </Link>
+                </li>
+              </ul>
+              <Link
+                href="/libro-de-reclamaciones"
+                aria-label="Libro de Reclamaciones — registra tu queja o reclamo"
+                className="mt-2 block w-fit rounded-sm bg-white p-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-secondary)"
+              >
+                <span className="relative block h-[54px] w-[90px]">
+                  <Image
+                    src="/libro-reclamaciones-indecopi.png"
+                    alt="Aviso del Libro de Reclamaciones (INDECOPI)"
+                    fill
+                    sizes="90px"
+                    className="object-contain"
+                  />
+                </span>
+              </Link>
+            </div>
+
+            <div className="space-y-3">
+              <p className="font-body text-xs font-semibold tracking-[0.15em] uppercase opacity-70">
+                Negocio
+              </p>
+              <ul className="space-y-2 font-body text-sm">
+                <li>
+                  <Link
+                    href="/#nosotros"
+                    className="transition-colors hover:text-(--color-primary) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-secondary)"
+                  >
+                    Nosotros
+                  </Link>
+                </li>
+                <li className="opacity-80">
+                  {BUSINESS.hours.weekdays} · {BUSINESS.hours.time}
+                </li>
+                <li className="opacity-80">{BUSINESS.location}</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="mx-auto flex max-w-[110rem] items-center px-4 pt-6 pb-14 sm:px-6 lg:px-[77px]">
+        <div className="-ml-1 flex items-center gap-5">
+          <a
+            href={BUSINESS.instagram}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`Seguir a ${BUSINESS.name} en Instagram`}
+            className="transition-opacity hover:opacity-70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-secondary)"
+          >
+            <FaInstagram size={20} aria-hidden="true" />
+          </a>
+          <a
+            href={WHATSAPP_LINK}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`Escribir a ${BUSINESS.name} por WhatsApp`}
+            className="transition-opacity hover:opacity-70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-secondary)"
+          >
+            <FaWhatsapp size={20} aria-hidden="true" />
+          </a>
+        </div>
+      </div>
+
+      <div className="border-t border-(--color-primary)">
+        <div className="mx-auto max-w-[110rem] px-4 pt-5 pb-[18px] sm:px-6 lg:px-[77px]">
+          <Link
+            href="/#contacto"
+            className="inline-flex items-center gap-1 font-body text-sm font-semibold transition-colors hover:text-(--color-primary) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-secondary)"
+          >
+            Entregas en {BUSINESS.location}
+            <ChevronRight className="h-4 w-4" aria-hidden="true" />
+          </Link>
+        </div>
+      </div>
+
+      <div className="border-t border-(--color-primary)">
+        <div className="mx-auto max-w-[110rem] px-4 pt-5 pb-[18px] sm:px-6 lg:px-[77px]">
+          <p className="font-heading text-sm opacity-80">
+            © {COPYRIGHT_YEAR} {BUSINESS.name}
+          </p>
+        </div>
       </div>
     </footer>
   );
