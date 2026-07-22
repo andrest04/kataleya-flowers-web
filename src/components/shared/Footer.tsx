@@ -15,9 +15,9 @@ export default async function Footer() {
 
   return (
     <footer className="border-t border-(--color-primary) bg-(--color-cream) text-(--color-dark)">
-      <div className="mx-auto max-w-[110rem] px-4 pt-[74px] sm:px-6 lg:px-[77px]">
-        <div className="grid gap-10 lg:grid-cols-[1.3fr_2fr] lg:gap-8">
-          <div className="space-y-6">
+      <div className="px-4 pt-[74px] sm:px-6 lg:px-[77px]">
+        <div className="grid gap-10 lg:grid-cols-[1.3fr_2fr] lg:gap-20 xl:grid-cols-[1fr_2.4fr]">
+          <div className="space-y-6 lg:pb-[74px]">
             <h2 className="font-heading text-2xl tracking-[0.1em] uppercase">{BUSINESS.name}</h2>
 
             <p className="font-heading text-2xl leading-tight sm:text-3xl">
@@ -35,7 +35,7 @@ export default async function Footer() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-4 sm:gap-x-8">
+          <div className="grid grid-cols-2 gap-x-6 gap-y-8 sm:ml-auto sm:mr-10 sm:flex sm:flex-row sm:gap-x-[88.8889px] sm:gap-y-0">
             <nav aria-label="Catálogo" className="space-y-3">
               <p className="font-body text-xs font-semibold tracking-[0.15em] uppercase opacity-70">
                 Catálogo
@@ -134,7 +134,7 @@ export default async function Footer() {
         </div>
       </div>
 
-      <div className="mx-auto flex max-w-[110rem] items-center px-4 pt-6 pb-14 sm:px-6 lg:px-[77px]">
+      <div className="flex items-center px-4 pt-6 pb-14 sm:px-6 lg:px-[77px]">
         <div className="-ml-1 flex items-center gap-5">
           <a
             href={BUSINESS.instagram}
@@ -158,7 +158,7 @@ export default async function Footer() {
       </div>
 
       <div className="border-t border-(--color-primary)">
-        <div className="mx-auto max-w-[110rem] px-4 pt-5 pb-[18px] sm:px-6 lg:px-[77px]">
+        <div className="px-4 pt-5 pb-[18px] sm:px-6 lg:px-[77px]">
           <Link
             href="/#contacto"
             className="inline-flex items-center gap-1 font-body text-sm font-semibold transition-colors hover:text-(--color-primary) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-secondary)"
@@ -170,7 +170,7 @@ export default async function Footer() {
       </div>
 
       <div className="border-t border-(--color-primary)">
-        <div className="mx-auto max-w-[110rem] px-4 pt-5 pb-[18px] sm:px-6 lg:px-[77px]">
+        <div className="px-4 pt-5 pb-[18px] sm:px-6 lg:px-[77px]">
           <p className="font-heading text-sm opacity-80">
             © {COPYRIGHT_YEAR} {BUSINESS.name}
           </p>
