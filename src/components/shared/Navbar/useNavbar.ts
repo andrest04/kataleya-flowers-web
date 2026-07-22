@@ -6,12 +6,14 @@ import { useCallback } from "react";
 
 import { useAnchorNavigation } from "./useAnchorNavigation";
 import { useDesktopSearch } from "./useDesktopSearch";
+import { useHeaderVisibility } from "./useHeaderVisibility";
 import { useMobileDrawer } from "./useMobileDrawer";
 import { useScrollBehavior } from "./useScrollBehavior";
 
 export function useNavbar() {
   const router = useRouter();
   const isScrolled = useScrollBehavior();
+  const isHeaderHidden = useHeaderVisibility();
   const drawer = useMobileDrawer();
   const search = useDesktopSearch();
 
@@ -56,6 +58,7 @@ export function useNavbar() {
     searchInputRef: drawer.searchInputRef,
 
     isScrolled,
+    isHeaderHidden,
 
     searchQuery: search.searchQuery,
     setSearchQuery: search.setSearchQuery,

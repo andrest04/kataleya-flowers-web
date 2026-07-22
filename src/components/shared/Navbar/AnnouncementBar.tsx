@@ -1,10 +1,18 @@
 import { BUSINESS } from "@/lib/constants";
 
-export default function AnnouncementBar() {
+interface AnnouncementBarProps {
+  isHidden: boolean;
+}
+
+export default function AnnouncementBar({ isHidden }: AnnouncementBarProps) {
   const href = BUSINESS.whatsappWithMessage(BUSINESS.messages.whatsappDefault);
 
   return (
-    <div className="flex h-10 items-center justify-center bg-(--color-primary) px-4 text-center">
+    <div
+      className={`flex items-center justify-center overflow-hidden bg-(--color-primary) px-4 text-center transition-[height] duration-300 ease-out motion-reduce:transition-none ${
+        isHidden ? "h-0" : "h-10"
+      }`}
+    >
       <p className="font-body text-sm tracking-[0.01em] text-(--color-cream)">
         Flores frescas para cada ocasión.{" "}
         <a
