@@ -7,11 +7,17 @@ import { getEffectivePrice } from '@/features/catalog/utils/filterProducts';
 interface BestSellerProductCardProps {
   product: Product;
   categorySlug?: string;
+  className?: string;
+  onClick?: () => void;
 }
+
+const DEFAULT_CLASSNAME = 'w-[80vw] shrink-0 snap-start sm:w-[23rem] lg:w-[25rem]';
 
 export default function BestSellerProductCard({
   product,
   categorySlug,
+  className = DEFAULT_CLASSNAME,
+  onClick,
 }: BestSellerProductCardProps) {
   const effectivePrice = getEffectivePrice(product);
   const hasVariants = Boolean(product.priceTable?.length);
@@ -19,7 +25,8 @@ export default function BestSellerProductCard({
   return (
     <Link
       href={`/catalogo/${categorySlug ?? ''}/${product.slug}`}
-      className="group block w-[80vw] shrink-0 snap-start sm:w-[23rem] lg:w-[25rem]"
+      onClick={onClick}
+      className={`group block ${className}`}
     >
       <div className="relative aspect-[4/5] overflow-hidden rounded-md bg-(--color-surface)">
         <Image

@@ -21,7 +21,7 @@ export default function EditorialTile({
 }: EditorialTileProps) {
   const content = (
     <>
-      <div className="relative aspect-[2/3] overflow-hidden rounded-md bg-(--color-surface)">
+      <div className="relative aspect-[4/5] overflow-hidden rounded-md bg-(--color-surface)">
         <Image
           src={imageSrc}
           alt=""
@@ -30,12 +30,12 @@ export default function EditorialTile({
           className="object-cover motion-safe:transition-transform motion-safe:duration-700 motion-safe:ease-out motion-safe:group-hover:scale-[1.03]"
         />
       </div>
-      <div className="pt-6">
-        <div className="flex items-center gap-2.5">
-          <Icon className="h-6 w-6 shrink-0 text-(--color-primary)" aria-hidden="true" />
-          <h3 className="font-heading text-2xl text-(--color-dark)">{title}</h3>
+      <div className="pt-7 text-center">
+        <div className="flex items-center justify-center gap-3">
+          <Icon className="h-7 w-7 shrink-0 text-(--color-primary)" aria-hidden="true" />
+          <h3 className="font-heading text-3xl text-(--color-dark)">{title}</h3>
         </div>
-        <p className="mt-2 text-base text-(--color-muted)">{description}</p>
+        <p className="mt-3 text-lg text-(--color-muted)">{description}</p>
       </div>
     </>
   );
