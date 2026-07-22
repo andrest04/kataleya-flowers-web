@@ -3,7 +3,6 @@ import { Suspense } from "react";
 
 import Footer from "@/components/shared/Footer";
 import Navbar from "@/components/shared/Navbar";
-import WhatsAppFloat from "@/components/shared/WhatsAppFloat";
 
 export default function PublicLayout({ children }: { children: ReactNode }) {
   return (
@@ -12,7 +11,6 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
         <Navbar />
       </Suspense>
       {children}
-      <WhatsAppFloat />
       <Footer />
     </>
   );
