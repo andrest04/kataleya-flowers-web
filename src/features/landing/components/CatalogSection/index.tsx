@@ -5,7 +5,7 @@ import SectionHeader from '@/components/ui/SectionHeader';
 import type { Category } from '@/features/catalog/types';
 
 import CategoryTile from './CategoryTile';
-import { getLayout, getTileVariant } from './gridLayout';
+import { getLayout } from './gridLayout';
 
 interface CatalogSectionProps {
   categories: Category[];
@@ -33,18 +33,15 @@ export default function CatalogSection({ categories }: CatalogSectionProps) {
   const sparseCols =
     tiles.length === 1 ? 'max-w-2xl sm:grid-cols-1' : 'max-w-3xl sm:grid-cols-2';
   const gridContainerClass = isSparseLayout
-    ? // Centered fallback: fixed aspect tiles in a contained, symmetric grid.
-      // No snap/overflow so there is no dead swipe; no full-bleed stretch on desktop.
-      `mx-auto grid grid-cols-1 gap-4 ${sparseCols}`
-    : // Standard bento + mobile snap-carousel for 3–6 tiles.
-      `-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-4 scrollbar-hide sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-4 sm:overflow-visible sm:px-0 sm:pb-0 ${layout.grid}`;
+    ? // Centered fallback: contained, symmetric grid (tile owns its own aspect).
+      `mx-auto grid grid-cols-1 gap-x-4 gap-y-8 ${sparseCols}`
+    : // Standard uniform grid + mobile snap-carousel for 3–6 tiles.
+      `-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-4 scrollbar-hide sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-x-4 sm:gap-y-8 sm:overflow-visible sm:px-0 sm:pb-0 ${layout.grid}`;
 
-  // Layout-context classes for each tile. The carousel/bento variant sizes tiles for
-  // the mobile snap rail and lets the bento row spans drive height on lg; the sparse
-  // variant keeps an explicit aspect at every breakpoint (no spans to give it height).
-  const carouselTileClasses =
-    'aspect-[3/4] w-[72vw] shrink-0 snap-start sm:aspect-[4/3] sm:w-auto lg:aspect-auto';
-  const sparseTileClasses = 'aspect-[3/4] w-full sm:aspect-[4/3]';
+  // Layout-context classes for each tile — width/col-span only; the tile owns
+  // its own image aspect-ratio internally.
+  const carouselTileClasses = 'w-[72vw] shrink-0 snap-start sm:w-auto';
+  const sparseTileClasses = 'w-full';
 
   return (
     <section id="catalogo" className="scroll-mt-20 px-4 pt-8 pb-24 sm:px-6 lg:px-8">
@@ -76,7 +73,6 @@ export default function CatalogSection({ categories }: CatalogSectionProps) {
             <CategoryTile
               key={category.id}
               category={category}
-              variant={getTileVariant(tiles.length, index)}
               layoutClasses={
                 isSparseLayout
                   ? sparseTileClasses

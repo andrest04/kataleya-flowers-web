@@ -1,69 +1,34 @@
 /**
- * Desktop bento placement for the landing category grid.
- * Class strings are full literals so Tailwind can statically extract them.
- * Mobile (<sm) is a snap carousel and tablet (sm-lg) a uniform 2-col grid,
- * so spans here only apply at lg+ (plus sm full-width fixes for odd counts).
+ * Desktop column count for the landing category grid. Tiles are uniform size
+ * (photo + caption below, no bento spans) — prominence comes from sort order
+ * (featured-first), not from tile size. Mobile (<sm) is a snap carousel and
+ * tablet (sm-lg) a uniform 2-col grid; `tiles` only fixes sm-breakpoint
+ * orphans for odd counts so the last tile doesn't sit alone in its row.
  */
-export type TileVariant = 'hero' | 'standard' | 'wide';
-
 interface GridLayout {
   /** Grid container classes at lg+. */
   grid: string;
-  /** Per-tile span classes, indexed by tile position. */
+  /** Per-tile sm-breakpoint orphan fix, indexed by tile position. */
   tiles: string[];
 }
 
-const SIX_TILE_LAYOUT: GridLayout = {
-  grid: 'lg:grid-cols-4 lg:grid-rows-[300px_300px_200px]',
-  tiles: [
-    'lg:col-span-2 lg:row-span-2',
-    '',
-    '',
-    '',
-    '',
-    'lg:col-span-4',
-  ],
-};
-
 const LAYOUTS: Record<number, GridLayout> = {
-  6: SIX_TILE_LAYOUT,
+  6: { grid: 'lg:grid-cols-3', tiles: ['', '', '', '', '', ''] },
   5: {
-    grid: 'lg:grid-cols-4 lg:grid-rows-[300px_300px]',
-    tiles: [
-      'lg:col-span-2 lg:row-span-2',
-      '',
-      '',
-      '',
-      'sm:col-span-2 lg:col-span-1',
-    ],
+    grid: 'lg:grid-cols-5',
+    tiles: ['', '', '', '', 'sm:col-span-2 lg:col-span-1'],
   },
-  4: {
-    grid: 'lg:grid-cols-4 lg:grid-rows-[300px_300px]',
-    tiles: ['lg:col-span-2 lg:row-span-2', '', '', 'lg:col-span-2'],
-  },
+  4: { grid: 'lg:grid-cols-4', tiles: ['', '', '', ''] },
   3: {
-    grid: 'lg:grid-cols-3 lg:grid-rows-[340px]',
+    grid: 'lg:grid-cols-3',
     tiles: ['', '', 'sm:col-span-2 lg:col-span-1'],
   },
-  2: {
-    grid: 'lg:grid-cols-2 lg:grid-rows-[340px]',
-    tiles: ['', ''],
-  },
-  1: {
-    grid: 'lg:grid-cols-1 lg:grid-rows-[340px]',
-    tiles: ['sm:col-span-2 lg:col-span-1'],
-  },
+  2: { grid: 'lg:grid-cols-2', tiles: ['', ''] },
+  1: { grid: 'lg:grid-cols-1', tiles: ['sm:col-span-2 lg:col-span-1'] },
 };
 
 export function getLayout(count: number): GridLayout {
   // Callers cap tiles at 6 (see CatalogSection/index.tsx); the fallback only
   // guards against future misuse and is not a designed layout for 7+ items.
-  return LAYOUTS[count] ?? SIX_TILE_LAYOUT;
-}
-
-export function getTileVariant(count: number, index: number): TileVariant {
-  if (count >= 4 && index === 0) return 'hero';
-  if (count === 6 && index === 5) return 'wide';
-  if (count === 4 && index === 3) return 'wide';
-  return 'standard';
+  return LAYOUTS[count] ?? LAYOUTS[6];
 }

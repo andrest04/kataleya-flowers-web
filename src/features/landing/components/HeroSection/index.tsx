@@ -1,15 +1,13 @@
-import TrustBar from "../TrustBar";
 import { CAMPAIGN_MODE } from "./constants";
 import HeroBackground from "./HeroBackground";
 import HeroContent from "./HeroContent";
 
 /**
  * Hero principal de la landing, full-bleed: la fotografía floral ES el diseño.
- * Server Component que compone tres capas (pintadas por orden del DOM, sin
+ * Server Component que compone dos capas (pintadas por orden del DOM, sin
  * z-index arbitrarios):
  *  - HeroBackground (client): carousel de fotos a pantalla completa + scrims.
  *  - HeroContent (server): kicker + H1 + subtítulo + CTAs, superpuestos.
- *  - TrustBar (server): cinta de señales de confianza al pie.
  *
  * Para cambiar el CTA primario editar `CAMPAIGN_MODE` en `./constants.ts`.
  */
@@ -21,7 +19,6 @@ export default function HeroSection() {
     >
       <HeroBackground />
       <HeroContent campaignMode={CAMPAIGN_MODE} />
-      <TrustBar />
     </section>
   );
 }

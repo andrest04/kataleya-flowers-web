@@ -61,7 +61,7 @@ export default function Footer() {
         </div>
 
         <div
-          className="grid gap-6 border-t pt-6 text-center sm:grid-cols-2 sm:text-left"
+          className="grid gap-8 border-t pt-6 text-center sm:grid-cols-3 sm:text-left"
           style={{
             borderColor:
               "color-mix(in srgb, var(--color-cream) 20%, transparent)",
@@ -71,7 +71,7 @@ export default function Footer() {
             <p className="text-xs font-semibold tracking-[0.2em] uppercase opacity-80">
               Navegación
             </p>
-            <ul className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm sm:justify-start">
+            <ul className="flex flex-col items-center gap-y-2 text-sm sm:items-start">
               {allNavLinks.map((link) => (
                 <li key={link.href}>
                   <Link
@@ -88,10 +88,13 @@ export default function Footer() {
 
           <div className="space-y-2 text-sm">
             <p className="text-xs font-semibold tracking-[0.2em] uppercase opacity-80">
-              Confianza
+              Contacto
             </p>
             <p className="opacity-90">
               Atención en {BUSINESS.location} para entregas y recojo.
+            </p>
+            <p className="opacity-80">
+              {BUSINESS.hours.weekdays} {BUSINESS.hours.time}
             </p>
             <p className="opacity-80">WhatsApp: +{BUSINESS.phone}</p>
             {/* --color-gold-text-dark: 5.01:1 on footer green #2d5a1b — WCAG AA */}
@@ -105,6 +108,21 @@ export default function Footer() {
             >
               Ver ubicación y mapa
             </Link>
+          </div>
+
+          <div className="space-y-3 text-sm">
+            <p className="text-xs font-semibold tracking-[0.2em] uppercase opacity-80">
+              Confianza
+            </p>
+            <a
+              href={BUSINESS.instagram}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block rounded-sm opacity-90 transition-opacity hover:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2"
+              style={{ outlineColor: "var(--color-secondary)" }}
+            >
+              {BUSINESS.instagramHandle} en Instagram
+            </a>
             <Link
               href="/libro-de-reclamaciones"
               aria-label="Libro de Reclamaciones — registra tu queja o reclamo"
