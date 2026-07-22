@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 
-import { resend } from '@/lib/resend';
+import { emailProvider } from '@/lib/email';
 
 import {
   businessNotificationEmail,
@@ -23,31 +23,26 @@ export async function sendComplaintEmails(
   const consumer = consumerCopyEmail(data);
   const business = businessNotificationEmail(data, complaintId);
 
-  try {
-    const { error } = await resend.batch.send([
-      {
-        from,
-        to: [data.consumerEmail],
-        subject: consumer.subject,
-        html: consumer.html,
-        headers: { 'X-Entity-Ref-ID': randomUUID() },
-      },
-      {
-        from,
-        to: [businessInbox],
-        subject: business.subject,
-        html: business.html,
-        headers: { 'X-Entity-Ref-ID': randomUUID() },
-      },
-    ]);
+  const result = await emailProvider.sendBatch([
+    {
+      from,
+      to: [data.consumerEmail],
+      subject: consumer.subject,
+      html: consumer.html,
+      headers: { 'X-Entity-Ref-ID': randomUUID() },
+    },
+    {
+      from,
+      to: [businessInbox],
+      subject: business.subject,
+      html: business.html,
+      headers: { 'X-Entity-Ref-ID': randomUUID() },
+    },
+  ]);
 
-    if (error) {
-      console.error('[complaints] Resend error:', error);
-      return false;
-    }
-    return true;
-  } catch (err) {
-    console.error('[complaints] Resend threw:', err);
+  if (!result.ok) {
+    console.error('[complaints] Email provider error:', result.error);
     return false;
   }
+  return true;
 }
