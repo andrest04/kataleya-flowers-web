@@ -44,14 +44,19 @@ export default function Navbar() {
 
   return (
     <>
-      <div className="sticky top-0 z-[90] [overflow-anchor:none]">
-        <AnnouncementBar isHidden={isHeaderHidden} />
+      <div className="sticky top-0 z-[90] h-26 pointer-events-none [overflow-anchor:none]">
+        <div
+          className={`h-26 transition-transform duration-300 ease-out motion-reduce:transition-none ${
+            isHeaderHidden ? "pointer-events-none -translate-y-full" : "pointer-events-auto translate-y-0"
+          }`}
+        >
+          <AnnouncementBar />
 
-        <header
-          className={`border-(--color-primary) bg-(--color-cream) transition-[height,box-shadow] duration-300 ease-out motion-reduce:transition-none ${
-            isSearchOpen || isCatalogMenuOpen ? "overflow-visible" : "overflow-hidden"
-          } ${isHeaderHidden ? "h-0" : "h-16 border-b"}`}
-          style={{
+          <header
+            className={`h-16 border-b border-(--color-primary) bg-(--color-cream) transition-[box-shadow] duration-300 ease-out motion-reduce:transition-none ${
+              isSearchOpen || isCatalogMenuOpen ? "overflow-visible" : "overflow-hidden"
+            }`}
+            style={{
             boxShadow: isScrolled
               ? "0 14px 36px color-mix(in srgb, var(--color-dark) 10%, transparent)"
               : "none",
@@ -137,6 +142,7 @@ export default function Navbar() {
           </nav>
         </header>
       </div>
+    </div>
 
       {(isSearchOpen || isCatalogMenuOpen) && (
         <div

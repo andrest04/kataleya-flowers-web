@@ -2,32 +2,65 @@
 
 import { useEffect, useRef, useState } from "react";
 
-export function useHeaderVisibility(threshold = 180): boolean {
+const DIRECTION_CHANGE_THRESHOLD = 12;
+
+export function useHeaderVisibility(threshold = 180, isLocked = false): boolean {
   const [isHidden, setIsHidden] = useState(false);
+  const lastDirection = useRef<"down" | "up" | null>(null);
   const lastScrollY = useRef(0);
+  const directionalDistance = useRef(0);
 
   useEffect(() => {
+    const showHeader = () => {
+      setIsHidden((wasHidden) => (wasHidden ? false : wasHidden));
+    };
+
+    const resetDirection = () => {
+      lastDirection.current = null;
+      directionalDistance.current = 0;
+    };
+
     lastScrollY.current = window.scrollY;
 
+    if (isLocked) {
+      showHeader();
+      resetDirection();
+      return;
+    }
+
     const handleScroll = () => {
-      const currentScrollY = window.scrollY;
+      const currentScrollY = Math.max(0, window.scrollY);
+      const scrollDelta = currentScrollY - lastScrollY.current;
+      lastScrollY.current = currentScrollY;
 
       if (currentScrollY <= threshold) {
-        setIsHidden(false);
-      } else if (currentScrollY > lastScrollY.current) {
-        setIsHidden(true);
-      } else if (currentScrollY < lastScrollY.current) {
-        setIsHidden(false);
+        showHeader();
+        resetDirection();
+        return;
       }
 
-      lastScrollY.current = currentScrollY;
+      if (scrollDelta === 0) return;
+
+      const direction = scrollDelta > 0 ? "down" : "up";
+
+      if (lastDirection.current !== direction) {
+        lastDirection.current = direction;
+        directionalDistance.current = 0;
+      }
+
+      directionalDistance.current += Math.abs(scrollDelta);
+
+      if (directionalDistance.current < DIRECTION_CHANGE_THRESHOLD) return;
+
+      setIsHidden((wasHidden) => (wasHidden === (direction === "down") ? wasHidden : direction === "down"));
+      directionalDistance.current = 0;
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
-  }, [threshold]);
+  }, [isLocked, threshold]);
 
   return isHidden;
 }

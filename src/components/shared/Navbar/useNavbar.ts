@@ -14,10 +14,13 @@ import { useScrollBehavior } from "./useScrollBehavior";
 export function useNavbar() {
   const router = useRouter();
   const isScrolled = useScrollBehavior();
-  const isHeaderHidden = useHeaderVisibility();
   const drawer = useMobileDrawer();
   const search = useDesktopSearch();
   const catalogMenu = useCatalogMenu();
+  const isHeaderHidden = useHeaderVisibility(
+    180,
+    search.isSearchOpen || catalogMenu.isCatalogMenuOpen,
+  );
 
   const handleNavigate = useAnchorNavigation({
     isDrawerOpen: drawer.isOpen,
