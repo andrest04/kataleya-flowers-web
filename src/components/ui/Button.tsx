@@ -42,17 +42,19 @@ const variantMap: Record<ButtonVariant, ShadcnVariant> = {
 };
 
 const variantClasses: Record<ButtonVariant, string> = {
-  primary: 'rounded-full font-semibold hover:opacity-90',
+  primary:
+    'rounded-sm font-bold uppercase tracking-[0.08em] bg-(--color-white) text-(--color-dark) shadow-md transition-colors duration-500 hover:!bg-(--color-primary) hover:!text-(--color-white)',
   secondary: 'rounded-full font-semibold border-primary text-primary bg-transparent hover:opacity-80',
   ghost: 'rounded-lg font-medium',
   destructive: 'rounded-lg font-medium',
-  whatsapp: 'rounded-full font-semibold bg-whatsapp text-primary-foreground hover:opacity-90',
+  whatsapp:
+    'rounded-sm font-bold uppercase tracking-[0.08em] bg-(--color-white) text-(--color-dark) shadow-md transition-colors duration-500 hover:!bg-(--color-primary) hover:!text-(--color-white)',
 };
 
 const sizeClasses: Record<ButtonSize, string> = {
-  sm: 'h-auto px-3 py-1.5 text-xs',
-  md: 'h-auto px-5 py-2.5 text-sm',
-  lg: 'h-auto px-7 py-3 text-sm tracking-[0.08em] uppercase',
+  sm: 'h-10 px-3 text-xs',
+  md: 'h-12 px-5 text-sm',
+  lg: 'h-14 px-7 text-sm tracking-[0.08em] uppercase',
 };
 
 export default function Button(props: ButtonProps) {

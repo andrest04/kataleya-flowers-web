@@ -8,6 +8,7 @@ const BANNERS = [
     heading: 'Entrega el mismo día en Lima',
     description:
       'Pedidos confirmados a tiempo llegan el mismo día, directo a la puerta de quien más quieres.',
+    contentPosition: 'top' as const,
     cta: {
       label: 'Pedir por WhatsApp',
       href: BUSINESS.whatsappWithMessage(BUSINESS.messages.whatsappDefault),
@@ -20,6 +21,7 @@ const BANNERS = [
     heading: 'Arreglos para toda ocasión',
     description:
       'Cumpleaños, aniversarios, condolencias — flores frescas diseñadas para cada momento.',
+    contentPosition: 'bottom' as const,
     cta: {
       label: 'Ver catálogo',
       href: '/catalogo',
@@ -30,8 +32,8 @@ const BANNERS = [
 
 export default function PromoBanners() {
   return (
-    <section className="px-4 py-16 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl">
+    <section className="px-4 py-12 sm:px-8 lg:px-12">
+      <div className="mx-auto max-w-[110rem]">
         <div className="grid gap-4 sm:grid-cols-2 sm:gap-6">
           {BANNERS.map((banner) => (
             <PromoBannerCard key={banner.heading} {...banner} />

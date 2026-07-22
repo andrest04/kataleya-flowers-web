@@ -16,9 +16,9 @@ export default function CatalogSection({ categories }: CatalogSectionProps) {
   }
 
   return (
-    <section id="catalogo" className="scroll-mt-20 py-16 sm:py-20">
+    <section id="catalogo" className="scroll-mt-20 py-12 sm:py-16">
       <div className="mx-auto max-w-[110rem] overflow-hidden px-4 sm:px-6 lg:px-8">
-        <h2 className="font-heading text-3xl leading-tight text-(--color-dark) sm:text-4xl lg:text-5xl">
+        <h2 className="font-heading text-3xl leading-tight text-(--color-primary) sm:text-4xl lg:text-5xl">
           Flores y regalos para cada ocasión
         </h2>
 

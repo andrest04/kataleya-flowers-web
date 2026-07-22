@@ -19,7 +19,7 @@ export default async function BestSellersSection({ categories }: BestSellersSect
   const tabCategories = categories.filter((category) => featuredCategoryIds.has(category.id));
 
   return (
-    <section className="py-16 sm:py-20">
+    <section className="py-12 sm:py-16">
       <div className="mx-auto max-w-[110rem] px-4 sm:px-6 lg:px-8">
         <h2 className="font-heading text-4xl leading-tight text-(--color-primary) sm:text-5xl lg:text-6xl">
           Más vendidos

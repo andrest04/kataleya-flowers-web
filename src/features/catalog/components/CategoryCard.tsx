@@ -24,7 +24,7 @@ export default function CategoryCard({ category }: CategoryCardProps) {
           src={category.imageUrl || '/catalog-placeholder.svg'}
           alt={category.name}
           fill
-          className="object-cover transition-transform duration-300 group-hover:scale-105"
+          className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
           sizes="(max-width: 640px) 50vw, 33vw"
         />
       </div>

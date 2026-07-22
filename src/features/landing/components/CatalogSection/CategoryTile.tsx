@@ -24,7 +24,7 @@ export default function CategoryTile({ category, layoutClasses }: CategoryTilePr
             alt={category.name}
             fill
             sizes={SIZES}
-            className="object-cover motion-safe:transition-transform motion-safe:duration-700 motion-safe:ease-out motion-safe:group-hover:scale-[1.06]"
+            className="object-cover motion-safe:transition-transform motion-safe:duration-700 motion-safe:ease-out motion-safe:group-hover:scale-[1.03]"
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">

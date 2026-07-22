@@ -1,4 +1,3 @@
-import SectionHeader from "@/components/ui/SectionHeader";
 import { BUSINESS } from "@/lib/constants";
 
 import TestimonialsGallery from "./TestimonialsGallery";
@@ -83,15 +82,13 @@ export default function TestimonialsSection() {
   return (
     <section
       id="testimonios"
-      className="scroll-mt-20 pt-8 pb-24"
+      className="scroll-mt-20 pt-8 pb-16"
       style={{ backgroundColor: "var(--color-cream)" }}
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <SectionHeader
-          subtitle="Momentos especiales"
-          title="Clientas felices"
-          description={`Historias de quienes eligieron flores para celebrar en ${BUSINESS.location}`}
-        />
+        <h2 className="font-heading text-3xl text-(--color-primary) sm:text-4xl">
+          {`Clientas felices eligiendo flores para celebrar en ${BUSINESS.location}`}
+        </h2>
       </div>
 
       <TestimonialsGallery testimonials={testimonials} />

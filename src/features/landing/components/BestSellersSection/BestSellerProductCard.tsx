@@ -26,7 +26,7 @@ export default function BestSellerProductCard({
           src={product.imageUrl}
           alt={product.name}
           fill
-          className="object-cover transition-transform duration-500 group-hover:scale-105"
+          className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
           sizes="(max-width: 640px) 80vw, (max-width: 1024px) 23rem, 25rem"
         />
       </div>
