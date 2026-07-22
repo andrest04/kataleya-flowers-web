@@ -1,7 +1,7 @@
-import Image from "next/image";
-
 import SectionHeader from "@/components/ui/SectionHeader";
 import { BUSINESS } from "@/lib/constants";
+
+import TestimonialsGallery from "./TestimonialsGallery";
 
 const photos = [
   {
@@ -48,6 +48,37 @@ const photos = [
   },
 ];
 
+const testimonials = [
+  {
+    id: "t-001",
+    name: "Mariana R.",
+    detail: "Compra verificada · Cumpleaños",
+    quote: "El arreglo llegó precioso y justo a tiempo para hacer el día todavía más especial.",
+    photos: [photos[0], photos[1], photos[2]],
+  },
+  {
+    id: "t-002",
+    name: "Lucía M.",
+    detail: "Compra verificada · Aniversario",
+    quote: "Me ayudaron a elegir flores que se sintieran personales. La presentación fue hermosa.",
+    photos: [photos[3], photos[4], photos[5]],
+  },
+  {
+    id: "t-003",
+    name: "Valeria C.",
+    detail: "Compra verificada · Sorpresa",
+    quote: "Todo fue muy sencillo desde el pedido hasta la entrega. Volvería a elegirlas sin dudar.",
+    photos: [photos[6], photos[0], photos[4]],
+  },
+  {
+    id: "t-004",
+    name: "Sofía P.",
+    detail: "Compra verificada · Agradecimiento",
+    quote: "Las flores tenían una combinación delicada y fresca. Fue un regalo que encantó.",
+    photos: [photos[5], photos[2], photos[3]],
+  },
+];
+
 export default function TestimonialsSection() {
   return (
     <section
@@ -55,33 +86,15 @@ export default function TestimonialsSection() {
       className="scroll-mt-20 pt-8 pb-24"
       style={{ backgroundColor: "var(--color-cream)" }}
     >
-      <div className="mx-auto max-w-7xl space-y-10 px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <SectionHeader
           subtitle="Momentos especiales"
           title="Clientas felices"
-          description={`Más de ${BUSINESS.experience} años creando momentos especiales en ${BUSINESS.location}`}
+          description={`Historias de quienes eligieron flores para celebrar en ${BUSINESS.location}`}
         />
       </div>
 
-      <div className="mx-auto mt-12 max-w-4xl overflow-hidden px-4 sm:px-6 md:overflow-visible lg:px-8">
-        <div className="scrollbar-hide flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4 md:flex-wrap md:justify-center md:gap-6 md:overflow-visible md:pb-0">
-          {photos.map((photo) => (
-            <div
-              key={photo.id}
-              className="relative h-[220px] w-[160px] shrink-0 snap-center overflow-hidden rounded-sm border-4 border-white shadow-xl transition-transform duration-300 hover:scale-105 hover:shadow-2xl md:h-[280px] md:w-[200px]"
-              style={{ transform: `rotate(${photo.rotation}deg)` }}
-            >
-              <Image
-                src={photo.src}
-                alt={photo.alt}
-                fill
-                sizes="(min-width: 768px) 200px, 160px"
-                className="object-cover"
-              />
-            </div>
-          ))}
-        </div>
-      </div>
+      <TestimonialsGallery testimonials={testimonials} />
     </section>
   );
 }
