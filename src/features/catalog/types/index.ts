@@ -35,4 +35,5 @@ export interface Product {
   note?: string; // e.g. "Incluye peluche"
   colors?: string[];
   flowerTypes?: string[];
+  isFeatured?: boolean;
 }

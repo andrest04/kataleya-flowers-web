@@ -51,6 +51,7 @@ export function mapProductRow(row: JoinedProductRow): Product {
     note: row.note ?? undefined,
     colors,
     flowerTypes,
+    isFeatured: row.is_featured,
     priceTable: row.price_variants
       ? (row.price_variants as unknown as PriceVariant[])
       : undefined,
