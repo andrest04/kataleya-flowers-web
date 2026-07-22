@@ -18,7 +18,7 @@ export async function searchProducts(query: string): Promise<SearchResult[]> {
   return rows
     .filter((row) => row.name.toLowerCase().includes(needle))
     .sort((a, b) => a.display_order - b.display_order)
-    .slice(0, 6)
+    .slice(0, 12)
     .map((row) => {
       const category = categoryById.get(row.category_id);
       return {

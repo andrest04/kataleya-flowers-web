@@ -1,33 +1,19 @@
 "use client";
 
 import { ShoppingBag } from "lucide-react";
-import type { FormEvent, RefObject } from "react";
 
 import { BUSINESS } from "@/lib/constants";
 
-import type { SearchResult } from "./constants";
 import DesktopSearch from "./DesktopSearch";
 
 interface DesktopActionsProps {
-  searchQuery: string;
-  setSearchQuery: (q: string) => void;
-  handleSearchSubmit: (e: FormEvent) => void;
-  searchResults: SearchResult[];
-  handleResultClick: (categorySlug: string, productSlug: string) => void;
   handleNavigate: (href: string) => void;
-  desktopSearchRef: RefObject<HTMLDivElement | null>;
-  clearSearch: () => void;
+  openSearch: () => void;
 }
 
 export default function DesktopActions({
-  searchQuery,
-  setSearchQuery,
-  handleSearchSubmit,
-  searchResults,
-  handleResultClick,
   handleNavigate,
-  desktopSearchRef,
-  clearSearch,
+  openSearch,
 }: DesktopActionsProps) {
   return (
     <div className="hidden items-center justify-end gap-6 md:flex">
@@ -40,15 +26,7 @@ export default function DesktopActions({
         Hacer pedido
       </button>
 
-      <DesktopSearch
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        handleSearchSubmit={handleSearchSubmit}
-        searchResults={searchResults}
-        handleResultClick={handleResultClick}
-        desktopSearchRef={desktopSearchRef}
-        clearSearch={clearSearch}
-      />
+      <DesktopSearch onOpen={openSearch} />
 
       <button
         type="button"
