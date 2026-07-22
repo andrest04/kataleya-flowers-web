@@ -38,13 +38,13 @@ export default function HeroButtons({
   // (ghost), claramente subordinado al primario sólido. En claro, contorno verde.
   const secondaryStyle = onDark
     ? {
-        borderColor: "color-mix(in srgb, var(--color-cream) 38%, transparent)",
+        borderColor: "color-mix(in srgb, var(--color-cream) 30%, transparent)",
         color: "var(--color-cream)",
       }
     : { borderColor: "var(--color-accent)", color: "var(--color-accent)" };
 
   return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
       {isPrimaryContact ? (
         <>
           <Button
@@ -58,9 +58,9 @@ export default function HeroButtons({
           </Button>
           <Button
             variant="secondary"
-            size="lg"
+            size="md"
             href="/catalogo"
-            className="w-full text-center sm:w-auto"
+            className="w-full text-center font-medium sm:w-auto"
             style={secondaryStyle}
           >
             Explorar Catálogo
@@ -73,9 +73,9 @@ export default function HeroButtons({
           </Button>
           <Button
             variant="secondary"
-            size="lg"
+            size="md"
             onClick={() => handleScroll("#contacto")}
-            className="w-full text-center sm:w-auto"
+            className="w-full text-center font-medium sm:w-auto"
             style={secondaryStyle}
           >
             Contáctanos
