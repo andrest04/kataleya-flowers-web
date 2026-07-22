@@ -5,6 +5,7 @@ import type { FormEvent } from "react";
 import { useCallback } from "react";
 
 import { useAnchorNavigation } from "./useAnchorNavigation";
+import { useCatalogMenu } from "./useCatalogMenu";
 import { useDesktopSearch } from "./useDesktopSearch";
 import { useHeaderVisibility } from "./useHeaderVisibility";
 import { useMobileDrawer } from "./useMobileDrawer";
@@ -16,6 +17,7 @@ export function useNavbar() {
   const isHeaderHidden = useHeaderVisibility();
   const drawer = useMobileDrawer();
   const search = useDesktopSearch();
+  const catalogMenu = useCatalogMenu();
 
   const handleNavigate = useAnchorNavigation({
     isDrawerOpen: drawer.isOpen,
@@ -23,14 +25,26 @@ export function useNavbar() {
   });
 
   const closeAll = useCallback(() => {
-    search.clearSearch();
+    search.closeSearch();
+    catalogMenu.closeCatalogMenu();
     drawer.close();
-  }, [search, drawer]);
+  }, [search, catalogMenu, drawer]);
 
   const openDrawer = useCallback(() => {
-    search.clearSearch();
+    search.closeSearch();
+    catalogMenu.closeCatalogMenu();
     drawer.open();
-  }, [search, drawer]);
+  }, [search, catalogMenu, drawer]);
+
+  const openCatalogMenu = useCallback(() => {
+    search.closeSearch();
+    catalogMenu.openCatalogMenu();
+  }, [search, catalogMenu]);
+
+  const openSearch = useCallback(() => {
+    catalogMenu.closeCatalogMenu();
+    search.openSearch();
+  }, [search, catalogMenu]);
 
   const handleSearchSubmit = useCallback(
     (e: FormEvent) => {
@@ -60,11 +74,23 @@ export function useNavbar() {
     isScrolled,
     isHeaderHidden,
 
+    isSearchOpen: search.isSearchOpen,
+    openSearch,
+    closeSearch: search.closeSearch,
     searchQuery: search.searchQuery,
     setSearchQuery: search.setSearchQuery,
     searchResults: search.searchResults,
+    suggestions: search.suggestions,
     desktopSearchRef: search.desktopSearchRef,
     clearSearch: search.clearSearch,
+
+    isCatalogMenuOpen: catalogMenu.isCatalogMenuOpen,
+    catalogMenuCategories: catalogMenu.categories,
+    catalogMenuRef: catalogMenu.catalogMenuRef,
+    openCatalogMenu,
+    scheduleCloseCatalogMenu: catalogMenu.scheduleCloseCatalogMenu,
+    cancelCloseCatalogMenu: catalogMenu.cancelCloseCatalogMenu,
+    closeCatalogMenu: catalogMenu.closeCatalogMenu,
 
     handleNavigate,
     handleSearchSubmit,
