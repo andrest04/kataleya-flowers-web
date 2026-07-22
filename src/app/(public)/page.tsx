@@ -1,12 +1,10 @@
 import { getCategories } from "@/features/catalog/queries/getCategories";
-import AboutSection from "@/features/landing/components/AboutSection";
 import BestSellersSection from "@/features/landing/components/BestSellersSection";
 import CatalogSection from "@/features/landing/components/CatalogSection";
 import DiscoverMoreSection from "@/features/landing/components/DiscoverMoreSection";
 import HeroSection from "@/features/landing/components/HeroSection";
 import PromoBanners from "@/features/landing/components/PromoBanners";
 import TestimonialsSection from "@/features/landing/components/TestimonialsSection";
-import TrustBar from "@/features/landing/components/TrustBar";
 
 export default async function Home() {
   const categories = await getCategories();
@@ -15,11 +13,9 @@ export default async function Home() {
     <main id="main-content">
       <HeroSection />
       <CatalogSection categories={categories} />
-      <TrustBar />
       <TestimonialsSection />
       <PromoBanners />
       <BestSellersSection categories={categories} />
-      <AboutSection />
       <DiscoverMoreSection />
     </main>
   );

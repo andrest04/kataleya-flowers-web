@@ -32,9 +32,9 @@ const ITEMS = [
 
 export default function DiscoverMoreSection() {
   return (
-    <section className="px-4 py-16 sm:px-6 lg:px-8">
+    <section id="nosotros" className="scroll-mt-20 px-4 py-12 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl space-y-10">
-        <SectionHeader align="left" subtitle="Más sobre nosotros" title="Descubre Kataleya" />
+        <SectionHeader align="left" title="Descubre Kataleya" />
         <div className="grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-3 sm:gap-6">
           {ITEMS.map((item) => (
             <EditorialTile key={item.title} {...item} />

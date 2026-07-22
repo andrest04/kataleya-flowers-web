@@ -1,5 +1,5 @@
 interface SectionHeaderProps {
-  subtitle: string;
+  subtitle?: string;
   title: string;
   description?: string;
   align?: 'center' | 'left';
@@ -17,9 +17,11 @@ export default function SectionHeader({
 
   return (
     <div className={`space-y-4 ${textAlign}`}>
-      <p className="text-sm font-semibold tracking-[0.2em] uppercase text-accent">
-        {subtitle}
-      </p>
+      {subtitle && (
+        <p className="text-sm font-semibold tracking-[0.2em] uppercase text-accent">
+          {subtitle}
+        </p>
+      )}
       <div className="space-y-3">
         <Heading className="text-4xl sm:text-5xl font-heading text-primary">
           {title}
