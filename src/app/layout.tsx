@@ -61,7 +61,7 @@ const baseDescription = `Floristería en ${BUSINESS.location} con ${BUSINESS.exp
 export const metadata: Metadata = {
   metadataBase: new URL(BUSINESS.website),
   title: {
-    default: `${BUSINESS.name} — Floristería en ${BUSINESS.location}`,
+    default: `${BUSINESS.name} | Floristería en ${BUSINESS.location}`,
     template: `%s | ${BUSINESS.name}`,
   },
   description: baseDescription,
