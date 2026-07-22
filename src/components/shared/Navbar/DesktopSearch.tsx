@@ -1,8 +1,9 @@
 "use client";
 
-import { ChevronRight, Search } from "lucide-react";
+import { ChevronRight, Search, X } from "lucide-react";
 import Link from "next/link";
 import type { FormEvent, RefObject } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import SearchResultItem from "@/components/shared/SearchResultItem";
 
@@ -14,9 +15,6 @@ interface DesktopSearchProps {
   handleSearchSubmit: (e: FormEvent) => void;
   searchResults: SearchResult[];
   handleResultClick: (categorySlug: string, productSlug: string) => void;
-  isScrolled: boolean;
-  /** True sobre el hero oscuro: search translúcido con texto crema. */
-  overHero: boolean;
   desktopSearchRef: RefObject<HTMLDivElement | null>;
   clearSearch: () => void;
 }
@@ -27,58 +25,82 @@ export default function DesktopSearch({
   handleSearchSubmit,
   searchResults,
   handleResultClick,
-  isScrolled,
-  overHero,
   desktopSearchRef,
   clearSearch,
 }: DesktopSearchProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
   const trimmedQuery = searchQuery.trim();
   const isExpanded = searchResults.length > 0;
+
+  const handleClose = useCallback(() => {
+    setIsOpen(false);
+    clearSearch();
+  }, [clearSearch]);
+
+  useEffect(() => {
+    if (isOpen) inputRef.current?.focus();
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        desktopSearchRef.current &&
+        !desktopSearchRef.current.contains(e.target as Node)
+      ) {
+        handleClose();
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen, desktopSearchRef, handleClose]);
+
+  if (!isOpen) {
+    return (
+      <button
+        type="button"
+        onClick={() => setIsOpen(true)}
+        className="flex h-11 w-11 cursor-pointer items-center justify-center text-(--color-dark) transition-colors duration-200 hover:text-(--color-primary)"
+        aria-label="Buscar"
+      >
+        <Search className="h-5 w-5" aria-hidden="true" strokeWidth={2} />
+      </button>
+    );
+  }
 
   return (
     <div ref={desktopSearchRef} className="relative">
       <form
         onSubmit={handleSearchSubmit}
         role="search"
-        className="flex items-center gap-2 rounded-full px-4 py-2 transition-all duration-300"
-        style={{
-          backgroundColor: overHero
-            ? "color-mix(in srgb, var(--color-cream) 12%, transparent)"
-            : isScrolled
-              ? "var(--color-surface)"
-              : "color-mix(in srgb, var(--color-cream) 80%, transparent)",
-          border: overHero
-            ? "1px solid color-mix(in srgb, var(--color-cream) 35%, transparent)"
-            : "1px solid var(--color-border)",
-        }}
+        className="flex items-center gap-2 rounded-full border border-(--color-border) bg-(--color-surface) px-4 py-2 transition-colors duration-300"
       >
         <input
+          ref={inputRef}
           type="search"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Buscar flores..."
-          className={`w-32 bg-transparent font-body text-sm outline-none lg:w-48 ${
-            overHero
-              ? "text-(--color-cream) placeholder:text-(--color-cream)/70"
-              : "text-(--color-dark)"
-          }`}
+          className="w-32 bg-transparent font-body text-sm text-(--color-dark) outline-none lg:w-48"
           aria-label="Buscar productos"
-          // ARIA combobox pattern: input controla un listbox externo.
           role="combobox"
           aria-autocomplete="list"
           aria-expanded={isExpanded}
           aria-controls="search-dropdown"
         />
         <button
-          type="submit"
-          className={`shrink-0 cursor-pointer ${overHero ? "text-(--color-cream)" : "text-(--color-muted)"}`}
-          aria-label="Buscar"
+          type="button"
+          onClick={handleClose}
+          className="shrink-0 cursor-pointer text-(--color-muted)"
+          aria-label="Cerrar búsqueda"
         >
-          <Search className="h-4 w-4" aria-hidden="true" strokeWidth={2} />
+          <X className="h-4 w-4" aria-hidden="true" strokeWidth={2} />
         </button>
       </form>
 
-      {/* Anuncia la cantidad de resultados a screen readers. */}
       <p className="sr-only" aria-live="polite" aria-atomic="true">
         {trimmedQuery.length === 0
           ? ""
@@ -89,7 +111,6 @@ export default function DesktopSearch({
               }`}
       </p>
 
-      {/* Dropdown de autocomplete — desktop */}
       {isExpanded && (
         <ul
           id="search-dropdown"

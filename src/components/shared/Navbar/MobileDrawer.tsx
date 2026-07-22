@@ -53,18 +53,15 @@ export default function MobileDrawer({
         className="z-[95] flex w-72 flex-col overflow-y-auto p-0"
         aria-label="Menú de navegación"
       >
-        {/* Header */}
         <div className="flex items-center justify-between border-b border-border px-6 py-5">
           <SheetTitle className="text-lg text-primary font-heading">
             {BUSINESS.name}
           </SheetTitle>
-          {/* SheetDescription requerido por Radix para a11y. Oculto visualmente. */}
           <SheetDescription className="sr-only">
             Navegación principal, búsqueda de productos y enlace para hacer pedido por WhatsApp.
           </SheetDescription>
         </div>
 
-        {/* Search bar */}
         <div className="px-6 pt-6 pb-2">
           <form
             onSubmit={handleSearchSubmit}
@@ -89,7 +86,6 @@ export default function MobileDrawer({
             />
           </form>
 
-          {/* Anuncia la cantidad de resultados a screen readers. */}
           <p className="sr-only" aria-live="polite" aria-atomic="true">
             {searchQuery.trim().length === 0
               ? ""
@@ -100,7 +96,6 @@ export default function MobileDrawer({
                   }`}
           </p>
 
-          {/* Search results */}
           {searchResults.length > 0 && (
             <ul
               id="mobile-search-listbox"
@@ -146,12 +141,10 @@ export default function MobileDrawer({
           )}
         </div>
 
-        {/* Navigation links */}
         <nav
           aria-label="Menú lateral"
           className="flex flex-1 flex-col px-6 py-6"
         >
-          {/* Primary links — hidden on desktop since they appear in the navbar */}
           <div className="flex flex-col md:hidden">
             {primaryLinks.map((link) =>
               link.isRoute ? (
@@ -159,7 +152,7 @@ export default function MobileDrawer({
                   key={link.href}
                   href={link.href}
                   onClick={onClose}
-                  className="py-3 font-heading text-2xl text-primary transition-colors duration-200 hover:text-accent"
+                  className="py-3 font-heading text-2xl text-primary visited:text-primary transition-colors duration-200 hover:text-accent"
                 >
                   {link.label}
                 </Link>
@@ -177,7 +170,6 @@ export default function MobileDrawer({
             <div className="my-2 border-t border-border" />
           </div>
 
-          {/* Secondary links — always visible in drawer */}
           {secondaryLinks.map((link) => (
             <button
               key={link.href}
@@ -190,7 +182,6 @@ export default function MobileDrawer({
           ))}
         </nav>
 
-        {/* CTA at bottom */}
         <div className="px-6 pb-8">
           <button
             type="button"

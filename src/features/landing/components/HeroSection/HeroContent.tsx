@@ -7,31 +7,28 @@ interface HeroContentProps {
   readonly campaignMode: CampaignMode;
 }
 
-/**
- * Texto principal del Hero, superpuesto sobre la foto full-bleed.
- * Server Component: el H1 es estático y aporta SEO/LCP sin hidratar JS.
- * `pointer-events-none` deja pasar los clics al carousel de fondo (flechas,
- * dots, swipe); sólo los CTAs reactivan los eventos de puntero.
- */
 export default function HeroContent({ campaignMode }: HeroContentProps) {
   return (
-    <div className="pointer-events-none relative mx-auto flex w-full max-w-7xl flex-1 flex-col justify-end px-4 pt-28 pb-24 sm:px-6 sm:pt-32 sm:pb-16 lg:px-8 lg:pb-20">
-      <div className="max-w-2xl space-y-5">
-        {/* Cream over variable hero scrims: gold #e8b84b fails AA on the peonias
-            slide at 390px. Cream is consistently safe on verified dark scrims. */}
-        <p className="text-sm font-semibold tracking-[0.18em] text-(--color-cream) uppercase opacity-90">
-          Florería premium en {BUSINESS.location}
-        </p>
-        <h1 className="font-heading text-4xl leading-[1.05] text-balance text-(--color-cream) sm:text-5xl lg:text-6xl">
-          Flores que emocionan
-        </h1>
-        <p className="max-w-xl text-lg leading-8 text-(--color-cream)">
-          Arreglos diseñados con flores frescas del más alto calibre. Más de{" "}
-          {BUSINESS.experience} años creando momentos inolvidables en{" "}
-          {BUSINESS.location}.
-        </p>
-        <div className="pointer-events-auto pt-2">
-          <HeroButtons campaignMode={campaignMode} onDark />
+    <div className="pointer-events-none absolute inset-0 flex items-end pb-10 sm:items-center sm:pb-0">
+      <div className="w-full px-4 sm:px-10 lg:px-40">
+        <div className="mx-auto max-w-xs space-y-3 text-center sm:mx-0 sm:max-w-md sm:space-y-5 sm:text-left">
+          <p className="flex items-center justify-center gap-3 font-heading text-base text-(--color-cream) italic sm:justify-start sm:text-lg">
+            <span
+              className="h-px w-6 bg-(--color-cream)/70 sm:w-8"
+              aria-hidden="true"
+            />
+            Florería premium en {BUSINESS.location}
+            <span
+              className="h-px w-6 bg-(--color-cream)/70 sm:w-8"
+              aria-hidden="true"
+            />
+          </p>
+          <h1 className="font-heading text-3xl leading-[1.05] text-balance text-(--color-cream) uppercase sm:text-5xl lg:text-6xl">
+            Flores que emocionan
+          </h1>
+          <div className="pointer-events-auto pt-2">
+            <HeroButtons campaignMode={campaignMode} />
+          </div>
         </div>
       </div>
     </div>

@@ -23,6 +23,8 @@ Pre-commit (manual, no hay hooks): `npm run lint:strict` + `npx tsc --noEmit`.
 
 ## Reglas vinculantes (ESLint-enforced — no las silencies, corregilas o pedí excepción)
 
+- **Nunca `eslint-disable`** (ni inline ni de archivo) — todo warning/error de ESLint se soluciona en la causa raíz, nunca se apaga.
+
 - **`next/image` siempre** — `<img>` nativo prohibido.
 - **Sin `any`** — usar `unknown` con narrowing.
 - **Promises:** toda promise await/then/catch; no pasar async a handlers `void`.
@@ -33,6 +35,7 @@ Pre-commit (manual, no hay hooks): `npm run lint:strict` + `npx tsc --noEmit`.
 - `react/jsx-key` en listas. `no-console` (warn — `warn`/`error` OK, `log` no). `simple-import-sort` (warn, será error).
 
 **Otras reglas no auto-enforced pero obligatorias:**
+- **Cero comentarios en código de producción** (`//`, `/* */`, JSDoc) — el código tiene que ser autoexplicativo por nombres. Excepción: tests (`tests/`, `*.spec.ts`) sí pueden tenerlos, y directivas funcionales (`eslint-disable`, `@ts-expect-error`) nunca se cuentan como comentario y no se borran.
 - **Componentes UI: una responsabilidad por componente.** Superar ~100 líneas es *trigger de revisión*, no infracción: detente y evalúa si sigue siendo UNA responsabilidad. Si lo es (markup denso, variantes del mismo concepto), se queda; si acumuló responsabilidades, dividir en carpeta con `index.tsx` orquestador (ej. `HeroSection/`). One component per file.
 - **No crear modales custom** — usar `LightboxDialog` / `ConfirmDialog`. **No SVG inline** para íconos comunes — usar `lucide-react`.
 - **No `@import url(...)` Google Fonts** en CSS (render-blocking) — usar `next/font/google`.
