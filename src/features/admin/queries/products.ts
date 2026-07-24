@@ -1,7 +1,10 @@
 import {
   type AdminProductAppwriteRow,
+  type AdminProductListPage,
+  type AdminProductListRow,
   findAdminProductById,
-  listAdminProducts,
+  listAdminProductCategoryCounts,
+  listAdminProductPage,
 } from '@/lib/appwrite/repositories/products';
 import type { ProductRow } from '@/lib/db/rows';
 
@@ -25,10 +28,43 @@ export type AdminProductRow = ProductRow & {
     | null;
 };
 
-export type { AdminProductAppwriteRow };
+export type { AdminProductAppwriteRow, AdminProductListPage, AdminProductListRow };
 
-export async function getAdminProducts(): Promise<AdminProductRow[]> {
-  return listAdminProducts() as unknown as AdminProductRow[];
+export const ADMIN_PRODUCT_PAGE_SIZE = 25;
+
+export interface AdminProductListParams {
+  page: number;
+  categoryId?: string;
+  search?: string;
+  status?: 'active' | 'inactive';
+  gallery?: 'at-most-one-image';
+  completeCategory?: boolean;
+}
+
+export async function getAdminProductCategoryCounts(
+  categoryIds: string[],
+  gallery?: 'at-most-one-image',
+): Promise<Record<string, number>> {
+  return listAdminProductCategoryCounts(categoryIds, gallery);
+}
+
+export async function getAdminProductList({
+  page,
+  categoryId,
+  search,
+  status,
+  gallery,
+  completeCategory,
+}: AdminProductListParams): Promise<AdminProductListPage> {
+  return listAdminProductPage({
+    page,
+    pageSize: ADMIN_PRODUCT_PAGE_SIZE,
+    categoryId,
+    search,
+    status,
+    gallery,
+    completeCategory,
+  });
 }
 
 export async function getAdminProductById(id: string): Promise<AdminProductRow | null> {

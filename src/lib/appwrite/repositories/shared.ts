@@ -15,6 +15,33 @@ export function getRepositoryContext(): {
   return { databases, databaseId };
 }
 
+/**
+ * Stages a group of legacy Documents API writes and commits them together.
+ * The installed Appwrite SDK supports `transactionId` on these operations.
+ */
+export async function withAppwriteTransaction<T>(
+  work: (transactionId: string) => Promise<T>,
+): Promise<T> {
+  const { databases } = getRepositoryContext();
+  const transaction = await databases.createTransaction({ ttl: 60 });
+
+  try {
+    const result = await work(transaction.$id);
+    await databases.updateTransaction({ transactionId: transaction.$id, commit: true });
+    return result;
+  } catch (error) {
+    try {
+      await databases.updateTransaction({ transactionId: transaction.$id, rollback: true });
+    } catch (rollbackError) {
+      console.error('[appwrite] failed to roll back transaction', {
+        transactionId: transaction.$id,
+        rollbackError: rollbackError instanceof Error ? rollbackError.message : rollbackError,
+      });
+    }
+    throw error;
+  }
+}
+
 export async function listAllDocuments<Doc extends Models.Document>(
   databases: ReturnType<typeof createAdminClient>['databases'],
   databaseId: string,

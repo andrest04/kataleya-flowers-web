@@ -18,6 +18,7 @@ interface CategoryRowProps {
   onDelete: (id: string, name: string) => void;
   onLocalToggleStatus: (id: string, isActive: boolean) => void;
   onLocalToggleFeatured: (id: string, isFeatured: boolean) => void;
+  productCount: number;
 }
 
 export default function CategoryRow({
@@ -28,6 +29,7 @@ export default function CategoryRow({
   onDelete,
   onLocalToggleStatus,
   onLocalToggleFeatured,
+  productCount,
 }: CategoryRowProps) {
   const { ref, handleRef, isDragging } = useSortable({
     id: category.id,
@@ -36,8 +38,9 @@ export default function CategoryRow({
   });
 
   return (
-    <div
+    <li
       ref={ref}
+      aria-roledescription="categoría reordenable"
       className="flex items-center gap-4 px-4 py-3 motion-safe:transition-colors"
       style={{
         background: isDragging ? 'var(--color-surface)' : 'var(--color-white)',
@@ -48,49 +51,57 @@ export default function CategoryRow({
       <button
         ref={handleRef}
         type="button"
-        className="flex items-center justify-center w-6 h-6 rounded flex-shrink-0 transition-colors hover:bg-(--color-surface) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary)"
+        className="flex h-6 w-6 shrink-0 items-center justify-center rounded transition-colors hover:bg-(--color-surface) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary)"
         style={{ color: 'var(--color-muted)', cursor: 'grab', touchAction: 'none' }}
         aria-label={`Arrastrar "${category.name}" para reordenar`}
+        aria-describedby="category-sort-instructions"
       >
         <GripVertical aria-hidden="true" className="size-4" />
       </button>
 
-      <span className="text-xs font-mono w-5 text-center flex-shrink-0" style={{ color: 'var(--color-muted)' }}>
+      <span className="w-5 shrink-0 text-center font-mono text-xs" style={{ color: 'var(--color-muted)' }}>
         {index + 1}
       </span>
 
       <CategoryRowImage category={category} />
 
-      <div className="flex-1 min-w-0">
-        <p className="font-medium text-sm truncate" style={{ color: 'var(--color-dark)' }}>{category.name}</p>
-        <p className="text-xs truncate" style={{ color: 'var(--color-muted)' }}>{category.slug}</p>
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-medium" style={{ color: 'var(--color-dark)' }}>{category.name}</p>
+        <p className="truncate text-xs" style={{ color: 'var(--color-muted)' }}>{category.slug}</p>
+        <p className="text-xs" style={{ color: 'var(--color-muted)' }}>
+          {productCount} producto{productCount !== 1 ? 's' : ''}
+        </p>
       </div>
 
-      <span className="text-sm hidden md:block w-28 flex-shrink-0 truncate" style={{ color: 'var(--color-dark)' }}>
+      <span className="hidden w-28 shrink-0 truncate text-sm md:block" style={{ color: 'var(--color-dark)' }}>
         {category.occasion ?? '—'}
       </span>
 
-      <div className="w-12 flex-shrink-0 flex justify-center">
+      <div className="flex w-12 shrink-0 justify-center">
         <CategoryToggleStatus id={category.id} name={category.name} isActive={category.is_active} onLocalChange={onLocalToggleStatus} />
       </div>
 
-      <div className="w-20 flex-shrink-0 flex justify-center">
+      <div className="flex w-20 shrink-0 justify-center">
         <CategoryToggleFeatured id={category.id} name={category.name} isFeatured={category.is_featured} onLocalChange={onLocalToggleFeatured} />
       </div>
 
-      {!hasChanges && (
-        <div className="flex items-center gap-2 flex-shrink-0 w-36 justify-end">
+      {!hasChanges ? (
+        <div className="flex shrink-0 items-center justify-end gap-2">
+          <Button variant="primary" size="sm" href={`/admin/categorias/${category.id}/productos`}>Gestionar productos</Button>
           <Button variant="ghost" size="sm" href={`/admin/categorias/${category.id}`}>Editar</Button>
           <Button
             variant="destructive"
             size="sm"
-            onClick={(e) => { e.stopPropagation(); onDelete(category.id, category.name); }}
+            onClick={(event) => {
+              event.stopPropagation();
+              onDelete(category.id, category.name);
+            }}
             disabled={deletingId === category.id}
           >
             {deletingId === category.id ? 'Eliminando…' : 'Eliminar'}
           </Button>
         </div>
-      )}
-    </div>
+      ) : null}
+    </li>
   );
 }

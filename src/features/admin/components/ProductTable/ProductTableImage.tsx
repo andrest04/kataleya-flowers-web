@@ -2,23 +2,16 @@
 
 import Image from 'next/image';
 
-import type { AdminProductRow } from '@/features/admin/queries/products';
+import type { AdminProductListRow } from '@/features/admin/queries/products';
 
 interface ProductTableImageProps {
-  product: AdminProductRow;
+  product: AdminProductListRow;
   sizeClass: string;
   sizes: string;
 }
 
 export default function ProductTableImage({ product, sizeClass, sizes }: ProductTableImageProps) {
-  const sortedImages = product.product_images
-    ? [...product.product_images].sort((a, b) => a.display_order - b.display_order)
-    : [];
-  const primaryUrl =
-    sortedImages.find((i) => i.is_primary)?.url ??
-    sortedImages[0]?.url ??
-    product.image_url ??
-    null;
+  const primaryUrl = product.image_url || null;
 
   return (
     <div

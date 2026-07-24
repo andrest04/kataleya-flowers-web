@@ -27,7 +27,12 @@ export function FormError({ message }: FormErrorProps) {
   if (!message) return null;
 
   return (
-    <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+    <div
+      role="alert"
+      aria-live="assertive"
+      aria-atomic="true"
+      className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+    >
       {message}
     </div>
   );

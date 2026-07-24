@@ -28,7 +28,7 @@ export default async function AdminLayout({
   return (
     <div className="flex min-h-screen" style={{ background: 'var(--color-cream)' }}>
       <AdminSidebar />
-      <main className="flex-1 p-8 overflow-auto">{children}</main>
+      <main className="flex-1 overflow-auto p-8 pb-24 md:pb-8">{children}</main>
     </div>
   );
 }

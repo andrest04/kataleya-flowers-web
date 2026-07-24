@@ -3,10 +3,24 @@ import { randomUUID } from 'node:crypto';
 import { ID, Query } from 'node-appwrite';
 
 import { APPWRITE_COLLECTIONS } from '@/lib/appwrite/config';
-import type { CategoryDoc, ProductDoc, ProductImageDoc } from '@/lib/appwrite/types';
+import type {
+  CategoryDoc,
+  ColorAssignmentDoc,
+  FlowerTypeAssignmentDoc,
+  ProductDoc,
+  ProductImageDoc,
+} from '@/lib/appwrite/types';
 
-import { deleteProductRelations } from './products';
-import { getRepositoryContext, listAllDocuments } from './shared';
+import {
+  deleteKnownProductRelations,
+  listAllDocumentsInTransaction,
+} from './products';
+import {
+  chunkIds,
+  getRepositoryContext,
+  listAllDocuments,
+  withAppwriteTransaction,
+} from './shared';
 
 const C = APPWRITE_COLLECTIONS;
 
@@ -177,31 +191,66 @@ export async function deleteCategoryCascadeAppwrite(
 ): Promise<string[]> {
   const { databases, databaseId } = getRepositoryContext();
 
-  const products = await listAllDocuments<ProductDoc>(databases, databaseId, C.products, [
-    Query.equal('category_id', [categoryId]),
-  ]);
+  return withAppwriteTransaction(async (transactionId) => {
+    const products = await listAllDocumentsInTransaction<ProductDoc>(
+      databases,
+      databaseId,
+      C.products,
+      transactionId,
+      [Query.equal('category_id', [categoryId])],
+    );
+    const relationIds = {
+      colorAssignmentIds: [] as string[],
+      flowerTypeAssignmentIds: [] as string[],
+      imageIds: [] as string[],
+    };
+    const imageUrls: string[] = [];
 
-  const perProductImageUrls = await Promise.all(
-    products.map(async (product) => {
-      const productImageDocs = await listAllDocuments<ProductImageDoc>(
-        databases,
-        databaseId,
-        C.productImages,
-        [Query.equal('product_id', [product.$id])],
-      );
+    for (const productIdChunk of chunkIds(products.map((product) => product.$id))) {
+      const [colorAssignments, flowerTypeAssignments, imageDocs] = await Promise.all([
+        listAllDocumentsInTransaction<ColorAssignmentDoc>(
+          databases,
+          databaseId,
+          C.colorAssignments,
+          transactionId,
+          [Query.equal('product_id', productIdChunk)],
+        ),
+        listAllDocumentsInTransaction<FlowerTypeAssignmentDoc>(
+          databases,
+          databaseId,
+          C.flowerTypeAssignments,
+          transactionId,
+          [Query.equal('product_id', productIdChunk)],
+        ),
+        listAllDocumentsInTransaction<ProductImageDoc>(
+          databases,
+          databaseId,
+          C.productImages,
+          transactionId,
+          [Query.equal('product_id', productIdChunk)],
+        ),
+      ]);
 
-      await deleteProductRelations(product.$id);
+      relationIds.colorAssignmentIds.push(...colorAssignments.map((assignment) => assignment.$id));
+      relationIds.flowerTypeAssignmentIds.push(...flowerTypeAssignments.map((assignment) => assignment.$id));
+      relationIds.imageIds.push(...imageDocs.map((image) => image.$id));
+      imageUrls.push(...imageDocs.map((image) => image.url));
+    }
 
-      await databases.deleteDocument({ databaseId, collectionId: C.products, documentId: product.$id });
-
-      return productImageDocs.map((img) => img.url);
-    }),
-  );
-  const imageUrls: string[] = perProductImageUrls.flat();
-
-  await databases.deleteDocument({ databaseId, collectionId: C.categories, documentId: categoryId });
-
-  return imageUrls;
+    await deleteKnownProductRelations(relationIds, transactionId);
+    await Promise.all(
+      products.map((product) =>
+        databases.deleteDocument({
+          databaseId,
+          collectionId: C.products,
+          documentId: product.$id,
+          transactionId,
+        }),
+      ),
+    );
+    await databases.deleteDocument({ databaseId, collectionId: C.categories, documentId: categoryId, transactionId });
+    return imageUrls;
+  });
 }
 
 export async function deleteCategoryReassignAppwrite(
@@ -210,26 +259,37 @@ export async function deleteCategoryReassignAppwrite(
 ): Promise<string | null> {
   const { databases, databaseId } = getRepositoryContext();
 
-  const products = await listAllDocuments<ProductDoc>(databases, databaseId, C.products, [
-    Query.equal('category_id', [categoryId]),
-    Query.select(['$id']),
-  ]);
-
-  await Promise.all(
-    products.map((p) =>
-      databases.updateDocument<ProductDoc>({
+  return withAppwriteTransaction(async (transactionId) => {
+    const [products, catDoc] = await Promise.all([
+      listAllDocumentsInTransaction<ProductDoc>(
+        databases,
         databaseId,
-        collectionId: C.products,
-        documentId: p.$id,
-        data: { category_id: reassignToId },
+        C.products,
+        transactionId,
+        [Query.equal('category_id', [categoryId]), Query.select(['$id'])],
+      ),
+      databases.getDocument<CategoryDoc>({
+        databaseId,
+        collectionId: C.categories,
+        documentId: categoryId,
+        transactionId,
       }),
-    ),
-  );
+    ]);
 
-  const catDoc = await findCategoryById(categoryId);
-  await databases.deleteDocument({ databaseId, collectionId: C.categories, documentId: categoryId });
-
-  return catDoc?.image_url ?? null;
+    await Promise.all(
+      products.map((product) =>
+        databases.updateDocument<ProductDoc>({
+          databaseId,
+          collectionId: C.products,
+          documentId: product.$id,
+          transactionId,
+          data: { category_id: reassignToId },
+        }),
+      ),
+    );
+    await databases.deleteDocument({ databaseId, collectionId: C.categories, documentId: categoryId, transactionId });
+    return catDoc.image_url;
+  });
 }
 
 export async function setCategoryActive(id: string, isActive: boolean): Promise<void> {
@@ -254,14 +314,17 @@ export async function setCategoryFeatured(id: string, isFeatured: boolean): Prom
 
 export async function reorderCategoryDocuments(orderedIds: string[]): Promise<void> {
   const { databases, databaseId } = getRepositoryContext();
-  await Promise.all(
-    orderedIds.map((id, index) =>
-      databases.updateDocument<CategoryDoc>({
-        databaseId,
-        collectionId: C.categories,
-        documentId: id,
-        data: { display_order: index + 1 },
-      }),
+  await withAppwriteTransaction((transactionId) =>
+    Promise.all(
+      orderedIds.map((id, index) =>
+        databases.updateDocument<CategoryDoc>({
+          databaseId,
+          collectionId: C.categories,
+          documentId: id,
+          transactionId,
+          data: { display_order: index + 1 },
+        }),
+      ),
     ),
   );
 }

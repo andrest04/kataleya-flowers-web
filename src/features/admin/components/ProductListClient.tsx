@@ -1,192 +1,89 @@
 'use client';
 
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useCallback, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
+import { useCallback } from 'react';
 
-import type { AdminProductRow } from '@/features/admin/queries/products';
-import type { AdminProductFilter } from '@/features/admin/utils/adminFilters';
-import type { CategoryRow } from '@/lib/db/rows';
+import type { AdminProductListPage, AdminProductListRow } from '@/features/admin/queries/products';
 
 import ProductTable from './ProductTable';
 
-interface ProductFilterMeta {
-  label: string;
-  description: string;
-  emptyMessage: string;
-}
-
 interface ProductListClientProps {
-  products: AdminProductRow[];
-  categories: CategoryRow[];
-  activeFilter: AdminProductFilter | null;
-  filterMeta: ProductFilterMeta | null;
-  clearFilterHref: string;
+  categoryId: string;
+  products: AdminProductListRow[];
+  pagination: AdminProductListPage;
+  reorderMode: boolean;
+  workspaceHref: string;
 }
 
 export default function ProductListClient({
+  categoryId,
   products,
-  categories,
-  activeFilter,
-  filterMeta,
-  clearFilterHref,
+  pagination,
+  reorderMode,
+  workspaceHref,
 }: ProductListClientProps) {
   const router = useRouter();
-  const searchParams = useSearchParams();
-
-  const activeCategorySlug = searchParams.get('categoria');
-  const activeCategory = useMemo(
-    () => categories.find((c) => c.slug === activeCategorySlug) ?? null,
-    [categories, activeCategorySlug],
-  );
-
-  const categoryCounts = useMemo(() => {
-    const counts = new Map<string, number>();
-    for (const product of products) {
-      counts.set(product.category_id, (counts.get(product.category_id) ?? 0) + 1);
-    }
-    return counts;
-  }, [products]);
-
-  const filteredProducts = useMemo(
-    () =>
-      activeCategory
-        ? products.filter((p) => p.category_id === activeCategory.id)
-        : products,
-    [products, activeCategory],
-  );
-
-  const handleCategoryChange = useCallback(
-    (slug: string | null) => {
-      const params = new URLSearchParams(searchParams.toString());
-      if (slug) {
-        params.set('categoria', slug);
-      } else {
-        params.delete('categoria');
-      }
-      const query = params.toString();
-      router.replace(query ? `?${query}` : '/admin/productos', { scroll: false });
-    },
-    [router, searchParams],
-  );
+  const totalPages = Math.max(1, Math.ceil(pagination.total / pagination.pageSize));
+  const buildHref = useCallback((page: number, reorder = false) => {
+    const params = new URLSearchParams();
+    if (page > 1) params.set('page', String(page));
+    if (reorder) params.set('orden', 'completo');
+    const query = params.toString();
+    return query ? `${workspaceHref}?${query}` : workspaceHref;
+  }, [workspaceHref]);
 
   return (
-    <>
-      <div
-        className="rounded-xl p-4 space-y-3"
-        style={{
-          background: 'var(--color-white)',
-          border: '1px solid var(--color-border)',
-        }}
-      >
-        <div>
-          <h2 className="text-sm font-semibold" style={{ color: 'var(--color-dark)' }}>
-            Categor&iacute;as
-          </h2>
-          <p className="text-sm mt-1" style={{ color: 'var(--color-muted)' }}>
-            Us&aacute; la categor&iacute;a como eje principal para ordenar el trabajo antes de aplicar filtros m&aacute;s finos.
-          </p>
-        </div>
-
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={() => handleCategoryChange(null)}
-            className="px-4 py-2 rounded-full text-sm font-medium transition-all"
-            style={
-              activeCategory === null
-                ? {
-                    background: 'var(--color-primary)',
-                    color: 'var(--color-white)',
-                  }
-                : {
-                    background: 'var(--color-white)',
-                    color: 'var(--color-dark)',
-                    border: '1px solid var(--color-border)',
-                  }
-            }
-          >
-            Todas ({products.length})
-          </button>
-
-          {categories.map((category) => {
-            const isActive = activeCategory?.id === category.id;
-            const count = categoryCounts.get(category.id) ?? 0;
-
-            return (
-              <button
-                key={category.id}
-                type="button"
-                onClick={() => handleCategoryChange(category.slug)}
-                className="px-4 py-2 rounded-full text-sm font-medium transition-all"
-                style={
-                  isActive
-                    ? {
-                        background: 'var(--color-primary)',
-                        color: 'var(--color-white)',
-                      }
-                    : {
-                        background: 'var(--color-white)',
-                        color: 'var(--color-dark)',
-                        border: '1px solid var(--color-border)',
-                      }
-                }
-              >
-                {category.name} ({count})
-              </button>
-            );
-          })}
-        </div>
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm" style={{ color: 'var(--color-muted)' }}>
+          {reorderMode
+            ? 'Estás reordenando la categoría completa; la paginación está desactivada.'
+            : 'Reordená todos los productos de esta categoría cuando necesites cambiar su orden.'}
+        </p>
+        <button
+          type="button"
+          onClick={() => router.push(buildHref(1, !reorderMode))}
+          className="rounded-lg px-4 py-2 text-sm font-semibold"
+          style={{ background: 'var(--color-primary)', color: 'var(--color-white)' }}
+        >
+          {reorderMode ? 'Volver al listado paginado' : 'Reordenar categoría completa'}
+        </button>
       </div>
 
-      {filterMeta ? (
-        <div
-          className="rounded-xl p-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between"
-          style={{
-            background: 'color-mix(in srgb, var(--color-secondary) 10%, var(--color-white))',
-            border: '1px solid color-mix(in srgb, var(--color-secondary) 24%, var(--color-border))',
-          }}
-        >
-          <div className="space-y-2">
-            <span
-              className="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium"
-              style={{
-                background: 'color-mix(in srgb, var(--color-secondary) 18%, var(--color-white))',
-                color: 'var(--color-dark)',
-                border: '1px solid var(--color-border)',
-              }}
-            >
-              Filtro activo: {filterMeta.label}
-            </span>
-            <p className="text-sm leading-6" style={{ color: 'var(--color-muted)' }}>
-              {filterMeta.description}
-            </p>
-            {activeCategory ? (
-              <p className="text-sm leading-6" style={{ color: 'var(--color-muted)' }}>
-                Adem&aacute;s, el listado est&aacute; acotado a la categor&iacute;a{' '}
-                <span style={{ color: 'var(--color-dark)' }}>{activeCategory.name}</span>.
-              </p>
-            ) : null}
-          </div>
-
-          <a
-            href={clearFilterHref}
-            className="text-sm font-medium underline underline-offset-4 transition-opacity hover:opacity-75"
-            style={{ color: 'var(--color-primary)' }}
-          >
-            Ver todos los productos
-          </a>
-        </div>
-      ) : null}
-
       <ProductTable
-        key={activeCategory?.id ?? 'all'}
-        products={filteredProducts}
-        categories={categories}
-        reorderable={activeCategory !== null}
-        activeFilter={activeFilter}
-        emptyMessage={filterMeta?.emptyMessage}
-        clearFilterHref={filterMeta ? clearFilterHref : undefined}
+        key={`${pagination.page}-${reorderMode}`}
+        products={products}
+        reorderable={reorderMode}
+        reorderCategoryId={categoryId}
       />
-    </>
+
+      {!reorderMode && pagination.total > 0 ? (
+        <nav aria-label="Paginación de productos" className="flex items-center justify-between gap-3">
+          <p className="text-sm" style={{ color: 'var(--color-muted)' }}>
+            Página {pagination.page} de {totalPages}
+          </p>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => router.push(buildHref(pagination.page - 1))}
+              disabled={pagination.page <= 1}
+              className="rounded-lg px-3 py-2 text-sm disabled:opacity-50"
+              style={{ border: '1px solid var(--color-border)' }}
+            >
+              Anterior
+            </button>
+            <button
+              type="button"
+              onClick={() => router.push(buildHref(pagination.page + 1))}
+              disabled={pagination.page >= totalPages}
+              className="rounded-lg px-3 py-2 text-sm disabled:opacity-50"
+              style={{ border: '1px solid var(--color-border)' }}
+            >
+              Siguiente
+            </button>
+          </div>
+        </nav>
+      ) : null}
+    </div>
   );
 }

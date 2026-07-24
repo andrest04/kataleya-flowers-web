@@ -25,6 +25,8 @@ interface ProductFormProps {
   flowerTypes: FlowerTypeOption[];
   productColors: ColorOption[];
   onSuccess?: () => void;
+  initialCategoryId?: string;
+  successHref?: string;
 }
 
 export default function ProductForm({
@@ -33,8 +35,10 @@ export default function ProductForm({
   flowerTypes,
   productColors,
   onSuccess,
+  initialCategoryId,
+  successHref,
 }: ProductFormProps) {
-  const f = useProductForm({ product, onSuccess });
+  const f = useProductForm({ product, onSuccess, initialCategoryId, successHref });
 
   return (
     <form

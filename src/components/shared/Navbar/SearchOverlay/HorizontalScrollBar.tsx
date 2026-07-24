@@ -5,6 +5,8 @@ import { useCallback, useEffect, useState } from "react";
 
 interface HorizontalScrollBarProps {
   scrollRef: RefObject<HTMLDivElement | null>;
+  size?: "default" | "large";
+  alwaysVisible?: boolean;
 }
 
 interface Progress {
@@ -15,7 +17,11 @@ interface Progress {
 
 const HIDDEN_PROGRESS: Progress = { thumbPercent: 100, offsetPercent: 0, visible: false };
 
-export default function HorizontalScrollBar({ scrollRef }: HorizontalScrollBarProps) {
+export default function HorizontalScrollBar({
+  scrollRef,
+  size = "default",
+  alwaysVisible = false,
+}: HorizontalScrollBarProps) {
   const [progress, setProgress] = useState<Progress>(HIDDEN_PROGRESS);
 
   const updateProgress = useCallback(() => {
@@ -33,13 +39,38 @@ export default function HorizontalScrollBar({ scrollRef }: HorizontalScrollBarPr
   useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
-    const raf = requestAnimationFrame(updateProgress);
-    el.addEventListener("scroll", updateProgress);
-    window.addEventListener("resize", updateProgress);
+
+    let frameId: number | undefined;
+    const scheduleUpdate = () => {
+      if (frameId !== undefined) cancelAnimationFrame(frameId);
+      frameId = requestAnimationFrame(() => {
+        frameId = undefined;
+        updateProgress();
+      });
+    };
+    const resizeObserver = new ResizeObserver(scheduleUpdate);
+    const observeLayout = () => {
+      resizeObserver.disconnect();
+      resizeObserver.observe(el);
+      Array.from(el.children).forEach((child) => resizeObserver.observe(child));
+    };
+    const mutationObserver = new MutationObserver(() => {
+      observeLayout();
+      scheduleUpdate();
+    });
+
+    observeLayout();
+    scheduleUpdate();
+    el.addEventListener("scroll", scheduleUpdate);
+    window.addEventListener("resize", scheduleUpdate);
+    mutationObserver.observe(el, { childList: true });
+
     return () => {
-      cancelAnimationFrame(raf);
-      el.removeEventListener("scroll", updateProgress);
-      window.removeEventListener("resize", updateProgress);
+      if (frameId !== undefined) cancelAnimationFrame(frameId);
+      resizeObserver.disconnect();
+      mutationObserver.disconnect();
+      el.removeEventListener("scroll", scheduleUpdate);
+      window.removeEventListener("resize", scheduleUpdate);
     };
   }, [scrollRef, updateProgress]);
 
@@ -56,7 +87,7 @@ export default function HorizontalScrollBar({ scrollRef }: HorizontalScrollBarPr
 
     const handlePointerMove = (moveEvent: PointerEvent) => {
       const deltaRatio = (moveEvent.clientX - startX) / trackWidth;
-      el.scrollLeft = startScrollLeft + deltaRatio * el.scrollWidth;
+      el.scrollLeft = startScrollLeft + deltaRatio * maxScroll;
     };
 
     const handlePointerUp = () => {
@@ -70,13 +101,20 @@ export default function HorizontalScrollBar({ scrollRef }: HorizontalScrollBarPr
     }
   };
 
-  if (!progress.visible) return null;
+  if (!progress.visible && !alwaysVisible) return null;
+
+  const isLarge = size === "large";
 
   return (
-    <div className="mx-auto mt-6 h-1.5 w-64 rounded-full bg-(--color-border) sm:w-80">
+    <div
+      className={`mx-auto mt-6 rounded-full bg-(--color-border) ${
+        isLarge ? "h-2" : "h-1.5 w-64 sm:w-80"
+      }`}
+      style={isLarge ? { width: "min(32rem, calc(100vw - 2rem))" } : undefined}
+    >
       <div
         onPointerDown={handlePointerDown}
-        className="h-1.5 cursor-grab rounded-full bg-(--color-primary) active:cursor-grabbing"
+        className={`${isLarge ? "h-2" : "h-1.5"} cursor-grab rounded-full bg-(--color-primary) active:cursor-grabbing`}
         style={{
           width: `${progress.thumbPercent}%`,
           marginLeft: `${progress.offsetPercent}%`,

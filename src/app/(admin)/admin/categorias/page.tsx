@@ -3,6 +3,7 @@ import Link from 'next/link';
 import CategoryList from '@/features/admin/components/CategoryList';
 import { getCategoryIdsWithActiveProducts } from '@/features/admin/queries/adminFilters';
 import { getAdminCategories } from '@/features/admin/queries/categories';
+import { getAdminProductCategoryCounts } from '@/features/admin/queries/products';
 import {
   getAdminCategoryFilterMeta,
   parseAdminCategoryFilter,
@@ -25,6 +26,7 @@ export default async function AdminCategoriasPage({
       : Promise.resolve(new Set<string>()),
   ]);
 
+  const categoryCounts = await getAdminProductCategoryCounts(categories.map((category) => category.id));
   const filteredCategories = categories.filter((category) => {
     switch (activeFilter) {
       case 'without-active-products':
@@ -102,6 +104,7 @@ export default async function AdminCategoriasPage({
         categories={filteredCategories}
         emptyMessage={filterMeta?.emptyMessage}
         clearFilterHref={filterMeta ? clearFilterHref : undefined}
+        productCounts={categoryCounts}
       />
     </div>
   );

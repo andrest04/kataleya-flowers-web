@@ -16,18 +16,16 @@ import {
 import { slugify } from '@/features/admin/utils/slugify';
 import { APPWRITE_COLLECTIONS } from '@/lib/appwrite/config';
 import {
-  createProductDocument,
-  deleteProductDocument,
-  deleteProductRelations,
+  bulkDeleteProductsWithRelations,
+  bulkSetProductActive,
+  createProductWithTaxonomy,
   getCategorySlugById,
-  getCategorySlugsForProducts,
   getNextProductOrder,
   getProductCategorySlug,
   getProductImageUrls,
   reorderProductDocuments,
   setProductActive,
-  syncProductTaxonomyAppwrite,
-  updateProductDocument,
+  updateProductWithTaxonomy,
 } from '@/lib/appwrite/repositories/products';
 import { getRepositoryContext } from '@/lib/appwrite/repositories/shared';
 import {
@@ -36,6 +34,7 @@ import {
 } from '@/lib/appwrite/repositories/taxonomy';
 import { imageStorage } from '@/lib/imageStorage';
 interface SuccessResult {
+  cleanupWarning?: string;
   success: true;
 }
 type ProductActionResult = SuccessResult | AdminActionFailure;
@@ -55,19 +54,34 @@ async function validateImageUrls(data: ProductFormData): Promise<AdminActionFail
 async function revalidateProductPaths(
   slug?: string,
   categoryId?: string,
+  knownCategorySlug?: string | null,
 ): Promise<void> {
   revalidatePath('/');
   revalidatePath('/catalogo');
 
-  if (categoryId) {
-    const categorySlug = await getCategorySlugById(categoryId);
-    if (categorySlug) {
-      revalidatePath(`/catalogo/${categorySlug}`);
-      if (slug) revalidatePath(`/catalogo/${categorySlug}/${slug}`);
-    }
+  const categorySlug = knownCategorySlug ?? (categoryId
+    ? await getCategorySlugById(categoryId)
+    : null);
+  if (categorySlug) {
+    revalidatePath(`/catalogo/${categorySlug}`);
+    if (slug) revalidatePath(`/catalogo/${categorySlug}/${slug}`);
   }
 
   revalidatePath('/admin/productos');
+}
+
+async function cleanUpDeletedProductImages(imageUrls: string[]): Promise<string | undefined> {
+  if (imageUrls.length === 0) return undefined;
+
+  try {
+    await imageStorage.deleteMany(imageUrls);
+    return undefined;
+  } catch (error) {
+    console.error('[products] storage cleanup failed after committed deletion', {
+      error: error instanceof Error ? error.message : error,
+    });
+    return 'Los productos se eliminaron, pero no se pudieron limpiar algunas imágenes.';
+  }
 }
 
 async function getAppwriteProductSlug(productId: string): Promise<string | null> {
@@ -100,13 +114,19 @@ export async function createProduct(data: ProductFormData): Promise<ProductActio
 
     const slug = formData.slug?.trim() || slugify(formData.name);
 
-    if (formData.newFlowerTypes?.length) await ensureFlowerTypesAppwrite(formData.newFlowerTypes);
-    if (formData.newColors?.length) await ensureColorsAppwrite(formData.newColors);
-
-    const nextOrder = formData.displayOrder || (await getNextProductOrder());
-    let productId: string;
+    const [, nextOrder] = await Promise.all([
+      Promise.all([
+        formData.newFlowerTypes?.length
+          ? ensureFlowerTypesAppwrite(formData.newFlowerTypes)
+          : Promise.resolve(),
+        formData.newColors?.length
+          ? ensureColorsAppwrite(formData.newColors)
+          : Promise.resolve(),
+      ]),
+      formData.displayOrder ? Promise.resolve(formData.displayOrder) : getNextProductOrder(),
+    ]);
     try {
-      productId = await createProductDocument({
+      await createProductWithTaxonomy({
         name: formData.name,
         slug,
         description: formData.description,
@@ -120,6 +140,12 @@ export async function createProduct(data: ProductFormData): Promise<ProductActio
         isActive: formData.isActive,
         isFeatured: formData.isFeatured,
         displayOrder: nextOrder,
+      }, {
+        productName: formData.name,
+        colorNames: formData.colors,
+        flowerTypeNames: formData.flowerTypes,
+        imageUrl: formData.imageUrl,
+        galleryImages: formData.images,
       });
     } catch (writeErr) {
       if (writeErr instanceof AppwriteException && writeErr.code === 409) {
@@ -128,17 +154,6 @@ export async function createProduct(data: ProductFormData): Promise<ProductActio
       throw writeErr;
     }
 
-    const syncErr = await syncProductTaxonomyAppwrite({
-      productId,
-      productName: formData.name,
-      colorNames: formData.colors,
-      flowerTypeNames: formData.flowerTypes,
-      imageUrl: formData.imageUrl,
-      galleryImages: formData.images,
-    });
-    if (syncErr) {
-      return { success: false, error: syncErr.message, code: 'INTERNAL' };
-    }
 
     await revalidateProductPaths(slug, formData.categoryId);
     return { success: true };
@@ -169,10 +184,15 @@ export async function updateProduct(
     const urlError = await validateImageUrls(formData);
     if (urlError) return urlError;
 
-    if (formData.newFlowerTypes?.length) await ensureFlowerTypesAppwrite(formData.newFlowerTypes);
-    if (formData.newColors?.length) await ensureColorsAppwrite(formData.newColors);
-
-    const [meta, currentSlug, currentImageUrls] = await Promise.all([
+    const [, meta, currentSlug, currentImageUrls] = await Promise.all([
+      Promise.all([
+        formData.newFlowerTypes?.length
+          ? ensureFlowerTypesAppwrite(formData.newFlowerTypes)
+          : Promise.resolve(),
+        formData.newColors?.length
+          ? ensureColorsAppwrite(formData.newColors)
+          : Promise.resolve(),
+      ]),
       getProductCategorySlug(idParsed.data),
       getAppwriteProductSlug(idParsed.data),
       getProductImageUrls(idParsed.data),
@@ -185,7 +205,7 @@ export async function updateProduct(
         : (currentSlug ?? slugify(formData.name));
 
     try {
-      await updateProductDocument(idParsed.data, {
+      await updateProductWithTaxonomy(idParsed.data, {
         name: formData.name,
         slug,
         description: formData.description,
@@ -199,6 +219,12 @@ export async function updateProduct(
         isActive: formData.isActive,
         isFeatured: formData.isFeatured,
         displayOrder: formData.displayOrder,
+      }, {
+        productName: formData.name,
+        colorNames: formData.colors,
+        flowerTypeNames: formData.flowerTypes,
+        imageUrl: formData.imageUrl,
+        galleryImages: formData.images,
       });
     } catch (writeErr) {
       if (writeErr instanceof AppwriteException && writeErr.code === 409) {
@@ -211,17 +237,6 @@ export async function updateProduct(
     const removed = currentImageUrls.filter((url) => !newUrls.has(url));
     if (removed.length > 0) void imageStorage.deleteMany(removed);
 
-    const syncErr = await syncProductTaxonomyAppwrite({
-      productId: idParsed.data,
-      productName: formData.name,
-      colorNames: formData.colors,
-      flowerTypeNames: formData.flowerTypes,
-      imageUrl: formData.imageUrl,
-      galleryImages: formData.images,
-    });
-    if (syncErr) {
-      return { success: false, error: syncErr.message, code: 'INTERNAL' };
-    }
 
     const resolvedCategoryId = formData.categoryId ?? meta?.categoryId;
     await revalidateProductPaths(slug, resolvedCategoryId);
@@ -247,17 +262,58 @@ export async function deleteProduct(id: string): Promise<ProductActionResult> {
       return { success: false, error: 'Identificador inválido.', code: 'VALIDATION', issues: idParsed.error.issues };
     }
 
-    const meta = await getProductCategorySlug(idParsed.data);
-    const productSlug = await getAppwriteProductSlug(idParsed.data);
-    const imageUrls = await getProductImageUrls(idParsed.data);
+    const [deletedProduct] = await bulkDeleteProductsWithRelations([idParsed.data]);
+    if (!deletedProduct) {
+      return { success: false, error: 'El producto ya no existe.', code: 'VALIDATION' };
+    }
 
-    await deleteProductRelations(idParsed.data);
-    await deleteProductDocument(idParsed.data);
+    const cleanupWarning = await cleanUpDeletedProductImages(deletedProduct.imageUrls);
+    await revalidateProductPaths(
+      deletedProduct.slug,
+      deletedProduct.categoryId,
+      deletedProduct.categorySlug,
+    );
+    return { success: true, cleanupWarning };
+  } catch (err) {
+    return failureFromUnknown(err);
+  }
+}
 
-    if (imageUrls.length > 0) void imageStorage.deleteMany(imageUrls);
-
-    await revalidateProductPaths(productSlug ?? undefined, meta?.categoryId);
+export async function bulkSetProductStatus(
+  ids: string[],
+  isActive: boolean,
+): Promise<ProductActionResult> {
+  try {
+    await requireAdmin();
+    const parsed = reorderSchema.safeParse({ ids });
+    if (!parsed.success || typeof isActive !== 'boolean') {
+      return { success: false, error: 'Productos o estado inválidos.', code: 'VALIDATION' };
+    }
+    await bulkSetProductActive(parsed.data.ids, isActive);
+    revalidatePath('/');
+    revalidatePath('/catalogo');
+    revalidatePath('/admin/productos');
     return { success: true };
+  } catch (err) {
+    return failureFromUnknown(err);
+  }
+}
+
+export async function bulkDeleteProducts(ids: string[]): Promise<ProductActionResult> {
+  try {
+    await requireAdmin();
+    const parsed = reorderSchema.safeParse({ ids });
+    if (!parsed.success) {
+      return { success: false, error: 'Lista de productos inválida.', code: 'VALIDATION' };
+    }
+    const deletedProducts = await bulkDeleteProductsWithRelations(parsed.data.ids);
+    const cleanupWarning = await cleanUpDeletedProductImages(
+      [...new Set(deletedProducts.flatMap((product) => product.imageUrls))],
+    );
+    await Promise.all(deletedProducts.map((product) =>
+      revalidateProductPaths(product.slug, product.categoryId, product.categorySlug),
+    ));
+    return { success: true, cleanupWarning };
   } catch (err) {
     return failureFromUnknown(err);
   }
@@ -288,25 +344,46 @@ export async function toggleProductStatus(
   }
 }
 
-export async function reorderProducts(orderedIds: string[]): Promise<ProductActionResult> {
+export async function reorderProducts(
+  categoryId: string,
+  orderedIds: string[],
+  originalOrderIds: string[],
+): Promise<ProductActionResult> {
   try {
     await requireAdmin();
 
-    const parsed = reorderSchema.safeParse({ ids: orderedIds });
-    if (!parsed.success) {
-      return { success: false, error: 'Lista de identificadores inválida.', code: 'VALIDATION', issues: parsed.error.issues };
+    const categoryIdParsed = uuid.safeParse(categoryId);
+    if (!categoryIdParsed.success) {
+      return { success: false, error: 'Categoría inválida.', code: 'VALIDATION', issues: categoryIdParsed.error.issues };
     }
 
-    await reorderProductDocuments(parsed.data.ids);
+    const [parsed, originalOrderParsed] = [
+      reorderSchema.safeParse({ ids: orderedIds }),
+      reorderSchema.safeParse({ ids: originalOrderIds }),
+    ];
+    if (!parsed.success || !originalOrderParsed.success) {
+      return { success: false, error: 'Lista de identificadores inválida.', code: 'VALIDATION' };
+    }
+
+    const reordered = await reorderProductDocuments(
+      categoryIdParsed.data,
+      parsed.data.ids,
+      originalOrderParsed.data.ids,
+    );
+    if (!reordered) {
+      return {
+        success: false,
+        error: 'El orden cambió o contiene productos de otra categoría. Recargá la lista completa.',
+        code: 'VALIDATION',
+      };
+    }
 
     revalidatePath('/');
     revalidatePath('/catalogo');
     revalidatePath('/admin/productos');
 
-    const slugMap = await getCategorySlugsForProducts(parsed.data.ids);
-    for (const categorySlug of slugMap.values()) {
-      if (categorySlug) revalidatePath(`/catalogo/${categorySlug}`);
-    }
+    const categorySlug = await getCategorySlugById(categoryIdParsed.data);
+    if (categorySlug) revalidatePath(`/catalogo/${categorySlug}`);
 
     return { success: true };
   } catch (err) {

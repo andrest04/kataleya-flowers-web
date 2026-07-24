@@ -1,16 +1,15 @@
 'use client';
 
-import type { AdminProductRow } from '@/features/admin/queries/products';
+import type { AdminProductListRow } from '@/features/admin/queries/products';
 
 import ProductTableSortableRow from './ProductTableSortableRow';
 import ProductTableStaticRow from './ProductTableStaticRow';
 
 export interface ProductTableRowBaseProps {
-  product: AdminProductRow;
+  product: AdminProductListRow;
   index: number;
   hasChanges: boolean;
   deletingId: string | null;
-  categoryName: string;
   onToggleStatus: (id: string, isActive: boolean) => void;
   onDelete: (id: string, name: string) => void;
 }

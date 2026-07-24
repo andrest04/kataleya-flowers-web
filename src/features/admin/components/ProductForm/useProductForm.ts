@@ -48,16 +48,18 @@ export interface ProductFormApi {
 interface UseProductFormParams {
   product?: ProductInput;
   onSuccess?: () => void;
+  initialCategoryId?: string;
+  successHref?: string;
 }
 
-function buildInitialState(product?: ProductInput): ProductFormData {
+function buildInitialState(product?: ProductInput, initialCategoryId?: string): ProductFormData {
   if (!product) {
     return {
       name: '',
       slug: '',
       description: '',
       price: 0,
-      categoryId: '',
+      categoryId: initialCategoryId ?? '',
       imageUrl: '',
       images: [],
       colors: [],
@@ -123,11 +125,13 @@ function makeKeys(length: number): string[] {
 export function useProductForm({
   product,
   onSuccess,
+  initialCategoryId,
+  successHref,
 }: UseProductFormParams): ProductFormState & ProductFormApi {
   const router = useRouter();
   const isEditing = Boolean(product);
 
-  const [form, setForm] = useState<ProductFormData>(() => buildInitialState(product));
+  const [form, setForm] = useState<ProductFormData>(() => buildInitialState(product, initialCategoryId));
   const [autoSlug, setAutoSlug] = useState(!isEditing);
   const [includeKeys, setIncludeKeys] = useState<string[]>(() =>
     makeKeys((product?.includes as unknown as string[] | null | undefined)?.length ?? 0),
@@ -273,17 +277,18 @@ export function useProductForm({
       if (!result.success) {
         if (result.code === 'VALIDATION' && result.issues) {
           setFieldErrors(buildFieldErrors(result.issues));
+        } else {
+          setError(result.error || 'Ocurrió un error al guardar.');
         }
-        setError(result.error || 'Ocurrió un error al guardar.');
         return;
       }
 
       setPendingNewTypes([]);
       setPendingNewColors([]);
       onSuccess?.();
-      router.push('/admin/productos');
+      router.push(successHref ?? '/admin/productos');
     });
-  }, [form, pendingNewTypes, pendingNewColors, product, onSuccess, router]);
+  }, [form, pendingNewTypes, pendingNewColors, product, onSuccess, router, successHref]);
 
   const reportTransientError = useCallback((msg: string) => {
     setError(msg);

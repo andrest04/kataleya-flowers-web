@@ -2,7 +2,7 @@
 
 import { move } from '@dnd-kit/helpers';
 import type { DragDropEvents } from '@dnd-kit/react';
-import { useRef, useState, useTransition } from 'react';
+import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
 
 import {
@@ -10,26 +10,13 @@ import {
   reorderProducts,
   toggleProductStatus,
 } from '@/features/admin/actions/products';
-import type { AdminProductRow } from '@/features/admin/queries/products';
-import type { AdminProductFilter } from '@/features/admin/utils/adminFilters';
+import type { AdminProductListRow } from '@/features/admin/queries/products';
 
 type DragEndHandler = NonNullable<DragDropEvents['dragend']>;
 
-function matchesActiveFilter(
-  product: AdminProductRow,
-  filter: AdminProductFilter | null | undefined,
-): boolean {
-  switch (filter) {
-    case 'missing-gallery':
-      return product.is_active && (product.product_images?.length ?? 0) <= 1;
-    default:
-      return true;
-  }
-}
-
 interface UseProductTableParams {
-  initial: AdminProductRow[];
-  activeFilter: AdminProductFilter | null;
+  initial: AdminProductListRow[];
+  reorderCategoryId?: string;
 }
 
 export interface DeleteTarget {
@@ -37,22 +24,27 @@ export interface DeleteTarget {
   name: string;
 }
 
-export function useProductTable({ initial, activeFilter }: UseProductTableParams) {
-  const [items, setItems] = useState<AdminProductRow[]>(initial);
+export function useProductTable({ initial, reorderCategoryId }: UseProductTableParams) {
+  const [items, setItems] = useState<AdminProductListRow[]>(initial);
+  const [previousInitial, setPreviousInitial] = useState(initial);
+  const [lastSavedItems, setLastSavedItems] = useState<AdminProductListRow[]>(initial);
+  const [originalOrderIds, setOriginalOrderIds] = useState(() => initial.map((product) => product.id));
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null);
   const [hasChanges, setHasChanges] = useState(false);
   const [isSaving, startTransition] = useTransition();
-  const lastSavedRef = useRef<AdminProductRow[]>(initial);
+
+  if (initial !== previousInitial) {
+    setPreviousInitial(initial);
+    setItems(initial);
+    setHasChanges(false);
+    setLastSavedItems(initial);
+    setOriginalOrderIds(initial.map((product) => product.id));
+  }
 
   async function handleToggleStatus(id: string, isActive: boolean) {
     const previousItems = items;
-    const nextItems = items.flatMap((product) => {
-      const updated = product.id === id ? { ...product, is_active: isActive } : product;
-      return matchesActiveFilter(updated, activeFilter) ? [updated] : [];
-    });
-    setItems(nextItems);
-
+    setItems((current) => current.map((product) => product.id === id ? { ...product, is_active: isActive } : product));
     const result = await toggleProductStatus(id, isActive);
     if (!result.success) {
       setItems(previousItems);
@@ -71,13 +63,10 @@ export function useProductTable({ initial, activeFilter }: UseProductTableParams
     if (!result.success) {
       toast.error(`Error al eliminar: ${result.error ?? 'Error desconocido'}`);
     } else {
-      setItems((prev) => prev.filter((p) => p.id !== deleteTarget.id));
+      setItems((current) => current.filter((product) => product.id !== deleteTarget.id));
+      if (result.cleanupWarning) toast.warning(result.cleanupWarning);
     }
     setDeletingId(null);
-    setDeleteTarget(null);
-  }
-
-  function cancelDelete() {
     setDeleteTarget(null);
   }
 
@@ -88,22 +77,22 @@ export function useProductTable({ initial, activeFilter }: UseProductTableParams
   };
 
   function handleSave() {
-    const orderedIds = items.map((p) => p.id);
+    if (!reorderCategoryId) {
+      toast.error('No se pudo identificar la categoría a reordenar.');
+      return;
+    }
+    const orderedIds = items.map((product) => product.id);
     startTransition(async () => {
-      const result = await reorderProducts(orderedIds);
+      const result = await reorderProducts(reorderCategoryId, orderedIds, originalOrderIds);
       if (!result.success) {
         toast.error(`Error al reordenar: ${result.error ?? 'Error desconocido'}`);
-        setItems(lastSavedRef.current);
+        setItems(lastSavedItems);
       } else {
-        lastSavedRef.current = items;
+        setLastSavedItems(items);
+        setOriginalOrderIds(items.map((product) => product.id));
       }
       setHasChanges(false);
     });
-  }
-
-  function handleCancel() {
-    setItems(lastSavedRef.current);
-    setHasChanges(false);
   }
 
   return {
@@ -115,9 +104,12 @@ export function useProductTable({ initial, activeFilter }: UseProductTableParams
     handleToggleStatus,
     requestDelete,
     confirmDelete,
-    cancelDelete,
+    cancelDelete: () => setDeleteTarget(null),
     handleDragEnd,
     handleSave,
-    handleCancel,
+    handleCancel: () => {
+      setItems(lastSavedItems);
+      setHasChanges(false);
+    },
   };
 }

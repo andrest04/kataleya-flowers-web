@@ -6,6 +6,7 @@ import { useActionState, useRef, useState } from 'react';
 import Button from '@/components/ui/Button';
 import { FormError,FormField } from '@/components/ui/FormField';
 import { Input, Textarea } from '@/components/ui/Input';
+import ToggleSwitch from '@/components/ui/ToggleSwitch';
 import { createCategory, updateCategory } from '@/features/admin/actions/categories';
 import ImageUploader from '@/features/admin/components/ImageUploader';
 import type { CategoryFormData } from '@/features/admin/types';
@@ -40,7 +41,9 @@ export default function CategoryForm({ category }: CategoryFormProps) {
     ? rowToFormData(category)
     : { name: '', slug: '', description: '', occasion: '', imageUrl: '', isActive: true, isFeatured: false };
   const [imageUrl, setImageUrl] = useState(initial.imageUrl);
-  const autoSlugRef = useRef(!isEditing);
+  const [isActive, setIsActive] = useState(initial.isActive);
+    const [isFeatured, setIsFeatured] = useState(initial.isFeatured);
+    const autoSlugRef = useRef(!isEditing);
 
   const [state, formAction, isPending] = useActionState<FormState, FormData>(
     async (_prev: FormState, formData: FormData) => {
@@ -156,7 +159,28 @@ export default function CategoryForm({ category }: CategoryFormProps) {
         </FormField>
       </div>
 
-      <div className="flex items-center gap-3 pt-2">
+      <div className="flex flex-col gap-3">
+            <input type="hidden" name="isActive" value={isActive ? 'on' : ''} />
+            <input type="hidden" name="isFeatured" value={isFeatured ? 'on' : ''} />
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-(--color-dark)">Activa</span>
+              <ToggleSwitch
+                checked={isActive}
+                onChange={setIsActive}
+                label="Categoría activa"
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-(--color-dark)">Destacada</span>
+              <ToggleSwitch
+                checked={isFeatured}
+                onChange={setIsFeatured}
+                label="Categoría destacada"
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 pt-2">
         <Button type="submit" variant="primary" size="md" loading={isPending}>
           {isPending
             ? (isEditing ? 'Guardando…' : 'Creando…')

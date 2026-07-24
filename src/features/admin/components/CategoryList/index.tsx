@@ -19,38 +19,38 @@ interface CategoryListProps {
   categories: CategoryRow[];
   emptyMessage?: string;
   clearFilterHref?: string;
+  productCounts: Record<string, number>;
 }
 
 export default function CategoryList({
   categories: initialCategories,
   emptyMessage,
   clearFilterHref,
+  productCounts,
 }: CategoryListProps) {
   const reorder = useCategoryReorder(initialCategories);
   const deletion = useCategoryDelete({
-    onDeleted: (id) => reorder.setItems(reorder.items.filter((c) => c.id !== id)),
+    onDeleted: (id) => reorder.setItems(reorder.items.filter((category) => category.id !== id)),
   });
-  const dndA11y = useDndAccessibility(reorder.items, (c) => c.name);
+  const dndA11y = useDndAccessibility(reorder.items, (category) => category.name);
 
   function applyToggleStatus(id: string, isActive: boolean) {
-    reorder.setItems(reorder.items.map((c) => (c.id === id ? { ...c, is_active: isActive } : c)));
+    reorder.setItems(reorder.items.map((category) => (
+      category.id === id ? { ...category, is_active: isActive } : category
+    )));
   }
 
   function applyToggleFeatured(id: string, isFeatured: boolean) {
-    reorder.setItems(reorder.items.map((c) => (c.id === id ? { ...c, is_featured: isFeatured } : c)));
+    reorder.setItems(reorder.items.map((category) => (
+      category.id === id ? { ...category, is_featured: isFeatured } : category
+    )));
   }
 
   if (reorder.items.length === 0) {
     return (
       <EmptyState
         message={emptyMessage ?? 'No hay categorías aún. ¡Creá la primera!'}
-        action={
-          clearFilterHref ? (
-            <Button href={clearFilterHref} variant="ghost" size="sm">
-              Ver todas las categorías
-            </Button>
-          ) : undefined
-        }
+        action={clearFilterHref ? <Button href={clearFilterHref} variant="ghost" size="sm">Ver todas las categorías</Button> : undefined}
       />
     );
   }
@@ -59,7 +59,15 @@ export default function CategoryList({
     <div>
       <DndLiveRegion message={dndA11y.message} />
 
-      <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--color-border)' }}>
+      <div
+        role="region"
+        aria-label="Orden de categorías"
+        className="overflow-hidden rounded-xl"
+        style={{ border: '1px solid var(--color-border)' }}
+      >
+        <p id="category-sort-instructions" className="sr-only">
+          Usá la barra espaciadora para tomar una categoría, las flechas para moverla y la barra espaciadora para soltarla.
+        </p>
         <CategoryListHeader hasChanges={reorder.hasChanges} />
 
         <DragDropProvider
@@ -70,24 +78,31 @@ export default function CategoryList({
             reorder.handleDragEnd(event, manager);
           }}
         >
-          {reorder.items.map((category, index) => (
-            <CategoryRowItem
-              key={category.id}
-              category={category}
-              index={index}
-              deletingId={deletion.deletingId}
-              hasChanges={reorder.hasChanges}
-              onDelete={(id, name) => void deletion.requestDelete(id, name)}
-              onLocalToggleStatus={applyToggleStatus}
-              onLocalToggleFeatured={applyToggleFeatured}
-            />
-          ))}
+          <ul aria-label="Categorías reordenables">
+            {reorder.items.map((category, index) => (
+              <CategoryRowItem
+                key={category.id}
+                category={category}
+                index={index}
+                deletingId={deletion.deletingId}
+                hasChanges={reorder.hasChanges}
+                onDelete={(id, name) => void deletion.requestDelete(id, name)}
+                onLocalToggleStatus={applyToggleStatus}
+                onLocalToggleFeatured={applyToggleFeatured}
+                productCount={productCounts[category.id] ?? 0}
+              />
+            ))}
+          </ul>
         </DragDropProvider>
       </div>
 
-      {reorder.hasChanges && (
-        <SaveOrderBar isSaving={reorder.isSaving} onSave={reorder.handleSave} onCancel={reorder.handleCancel} />
-      )}
+      {reorder.hasChanges ? (
+        <SaveOrderBar
+          isSaving={reorder.isSaving}
+          onSave={reorder.handleSave}
+          onCancel={reorder.handleCancel}
+        />
+      ) : null}
 
       <DeleteCategoryDialog
         target={deletion.deleteTarget}

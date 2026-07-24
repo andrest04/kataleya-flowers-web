@@ -14,18 +14,14 @@ interface ProductTableHeaderProps {
 export default function ProductTableHeader({ reorderable, hasChanges }: ProductTableHeaderProps) {
   if (reorderable) {
     return (
-      <div
-        className="flex items-center gap-4 px-4 py-3 text-xs font-semibold"
-        style={HEADER_BASE_STYLE}
-      >
-        <span className="w-6 flex-shrink-0" />
-        <span className="w-5 flex-shrink-0">#</span>
-        <span className="w-10 flex-shrink-0">Imagen</span>
+      <div className="flex items-center gap-4 px-4 py-3 text-xs font-semibold" style={HEADER_BASE_STYLE}>
+        <span className="w-6 shrink-0" />
+        <span className="w-5 shrink-0">#</span>
+        <span className="w-10 shrink-0">Imagen</span>
         <span className="flex-1">Nombre</span>
-        <span className="hidden md:block w-28 flex-shrink-0">Categoría</span>
-        <span className="w-20 flex-shrink-0">Precio</span>
-        <span className="w-12 flex-shrink-0 text-center">Estado</span>
-        {!hasChanges && <span className="w-36 text-right">Acciones</span>}
+        <span className="w-20 shrink-0">Precio</span>
+        <span className="w-12 shrink-0 text-center">Estado</span>
+        {!hasChanges ? <span className="w-36 text-right">Acciones</span> : null}
       </div>
     );
   }
@@ -33,24 +29,15 @@ export default function ProductTableHeader({ reorderable, hasChanges }: ProductT
   return (
     <thead>
       <tr style={HEADER_BASE_STYLE}>
-        <th className="text-left px-4 py-3 font-semibold" style={{ color: 'var(--color-dark)' }}>
-          Imagen
-        </th>
-        <th className="text-left px-4 py-3 font-semibold" style={{ color: 'var(--color-dark)' }}>
-          Nombre
-        </th>
-        <th className="text-left px-4 py-3 font-semibold" style={{ color: 'var(--color-dark)' }}>
-          Categoría
-        </th>
-        <th className="text-left px-4 py-3 font-semibold" style={{ color: 'var(--color-dark)' }}>
-          Precio
-        </th>
-        <th className="text-left px-4 py-3 font-semibold" style={{ color: 'var(--color-dark)' }}>
-          Estado
-        </th>
-        <th className="text-right px-4 py-3 font-semibold" style={{ color: 'var(--color-dark)' }}>
-          Acciones
-        </th>
+        {['Imagen', 'Nombre', 'Precio', 'Estado', 'Acciones'].map((label) => (
+          <th
+            key={label}
+            className={`px-4 py-3 font-semibold ${label === 'Acciones' ? 'text-right' : 'text-left'}`}
+            style={{ color: 'var(--color-dark)' }}
+          >
+            {label}
+          </th>
+        ))}
       </tr>
     </thead>
   );

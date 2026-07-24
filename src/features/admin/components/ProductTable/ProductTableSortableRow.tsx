@@ -14,7 +14,6 @@ export default function ProductTableSortableRow({
   index,
   hasChanges,
   deletingId,
-  categoryName,
   onToggleStatus,
   onDelete,
 }: ProductTableRowBaseProps) {
@@ -25,8 +24,9 @@ export default function ProductTableSortableRow({
   });
 
   return (
-    <div
+    <li
       ref={ref}
+      aria-roledescription="producto reordenable"
       className="flex items-center gap-4 px-4 py-3 motion-safe:transition-colors"
       style={{
         background: isDragging ? 'var(--color-surface)' : 'var(--color-white)',
@@ -37,37 +37,34 @@ export default function ProductTableSortableRow({
       <button
         ref={handleRef}
         type="button"
-        className="flex items-center justify-center w-6 h-6 rounded flex-shrink-0 transition-colors hover:bg-(--color-surface) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary)"
+        className="flex h-6 w-6 shrink-0 items-center justify-center rounded transition-colors hover:bg-(--color-surface) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary)"
         style={{ color: 'var(--color-muted)', cursor: 'grab', touchAction: 'none' }}
         aria-label={`Arrastrar "${product.name}" para reordenar`}
+        aria-describedby="product-sort-instructions"
       >
         <GripVertical aria-hidden="true" className="size-4" />
       </button>
 
-      <span className="text-xs font-mono w-5 text-center flex-shrink-0" style={{ color: 'var(--color-muted)' }}>
+      <span className="w-5 shrink-0 text-center font-mono text-xs" style={{ color: 'var(--color-muted)' }}>
         {index + 1}
       </span>
 
       <ProductTableImage product={product} sizeClass="w-10 h-10" sizes="40px" />
 
-      <div className="flex-1 min-w-0">
-        <p className="font-medium text-sm truncate" style={{ color: 'var(--color-dark)' }}>
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-medium" style={{ color: 'var(--color-dark)' }}>
           {product.name}
         </p>
-        <p className="text-xs truncate" style={{ color: 'var(--color-muted)' }}>
+        <p className="truncate text-xs" style={{ color: 'var(--color-muted)' }}>
           {product.slug}
         </p>
       </div>
 
-      <span className="text-sm hidden md:block w-28 flex-shrink-0 truncate" style={{ color: 'var(--color-dark)' }}>
-        {categoryName}
-      </span>
-
-      <span className="text-sm w-20 flex-shrink-0" style={{ color: 'var(--color-dark)' }}>
+      <span className="w-20 shrink-0 text-sm" style={{ color: 'var(--color-dark)' }}>
         S/ {Number(product.price).toFixed(2)}
       </span>
 
-      <div className="w-12 flex-shrink-0 flex justify-center">
+      <div className="flex w-12 shrink-0 justify-center">
         <ToggleSwitch
           checked={product.is_active}
           label={`${product.is_active ? 'Desactivar' : 'Activar'} ${product.name}`}
@@ -76,7 +73,7 @@ export default function ProductTableSortableRow({
       </div>
 
       {!hasChanges && (
-        <div className="flex-shrink-0 w-36">
+        <div className="w-36 shrink-0">
           <ProductTableActions
             productId={product.id}
             productName={product.name}
@@ -85,6 +82,6 @@ export default function ProductTableSortableRow({
           />
         </div>
       )}
-    </div>
+    </li>
   );
 }

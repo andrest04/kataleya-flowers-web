@@ -9,7 +9,7 @@ interface CategoryTileProps {
   layoutClasses: string;
 }
 
-const SIZES = '(max-width: 639px) 70vw, (max-width: 1023px) 42vw, 296px';
+const SIZES = '(max-width: 639px) 73vw, (max-width: 1023px) 44vw, 320px';
 
 export default function CategoryTile({ category, layoutClasses }: CategoryTileProps) {
   return (
@@ -17,7 +17,7 @@ export default function CategoryTile({ category, layoutClasses }: CategoryTilePr
       href={`/catalogo/${category.slug}`}
       className={`group block focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-secondary) ${layoutClasses}`}
     >
-      <div className="relative aspect-[4/5] overflow-hidden rounded-lg bg-(--color-surface)">
+      <div className="relative aspect-[4/5] overflow-hidden rounded-md bg-(--color-surface)">
         {category.imageUrl ? (
           <Image
             src={category.imageUrl}
@@ -34,7 +34,7 @@ export default function CategoryTile({ category, layoutClasses }: CategoryTilePr
       </div>
 
       <div className="pt-4 text-center">
-        <h3 className="font-heading text-xl text-(--color-dark) transition-colors group-hover:text-(--color-primary)">
+        <h3 className="font-heading text-2xl text-(--color-dark) transition-colors group-hover:text-(--color-primary)">
           {category.name}
         </h3>
       </div>
