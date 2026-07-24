@@ -91,18 +91,6 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  async redirects() {
-    return [
-      // /admin has no dashboard of its own — collapse it onto the products
-      // manager. Done at the routing layer (not via redirect() in a Server
-      // Component, which trips React 19's dev profiler with a measure error).
-      {
-        source: "/admin",
-        destination: "/admin/productos",
-        permanent: false,
-      },
-    ];
-  },
   async headers() {
     return [
       {

@@ -286,7 +286,7 @@ export function useProductForm({
       setPendingNewTypes([]);
       setPendingNewColors([]);
       onSuccess?.();
-      router.push(successHref ?? '/admin/productos');
+      router.push(successHref ?? '/admin/categorias');
     });
   }, [form, pendingNewTypes, pendingNewColors, product, onSuccess, router, successHref]);
 

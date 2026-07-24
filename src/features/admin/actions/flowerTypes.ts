@@ -49,7 +49,7 @@ export async function deleteFlowerType(name: string): Promise<FlowerTypeActionRe
 
     revalidatePath('/');
     revalidatePath('/catalogo');
-    revalidatePath('/admin/productos');
+    revalidatePath('/admin/categorias');
     return { success: true };
   } catch (err) {
     return failureFromUnknown(err);
@@ -91,7 +91,7 @@ export async function renameFlowerType(
 
     revalidatePath('/');
     revalidatePath('/catalogo');
-    revalidatePath('/admin/productos');
+    revalidatePath('/admin/categorias');
     return { success: true };
   } catch (err) {
     return failureFromUnknown(err);

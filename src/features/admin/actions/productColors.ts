@@ -49,7 +49,7 @@ export async function deleteProductColor(name: string): Promise<ColorActionResul
 
     revalidatePath('/');
     revalidatePath('/catalogo');
-    revalidatePath('/admin/productos');
+    revalidatePath('/admin/categorias');
     return { success: true };
   } catch (err) {
     return failureFromUnknown(err);
@@ -91,7 +91,7 @@ export async function renameProductColor(
 
     revalidatePath('/');
     revalidatePath('/catalogo');
-    revalidatePath('/admin/productos');
+    revalidatePath('/admin/categorias');
     return { success: true };
   } catch (err) {
     return failureFromUnknown(err);

@@ -91,7 +91,7 @@ Toda action en `features/admin/actions/` **debe**:
      | { ok: false; error: { code: string; message: string; issues?: ZodIssue[] } };
    ```
 4. URLs de imagen pasan por `imageStorage.isOwnedUrl` (`@/lib/imageStorage`) o el schema `storedImageUrl` de `schemas/common.ts`.
-5. `revalidatePath` — **Productos:** `/`, `/catalogo`, `/catalogo/{cat.slug}`, `/catalogo/{cat.slug}/{slug}`, `/admin/productos`. **Categorías:** `/`, `/catalogo`, `/catalogo/{slug}` (cada slug afectado), `/admin/categorias`.
+5. `revalidatePath` — **Productos:** `/`, `/catalogo`, `/catalogo/{cat.slug}`, `/catalogo/{cat.slug}/{slug}`, `/admin/categorias`. **Categorías:** `/`, `/catalogo`, `/catalogo/{slug}` (cada slug afectado), `/admin/categorias`.
 
 No cambiar el contrato `Result<T>` ni la firma al evolucionar autorización.
 

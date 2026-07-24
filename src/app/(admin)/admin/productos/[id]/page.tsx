@@ -29,11 +29,11 @@ export default async function EditarProductoPage({ params }: EditarProductoPageP
     <div className="space-y-6">
       <div className="flex items-center gap-3">
         <Link
-          href="/admin/productos"
+          href="/admin/categorias"
           className="text-sm transition-opacity hover:opacity-70"
           style={{ color: 'var(--color-muted)' }}
         >
-          ← Volver a productos
+          ← Volver a categorías
         </Link>
       </div>
 

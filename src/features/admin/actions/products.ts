@@ -67,7 +67,7 @@ async function revalidateProductPaths(
     if (slug) revalidatePath(`/catalogo/${categorySlug}/${slug}`);
   }
 
-  revalidatePath('/admin/productos');
+  revalidatePath('/admin/categorias');
 }
 
 async function cleanUpDeletedProductImages(imageUrls: string[]): Promise<string | undefined> {
@@ -292,7 +292,7 @@ export async function bulkSetProductStatus(
     await bulkSetProductActive(parsed.data.ids, isActive);
     revalidatePath('/');
     revalidatePath('/catalogo');
-    revalidatePath('/admin/productos');
+    revalidatePath('/admin/categorias');
     return { success: true };
   } catch (err) {
     return failureFromUnknown(err);
@@ -380,7 +380,7 @@ export async function reorderProducts(
 
     revalidatePath('/');
     revalidatePath('/catalogo');
-    revalidatePath('/admin/productos');
+    revalidatePath('/admin/categorias');
 
     const categorySlug = await getCategorySlugById(categoryIdParsed.data);
     if (categorySlug) revalidatePath(`/catalogo/${categorySlug}`);

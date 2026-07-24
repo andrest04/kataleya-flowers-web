@@ -47,7 +47,6 @@ async function revalidateAllCategoryPaths(
   revalidatePath('/');
   revalidatePath('/catalogo');
   revalidatePath('/admin/categorias');
-  revalidatePath('/admin/productos');
 
   const slugs = affectedSlugs ?? (await listAllCategorySlugs());
   for (const slug of slugs) {
