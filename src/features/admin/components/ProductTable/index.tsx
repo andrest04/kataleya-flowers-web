@@ -68,7 +68,7 @@ export default function ProductTable({
             style={{ border: '1px solid var(--color-border)' }}
           >
             <p id="product-sort-instructions" className="sr-only">
-              Usá la barra espaciadora para tomar un producto, las flechas para moverlo y la barra espaciadora para soltarlo.
+              Usa la barra espaciadora para tomar un producto, las flechas para moverlo y la barra espaciadora para soltarlo.
             </p>
             <ProductTableHeader reorderable hasChanges={table.hasChanges} />
             <DragDropProvider

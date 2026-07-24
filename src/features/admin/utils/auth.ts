@@ -41,7 +41,7 @@ export function failureFromUnknown(err: unknown): AdminActionFailure {
       error:
         err.code === 'UNAUTHENTICATED'
           ? 'Sesión inválida. Iniciá sesión nuevamente.'
-          : 'No tenés permisos para esta acción.',
+          : 'No tienes permisos para esta acción.',
       code: err.code,
     };
   }
@@ -74,7 +74,7 @@ export function withAdminAuth<TInput, TOutput extends { success: boolean }>(
           console.warn('[admin-action] validation failed:', result.error.issues);
           return {
             success: false,
-            error: 'Datos inválidos. Revisá el formulario.',
+            error: 'Datos inválidos. Revisa el formulario.',
             code: 'VALIDATION',
             issues: result.error.issues,
           };

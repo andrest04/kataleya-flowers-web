@@ -65,7 +65,7 @@ export async function createCategory(
       after(() => console.warn('[createCategory] validation failed:', parsed.error.issues));
       return {
         success: false,
-        error: 'Datos inválidos. Revisá el formulario.',
+        error: 'Datos inválidos. Revisa el formulario.',
         code: 'VALIDATION',
         issues: parsed.error.issues,
       };
@@ -129,7 +129,7 @@ export async function updateCategory(
       after(() => console.warn('[updateCategory] validation failed:', parsed.error.issues));
       return {
         success: false,
-        error: 'Datos inválidos. Revisá el formulario.',
+        error: 'Datos inválidos. Revisa el formulario.',
         code: 'VALIDATION',
         issues: parsed.error.issues,
       };

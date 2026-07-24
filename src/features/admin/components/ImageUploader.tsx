@@ -155,7 +155,7 @@ export default function ImageUploader(props: ImageUploaderProps) {
             </svg>
             <span className="text-sm">
               {isDragOver
-                ? 'Soltá la imagen acá'
+                ? 'Suelta la imagen aquí'
                 : 'Arrastra una imagen o haz clic'}
             </span>
             {props.multiple && (

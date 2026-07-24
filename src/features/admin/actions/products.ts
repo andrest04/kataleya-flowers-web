@@ -105,7 +105,7 @@ export async function createProduct(data: ProductFormData): Promise<ProductActio
     const parsed = productCreateSchema.safeParse(data);
     if (!parsed.success) {
       after(() => console.warn('[createProduct] validation failed:', parsed.error.issues));
-      return { success: false, error: 'Datos inválidos. Revisá el formulario.', code: 'VALIDATION', issues: parsed.error.issues };
+      return { success: false, error: 'Datos inválidos. Revisa el formulario.', code: 'VALIDATION', issues: parsed.error.issues };
     }
 
     const formData = parsed.data as ProductFormData;
@@ -177,7 +177,7 @@ export async function updateProduct(
     const parsed = productUpdateSchema.safeParse(data);
     if (!parsed.success) {
       after(() => console.warn('[updateProduct] validation failed:', parsed.error.issues));
-      return { success: false, error: 'Datos inválidos. Revisá el formulario.', code: 'VALIDATION', issues: parsed.error.issues };
+      return { success: false, error: 'Datos inválidos. Revisa el formulario.', code: 'VALIDATION', issues: parsed.error.issues };
     }
 
     const formData = parsed.data as ProductFormData;

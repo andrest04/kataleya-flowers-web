@@ -49,7 +49,7 @@ export default function CategoryList({
   if (reorder.items.length === 0) {
     return (
       <EmptyState
-        message={emptyMessage ?? 'No hay categorías aún. ¡Creá la primera!'}
+        message={emptyMessage ?? 'No hay categorías aún. ¡Crea la primera!'}
         action={clearFilterHref ? <Button href={clearFilterHref} variant="ghost" size="sm">Ver todas las categorías</Button> : undefined}
       />
     );
@@ -66,7 +66,7 @@ export default function CategoryList({
         style={{ border: '1px solid var(--color-border)' }}
       >
         <p id="category-sort-instructions" className="sr-only">
-          Usá la barra espaciadora para tomar una categoría, las flechas para moverla y la barra espaciadora para soltarla.
+          Usa la barra espaciadora para tomar una categoría, las flechas para moverla y la barra espaciadora para soltarla.
         </p>
         <CategoryListHeader hasChanges={reorder.hasChanges} />
 

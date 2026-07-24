@@ -46,7 +46,7 @@ export default function CatalogResults({
         <div className="text-center py-16">
           <p className="font-heading text-2xl text-primary mb-2">Sin resultados</p>
           <p className="font-body text-sm mb-6 text-(--color-muted)">
-            Probá con otros filtros o explorá el catálogo completo.
+            Prueba con otros filtros o explora el catálogo completo.
           </p>
           <button
             type="button"

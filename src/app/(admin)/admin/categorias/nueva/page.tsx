@@ -23,7 +23,7 @@ export default function NuevaCategoriaPage() {
           Nueva categoría
         </h1>
         <p className="text-sm mt-1" style={{ color: 'var(--color-muted)' }}>
-          Completá los datos de la nueva categoría.
+          Completa los datos de la nueva categoría.
         </p>
       </div>
 
