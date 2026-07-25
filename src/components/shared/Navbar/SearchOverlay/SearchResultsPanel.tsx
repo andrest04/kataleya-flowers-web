@@ -31,13 +31,11 @@ export default function SearchResultsPanel({
     );
   }
 
-  const categories = Array.from(
-    new Map(
-      searchResults
-        .filter((result) => result.categorySlug)
-        .map((result) => [result.categorySlug, result.categoryName]),
-    ).entries(),
-  );
+  const categoriesBySlug = new Map<string, string>();
+  for (const result of searchResults) {
+    if (result.categorySlug) categoriesBySlug.set(result.categorySlug, result.categoryName);
+  }
+  const categories = Array.from(categoriesBySlug.entries());
 
   return (
     <div className={`${PANEL_CONTAINER} pt-6 pb-15`}>

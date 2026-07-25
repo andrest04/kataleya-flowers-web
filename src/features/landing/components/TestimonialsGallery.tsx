@@ -28,15 +28,16 @@ interface PhotoCardProps {
   position: 'back-left' | 'back-right' | 'front';
 }
 
+const POSITION_CLASSES = {
+  'back-left':
+    'translate-x-1 -translate-y-1 -rotate-6 md:group-hover:-translate-x-3 md:group-hover:-translate-y-2 md:group-hover:-rotate-10 md:group-focus-within:-translate-x-3 md:group-focus-within:-translate-y-2 md:group-focus-within:-rotate-10',
+  'back-right':
+    '-translate-x-1 -translate-y-1 rotate-6 md:group-hover:translate-x-3 md:group-hover:-translate-y-2 md:group-hover:rotate-10 md:group-focus-within:translate-x-3 md:group-focus-within:-translate-y-2 md:group-focus-within:rotate-10',
+  front: 'md:group-hover:-translate-y-2 md:group-hover:scale-[1.02] md:group-focus-within:-translate-y-2 md:group-focus-within:scale-[1.02]',
+};
+
 function PhotoCard({ photo, position }: PhotoCardProps) {
   const isFront = position === 'front';
-  const positionClasses = {
-    'back-left':
-      'translate-x-1 -translate-y-1 -rotate-6 md:group-hover:-translate-x-3 md:group-hover:-translate-y-2 md:group-hover:-rotate-10 md:group-focus-within:-translate-x-3 md:group-focus-within:-translate-y-2 md:group-focus-within:-rotate-10',
-    'back-right':
-      '-translate-x-1 -translate-y-1 rotate-6 md:group-hover:translate-x-3 md:group-hover:-translate-y-2 md:group-hover:rotate-10 md:group-focus-within:translate-x-3 md:group-focus-within:-translate-y-2 md:group-focus-within:rotate-10',
-    front: 'md:group-hover:-translate-y-2 md:group-hover:scale-[1.02] md:group-focus-within:-translate-y-2 md:group-focus-within:scale-[1.02]',
-  };
 
   return (
     <div
@@ -45,7 +46,7 @@ function PhotoCard({ photo, position }: PhotoCardProps) {
       style={{ transform: `rotate(${photo.rotation}deg)` }}
     >
       <div
-        className={`h-full overflow-hidden rounded-3xl bg-(--color-surface) shadow-lg transition-transform duration-700 ease-out motion-reduce:transition-none transform-gpu ${positionClasses[position]}`}
+        className={`h-full overflow-hidden rounded-3xl bg-(--color-surface) shadow-lg transition-transform duration-700 ease-out motion-reduce:transition-none transform-gpu ${POSITION_CLASSES[position]}`}
       >
         <Image
           src={photo.src}
