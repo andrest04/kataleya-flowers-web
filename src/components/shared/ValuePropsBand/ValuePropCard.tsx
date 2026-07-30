@@ -44,6 +44,7 @@ export default function ValuePropCard({
           className={LINK_CLASS}
         >
           {linkLabel}
+          {isExternal ? <span className="sr-only"> (se abre en una pestaña nueva)</span> : null}
         </Link>
       )}
     </div>

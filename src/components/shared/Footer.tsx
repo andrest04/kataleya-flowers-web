@@ -29,9 +29,10 @@ export default async function Footer() {
               href={WHATSAPP_LINK}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex w-full max-w-sm items-center justify-between border border-(--color-dark) bg-white px-4 py-3 text-sm font-semibold transition-colors hover:bg-(--color-surface) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-secondary)"
+              className="flex w-full max-w-sm items-center justify-between border border-(--color-dark) bg-(--color-white) px-4 py-3 text-sm font-semibold transition-colors hover:bg-(--color-surface) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-secondary)"
             >
-              Escríbenos por WhatsApp
+              Pedir por WhatsApp
+              <span className="sr-only"> (se abre en una pestaña nueva)</span>
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </Link>
           </div>
@@ -109,7 +110,7 @@ export default async function Footer() {
               <Link
                 href="/libro-de-reclamaciones"
                 aria-label="Libro de Reclamaciones — registra tu queja o reclamo"
-                className="mt-2 block w-fit rounded-sm bg-white p-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-secondary)"
+                className="mt-2 block w-fit rounded-sm bg-(--color-white) p-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-secondary)"
               >
                 <span className="relative block h-[54px] w-[90px]">
                   <Image
@@ -156,6 +157,7 @@ export default async function Footer() {
             className="transition-opacity hover:opacity-70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-secondary)"
           >
             <FaInstagram size={20} aria-hidden="true" />
+            <span className="sr-only"> (se abre en una pestaña nueva)</span>
           </a>
           <a
             href={WHATSAPP_LINK}
@@ -165,6 +167,7 @@ export default async function Footer() {
             className="transition-opacity hover:opacity-70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-secondary)"
           >
             <FaWhatsapp size={20} aria-hidden="true" />
+            <span className="sr-only"> (se abre en una pestaña nueva)</span>
           </a>
         </div>
       </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import type { MouseEvent, ReactNode } from "react";
 
 import { useAnchorNavigation } from "@/components/shared/Navbar/useAnchorNavigation";
 
@@ -18,15 +18,19 @@ export default function FooterAnchorLink({
   children,
 }: FooterAnchorLinkProps) {
   const handleNavigate = useAnchorNavigation();
+  const targetId = href.startsWith("#") ? href.slice(1) : href.split("#")[1];
+  const nativeHref = href.startsWith("#") ? `/${href}` : href;
+
+  const handleClick = (event: MouseEvent<HTMLAnchorElement>) => {
+    if (targetId && document.getElementById(targetId)) {
+      event.preventDefault();
+      handleNavigate(href);
+    }
+  };
 
   return (
-    <button
-      type="button"
-      onClick={() => handleNavigate(href)}
-      className={className}
-      aria-label={ariaLabel}
-    >
+    <a href={nativeHref} onClick={handleClick} className={className} aria-label={ariaLabel}>
       {children}
-    </button>
+    </a>
   );
 }

@@ -16,7 +16,7 @@ const ITEMS: ValueProp[] = [
   },
   {
     Icon: Sprout,
-    title: 'Siempre abiertos',
+    title: `${BUSINESS.hours.weekdays} · ${BUSINESS.hours.time}`,
     description: `${BUSINESS.hours.weekdays}, de ${BUSINESS.hours.time}, en ${BUSINESS.address}.`,
     linkLabel: 'Ver ubicación',
     href: '#contacto',
