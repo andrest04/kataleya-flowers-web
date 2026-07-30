@@ -26,6 +26,7 @@
 
 # misc
 .DS_Store
+Thumbs.db
 *.pem
 /output/
 /.playwright-cli/
