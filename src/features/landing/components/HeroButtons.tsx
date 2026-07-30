@@ -21,7 +21,7 @@ export default function HeroButtons({
       external={isContact}
       className="rounded-none border-2 border-(--color-dark) bg-(--color-cream) px-8 py-3.5 text-xs font-bold tracking-[0.15em] text-(--color-dark) uppercase transition-colors duration-300 hover:bg-(--color-dark) hover:text-(--color-cream)"
     >
-      {isContact ? "Pedir por WhatsApp" : "Ver Catálogo"}
+      {isContact ? "Pedir por WhatsApp" : "Ver catálogo"}
     </Button>
   );
 }

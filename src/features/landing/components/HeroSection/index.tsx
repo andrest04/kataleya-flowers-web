@@ -6,7 +6,7 @@ export default function HeroSection() {
   return (
     <section
       id="hero"
-      className="relative isolate h-[585px] overflow-hidden"
+      className="relative isolate min-h-[585px]"
     >
       <HeroBackground />
       <HeroContent campaignMode={CAMPAIGN_MODE} />
