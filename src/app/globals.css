@@ -29,9 +29,9 @@
   --color-status-updated: #2980b9;
   --color-white: #ffffff;
   /* Z-stack interno del Hero (badge, flechas, dots, swipe hint).
-     Z-stack global del proyecto: Navbar z-[90], WhatsAppFloat z-50,
-     Lightbox z-[100]. Este token vive aislado al carousel y no compite
-     con esos niveles globales. */
+     Z-stack global del proyecto: Sheet/AlertDialog z-50, search backdrop
+     z-[85], Navbar z-[90], Lightbox z-[100]. Este token vive aislado al
+     carousel y no compite con esos niveles globales. */
   --z-hero-overlay: 10;
   /* AA-safe gold variants — La Regla del Dorado-No-Es-Texto (DESIGN.md + QA/audit/10).
      Base #e8b84b (1.8:1 on cream) is decoration-only; these tokens are text-safe. */

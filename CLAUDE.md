@@ -4,9 +4,11 @@ Landing + admin para **Kataleya Flawers**, florería real en Lima, Perú. Negoci
 
 **Estado:** Post-audit (Phases 1–5). Las convenciones de este archivo son **vinculantes** y la mayoría están **automatizadas** vía ESLint custom rules (`eslint.config.mjs`). Antes de pedir una excepción, leé `QA/audit/`.
 
+**Docs relacionados:** ante dudas de audiencia, marca o principios de producto, leé [`docs/product.md`](docs/product.md); ante dudas de sistema visual (color, tipografía, componentes, contraste), leé [`docs/design.md`](docs/design.md). Este archivo no repite ese contenido.
+
 ## Stack
 
-Next.js 16 (App Router, RSC por defecto) · React 19 · TS 5 strict · Tailwind v4 (CSS-only, sin `tailwind.config.*`) · Framer Motion 12 · @dnd-kit · lucide-react · Radix primitives · zod · Appwrite (Auth + DB + Storage, único backend) · Resend (emails transaccionales) · Playwright · next/font/google (Playfair Display + Lato).
+Next.js 16 (App Router, RSC por defecto) · React 19 · TS 5 strict · Tailwind v4 (CSS-only, sin `tailwind.config.*`) · Framer Motion 12 · @dnd-kit · lucide-react · Radix primitives · zod · Appwrite (Auth + DB + Storage, único backend) · Resend (emails transaccionales) · Playwright · next/font/google (Crimson Text + Mulish).
 
 ## Comandos
 
@@ -17,6 +19,7 @@ npm run lint:strict  # eslint . --max-warnings 0
 npx tsc --noEmit     # type-check
 npm run test:e2e     # e2e
 npx playwright test phase1-verify  # regression baseline (DEBE estar verde siempre)
+npm run doctor        # react-doctor@latest — lint/a11y/bundle/arquitectura
 ```
 
 Pre-commit (manual, no hay hooks): `npm run lint:strict` + `npx tsc --noEmit`.
