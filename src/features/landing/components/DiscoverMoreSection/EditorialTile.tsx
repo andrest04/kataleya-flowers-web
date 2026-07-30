@@ -21,7 +21,7 @@ export default function EditorialTile({
 }: EditorialTileProps) {
   const content = (
     <>
-      <div className="relative aspect-[4/5] overflow-hidden rounded-md bg-(--color-surface)">
+      <div className="relative aspect-[4/5] overflow-hidden rounded-md bg-(--color-surface) outline outline-1 -outline-offset-1 outline-black/10">
         <Image
           src={imageSrc}
           alt=""

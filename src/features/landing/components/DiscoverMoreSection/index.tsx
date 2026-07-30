@@ -16,7 +16,7 @@ const ITEMS = [
   {
     imageSrc: '/about-florist-table.jpg',
     Icon: MessageCircle,
-    title: 'Pide por WhatsApp',
+    title: 'Pedir por WhatsApp',
     description: 'Atención personalizada, de principio a fin, por WhatsApp.',
     href: BUSINESS.whatsappWithMessage(BUSINESS.messages.whatsappDefault),
     external: true,

@@ -26,7 +26,7 @@ export default function PromoBannerCard({
 
   return (
     <div
-      className={`group relative isolate flex aspect-[3/4] overflow-hidden rounded-md sm:aspect-[4/3] ${isTop ? 'items-start' : 'items-end'}`}
+      className={`group relative isolate flex aspect-[3/4] overflow-hidden rounded-md outline outline-1 -outline-offset-1 outline-black/10 sm:aspect-[4/3] ${isTop ? 'items-start' : 'items-end'}`}
     >
       <Image
         src={imageSrc}
