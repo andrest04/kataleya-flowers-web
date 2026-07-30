@@ -28,7 +28,7 @@ export default function BestSellerProductCard({
       onClick={onClick}
       className={`group block ${className}`}
     >
-      <div className="relative aspect-[4/5] overflow-hidden rounded-md bg-(--color-surface)">
+      <div className="relative aspect-[4/5] overflow-hidden rounded-md bg-(--color-surface) outline outline-1 -outline-offset-1 outline-black/10">
         <Image
           src={product.imageUrl}
           alt={product.name}
@@ -41,8 +41,8 @@ export default function BestSellerProductCard({
         <h3 className="font-heading text-xl leading-tight text-(--color-dark)">
           {product.name}
         </h3>
-        <p className="mt-2 font-body text-sm font-semibold text-(--color-primary)">
-          {hasVariants ? 'Desde ' : ''}S/{' '}
+        <p className="mt-2 font-body text-sm font-semibold tabular-nums text-(--color-primary)">
+          {hasVariants ? 'Desde ' : ''}S/{' '}
           {effectivePrice.toLocaleString('es-PE', {
             minimumFractionDigits: effectivePrice % 1 === 0 ? 0 : 2,
             maximumFractionDigits: 2,

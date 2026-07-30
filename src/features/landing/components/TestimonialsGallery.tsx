@@ -46,7 +46,7 @@ function PhotoCard({ photo, position }: PhotoCardProps) {
       style={{ transform: `rotate(${photo.rotation}deg)` }}
     >
       <div
-        className={`h-full overflow-hidden rounded-3xl bg-(--color-surface) shadow-lg transition-transform duration-700 ease-out motion-reduce:transition-none transform-gpu ${POSITION_CLASSES[position]}`}
+        className={`h-full overflow-hidden rounded-3xl bg-(--color-surface) shadow-lg outline outline-1 -outline-offset-1 outline-black/10 transition-transform duration-700 ease-out motion-reduce:transition-none transform-gpu ${POSITION_CLASSES[position]}`}
       >
         <Image
           src={photo.src}

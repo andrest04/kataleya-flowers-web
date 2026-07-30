@@ -17,7 +17,7 @@ export default function CategoryTile({ category, layoutClasses }: CategoryTilePr
       href={`/catalogo/${category.slug}`}
       className={`group block focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-secondary) ${layoutClasses}`}
     >
-      <div className="relative aspect-[4/5] overflow-hidden rounded-md bg-(--color-surface)">
+      <div className="relative aspect-[4/5] overflow-hidden rounded-md bg-(--color-surface) outline outline-1 -outline-offset-1 outline-black/10">
         {category.imageUrl ? (
           <Image
             src={category.imageUrl}

@@ -1,7 +1,7 @@
 'use client';
 
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
 
 import HorizontalScrollBar from '@/components/shared/Navbar/SearchOverlay/HorizontalScrollBar';
 import type { Category } from '@/features/catalog/types';
@@ -14,9 +14,7 @@ interface CatalogSectionProps {
 
 export default function CatalogSection({ categories }: CatalogSectionProps) {
   const carouselRef = useRef<HTMLDivElement>(null);
-  const headingRef = useRef<HTMLHeadingElement>(null);
   const carouselId = useId();
-  const [headingLeftInset, setHeadingLeftInset] = useState(16);
   const [canScrollPrevious, setCanScrollPrevious] = useState(false);
   const [canScrollNext, setCanScrollNext] = useState(false);
   const [showControls, setShowControls] = useState(false);
@@ -48,27 +46,6 @@ export default function CatalogSection({ categories }: CatalogSectionProps) {
     };
   }, [tiles.length, updateScrollControls]);
 
-  useLayoutEffect(() => {
-    const heading = headingRef.current;
-
-    if (!heading) return;
-
-    const updateHeadingInset = () => {
-      setHeadingLeftInset(heading.getBoundingClientRect().left);
-    };
-
-    const resizeObserver = new ResizeObserver(updateHeadingInset);
-
-    resizeObserver.observe(heading);
-    window.addEventListener('resize', updateHeadingInset);
-    updateHeadingInset();
-
-    return () => {
-      resizeObserver.disconnect();
-      window.removeEventListener('resize', updateHeadingInset);
-    };
-  }, []);
-
   if (tiles.length === 0) {
     return null;
   }
@@ -87,10 +64,7 @@ export default function CatalogSection({ categories }: CatalogSectionProps) {
   return (
     <section id="catalogo" className="scroll-mt-20 overflow-x-hidden py-12 sm:py-16">
       <div className="mx-auto max-w-[110rem] px-4 sm:px-6 lg:px-8">
-        <h2
-          ref={headingRef}
-          className="font-heading text-3xl leading-tight text-(--color-primary) sm:text-4xl lg:text-5xl"
-          >
+        <h2 className="font-heading text-3xl leading-tight text-balance text-(--color-primary) sm:text-4xl lg:text-5xl">
           Flores y regalos para cada ocasión
         </h2>
       </div>
@@ -109,8 +83,7 @@ export default function CatalogSection({ categories }: CatalogSectionProps) {
         <div
           ref={carouselRef}
           id={carouselId}
-          className="scrollbar-hide flex gap-4 overflow-x-auto pb-6 sm:gap-5 sm:pb-7"
-          style={{ paddingInline: headingLeftInset }}
+          className="scrollbar-hide mx-auto flex max-w-[110rem] gap-4 overflow-x-auto px-4 pb-6 sm:gap-5 sm:px-6 sm:pb-7 lg:px-8"
           role="region"
           aria-label="Catálogos de flores por ocasión"
           onScroll={updateScrollControls}
