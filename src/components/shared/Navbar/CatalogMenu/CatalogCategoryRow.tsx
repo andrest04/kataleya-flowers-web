@@ -16,16 +16,16 @@ export default function CatalogCategoryRow({
     <Link
       href={`/catalogo/${category.slug}`}
       onClick={onNavigate}
-      className="group flex items-center gap-4"
+      className="group flex items-center gap-3"
     >
-      <div className="relative h-16 w-16 shrink-0 overflow-hidden bg-(--color-surface)">
+      <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-(--color-surface)">
         {category.imageUrl && (
           <Image
             src={category.imageUrl}
             alt={category.name}
             fill
             className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
-            sizes="4rem"
+            sizes="3rem"
           />
         )}
       </div>
@@ -33,7 +33,7 @@ export default function CatalogCategoryRow({
         <h3 className="font-heading text-base text-(--color-dark) transition-colors duration-200 group-hover:text-(--color-primary)">
           {category.name}
         </h3>
-        <p className="mt-1 line-clamp-1 font-body text-sm text-(--color-muted)">
+        <p className="mt-0.5 line-clamp-1 font-body text-sm text-(--color-muted)">
           {category.description}
         </p>
       </div>
