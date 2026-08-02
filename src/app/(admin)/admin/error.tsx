@@ -3,7 +3,6 @@
 import { Button, EmptyState } from '@/components/ui';
 
 export default function Error({
-  error,
   reset,
 }: {
   error: Error & { digest?: string };
@@ -19,11 +18,6 @@ export default function Error({
           </Button>
         }
       />
-      {process.env.NODE_ENV === 'development' && (
-        <p className="mt-4 text-sm" style={{ color: 'var(--color-muted)' }}>
-          {error.message}
-        </p>
-      )}
     </div>
   );
 }

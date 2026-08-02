@@ -8,6 +8,12 @@ interface EditarCategoriaPageProps {
   params: Promise<{ id: string }>;
 }
 
+export async function generateMetadata({ params }: EditarCategoriaPageProps) {
+  const { id } = await params;
+  const category = await getAdminCategoryById(id);
+  return { title: category ? `Editar ${category.name}` : 'Editar categoría' };
+}
+
 export default async function EditarCategoriaPage({ params }: EditarCategoriaPageProps) {
   const { id } = await params;
   const category = await getAdminCategoryById(id);

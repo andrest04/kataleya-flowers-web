@@ -9,6 +9,8 @@ import {
   parseAdminCategoryFilter,
 } from '@/features/admin/utils/adminFilters';
 
+export const metadata = { title: 'Categorías' };
+
 interface AdminCategoriasPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }

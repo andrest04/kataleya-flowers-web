@@ -10,6 +10,8 @@ interface NewCategoryProductPageProps {
   params: Promise<{ id: string }>;
 }
 
+export const metadata = { title: 'Nuevo producto' };
+
 export default async function NewCategoryProductPage({ params }: NewCategoryProductPageProps) {
   const { id } = await params;
   const [category, categories, flowerTypes, productColors] = await Promise.all([

@@ -2,6 +2,8 @@ import Link from 'next/link';
 
 import CategoryForm from '@/features/admin/components/CategoryForm';
 
+export const metadata = { title: 'Nueva categoría' };
+
 export default function NuevaCategoriaPage() {
   return (
     <div className="space-y-6">

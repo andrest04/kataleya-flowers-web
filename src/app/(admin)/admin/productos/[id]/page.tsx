@@ -11,6 +11,12 @@ interface EditarProductoPageProps {
   params: Promise<{ id: string }>;
 }
 
+export async function generateMetadata({ params }: EditarProductoPageProps) {
+  const { id } = await params;
+  const product = await getAdminProductById(id);
+  return { title: product ? `Editar ${product.name}` : 'Editar producto' };
+}
+
 export default async function EditarProductoPage({ params }: EditarProductoPageProps) {
   const { id } = await params;
 
