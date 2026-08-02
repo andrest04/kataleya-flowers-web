@@ -90,7 +90,7 @@ export default function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               required
               autoComplete="email"
-              className="w-full px-3 py-2.5 rounded-lg text-sm outline-none transition-shadow focus:ring-2"
+              className="w-full px-3 py-2.5 rounded-lg text-base md:text-sm outline-none transition-shadow focus:ring-2"
               style={{
                 border: '1px solid var(--color-border)',
                 background: 'var(--color-cream)',
@@ -114,7 +114,7 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
               autoComplete="current-password"
-              className="w-full px-3 py-2.5 rounded-lg text-sm outline-none transition-shadow focus:ring-2"
+              className="w-full px-3 py-2.5 rounded-lg text-base md:text-sm outline-none transition-shadow focus:ring-2"
               style={{
                 border: '1px solid var(--color-border)',
                 background: 'var(--color-cream)',

@@ -9,7 +9,7 @@ export const PILL_BASE: CSSProperties = {
 };
 
 export const RENAME_INPUT_WIDTH = '130px';
-export const ADD_INPUT_WIDTH = '150px';
+export const ADD_INPUT_WIDTH_CLASS = 'w-[min(150px,40vw)]';
 
 export function getPillSelectedBg(activeColor: ActiveColor): string {
   return activeColor === 'primary'

@@ -40,7 +40,7 @@ export default function TaxonomyPillManage<TItem extends TaxonomyItem>({
       <button
         type="button"
         onClick={() => onStartRename(item.name)}
-        className="text-xs transition-opacity hover:opacity-70"
+        className="text-xs transition-opacity hover:opacity-70 -m-2 p-2"
         style={{ color: 'var(--color-muted)' }}
         aria-label={`Renombrar ${item.label}`}
       >
@@ -49,7 +49,7 @@ export default function TaxonomyPillManage<TItem extends TaxonomyItem>({
       <button
         type="button"
         onClick={() => onStartDelete(item.name)}
-        className="text-xs transition-opacity hover:opacity-70"
+        className="text-xs transition-opacity hover:opacity-70 -m-2 p-2"
         style={{ color: 'var(--color-primary)' }}
         aria-label={`Eliminar ${item.label}`}
       >

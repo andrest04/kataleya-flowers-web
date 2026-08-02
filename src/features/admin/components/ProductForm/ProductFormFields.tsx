@@ -40,7 +40,7 @@ export default function ProductFormFields({
 
   return (
     <>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <FormField label="Nombre" required htmlFor={ID_NAME}>
           <Input
             id={ID_NAME}
@@ -96,7 +96,7 @@ export default function ProductFormFields({
         <FieldError id={`${ID_DESC}-error`} message={descError} />
       </FormField>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <FormField label="Categoría" required htmlFor={ID_CAT}>
           <Select
             id={ID_CAT}

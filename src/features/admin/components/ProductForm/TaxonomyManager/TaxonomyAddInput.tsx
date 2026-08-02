@@ -3,7 +3,7 @@
 import { X } from 'lucide-react';
 import type { ReactNode, RefObject } from 'react';
 
-import { ADD_INPUT_WIDTH, getActiveColorVar } from './styles';
+import { ADD_INPUT_WIDTH_CLASS, getActiveColorVar } from './styles';
 import type { ActiveColor } from './types';
 
 interface Props {
@@ -39,7 +39,7 @@ export default function TaxonomyAddInput({
   const activeVar = getActiveColorVar(activeColor);
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2 flex-wrap">
       <input
         ref={inputRef}
         type="text"
@@ -54,12 +54,11 @@ export default function TaxonomyAddInput({
           if (e.key === 'Escape') onCancel();
         }}
         placeholder={placeholder}
-        className="rounded-full px-3 py-1.5 text-sm border outline-none focus:ring-1"
+        className={`rounded-full px-3 py-1.5 text-sm border outline-none focus:ring-1 ${ADD_INPUT_WIDTH_CLASS}`}
         style={{
           borderColor: 'var(--color-border)',
           color: 'var(--color-dark)',
           background: 'var(--color-white)',
-          width: ADD_INPUT_WIDTH,
         }}
       />
       {renderExtraInput?.(extra, setExtra)}

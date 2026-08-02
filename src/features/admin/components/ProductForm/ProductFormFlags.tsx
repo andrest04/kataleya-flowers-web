@@ -23,7 +23,7 @@ export default function ProductFormFlags({ form, fieldErrors, setField }: Props)
 
   return (
     <>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <FormField label="Ocasión" htmlFor={ID_OCCASION}>
           <Input
             id={ID_OCCASION}
@@ -44,7 +44,7 @@ export default function ProductFormFlags({ form, fieldErrors, setField }: Props)
         </FormField>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 items-start">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
         <div className="flex flex-col gap-3">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium" style={{ color: 'var(--color-dark)' }}>
