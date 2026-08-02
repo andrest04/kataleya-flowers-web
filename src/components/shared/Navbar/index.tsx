@@ -3,8 +3,6 @@
 import { Menu, Search, X } from "lucide-react";
 import Link from "next/link";
 
-import { BUSINESS } from "@/lib/constants";
-
 import AnnouncementBar from "./AnnouncementBar";
 import CatalogMenu from "./CatalogMenu";
 import DesktopActions from "./DesktopActions";
@@ -92,9 +90,9 @@ export default function Navbar() {
 
               <Link
                 href="/"
-                className="font-heading text-[1.5rem] leading-none text-(--color-primary)"
+                className="font-heading text-[1.75rem] font-bold leading-none text-(--color-primary)"
               >
-                {BUSINESS.name}
+                Kataleya
               </Link>
 
               <div className="flex items-center justify-end">
