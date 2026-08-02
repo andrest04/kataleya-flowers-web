@@ -11,7 +11,7 @@ export default function Error({
 }) {
   return (
     <main id="main-content" className="min-h-screen bg-cream pt-28 pb-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto flex flex-col items-center justify-center py-24">
+      <div className="max-w-8xl mx-auto flex flex-col items-center justify-center py-24">
         <EmptyState
           message="No pudimos cargar la página. Por favor, inténtalo de nuevo."
           action={

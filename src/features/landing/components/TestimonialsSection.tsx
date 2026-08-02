@@ -85,7 +85,7 @@ export default function TestimonialsSection() {
       className="scroll-mt-20 pt-8 pb-16"
       style={{ backgroundColor: "var(--color-cream)" }}
     >
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-8xl px-4 sm:px-6 lg:px-8">
         <h2 className="font-heading text-3xl text-balance text-(--color-primary) sm:text-4xl">
           {`Clientas felices eligiendo flores para celebrar en ${BUSINESS.location}`}
         </h2>

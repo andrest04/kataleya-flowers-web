@@ -133,7 +133,7 @@ export default async function CategoriaPage({
       className="min-h-screen bg-cream pt-28 pb-12 px-4 sm:px-6 lg:px-8"
     >
       <JsonLd data={[breadcrumbLd, itemListLd]} />
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-8xl mx-auto">
         <Breadcrumb items={[
           { label: 'Inicio', href: '/' },
           { label: 'Catálogo', href: '/catalogo' },

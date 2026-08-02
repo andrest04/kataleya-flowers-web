@@ -72,9 +72,11 @@
   --sidebar-accent-foreground: #1a1a1a;
   --sidebar-border: color-mix(in srgb, var(--color-dark) 12%, var(--color-cream));
   --sidebar-ring: #c0392b;
+  --container-page: 90rem;
 }
 
 @theme inline {
+  --container-8xl: var(--container-page);
   --color-primary: var(--color-primary);
   --color-secondary: var(--color-secondary);
   --color-accent: var(--color-accent);

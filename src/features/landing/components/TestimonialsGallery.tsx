@@ -95,7 +95,7 @@ export default function TestimonialsGallery({ testimonials }: TestimonialsGaller
   }
 
   return (
-    <div className="mx-auto mt-12 max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div className="mx-auto mt-12 max-w-8xl px-4 sm:px-6 lg:px-8">
       <div id="testimonios-galeria" className="grid gap-x-6 gap-y-14 md:grid-cols-2 md:gap-x-10 lg:grid-cols-4 lg:gap-x-16">
         {testimonials.map((testimonial, index) => (
           <div key={testimonial.id} className={index === activeIndex ? 'block' : 'hidden md:block'}>
