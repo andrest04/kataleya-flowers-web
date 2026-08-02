@@ -1,32 +1,31 @@
-import type { Metadata } from "next";
-import React, { Suspense } from "react";
+import type { Metadata } from 'next';
+import type { ReactElement } from 'react';
 
-import BreadcrumbNav from "@/components/ui/Breadcrumb";
-import { JsonLd } from "@/components/ui/JsonLd";
-import CatalogSearch from "@/features/catalog/components/CatalogSearch";
-import CategoryCard from "@/features/catalog/components/CategoryCard";
-import { getCategories } from "@/features/catalog/queries/getCategories";
-import { getFlowerTypes } from "@/features/catalog/queries/getFlowerTypes";
-import { getProductColors } from "@/features/catalog/queries/getProductColors";
-import { getProducts } from "@/features/catalog/queries/getProducts";
-import { BUSINESS } from "@/lib/constants";
+import { JsonLd } from '@/components/ui/JsonLd';
+import CatalogCategoryStrip from '@/features/catalog/components/CatalogCategoryStrip';
+import CatalogCollection from '@/features/catalog/components/CatalogCollection';
+import { getCategories } from '@/features/catalog/queries/getCategories';
+import { getFlowerTypes } from '@/features/catalog/queries/getFlowerTypes';
+import { getProductColors } from '@/features/catalog/queries/getProductColors';
+import { getProducts } from '@/features/catalog/queries/getProducts';
+import { BUSINESS } from '@/lib/constants';
 
 const SITE_URL = BUSINESS.website;
 
 const BREADCRUMB_LD = {
-  "@context": "https://schema.org",
-  "@type": "BreadcrumbList",
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
   itemListElement: [
     {
-      "@type": "ListItem",
+      '@type': 'ListItem',
       position: 1,
-      name: "Inicio",
+      name: 'Inicio',
       item: `${SITE_URL}/`,
     },
     {
-      "@type": "ListItem",
+      '@type': 'ListItem',
       position: 2,
-      name: "Catálogo",
+      name: 'Catálogo',
       item: `${SITE_URL}/catalogo`,
     },
   ],
@@ -35,77 +34,100 @@ const BREADCRUMB_LD = {
 export const revalidate = 3600;
 
 export const metadata: Metadata = {
-  title: "Catálogo de Flores",
+  title: 'Catálogo de Flores',
   description: `Explora nuestro catálogo de arreglos florales, orquídeas y regalos premium disponibles en ${BUSINESS.location}.`,
   alternates: {
-    canonical: "/catalogo",
+    canonical: '/catalogo',
   },
   openGraph: {
-    title: "Catálogo de Flores",
+    title: 'Catálogo de Flores',
     description: `Explora nuestro catálogo de arreglos florales, orquídeas y regalos premium disponibles en ${BUSINESS.location}.`,
-    url: "/catalogo",
-    type: "website",
+    url: '/catalogo',
+    type: 'website',
   },
   twitter: {
-    card: "summary_large_image",
-    title: "Catálogo de Flores",
+    card: 'summary_large_image',
+    title: 'Catálogo de Flores',
     description: `Explora nuestro catálogo de arreglos florales, orquídeas y regalos premium disponibles en ${BUSINESS.location}.`,
   },
 };
 
-export default async function CatalogoPage(): Promise<React.ReactElement> {
-  const [categories, products, flowerTypeRows, colorRows] = await Promise.all([
+interface CatalogoPageProps {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}
+
+function firstParam(value: string | string[] | undefined): string {
+  return Array.isArray(value) ? (value[0] ?? '') : (value ?? '');
+}
+
+export default async function CatalogoPage({
+  searchParams,
+}: CatalogoPageProps): Promise<ReactElement> {
+  const [categories, products, colorRows, flowerTypeRows, params] = await Promise.all([
     getCategories(),
     getProducts(),
-    getFlowerTypes(),
     getProductColors(),
+    getFlowerTypes(),
+    searchParams,
   ]);
-
-  const categoryGrid = (
-    <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-      {categories.map((category) => (
-        <CategoryCard key={category.id} category={category} />
-      ))}
-    </div>
+  const categorySlugs = new Map(
+    categories.map((category) => [category.id, category.slug]),
   );
-
+  const collectionItems = products.flatMap((product) => {
+    const categorySlug = categorySlugs.get(product.categoryId);
+    return categorySlug ? [{ product, categorySlug }] : [];
+  });
+  const assignedCategoryIds = new Set(
+    collectionItems.map(({ product }) => product.categoryId),
+  );
+  const filterCategories = categories.filter(({ id }) => assignedCategoryIds.has(id));
+  const assignedColors = new Set(
+    collectionItems.flatMap(({ product }) => product.colors ?? []),
+  );
+  const assignedFlowerTypes = new Set(
+    collectionItems.flatMap(({ product }) => product.flowerTypes ?? []),
+  );
+  const colors = colorRows.filter(({ name }) => assignedColors.has(name));
+  const flowerTypes = flowerTypeRows
+    .map(({ name }) => name)
+    .filter((name) => assignedFlowerTypes.has(name));
+  const initialQuery = {
+    category: firstParam(params.categoria),
+    priceMin: firstParam(params.precio_min),
+    priceMax: firstParam(params.precio_max),
+    colors: firstParam(params.color),
+    flowerTypes: firstParam(params.tipo),
+    sort: firstParam(params.orden),
+  };
   const itemListLd = {
-    "@context": "https://schema.org",
-    "@type": "ItemList",
-    itemListElement: categories.map((cat, index) => ({
-      "@type": "ListItem",
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    itemListElement: collectionItems.map(({ product, categorySlug }, index) => ({
+      '@type': 'ListItem',
       position: index + 1,
-      url: `${SITE_URL}/catalogo/${cat.slug}`,
-      name: cat.name,
+      url: `${SITE_URL}/catalogo/${categorySlug}/${product.slug}`,
+      name: product.name,
     })),
   };
 
   return (
-    <main
-      id="main-content"
-      className="min-h-screen bg-cream pt-28 pb-12 px-4 sm:px-6 lg:px-8"
-    >
+    <main id="main-content" className="min-h-screen bg-cream px-2 pb-16 pt-10 sm:px-2 lg:px-3">
       <JsonLd data={[BREADCRUMB_LD, itemListLd]} />
-      <div className="max-w-7xl mx-auto">
-        <BreadcrumbNav items={[
-          { label: 'Inicio', href: '/' },
-          { label: 'Catálogo' },
-        ]} />
+      <div className="mx-auto max-w-8xl">
+        <header className="mx-auto mb-10 max-w-3xl text-center sm:mb-12">
+          <h1 className="text-balance font-heading text-4xl leading-tight text-(--color-primary) sm:text-5xl">
+            Flores para cada momento
+          </h1>
+        </header>
 
-        <h1 className="font-heading text-4xl md:text-5xl text-primary text-center mb-12">
-          Nuestro Catálogo
-        </h1>
-
-        <Suspense fallback={categoryGrid}>
-          <CatalogSearch
-            categories={categories}
-            products={products}
-            flowerTypes={flowerTypeRows.map((ft) => ft.name)}
-            productColors={colorRows}
-          >
-            {categoryGrid}
-          </CatalogSearch>
-        </Suspense>
+        <CatalogCategoryStrip categories={categories} />
+        <CatalogCollection
+          items={collectionItems}
+          categories={filterCategories}
+          colors={colors}
+          flowerTypes={flowerTypes}
+          initialQuery={initialQuery}
+        />
       </div>
     </main>
   );
