@@ -3,7 +3,7 @@ import { expect, type Page,test } from '@playwright/test';
 import { getAdminCredentials, loginAsAdmin } from './helpers/adminAuth';
 
 /**
- * Phase 4C — Admin categorías CRUD + drag-drop E2E.
+ * Phase 4C — Admin categorías CRUD E2E.
  *
  * IMPORTANTE — alcance defensivo:
  *
@@ -14,8 +14,6 @@ import { getAdminCredentials, loginAsAdmin } from './helpers/adminAuth';
  *    campos requeridos.
  *  - "Editar": navegamos al form y verificamos que carga con valores.
  *  - "Toggle status / featured": cambiamos y revertimos en el mismo test.
- *  - "Reorder con DnD": ejercemos el flujo (drag → bar de cambios → cancelar)
- *    sin guardar para no alterar el orden real.
  *  - "Eliminar con productos": verificamos que el dialog elaborado aparece y
  *    que cancelar funciona (NO se ejecuta el cascade real).
  *
@@ -36,17 +34,13 @@ interface CategorySnapshot {
 async function pickFirstCategory(page: Page): Promise<CategorySnapshot | null> {
   await page.goto('/admin/categorias');
 
-  // Anclar en el primer link "Editar" (su href trae el id). Luego ubicar la
-  // fila EXACTA por su clase raíz + ese href único, y leer el nombre de la
-  // MISMA fila — así `name` y `href` nunca quedan desfasados (el wrapper del
-  // DnD hace que filtrar divs por el handle agarre filas vecinas).
   const editLink = page.getByRole('link', { name: 'Editar' }).first();
   if ((await editLink.count()) === 0) return null;
 
   const href = (await editLink.getAttribute('href')) ?? '';
   const id = href.split('/').pop() ?? '';
 
-  const row = page.locator('div.flex.items-center.gap-4', {
+  const row = page.locator('tr', {
     has: page.locator(`a[href="${href}"]`),
   });
   const name = (await row.locator('p.font-medium').first().textContent())?.trim() ?? '';
@@ -54,7 +48,7 @@ async function pickFirstCategory(page: Page): Promise<CategorySnapshot | null> {
   return { id, name, rowSelector: href };
 }
 
-test.describe('Phase 4C — Admin categorías CRUD + DnD', () => {
+test.describe('Phase 4C — Admin categorías CRUD', () => {
   test.skip(
     !credentials,
     'Set E2E_ADMIN_EMAIL and E2E_ADMIN_PASSWORD to run admin category CRUD tests.',
@@ -111,18 +105,8 @@ test.describe('Phase 4C — Admin categorías CRUD + DnD', () => {
     }
 
     await page.goto('/admin/categorias');
-    // Localizar la fila por el aria-label del handle.
-    const handle = page.getByRole('button', {
-      name: `Arrastrar "${cat.name}" para reordenar`,
-    });
-    await expect(handle).toBeVisible();
 
-    // El primer switch en la fila es Estado, el segundo Destacado.
-    const row = page
-      .locator('div')
-      .filter({ has: handle })
-      .filter({ hasText: cat.name })
-      .first();
+    const row = page.locator('tr').filter({ hasText: cat.name }).first();
     const switches = row.getByRole('switch');
     const statusSwitch = switches.first();
 
@@ -141,97 +125,11 @@ test.describe('Phase 4C — Admin categorías CRUD + DnD', () => {
     );
   });
 
-  test('drag handle es accesible: tiene role="button" + aria-label en español', async ({
-    page,
-  }) => {
-    await page.goto('/admin/categorias');
-    const firstHandle = page.getByRole('button', { name: /^Arrastrar/ }).first();
-    if ((await firstHandle.count()) === 0) {
-      test.skip(true, 'No hay categorías para verificar handle.');
-      return;
-    }
-
-    const ariaLabel = await firstHandle.getAttribute('aria-label');
-    expect(ariaLabel).toMatch(/^Arrastrar ".+" para reordenar$/);
-
-    // El handle debe ser focuseable.
-    await firstHandle.focus();
-    await expect(firstHandle).toBeFocused();
-  });
-
-  test('DndLiveRegion existe en el DOM con role="status" + aria-live', async ({ page }) => {
-    await page.goto('/admin/categorias');
-    // La región está visualmente oculta pero presente.
-    const liveRegion = page
-      .locator('[role="status"][aria-live="assertive"]')
-      .first();
-    await expect(liveRegion).toBeAttached();
-  });
-
-  test('drag-drop UI: drag muestra SaveOrderBar y cancelar revierte', async ({ page }) => {
-    await page.goto('/admin/categorias');
-
-    const handles = page.getByRole('button', { name: /^Arrastrar/ });
-    const total = await handles.count();
-    if (total < 2) {
-      test.skip(true, 'Necesita al menos 2 categorías para reordenar.');
-      return;
-    }
-
-    // page.dragAndDrop simula un drag pointer events; @dnd-kit reacciona.
-    const firstHandle = handles.nth(0);
-    const secondHandle = handles.nth(1);
-
-    // Capturamos los nombres antes — para restaurar el orden visual si algo persiste.
-    const firstName =
-      (await firstHandle.getAttribute('aria-label'))?.match(/"(.+?)"/)?.[1] ?? '';
-
-    // Drag — Playwright maneja pointer events nativamente. @dnd-kit usa una
-    // restricción de activación en el PointerSensor que el drag sintético de
-    // Playwright a veces no dispara; un timeout acá NO es fatal: la rama
-    // "sin barra" de abajo saltea el test (el camino accesible por teclado se
-    // cubre en otros tests).
-    try {
-      await firstHandle.dragTo(secondHandle, {
-        targetPosition: { x: 0, y: 30 },
-      });
-    } catch {
-      // Drag sintético no registrado — lo maneja el skip de abajo.
-    }
-
-    // Tras un drag exitoso, debe aparecer el botón "Guardar orden" (SaveOrderBar).
-    const saveBtn = page.getByRole('button', { name: /Guardar orden/i });
-
-    // Si por alguna razón el drag-drop pointer no produjo cambios, dnd-kit no
-    // muestra la barra. En ese caso aceptamos saltearnos la validación: la
-    // accesibilidad de teclado del @dnd-kit es lo crítico (cubierto en otro test).
-    const visible = await saveBtn.isVisible().catch(() => false);
-    if (!visible) {
-      test.skip(
-        true,
-        '@dnd-kit no detectó el drag (Playwright pointer events). El test de teclado cubre el camino accesible.',
-      );
-      return;
-    }
-
-    // Cancelar — vuelve al orden original sin persistir.
-    await page.getByRole('button', { name: 'Cancelar' }).click();
-    await expect(saveBtn).not.toBeVisible();
-
-    // Smoke: la primera categoría sigue siendo la misma (orden no persistido).
-    const firstHandleAfter = page.getByRole('button', { name: /^Arrastrar/ }).first();
-    const firstNameAfter =
-      (await firstHandleAfter.getAttribute('aria-label'))?.match(/"(.+?)"/)?.[1] ?? '';
-    expect(firstNameAfter).toBe(firstName);
-  });
-
   test('eliminar categoría con productos: dialog elaborado aparece y se cancela', async ({
     page,
   }) => {
     await page.goto('/admin/categorias');
 
-    // Buscamos el botón "Eliminar" de cualquier categoría (no estamos en modo
-    // reorder, así que las acciones están visibles).
     const firstDelete = page.getByRole('button', { name: 'Eliminar' }).first();
     if ((await firstDelete.count()) === 0) {
       test.skip(true, 'No hay categorías para verificar dialog.');

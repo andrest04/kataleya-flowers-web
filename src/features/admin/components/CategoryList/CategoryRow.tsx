@@ -1,9 +1,7 @@
 'use client';
 
-import { useSortable } from '@dnd-kit/react/sortable';
-import { GripVertical } from 'lucide-react';
-
 import Button from '@/components/ui/Button';
+import { TableCell, TableRow } from '@/components/ui/primitives/table';
 import type { CategoryRow } from '@/lib/db/rows';
 
 import CategoryRowImage from './CategoryRowImage';
@@ -14,7 +12,6 @@ interface CategoryRowProps {
   category: CategoryRow;
   index: number;
   deletingId: string | null;
-  hasChanges: boolean;
   onDelete: (id: string, name: string) => void;
   onLocalToggleStatus: (id: string, isActive: boolean) => void;
   onLocalToggleFeatured: (id: string, isFeatured: boolean) => void;
@@ -25,68 +22,48 @@ export default function CategoryRow({
   category,
   index,
   deletingId,
-  hasChanges,
   onDelete,
   onLocalToggleStatus,
   onLocalToggleFeatured,
   productCount,
 }: CategoryRowProps) {
-  const { ref, handleRef, isDragging } = useSortable({
-    id: category.id,
-    index,
-    transition: { idle: true },
-  });
-
   return (
-    <li
-      ref={ref}
-      aria-roledescription="categoría reordenable"
-      className="flex items-center gap-4 px-4 py-3 motion-safe:transition-colors"
+    <TableRow
       style={{
-        background: isDragging ? 'var(--color-surface)' : 'var(--color-white)',
+        background: 'var(--color-white)',
         borderBottom: '1px solid var(--color-border)',
-        opacity: isDragging ? 0.7 : 1,
       }}
     >
-      <button
-        ref={handleRef}
-        type="button"
-        className="flex h-6 w-6 shrink-0 items-center justify-center rounded transition-colors hover:bg-(--color-surface) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary)"
-        style={{ color: 'var(--color-muted)', cursor: 'grab', touchAction: 'none' }}
-        aria-label={`Arrastrar "${category.name}" para reordenar`}
-        aria-describedby="category-sort-instructions"
-      >
-        <GripVertical aria-hidden="true" className="size-4" />
-      </button>
-
-      <span className="w-5 shrink-0 text-center font-mono text-xs" style={{ color: 'var(--color-muted)' }}>
+      <TableCell className="text-center font-mono text-xs" style={{ color: 'var(--color-muted)' }}>
         {index + 1}
-      </span>
+      </TableCell>
 
-      <CategoryRowImage category={category} />
+      <TableCell>
+        <CategoryRowImage category={category} />
+      </TableCell>
 
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium" style={{ color: 'var(--color-dark)' }}>{category.name}</p>
-        <p className="truncate text-xs" style={{ color: 'var(--color-muted)' }}>{category.slug}</p>
+      <TableCell className="whitespace-normal">
+        <p className="text-sm font-medium" style={{ color: 'var(--color-dark)' }}>{category.name}</p>
+        <p className="text-xs" style={{ color: 'var(--color-muted)' }}>{category.slug}</p>
         <p className="text-xs" style={{ color: 'var(--color-muted)' }}>
           {productCount} producto{productCount !== 1 ? 's' : ''}
         </p>
-      </div>
+      </TableCell>
 
-      <span className="hidden w-28 shrink-0 truncate text-sm md:block" style={{ color: 'var(--color-dark)' }}>
+      <TableCell className="hidden md:table-cell" style={{ color: 'var(--color-dark)' }}>
         {category.occasion ?? '—'}
-      </span>
+      </TableCell>
 
-      <div className="flex w-12 shrink-0 justify-center">
+      <TableCell className="text-center">
         <CategoryToggleStatus id={category.id} name={category.name} isActive={category.is_active} onLocalChange={onLocalToggleStatus} />
-      </div>
+      </TableCell>
 
-      <div className="flex w-20 shrink-0 justify-center">
+      <TableCell className="text-center">
         <CategoryToggleFeatured id={category.id} name={category.name} isFeatured={category.is_featured} onLocalChange={onLocalToggleFeatured} />
-      </div>
+      </TableCell>
 
-      {!hasChanges ? (
-        <div className="flex shrink-0 items-center justify-end gap-2">
+      <TableCell>
+        <div className="flex flex-wrap items-center justify-end gap-2">
           <Button variant="primary" size="sm" href={`/admin/categorias/${category.id}/productos`}>Gestionar productos</Button>
           <Button variant="ghost" size="sm" href={`/admin/categorias/${category.id}`}>Editar</Button>
           <Button
@@ -101,7 +78,7 @@ export default function CategoryRow({
             {deletingId === category.id ? 'Eliminando…' : 'Eliminar'}
           </Button>
         </div>
-      ) : null}
-    </li>
+      </TableCell>
+    </TableRow>
   );
 }

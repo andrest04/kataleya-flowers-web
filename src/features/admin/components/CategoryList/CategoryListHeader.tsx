@@ -1,27 +1,24 @@
 'use client';
 
-interface CategoryListHeaderProps {
-  hasChanges: boolean;
-}
+import { TableHead, TableHeader, TableRow } from '@/components/ui/primitives/table';
 
-export default function CategoryListHeader({ hasChanges }: CategoryListHeaderProps) {
+export default function CategoryListHeader() {
   return (
-    <div
-      className="flex items-center gap-4 px-4 py-3 text-xs font-semibold"
-      style={{
-        background: 'var(--color-surface)',
-        borderBottom: '1px solid var(--color-border)',
-        color: 'var(--color-dark)',
-      }}
-    >
-      <span className="w-6 flex-shrink-0" />
-      <span className="w-5 flex-shrink-0">#</span>
-      <span className="w-10 flex-shrink-0">Imagen</span>
-      <span className="flex-1">Nombre</span>
-      <span className="hidden md:block w-28 flex-shrink-0">Ocasión</span>
-      <span className="w-12 flex-shrink-0 text-center">Estado</span>
-      <span className="w-20 flex-shrink-0 text-center">Destacado</span>
-      {!hasChanges && <span className="w-36 text-right">Acciones</span>}
-    </div>
+    <TableHeader>
+      <TableRow
+        style={{
+          background: 'var(--color-surface)',
+          borderBottom: '1px solid var(--color-border)',
+        }}
+      >
+        <TableHead style={{ color: 'var(--color-dark)' }}>#</TableHead>
+        <TableHead style={{ color: 'var(--color-dark)' }}>Imagen</TableHead>
+        <TableHead style={{ color: 'var(--color-dark)' }}>Nombre</TableHead>
+        <TableHead className="hidden md:table-cell" style={{ color: 'var(--color-dark)' }}>Ocasión</TableHead>
+        <TableHead className="text-center" style={{ color: 'var(--color-dark)' }}>Estado</TableHead>
+        <TableHead className="text-center" style={{ color: 'var(--color-dark)' }}>Destacado</TableHead>
+        <TableHead className="text-right" style={{ color: 'var(--color-dark)' }}>Acciones</TableHead>
+      </TableRow>
+    </TableHeader>
   );
 }

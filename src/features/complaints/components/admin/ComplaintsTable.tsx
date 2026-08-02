@@ -1,5 +1,7 @@
 import Link from 'next/link';
 
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/primitives/table';
+
 import type { ComplaintRow } from '../../types';
 import {
   formatComplaintNumber,
@@ -19,62 +21,97 @@ function formatDate(value: string): string {
 
 export default function ComplaintsTable({ complaints }: { complaints: ComplaintRow[] }) {
   return (
-    <div
-      className="overflow-x-auto rounded-xl border"
-      style={{ borderColor: 'var(--color-border)', background: 'var(--color-white)' }}
-    >
-      <table className="w-full text-left text-sm">
-        <thead style={{ color: 'var(--color-muted)' }}>
-          <tr className="border-b" style={{ borderColor: 'var(--color-border)' }}>
-            <th className="px-4 py-3 font-medium">N°</th>
-            <th className="px-4 py-3 font-medium">Fecha</th>
-            <th className="px-4 py-3 font-medium">Consumidor</th>
-            <th className="px-4 py-3 font-medium">Tipo</th>
-            <th className="px-4 py-3 font-medium">Estado</th>
-            <th className="px-4 py-3 font-medium">Plazo</th>
-          </tr>
-        </thead>
-        <tbody>
-          {complaints.map((c) => {
-            const overdue = isResponseOverdue(c.created_at, c.responded_at);
-            return (
-              <tr
-                key={c.id}
-                className="border-b transition-colors hover:bg-(--color-surface)"
-                style={{ borderColor: 'var(--color-border)' }}
-              >
-                <td className="px-4 py-3">
-                  <Link
-                    href={`/admin/reclamos/${c.id}`}
-                    className="font-medium underline-offset-2 hover:underline"
-                    style={{ color: 'var(--color-primary)' }}
-                  >
-                    {formatComplaintNumber(c.correlativo, c.created_at)}
-                  </Link>
-                </td>
-                <td className="px-4 py-3" style={{ color: 'var(--color-dark)' }}>
-                  {formatDate(c.created_at)}
-                </td>
-                <td className="px-4 py-3" style={{ color: 'var(--color-dark)' }}>
-                  {c.consumer_name}
-                </td>
-                <td className="px-4 py-3">
-                  <ComplaintTypeBadge type={c.complaint_type} />
-                </td>
-                <td className="px-4 py-3">
-                  <StatusPill status={c.status} />
-                </td>
-                <td
-                  className="px-4 py-3"
-                  style={{ color: overdue ? 'var(--color-primary)' : 'var(--color-muted)' }}
+    <div className="space-y-3">
+      <div
+        className="hidden overflow-x-auto rounded-xl border md:block"
+        style={{ borderColor: 'var(--color-border)', background: 'var(--color-white)' }}
+      >
+        <Table>
+          <TableHeader style={{ color: 'var(--color-muted)' }}>
+            <TableRow className="border-b" style={{ borderColor: 'var(--color-border)' }}>
+              <TableHead>N°</TableHead>
+              <TableHead>Fecha</TableHead>
+              <TableHead>Consumidor</TableHead>
+              <TableHead>Tipo</TableHead>
+              <TableHead>Estado</TableHead>
+              <TableHead>Plazo</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {complaints.map((c) => {
+              const overdue = isResponseOverdue(c.created_at, c.responded_at);
+              return (
+                <TableRow
+                  key={c.id}
+                  className="border-b transition-colors hover:bg-(--color-surface)"
+                  style={{ borderColor: 'var(--color-border)' }}
                 >
-                  {overdue ? 'Vencido' : formatDate(responseDeadline(c.created_at).toISOString())}
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+                  <TableCell>
+                    <Link
+                      href={`/admin/reclamos/${c.id}`}
+                      className="font-medium underline-offset-2 hover:underline"
+                      style={{ color: 'var(--color-primary)' }}
+                    >
+                      {formatComplaintNumber(c.correlativo, c.created_at)}
+                    </Link>
+                  </TableCell>
+                  <TableCell style={{ color: 'var(--color-dark)' }}>
+                    {formatDate(c.created_at)}
+                  </TableCell>
+                  <TableCell style={{ color: 'var(--color-dark)' }}>
+                    {c.consumer_name}
+                  </TableCell>
+                  <TableCell>
+                    <ComplaintTypeBadge type={c.complaint_type} />
+                  </TableCell>
+                  <TableCell>
+                    <StatusPill status={c.status} />
+                  </TableCell>
+                  <TableCell style={{ color: overdue ? 'var(--color-primary)' : 'var(--color-muted)' }}>
+                    {overdue ? 'Vencido' : formatDate(responseDeadline(c.created_at).toISOString())}
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </div>
+      <div className="space-y-3 md:hidden">
+        {complaints.map((c) => {
+          const overdue = isResponseOverdue(c.created_at, c.responded_at);
+          return (
+            <article
+              key={c.id}
+              className="rounded-xl p-4"
+              style={{ background: 'var(--color-white)', border: '1px solid var(--color-border)' }}
+            >
+              <Link
+                href={`/admin/reclamos/${c.id}`}
+                className="flex min-h-10 items-center font-medium underline-offset-2 hover:underline"
+                style={{ color: 'var(--color-primary)' }}
+              >
+                {formatComplaintNumber(c.correlativo, c.created_at)}
+              </Link>
+              <p className="mt-1 text-sm" style={{ color: 'var(--color-dark)' }}>
+                {c.consumer_name}
+              </p>
+              <p className="text-xs" style={{ color: 'var(--color-muted)' }}>
+                {formatDate(c.created_at)}
+              </p>
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <ComplaintTypeBadge type={c.complaint_type} />
+                <StatusPill status={c.status} />
+              </div>
+              <p
+                className="mt-2 text-xs"
+                style={{ color: overdue ? 'var(--color-primary)' : 'var(--color-muted)' }}
+              >
+                {overdue ? 'Vencido' : `Plazo: ${formatDate(responseDeadline(c.created_at).toISOString())}`}
+              </p>
+            </article>
+          );
+        })}
+      </div>
     </div>
   );
 }

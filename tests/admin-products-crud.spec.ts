@@ -44,7 +44,6 @@ test.describe('Administración de productos por categoría', () => {
     await page.goto(workspace.href);
     await expect(page.getByRole('heading', { name: `Productos de ${workspace.name}` })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Nuevo producto' })).toBeVisible();
-    await expect(page.getByRole('button', { name: /Reordenar categoría completa/ })).toBeVisible();
   });
 
   test('nuevo producto conserva la categoría y vuelve a su espacio tras guardar', async ({ page }) => {

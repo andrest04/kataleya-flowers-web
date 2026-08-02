@@ -38,7 +38,6 @@ export interface AdminProductListParams {
   search?: string;
   status?: 'active' | 'inactive';
   gallery?: 'at-most-one-image';
-  completeCategory?: boolean;
 }
 
 export async function getAdminProductCategoryCounts(
@@ -54,7 +53,6 @@ export async function getAdminProductList({
   search,
   status,
   gallery,
-  completeCategory,
 }: AdminProductListParams): Promise<AdminProductListPage> {
   return listAdminProductPage({
     page,
@@ -63,7 +61,6 @@ export async function getAdminProductList({
     search,
     status,
     gallery,
-    completeCategory,
   });
 }
 

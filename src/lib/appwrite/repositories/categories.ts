@@ -312,23 +312,6 @@ export async function setCategoryFeatured(id: string, isFeatured: boolean): Prom
   });
 }
 
-export async function reorderCategoryDocuments(orderedIds: string[]): Promise<void> {
-  const { databases, databaseId } = getRepositoryContext();
-  await withAppwriteTransaction((transactionId) =>
-    Promise.all(
-      orderedIds.map((id, index) =>
-        databases.updateDocument<CategoryDoc>({
-          databaseId,
-          collectionId: C.categories,
-          documentId: id,
-          transactionId,
-          data: { display_order: index + 1 },
-        }),
-      ),
-    ),
-  );
-}
-
 export async function listAllCategorySlugs(): Promise<string[]> {
   const { databases, databaseId } = getRepositoryContext();
   const docs = await listAllDocuments<CategoryDoc>(databases, databaseId, C.categories, [

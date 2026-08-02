@@ -491,7 +491,6 @@ export interface ListAdminProductPageInput {
   search?: string;
   status?: 'active' | 'inactive';
   gallery?: 'at-most-one-image';
-  completeCategory?: boolean;
 }
 
 const ADMIN_PRODUCT_LIST_FIELDS = [
@@ -579,7 +578,6 @@ export async function listAdminProductPage({
   search,
   status,
   gallery,
-  completeCategory = false,
 }: ListAdminProductPageInput): Promise<AdminProductListPage> {
   const { databases, databaseId } = getRepositoryContext();
   const requestedPage = Math.max(1, page);
@@ -629,20 +627,6 @@ export async function listAdminProductPage({
       total: filtered.length,
       page: currentPage,
       pageSize,
-    };
-  }
-
-  if (completeCategory && categoryId) {
-    const products = await listAllDocuments<ProductDoc>(databases, databaseId, C.products, [
-      ...baseQueries,
-      Query.select(ADMIN_PRODUCT_LIST_FIELDS),
-    ]);
-
-    return {
-      items: products.map(toAdminProductListRow),
-      total: products.length,
-      page: 1,
-      pageSize: products.length || pageSize,
     };
   }
 
@@ -1134,54 +1118,6 @@ export async function bulkDeleteProductsWithRelations(
     });
 
     return deletedProducts;
-  });
-}
-
-export async function reorderProductDocuments(
-  categoryId: string,
-  orderedIds: string[],
-  originalOrderIds: string[],
-): Promise<boolean> {
-  const { databases, databaseId } = getRepositoryContext();
-
-  return withAppwriteTransaction(async (transactionId) => {
-    const currentProducts = await listAllDocumentsInTransaction<ProductDoc>(
-      databases,
-      databaseId,
-      C.products,
-      transactionId,
-      [
-        Query.equal('category_id', [categoryId]),
-        Query.orderAsc('display_order'),
-        Query.select(['$id']),
-      ],
-    );
-    const currentIds = currentProducts.map((product) => product.$id);
-    const submittedIds = new Set(orderedIds);
-    const isCompleteSequence =
-      orderedIds.length === currentIds.length &&
-      submittedIds.size === orderedIds.length &&
-      currentIds.every((id) => submittedIds.has(id));
-    const matchesOriginalOrder =
-      originalOrderIds.length === currentIds.length &&
-      currentIds.every((id, index) => id === originalOrderIds[index]);
-
-    if (!isCompleteSequence || !matchesOriginalOrder) {
-      return false;
-    }
-
-    await Promise.all(
-      orderedIds.map((id, index) =>
-        databases.updateDocument<ProductDoc>({
-          databaseId,
-          collectionId: C.products,
-          documentId: id,
-          transactionId,
-          data: { display_order: index + 1 },
-        }),
-      ),
-    );
-    return true;
   });
 }
 

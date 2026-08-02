@@ -9,7 +9,6 @@ import {
   categoryUpdateSchema,
 } from '@/features/admin/schemas/category';
 import { uuid } from '@/features/admin/schemas/common';
-import { reorderSchema } from '@/features/admin/schemas/reorder';
 import type { CategoryFormData } from '@/features/admin/types';
 import {
   type AdminActionFailure,
@@ -25,7 +24,6 @@ import {
   findCategoryById,
   getNextCategoryOrder,
   listAllCategorySlugs,
-  reorderCategoryDocuments,
   setCategoryActive,
   setCategoryFeatured,
   updateCategoryDocument,
@@ -177,30 +175,6 @@ export async function updateCategory(
       (value): value is string => typeof value === 'string',
     );
     await revalidateAllCategoryPaths(affected);
-    return { success: true };
-  } catch (err) {
-    return failureFromUnknown(err);
-  }
-}
-
-export async function reorderCategories(
-  orderedIds: string[],
-): Promise<CategoryActionResult> {
-  try {
-    await requireAdmin();
-
-    const parsed = reorderSchema.safeParse({ ids: orderedIds });
-    if (!parsed.success) {
-      return {
-        success: false,
-        error: 'Lista de identificadores inválida.',
-        code: 'VALIDATION',
-        issues: parsed.error.issues,
-      };
-    }
-
-    await reorderCategoryDocuments(parsed.data.ids);
-    await revalidateAllCategoryPaths();
     return { success: true };
   } catch (err) {
     return failureFromUnknown(err);

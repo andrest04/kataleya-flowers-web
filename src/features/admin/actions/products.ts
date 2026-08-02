@@ -23,7 +23,6 @@ import {
   getNextProductOrder,
   getProductCategorySlug,
   getProductImageUrls,
-  reorderProductDocuments,
   setProductActive,
   updateProductWithTaxonomy,
 } from '@/lib/appwrite/repositories/products';
@@ -344,49 +343,3 @@ export async function toggleProductStatus(
   }
 }
 
-export async function reorderProducts(
-  categoryId: string,
-  orderedIds: string[],
-  originalOrderIds: string[],
-): Promise<ProductActionResult> {
-  try {
-    await requireAdmin();
-
-    const categoryIdParsed = uuid.safeParse(categoryId);
-    if (!categoryIdParsed.success) {
-      return { success: false, error: 'Categoría inválida.', code: 'VALIDATION', issues: categoryIdParsed.error.issues };
-    }
-
-    const [parsed, originalOrderParsed] = [
-      reorderSchema.safeParse({ ids: orderedIds }),
-      reorderSchema.safeParse({ ids: originalOrderIds }),
-    ];
-    if (!parsed.success || !originalOrderParsed.success) {
-      return { success: false, error: 'Lista de identificadores inválida.', code: 'VALIDATION' };
-    }
-
-    const reordered = await reorderProductDocuments(
-      categoryIdParsed.data,
-      parsed.data.ids,
-      originalOrderParsed.data.ids,
-    );
-    if (!reordered) {
-      return {
-        success: false,
-        error: 'El orden cambió o contiene productos de otra categoría. Recargá la lista completa.',
-        code: 'VALIDATION',
-      };
-    }
-
-    revalidatePath('/');
-    revalidatePath('/catalogo');
-    revalidatePath('/admin/categorias');
-
-    const categorySlug = await getCategorySlugById(categoryIdParsed.data);
-    if (categorySlug) revalidatePath(`/catalogo/${categorySlug}`);
-
-    return { success: true };
-  } catch (err) {
-    return failureFromUnknown(err);
-  }
-}

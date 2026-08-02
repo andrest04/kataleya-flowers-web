@@ -10,6 +10,12 @@ interface CategoryProductsPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
+export async function generateMetadata({ params }: Pick<CategoryProductsPageProps, 'params'>) {
+  const { id } = await params;
+  const category = await getAdminCategoryById(id);
+  return { title: category ? `Productos de ${category.name}` : 'Productos' };
+}
+
 function parsePage(value: string | string[] | undefined): number {
   const raw = Array.isArray(value) ? value[0] : value;
   if (!raw || !/^\d+$/.test(raw)) return 1;
@@ -28,13 +34,9 @@ export default async function CategoryProductsPage({
     notFound();
   }
 
-  const reorderMode = (Array.isArray(resolvedSearchParams.orden)
-    ? resolvedSearchParams.orden[0]
-    : resolvedSearchParams.orden) === 'completo';
   const productList = await getAdminProductList({
-    page: reorderMode ? 1 : parsePage(resolvedSearchParams.page),
+    page: parsePage(resolvedSearchParams.page),
     categoryId: category.id,
-    completeCategory: reorderMode,
   });
   const workspaceHref = `/admin/categorias/${category.id}/productos`;
 
@@ -76,10 +78,8 @@ export default async function CategoryProductsPage({
       </div>
 
       <ProductListClient
-        categoryId={category.id}
         products={productList.items}
         pagination={productList}
-        reorderMode={reorderMode}
         workspaceHref={workspaceHref}
       />
     </div>
