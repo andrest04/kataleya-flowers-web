@@ -37,7 +37,7 @@ export default async function Footer() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-2 gap-x-6 gap-y-8 sm:ml-auto sm:mr-10 sm:flex sm:flex-row sm:gap-x-[88.8889px] sm:gap-y-0">
+          <div className="grid grid-cols-2 gap-x-6 gap-y-8 lg:ml-auto lg:mr-10 lg:flex lg:flex-row lg:flex-wrap lg:gap-x-[88.8889px] lg:gap-y-0">
             <nav aria-label="Catálogo" className="space-y-3">
               <p className="font-body text-xs font-semibold tracking-[0.15em] uppercase opacity-70">
                 Catálogo
@@ -154,7 +154,7 @@ export default async function Footer() {
             target="_blank"
             rel="noopener noreferrer"
             aria-label={`Seguir a ${BUSINESS.name} en Instagram`}
-            className="transition-opacity hover:opacity-70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-secondary)"
+            className="-m-3 p-3 transition-opacity hover:opacity-70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-secondary)"
           >
             <FaInstagram size={20} aria-hidden="true" />
             <span className="sr-only"> (se abre en una pestaña nueva)</span>
@@ -164,7 +164,7 @@ export default async function Footer() {
             target="_blank"
             rel="noopener noreferrer"
             aria-label={`Escribir a ${BUSINESS.name} por WhatsApp`}
-            className="transition-opacity hover:opacity-70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-secondary)"
+            className="-m-3 p-3 transition-opacity hover:opacity-70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-secondary)"
           >
             <FaWhatsapp size={20} aria-hidden="true" />
             <span className="sr-only"> (se abre en una pestaña nueva)</span>

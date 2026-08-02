@@ -50,7 +50,7 @@ export default function MobileDrawer({
     >
       <SheetContent
         side="left"
-        className="z-[95] flex w-72 flex-col overflow-y-auto p-0"
+        className="z-[95] flex w-72 max-w-[85vw] flex-col overflow-y-auto p-0"
         aria-label="Menú de navegación"
       >
         <div className="flex items-center justify-between border-b border-border px-6 py-5">

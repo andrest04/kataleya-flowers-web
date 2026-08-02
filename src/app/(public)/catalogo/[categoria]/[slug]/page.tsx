@@ -224,7 +224,7 @@ export default async function ProductoPage({
           <BackButton label={`Volver a ${category.name}`} href={`/catalogo/${category.slug}`} />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
           <ProductGallery
             imageUrl={product.imageUrl}
             images={product.images}
@@ -241,30 +241,32 @@ export default async function ProductoPage({
                 <p className="font-body text-primary font-bold text-2xl mb-3">
                   Desde S/ {product.price}
                 </p>
-                <table className="w-full text-sm font-body border-collapse">
-                  <thead>
-                    <tr style={{ backgroundColor: 'var(--color-surface)' }}>
-                      <th className="text-left p-2 border font-semibold" style={{ borderColor: 'var(--color-border)' }}>
-                        Cantidad
-                      </th>
-                      <th className="text-right p-2 border font-semibold" style={{ borderColor: 'var(--color-border)' }}>
-                        Precio
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {product.priceTable.map((v) => (
-                      <tr key={v.label}>
-                        <td className="p-2 border" style={{ borderColor: 'var(--color-border)' }}>
-                          {v.label}
-                        </td>
-                        <td className="p-2 border text-right font-semibold text-primary" style={{ borderColor: 'var(--color-border)' }}>
-                          S/ {v.price}
-                        </td>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm font-body border-collapse">
+                    <thead>
+                      <tr style={{ backgroundColor: 'var(--color-surface)' }}>
+                        <th className="text-left p-2 border font-semibold" style={{ borderColor: 'var(--color-border)' }}>
+                          Cantidad
+                        </th>
+                        <th className="text-right p-2 border font-semibold" style={{ borderColor: 'var(--color-border)' }}>
+                          Precio
+                        </th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {product.priceTable.map((v) => (
+                        <tr key={v.label}>
+                          <td className="p-2 border" style={{ borderColor: 'var(--color-border)' }}>
+                            {v.label}
+                          </td>
+                          <td className="p-2 border text-right font-semibold text-primary" style={{ borderColor: 'var(--color-border)' }}>
+                            S/ {v.price}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
                 {product.note && (
                   <p className="mt-2 text-sm font-body font-semibold" style={{ color: 'var(--color-secondary)' }}>
                     {product.note}

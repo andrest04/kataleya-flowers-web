@@ -32,10 +32,10 @@ export default function EditorialTile({
       </div>
       <div className="pt-7 text-center">
         <div className="flex items-center justify-center gap-3">
-          <Icon className="h-7 w-7 shrink-0 text-(--color-primary)" aria-hidden="true" />
-          <h3 className="font-heading text-3xl text-(--color-dark)">{title}</h3>
+          <Icon className="h-6 w-6 shrink-0 text-(--color-primary) sm:h-7 sm:w-7" aria-hidden="true" />
+          <h3 className="font-heading text-2xl text-(--color-dark) lg:text-3xl">{title}</h3>
         </div>
-        <p className="mt-3 text-lg text-(--color-muted)">{description}</p>
+        <p className="mt-3 text-base text-(--color-muted) lg:text-lg">{description}</p>
       </div>
     </>
   );

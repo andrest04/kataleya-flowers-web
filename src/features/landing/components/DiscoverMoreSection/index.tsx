@@ -35,7 +35,7 @@ export default function DiscoverMoreSection() {
     <section id="nosotros" className="scroll-mt-20 px-4 py-12 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-[90rem] space-y-10">
         <SectionHeader align="left" title="Descubre Kataleya" />
-        <div className="grid grid-cols-1 gap-x-8 gap-y-10 sm:grid-cols-3 sm:gap-10">
+        <div className="grid grid-cols-1 gap-x-8 gap-y-10 md:grid-cols-3 md:gap-10">
           {ITEMS.map((item) => (
             <EditorialTile key={item.title} {...item} />
           ))}

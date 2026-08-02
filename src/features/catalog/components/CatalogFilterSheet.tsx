@@ -164,7 +164,7 @@ export default function CatalogFilterSheet({
       <SheetTrigger asChild>
         <button
           type="button"
-          className="flex h-full min-h-11 w-full cursor-pointer items-center gap-2 px-14 font-body text-sm font-semibold text-(--color-dark) transition-colors hover:text-(--color-primary) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary)"
+          className="flex h-full min-h-11 w-full cursor-pointer items-center gap-2 px-4 font-body text-sm font-semibold text-(--color-dark) transition-colors hover:text-(--color-primary) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary) sm:px-14"
         >
           <SlidersHorizontal className="size-4" aria-hidden="true" />
           Filtrar y ordenar
@@ -174,7 +174,7 @@ export default function CatalogFilterSheet({
         side="left"
         showCloseButton={false}
         overlayClassName="z-[100] bg-(--color-dark)/70 backdrop-blur-none duration-300 supports-backdrop-filter:backdrop-blur-none"
-        className="z-[100] w-full max-w-md gap-0 overflow-hidden rounded-lg border border-(--color-border) bg-(--color-cream) text-(--color-dark) shadow-2xl duration-300 data-[side=left]:inset-y-6 data-[side=left]:left-6 data-[side=left]:h-[calc(100%-3rem)] data-[side=left]:sm:max-w-md"
+        className="z-[100] max-w-md gap-0 overflow-hidden rounded-lg border border-(--color-border) bg-(--color-cream) text-(--color-dark) shadow-2xl duration-300 data-[side=left]:inset-y-6 data-[side=left]:left-6 data-[side=left]:h-[calc(100%-3rem)] data-[side=left]:w-[calc(100%-3rem)] data-[side=left]:sm:max-w-md"
       >
         <SheetHeader className="flex-row items-start justify-between gap-4 px-7 pt-7 pb-3">
           <SheetTitle className="mt-5 font-heading text-[32px] text-(--color-dark)">

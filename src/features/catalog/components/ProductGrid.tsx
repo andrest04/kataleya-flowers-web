@@ -32,7 +32,7 @@ export default function ProductGrid({ initialProducts, categorySlug }: ProductGr
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <p className="font-body text-sm" style={{ color: 'var(--color-muted)' }}>
           Mostrando {sortedProducts.length}{' '}
           {sortedProducts.length === 1 ? 'producto' : 'productos'}
@@ -41,7 +41,7 @@ export default function ProductGrid({ initialProducts, categorySlug }: ProductGr
           aria-label="Ordenar productos"
           value={sortOption}
           onChange={(e) => setSortOption(e.target.value as SortOption)}
-          className="font-body text-sm rounded-lg px-3 py-2 outline-none cursor-pointer"
+          className="font-body text-sm rounded-lg px-3 py-2.5 outline-none cursor-pointer"
           style={{
             backgroundColor: 'var(--color-white)',
             border: '1px solid var(--color-border)',

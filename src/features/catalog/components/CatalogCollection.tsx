@@ -235,7 +235,7 @@ export default function CatalogCollection({
         )}
       >
         <div className="mx-auto flex max-w-8xl flex-wrap items-stretch divide-x divide-(--color-primary)">
-          <div className="flex items-stretch border-(--color-primary) sm:absolute sm:inset-y-0 sm:left-0 sm:border-r">
+          <div className="flex w-full items-stretch border-(--color-primary) sm:w-auto sm:absolute sm:inset-y-0 sm:left-0 sm:border-r">
             <CatalogFilterSheet
               open={sheetOpen}
               onOpenChange={setSheetOpen}
