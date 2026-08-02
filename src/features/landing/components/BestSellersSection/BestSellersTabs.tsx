@@ -1,11 +1,14 @@
 'use client';
 
+import { AnimatePresence, domAnimation, LazyMotion, m } from 'framer-motion';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useMemo,useState } from 'react';
 
 import type { Category, Product } from '@/features/catalog/types';
 
 import BestSellerProductCard from './BestSellerProductCard';
+
+const MAX_VISIBLE = 4;
 
 interface BestSellersTabsProps {
   products: Product[];
@@ -20,9 +23,13 @@ export default function BestSellersTabs({
 }: BestSellersTabsProps) {
   const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null);
 
-  const visibleProducts = activeCategoryId
-    ? products.filter((product) => product.categoryId === activeCategoryId)
-    : products;
+  const visibleProducts = useMemo(() => {
+    const scoped = activeCategoryId
+      ? products.filter((product) => product.categoryId === activeCategoryId)
+      : products;
+    const featured = scoped.filter((product) => product.isFeatured);
+    return (featured.length > 0 ? featured : scoped).slice(0, MAX_VISIBLE);
+  }, [products, activeCategoryId]);
 
   return (
     <>
@@ -65,19 +72,28 @@ export default function BestSellersTabs({
         </Link>
       </div>
 
-      <div
-        className="scrollbar-hide mt-8 flex snap-x snap-mandatory gap-4 overflow-x-scroll pb-6 sm:mt-10 sm:gap-6"
-        role="region"
-        aria-label="Productos más vendidos"
-      >
-        {visibleProducts.map((product) => (
-          <BestSellerProductCard
-            key={product.id}
-            product={product}
-            categorySlug={categoryById[product.categoryId]?.slug}
-          />
-        ))}
-      </div>
+      <LazyMotion features={domAnimation}>
+        <AnimatePresence mode="wait">
+          <m.div
+            key={activeCategoryId ?? 'all'}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
+            className="scrollbar-hide mt-8 flex snap-x snap-mandatory gap-4 overflow-x-scroll pb-6 sm:mt-10 sm:gap-6"
+            role="region"
+            aria-label="Productos más vendidos"
+          >
+            {visibleProducts.map((product) => (
+              <BestSellerProductCard
+                key={product.id}
+                product={product}
+                categorySlug={categoryById[product.categoryId]?.slug}
+              />
+            ))}
+          </m.div>
+        </AnimatePresence>
+      </LazyMotion>
     </>
   );
 }

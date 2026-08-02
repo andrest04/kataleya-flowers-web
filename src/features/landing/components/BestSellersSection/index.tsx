@@ -1,4 +1,4 @@
-import { getFeaturedProducts } from '@/features/catalog/queries/getFeaturedProducts';
+import { getProducts } from '@/features/catalog/queries/getProducts';
 import type { Category } from '@/features/catalog/types';
 
 import BestSellersTabs from './BestSellersTabs';
@@ -8,15 +8,15 @@ interface BestSellersSectionProps {
 }
 
 export default async function BestSellersSection({ categories }: BestSellersSectionProps) {
-  const products = await getFeaturedProducts();
+  const products = await getProducts();
 
   if (products.length === 0) {
     return null;
   }
 
   const categoryById = Object.fromEntries(categories.map((category) => [category.id, category]));
-  const featuredCategoryIds = new Set(products.map((product) => product.categoryId));
-  const tabCategories = categories.filter((category) => featuredCategoryIds.has(category.id));
+  const categoryIdsWithProducts = new Set(products.map((product) => product.categoryId));
+  const tabCategories = categories.filter((category) => categoryIdsWithProducts.has(category.id));
 
   return (
     <section className="py-12 sm:py-16">
