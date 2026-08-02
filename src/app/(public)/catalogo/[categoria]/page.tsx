@@ -4,9 +4,10 @@ import React from "react";
 
 import Breadcrumb from "@/components/ui/Breadcrumb";
 import { JsonLd } from "@/components/ui/JsonLd";
-import { BackButton } from "@/features/catalog/components/BackButton";
-import ProductGrid from "@/features/catalog/components/ProductGrid";
+import CatalogCollection from "@/features/catalog/components/CatalogCollection";
 import { getCategories } from "@/features/catalog/queries/getCategories";
+import { getFlowerTypes } from "@/features/catalog/queries/getFlowerTypes";
+import { getProductColors } from "@/features/catalog/queries/getProductColors";
 import { getProductsByCategory } from "@/features/catalog/queries/getProductsByCategory";
 import { BUSINESS } from "@/lib/constants";
 
@@ -16,6 +17,11 @@ export const revalidate = 3600;
 
 interface CategoriaPageProps {
   params: Promise<{ categoria: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}
+
+function firstParam(value: string | string[] | undefined): string {
+  return Array.isArray(value) ? (value[0] ?? "") : (value ?? "");
 }
 
 export async function generateStaticParams(): Promise<{ categoria: string }[]> {
@@ -78,10 +84,12 @@ export async function generateMetadata({
 
 export default async function CategoriaPage({
   params,
+  searchParams,
 }: CategoriaPageProps): Promise<React.ReactElement> {
-  const [{ categoria }, categories] = await Promise.all([
+  const [{ categoria }, categories, resolvedSearchParams] = await Promise.all([
     params,
     getCategories(),
+    searchParams,
   ]);
   const category = categories.find((cat) => cat.slug === categoria);
 
@@ -89,7 +97,34 @@ export default async function CategoriaPage({
     notFound();
   }
 
-  const categoryProducts = await getProductsByCategory(categoria);
+  const [categoryProducts, colorRows, flowerTypeRows] = await Promise.all([
+    getProductsByCategory(categoria),
+    getProductColors(),
+    getFlowerTypes(),
+  ]);
+
+  const collectionItems = categoryProducts.map((product) => ({
+    product,
+    categorySlug: category.slug,
+  }));
+  const assignedColors = new Set(
+    categoryProducts.flatMap((product) => product.colors ?? []),
+  );
+  const assignedFlowerTypes = new Set(
+    categoryProducts.flatMap((product) => product.flowerTypes ?? []),
+  );
+  const colors = colorRows.filter(({ name }) => assignedColors.has(name));
+  const flowerTypes = flowerTypeRows
+    .map(({ name }) => name)
+    .filter((name) => assignedFlowerTypes.has(name));
+  const initialQuery = {
+    category: "",
+    priceMin: firstParam(resolvedSearchParams.precio_min),
+    priceMax: firstParam(resolvedSearchParams.precio_max),
+    colors: firstParam(resolvedSearchParams.color),
+    flowerTypes: firstParam(resolvedSearchParams.tipo),
+    sort: firstParam(resolvedSearchParams.orden),
+  };
 
   const breadcrumbLd = {
     "@context": "https://schema.org",
@@ -130,28 +165,35 @@ export default async function CategoriaPage({
   return (
     <main
       id="main-content"
-      className="min-h-screen bg-cream pt-28 pb-12 px-4 sm:px-6 lg:px-8"
+      className="min-h-screen bg-cream px-2 pb-16 pt-10 sm:px-2 lg:px-3"
     >
       <JsonLd data={[breadcrumbLd, itemListLd]} />
-      <div className="max-w-8xl mx-auto">
-        <Breadcrumb items={[
-          { label: 'Inicio', href: '/' },
-          { label: 'Catálogo', href: '/catalogo' },
-          { label: category.name },
-        ]} />
+      <div className="-mx-2 px-4 sm:-mx-2 sm:px-6 lg:-mx-3 lg:px-10">
+        <Breadcrumb
+          items={[
+            { label: "Inicio", href: "/" },
+            { label: "Catálogo", href: "/catalogo" },
+            { label: category.name },
+          ]}
+        />
+      </div>
+      <div className="mx-auto max-w-8xl">
+        <header className="mx-auto mb-10 max-w-4xl text-center sm:mb-12">
+          <h1 className="text-balance font-heading text-4xl leading-tight text-(--color-primary) sm:text-5xl">
+            {category.name}
+          </h1>
+          <p className="mt-4 font-body text-base text-(--color-muted) sm:text-lg">
+            {category.description}
+          </p>
+        </header>
 
-        <div className="mb-8">
-          <BackButton label="Volver al catálogo" href="/catalogo" />
-        </div>
-
-        <h1 className="font-heading text-4xl md:text-5xl text-primary mb-4">
-          {category.name}
-        </h1>
-        <p className="font-body text-dark/70 text-lg mb-12 max-w-3xl">
-          {category.description}
-        </p>
-
-        <ProductGrid initialProducts={categoryProducts} categorySlug={category.slug} />
+        <CatalogCollection
+          items={collectionItems}
+          categories={[]}
+          colors={colors}
+          flowerTypes={flowerTypes}
+          initialQuery={initialQuery}
+        />
       </div>
     </main>
   );

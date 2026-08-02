@@ -238,28 +238,30 @@ export default function CatalogFilterSheet({
             </div>
           </AccordionSection>
 
-          <AccordionSection title="Categoría">
-            <div className="grid grid-cols-3 gap-2">
-              {categories.map((category) => {
-                const selected = filters.category.includes(category.slug);
-                const disabled = !selected && !availableCategorySlugs.has(category.slug);
-                return (
-                  <OptionTile key={category.slug} selected={selected} disabled={disabled}>
-                    <input
-                      type="checkbox"
-                      name="categoria"
-                      value={category.slug}
-                      checked={selected}
-                      disabled={disabled}
-                      onChange={() => update('category', toggle(filters.category, category.slug))}
-                      className="sr-only"
-                    />
-                    <span>{category.name}</span>
-                  </OptionTile>
-                );
-              })}
-            </div>
-          </AccordionSection>
+          {categories.length > 0 && (
+            <AccordionSection title="Categoría">
+              <div className="grid grid-cols-3 gap-2">
+                {categories.map((category) => {
+                  const selected = filters.category.includes(category.slug);
+                  const disabled = !selected && !availableCategorySlugs.has(category.slug);
+                  return (
+                    <OptionTile key={category.slug} selected={selected} disabled={disabled}>
+                      <input
+                        type="checkbox"
+                        name="categoria"
+                        value={category.slug}
+                        checked={selected}
+                        disabled={disabled}
+                        onChange={() => update('category', toggle(filters.category, category.slug))}
+                        className="sr-only"
+                      />
+                      <span>{category.name}</span>
+                    </OptionTile>
+                  );
+                })}
+              </div>
+            </AccordionSection>
+          )}
 
           <AccordionSection title="Precio" defaultOpen>
             <p className="mb-3 font-body text-sm text-(--color-dark)">
