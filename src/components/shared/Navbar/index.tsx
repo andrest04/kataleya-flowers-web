@@ -17,7 +17,6 @@ export default function Navbar() {
   const {
     isDrawerOpen,
     setIsDrawerOpen,
-    isScrolled,
     isHeaderHidden,
     isSearchOpen,
     openSearch,
@@ -53,15 +52,10 @@ export default function Navbar() {
           <AnnouncementBar />
 
           <header
-            className={`h-16 border-b border-(--color-primary) bg-(--color-cream) transition-[box-shadow] duration-300 ease-out motion-reduce:transition-none ${
+            className={`h-16 border-b border-(--color-primary) bg-(--color-cream) ${
               isSearchOpen || isCatalogMenuOpen ? "overflow-visible" : "overflow-hidden"
             }`}
-            style={{
-            boxShadow: isScrolled
-              ? "0 14px 36px color-mix(in srgb, var(--color-dark) 10%, transparent)"
-              : "none",
-          }}
-        >
+          >
           <nav
             aria-label="Navegación principal"
             className="flex h-16 w-full items-center"
