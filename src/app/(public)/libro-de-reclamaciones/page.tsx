@@ -26,7 +26,7 @@ export const metadata: Metadata = {
 export default function LibroDeReclamacionesPage() {
   return (
     <main id="main-content" className="bg-(--color-cream)">
-      <div className="mx-auto max-w-3xl px-4 py-12 sm:py-16">
+      <div className="mx-auto max-w-3xl px-4 pt-10 pb-16 sm:pb-20">
         <Breadcrumb
           items={[
             { label: 'Inicio', href: '/' },
@@ -42,25 +42,19 @@ export default function LibroDeReclamacionesPage() {
           description="Registra tu queja o reclamo. Te responderemos dentro del plazo legal."
         />
 
-        <div
-          className="mt-8 rounded-xl border p-5"
-          style={{
-            borderColor: 'color-mix(in srgb, var(--color-secondary) 40%, var(--color-border))',
-            background: 'var(--color-white)',
-          }}
-        >
-          <p className="text-sm font-semibold text-(--color-dark)">Datos del proveedor</p>
-          <p className="mt-1 text-sm text-(--color-dark)">
+        <div className="mt-8 flex flex-col gap-1 border-t border-(--color-secondary)/40 pt-6 text-sm text-(--color-dark)">
+          <p className="font-semibold">Datos del proveedor</p>
+          <p>
             {BUSINESS.razonSocial} · RUC {BUSINESS.ruc}
           </p>
-          <p className="text-sm text-(--color-dark)">{BUSINESS.address}</p>
-          <p className="mt-3 flex items-center gap-2 text-sm" style={{ color: 'var(--color-accent)' }}>
+          <p>{BUSINESS.address}</p>
+          <p className="mt-2 flex items-center gap-2" style={{ color: 'var(--color-accent)' }}>
             <Clock size={16} aria-hidden="true" />
             Plazo de respuesta: {RESPONSE_BUSINESS_DAYS} días hábiles.
           </p>
         </div>
 
-        <div className="mt-8">
+        <div className="mt-12">
           <ComplaintForm />
         </div>
 

@@ -28,9 +28,12 @@ const INITIAL: FormState = { fieldErrors: {} };
 
 function Section({ n, title, children }: { n: number; title: string; children: React.ReactNode }) {
   return (
-    <fieldset className="space-y-4">
-      <legend className="font-heading text-xl text-primary border-b border-(--color-secondary)/40 pb-1 w-full">
-        {n}. {title}
+    <fieldset className="space-y-4 border-t border-(--color-border) pt-8 first:border-t-0 first:pt-0">
+      <legend className="w-full pb-2">
+        <span className="block font-body text-xs font-semibold tracking-[0.2em] text-accent uppercase">
+          Paso {n}
+        </span>
+        <span className="mt-1 block font-heading text-2xl text-primary">{title}</span>
       </legend>
       {children}
     </fieldset>
@@ -90,7 +93,7 @@ export default function ComplaintForm() {
   }
 
   return (
-    <form action={formAction} className="space-y-8" aria-busy={isPending} noValidate>
+    <form action={formAction} className="space-y-10" aria-busy={isPending} noValidate>
       <FormError message={state.error} />
       <Section n={1} title="Datos del consumidor">
         <ConsumerFields errors={state.fieldErrors} isMinor={isMinor} onMinorChange={setIsMinor} />

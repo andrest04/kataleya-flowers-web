@@ -32,13 +32,11 @@ export default function SubmitState({
   }
 
   return (
-    <div
-      className="rounded-2xl border p-8 text-center"
-      style={{ borderColor: 'var(--color-border)', background: 'var(--color-white)' }}
-    >
+    <div className="mx-auto max-w-xl border-t border-(--color-primary) pt-10 text-center">
       <CheckCircle2
         className="mx-auto mb-4"
-        size={48}
+        size={56}
+        strokeWidth={1}
         style={{ color: 'var(--color-accent)' }}
         aria-hidden="true"
       />
