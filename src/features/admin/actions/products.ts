@@ -1,6 +1,6 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, updateTag } from 'next/cache';
 import { after } from 'next/server';
 import { AppwriteException } from 'node-appwrite';
 
@@ -57,6 +57,8 @@ async function revalidateProductPaths(
 ): Promise<void> {
   revalidatePath('/');
   revalidatePath('/catalogo');
+  updateTag('catalog-products');
+  updateTag('catalog-categories');
 
   const categorySlug = knownCategorySlug ?? (categoryId
     ? await getCategorySlugById(categoryId)
@@ -292,6 +294,8 @@ export async function bulkSetProductStatus(
     revalidatePath('/');
     revalidatePath('/catalogo');
     revalidatePath('/admin/categorias');
+    updateTag('catalog-products');
+    updateTag('catalog-categories');
     return { success: true };
   } catch (err) {
     return failureFromUnknown(err);

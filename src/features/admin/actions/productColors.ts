@@ -1,6 +1,6 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, updateTag } from 'next/cache';
 
 import {
   deleteColorSchema,
@@ -50,6 +50,7 @@ export async function deleteProductColor(name: string): Promise<ColorActionResul
     revalidatePath('/');
     revalidatePath('/catalogo');
     revalidatePath('/admin/categorias');
+    updateTag('catalog-colors');
     return { success: true };
   } catch (err) {
     return failureFromUnknown(err);
@@ -92,6 +93,7 @@ export async function renameProductColor(
     revalidatePath('/');
     revalidatePath('/catalogo');
     revalidatePath('/admin/categorias');
+    updateTag('catalog-colors');
     return { success: true };
   } catch (err) {
     return failureFromUnknown(err);

@@ -1,3 +1,5 @@
+import { unstable_cache } from 'next/cache';
+
 import type { Category } from '@/features/catalog/types';
 import type { CategoryRepoRow } from '@/lib/appwrite/repositories/categories';
 import {
@@ -21,10 +23,18 @@ function mapCategoryRow(
   };
 }
 
+const getCachedCategories = unstable_cache(
+  async (): Promise<Category[]> => {
+    const [rows, priceFromMap] = await Promise.all([
+      listActiveCategories(),
+      listCategoryPriceFrom(),
+    ]);
+    return rows.map((row) => mapCategoryRow(row, priceFromMap.get(row.id)));
+  },
+  ['catalog-active-categories'],
+  { tags: ['catalog-categories'], revalidate: 3600 },
+);
+
 export async function getCategories(): Promise<Category[]> {
-  const [rows, priceFromMap] = await Promise.all([
-    listActiveCategories(),
-    listCategoryPriceFrom(),
-  ]);
-  return rows.map((row) => mapCategoryRow(row, priceFromMap.get(row.id)));
+  return getCachedCategories();
 }

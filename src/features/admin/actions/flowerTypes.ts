@@ -1,6 +1,6 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, updateTag } from 'next/cache';
 
 import {
   deleteFlowerTypeSchema,
@@ -50,6 +50,7 @@ export async function deleteFlowerType(name: string): Promise<FlowerTypeActionRe
     revalidatePath('/');
     revalidatePath('/catalogo');
     revalidatePath('/admin/categorias');
+    updateTag('catalog-flower-types');
     return { success: true };
   } catch (err) {
     return failureFromUnknown(err);
@@ -92,6 +93,7 @@ export async function renameFlowerType(
     revalidatePath('/');
     revalidatePath('/catalogo');
     revalidatePath('/admin/categorias');
+    updateTag('catalog-flower-types');
     return { success: true };
   } catch (err) {
     return failureFromUnknown(err);

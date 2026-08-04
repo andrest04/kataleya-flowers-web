@@ -1,6 +1,6 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, updateTag } from 'next/cache';
 import { after } from 'next/server';
 import { AppwriteException } from 'node-appwrite';
 
@@ -45,6 +45,8 @@ async function revalidateAllCategoryPaths(
   revalidatePath('/');
   revalidatePath('/catalogo');
   revalidatePath('/admin/categorias');
+  updateTag('catalog-categories');
+  updateTag('catalog-products');
 
   const slugs = affectedSlugs ?? (await listAllCategorySlugs());
   for (const slug of slugs) {
