@@ -82,14 +82,8 @@ const nextConfig: NextConfig = {
     turbopackFileSystemCacheForDev: true,
   },
   images: {
-    formats: ["image/avif", "image/webp"],
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "nyc.cloud.appwrite.io",
-        pathname: "/v1/storage/buckets/**",
-      },
-    ],
+    loader: "custom",
+    loaderFile: "./src/lib/imageLoader.ts",
   },
   async headers() {
     return [
