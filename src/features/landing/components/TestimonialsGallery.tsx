@@ -1,8 +1,9 @@
 'use client';
 
 import { ChevronLeft, ChevronRight, Star } from 'lucide-react';
-import Image from 'next/image';
 import { useState } from 'react';
+
+import Image from '@/components/ui/AppwriteImage';
 
 export interface Testimonial {
   id: string;

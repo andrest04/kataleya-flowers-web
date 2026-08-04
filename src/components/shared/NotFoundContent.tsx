@@ -1,6 +1,6 @@
-import Image from 'next/image';
 import Link from 'next/link';
 
+import Image from '@/components/ui/AppwriteImage';
 import { getCategories } from '@/features/catalog/queries/getCategories';
 
 export default async function NotFoundContent() {

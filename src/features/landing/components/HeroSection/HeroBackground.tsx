@@ -1,5 +1,6 @@
-import Image from "next/image";
 import type { CSSProperties } from "react";
+
+import Image from '@/components/ui/AppwriteImage';
 
 import { HERO_IMAGE } from "./constants";
 

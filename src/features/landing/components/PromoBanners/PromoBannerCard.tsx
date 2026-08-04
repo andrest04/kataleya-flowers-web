@@ -1,5 +1,4 @@
-import Image from 'next/image';
-
+import Image from '@/components/ui/AppwriteImage';
 import Button from '@/components/ui/Button';
 
 interface PromoBannerCardProps {

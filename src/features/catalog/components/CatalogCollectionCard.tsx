@@ -1,6 +1,6 @@
-import Image from 'next/image';
 import Link from 'next/link';
 
+import Image from '@/components/ui/AppwriteImage';
 import type { Product } from '@/features/catalog/types';
 import { getEffectivePrice } from '@/features/catalog/utils/filterProducts';
 

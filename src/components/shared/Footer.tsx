@@ -1,9 +1,9 @@
 import { ArrowRight, ChevronRight } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { FaInstagram, FaWhatsapp } from "react-icons/fa";
 
 import FooterAnchorLink from "@/components/shared/FooterAnchorLink";
+import Image from '@/components/ui/AppwriteImage';
 import { getCategories } from "@/features/catalog/queries/getCategories";
 import { BUSINESS } from "@/lib/constants";
 import { allNavLinks } from "@/lib/navigation";

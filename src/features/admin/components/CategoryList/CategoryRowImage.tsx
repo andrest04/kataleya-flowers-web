@@ -1,7 +1,6 @@
 'use client';
 
-import Image from 'next/image';
-
+import Image from '@/components/ui/AppwriteImage';
 import type { CategoryRow } from '@/lib/db/rows';
 
 interface CategoryRowImageProps {

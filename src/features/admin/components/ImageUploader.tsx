@@ -1,8 +1,8 @@
 'use client';
 
-import Image from 'next/image';
 import { useCallback, useRef, useState } from 'react';
 
+import Image from '@/components/ui/AppwriteImage';
 import { useImageUpload } from '@/features/admin/hooks/useImageUpload';
 
 interface BaseProps {

@@ -81,10 +81,6 @@ const nextConfig: NextConfig = {
   experimental: {
     turbopackFileSystemCacheForDev: true,
   },
-  images: {
-    loader: "custom",
-    loaderFile: "./src/lib/imageLoader.ts",
-  },
   async headers() {
     return [
       {

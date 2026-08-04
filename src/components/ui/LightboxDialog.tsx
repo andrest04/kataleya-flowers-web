@@ -2,9 +2,10 @@
 
 import { AnimatePresence, domAnimation, LazyMotion, m } from 'framer-motion';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
-import Image from 'next/image';
 import { Dialog as DialogPrimitive } from 'radix-ui';
 import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react';
+
+import Image from '@/components/ui/AppwriteImage';
 
 interface LightboxDialogProps {
   open: boolean;
