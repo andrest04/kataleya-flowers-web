@@ -1,5 +1,6 @@
 'use client';
 
+import { ChevronLeft, ChevronRight, ZoomIn } from 'lucide-react';
 import { useState } from 'react';
 
 import Image from '@/components/ui/AppwriteImage';
@@ -13,25 +14,35 @@ interface ProductGalleryProps {
 
 export function ProductGallery({ imageUrl, images, name }: ProductGalleryProps) {
   const allImages = images && images.length > 0 ? [imageUrl, ...images] : [imageUrl];
-  const [selected, setSelected] = useState(imageUrl);
+  const [index, setIndex] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const hasMultiple = allImages.length > 1;
+  const currentSrc = allImages[index] ?? imageUrl;
 
-  const selectedIndex = Math.max(0, allImages.indexOf(selected));
+  const goPrev = () => setIndex((i) => (i - 1 + allImages.length) % allImages.length);
+  const goNext = () => setIndex((i) => (i + 1) % allImages.length);
+
+  const overlayButtonStyle: React.CSSProperties = {
+    backgroundColor: 'color-mix(in srgb, var(--color-dark) 50%, transparent)',
+    color: 'var(--color-white)',
+  };
 
   return (
     <>
-      <div className="space-y-3">
+      <div
+        className="relative w-full aspect-[4/3] lg:aspect-square rounded-lg overflow-hidden"
+        style={{ backgroundColor: 'var(--color-surface)' }}
+      >
         <button
           type="button"
           onClick={() => setLightboxOpen(true)}
-          className="relative w-full aspect-[4/3] lg:aspect-square rounded-lg overflow-hidden cursor-zoom-in"
-          style={{ backgroundColor: 'var(--color-surface)' }}
+          className="absolute inset-0 cursor-zoom-in"
           aria-label={`Ver imagen completa de ${name}`}
           aria-haspopup="dialog"
           aria-expanded={lightboxOpen}
         >
           <Image
-            src={selected}
+            src={currentSrc}
             alt={name}
             fill
             priority
@@ -40,31 +51,41 @@ export function ProductGallery({ imageUrl, images, name }: ProductGalleryProps) 
           />
         </button>
 
-        {allImages.length > 1 && (
-          <div className="flex gap-2 overflow-x-auto pb-1">
-            {allImages.map((img, i) => (
-              <button
-                key={img}
-                type="button"
-                onClick={() => setSelected(img)}
-                aria-pressed={selected === img}
-                className={`relative flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-colors ${
-                  selected === img
-                    ? 'border-primary'
-                    : 'border-transparent hover:border-primary/40'
-                }`}
-                aria-label={`Ver imagen ${i + 1} de ${name}`}
-              >
-                <Image
-                  src={img}
-                  alt={`${name} — vista ${i + 1}`}
-                  fill
-                  sizes="80px"
-                  className="object-cover"
-                />
-              </button>
-            ))}
-          </div>
+        <div
+          className="absolute bottom-3 left-3 flex items-center justify-center w-9 h-9 rounded-full pointer-events-none"
+          style={overlayButtonStyle}
+        >
+          <ZoomIn className="w-4 h-4" aria-hidden="true" />
+        </div>
+
+        {hasMultiple && (
+          <>
+            <button
+              type="button"
+              onClick={goPrev}
+              className="absolute left-2 top-1/2 -translate-y-1/2 flex items-center justify-center w-10 h-10 rounded-full transition-colors outline-none focus-visible:ring-2"
+              style={overlayButtonStyle}
+              aria-label={`Imagen anterior de ${name}`}
+            >
+              <ChevronLeft className="w-5 h-5" aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              onClick={goNext}
+              className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center justify-center w-10 h-10 rounded-full transition-colors outline-none focus-visible:ring-2"
+              style={overlayButtonStyle}
+              aria-label={`Siguiente imagen de ${name}`}
+            >
+              <ChevronRight className="w-5 h-5" aria-hidden="true" />
+            </button>
+
+            <div
+              className="absolute bottom-3 right-3 px-2.5 py-1 rounded-full text-xs font-medium pointer-events-none"
+              style={overlayButtonStyle}
+            >
+              {index + 1} / {allImages.length}
+            </div>
+          </>
         )}
       </div>
 
@@ -72,7 +93,7 @@ export function ProductGallery({ imageUrl, images, name }: ProductGalleryProps) 
         open={lightboxOpen}
         onOpenChange={setLightboxOpen}
         images={allImages}
-        initialIndex={selectedIndex}
+        initialIndex={index}
         alt={name}
       />
     </>
