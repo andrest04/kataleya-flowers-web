@@ -81,21 +81,42 @@ export default function HorizontalScrollBar({
 
     downEvent.preventDefault();
     const trackWidth = track.clientWidth;
+    const thumbWidth = (progress.thumbPercent / 100) * trackWidth;
+    const travelRange = trackWidth - thumbWidth;
     const startX = downEvent.clientX;
     const startScrollLeft = el.scrollLeft;
     const maxScroll = el.scrollWidth - el.clientWidth;
 
     const handlePointerMove = (moveEvent: PointerEvent) => {
-      const deltaRatio = (moveEvent.clientX - startX) / trackWidth;
+      if (travelRange <= 0) return;
+      const deltaRatio = (moveEvent.clientX - startX) / travelRange;
       el.scrollLeft = startScrollLeft + deltaRatio * maxScroll;
     };
 
     const handlePointerUp = () => {
       document.removeEventListener("pointermove", handlePointerMove);
       document.removeEventListener("pointerup", handlePointerUp);
+
+      const paddingLeft = Number.parseFloat(getComputedStyle(el).paddingLeft) || 0;
+      const snapLeft = el.getBoundingClientRect().left + paddingLeft;
+      const children = Array.from(el.children) as HTMLElement[];
+      const nearest = children.reduce<HTMLElement | null>((closest, child) => {
+        const distance = Math.abs(child.getBoundingClientRect().left - snapLeft);
+        if (!closest) return child;
+        const closestDistance = Math.abs(closest.getBoundingClientRect().left - snapLeft);
+        return distance < closestDistance ? child : closest;
+      }, null);
+
+      if (nearest) {
+        const delta = nearest.getBoundingClientRect().left - snapLeft;
+        el.scrollTo({ left: el.scrollLeft + delta, behavior: "smooth" });
+      }
+
+      el.style.scrollSnapType = "";
     };
 
     if (maxScroll > 0) {
+      el.style.scrollSnapType = "none";
       document.addEventListener("pointermove", handlePointerMove);
       document.addEventListener("pointerup", handlePointerUp);
     }
