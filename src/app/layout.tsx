@@ -1,6 +1,7 @@
 import "./globals.css";
 
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata, Viewport } from "next";
 import { Crimson_Text, Mulish } from "next/font/google";
 import type React from "react";
@@ -115,6 +116,7 @@ export default function RootLayout({
         <MotionProvider>{children}</MotionProvider>
         <Toaster />
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
