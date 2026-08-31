@@ -1,7 +1,11 @@
 'use client';
 
+import type { Ref } from 'react';
+
 import Button from '@/components/ui/Button';
 import { TableCell, TableRow } from '@/components/ui/primitives/table';
+import DragHandle from '@/components/ui/SortableList/DragHandle';
+import type { SortableItemRenderProps } from '@/components/ui/SortableList/SortableItem';
 import type { CategoryRow } from '@/lib/db/rows';
 
 import CategoryRowImage from './CategoryRowImage';
@@ -16,6 +20,7 @@ interface CategoryRowProps {
   onLocalToggleStatus: (id: string, isActive: boolean) => void;
   onLocalToggleFeatured: (id: string, isFeatured: boolean) => void;
   productCount: number;
+  sortableProps?: SortableItemRenderProps;
 }
 
 export default function CategoryRow({
@@ -26,16 +31,26 @@ export default function CategoryRow({
   onLocalToggleStatus,
   onLocalToggleFeatured,
   productCount,
+  sortableProps,
 }: CategoryRowProps) {
   return (
     <TableRow
+      ref={sortableProps?.setNodeRef as Ref<HTMLTableRowElement> | undefined}
       style={{
         background: 'var(--color-white)',
         borderBottom: '1px solid var(--color-border)',
+        ...sortableProps?.style,
       }}
     >
-      <TableCell className="text-center font-mono text-xs" style={{ color: 'var(--color-muted)' }}>
-        {index + 1}
+      <TableCell style={{ color: 'var(--color-muted)' }}>
+        {sortableProps ? (
+          <div className="flex items-center gap-1">
+            <DragHandle handleProps={sortableProps.dragHandleProps} label={category.name} />
+            <span className="font-mono text-xs">{index + 1}</span>
+          </div>
+        ) : (
+          <span className="block text-center font-mono text-xs">{index + 1}</span>
+        )}
       </TableCell>
 
       <TableCell>

@@ -81,6 +81,8 @@ export default async function CategoryProductsPage({
         products={productList.items}
         pagination={productList}
         workspaceHref={workspaceHref}
+        selectable
+        sortable
       />
     </div>
   );
