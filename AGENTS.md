@@ -135,6 +135,26 @@ No cambiar el contrato `Result<T>` ni la firma al evolucionar autorización.
 - Tests en `tests/` (+ `helpers/`). **`phase1-verify.spec.ts` = regression baseline, siempre verde.** Specs admin leen `E2E_ADMIN_EMAIL`/`E2E_ADMIN_PASSWORD` del env — nunca hardcodear. Bug fuera de scope → `test.fixme` con razón.
 - `next.config.ts`: HSTS, X-Frame-Options DENY, nosniff, Referrer-Policy, Permissions-Policy, `poweredByHeader: false`. **CSP en Report-Only** (TODO Fase 6: enforced con nonce).
 
+## Skills obligatorias
+
+Antes de tocar el área correspondiente, invocar la skill — no improvisar a mano:
+
+- **`react-doctor`** — antes de commitear cualquier cambio en componentes React (lint/a11y/bundle/arquitectura). Ya es `npm run doctor`, pero como skill corre el triage completo.
+- **`better-accessibility`** — al tocar forms, modales, drag & drop, navegación por teclado o cualquier `aria-*`.
+- **`better-colors`** — ante cualquier cambio de color; la paleta es fija (ver arriba) así que casi siempre es para verificar contraste, no para proponer colores nuevos.
+- **`better-layout`** — al maquetar o reordenar secciones/páginas nuevas.
+- **`better-typography`** — al tocar tipografía, escalas de texto o line-height.
+- **`better-ui`** — en detalles de polish: animaciones Framer Motion, hover states, sombras, íconos lucide-react.
+- **`better-writing`** — al escribir o revisar copy visible al usuario (botones, errores, empty states) — recordar tuteo, nunca voseo.
+- **`appwrite-cli`** / **`appwrite-typescript`** — para cualquier tarea de backend: repos, auth, storage, Teams (`admins`), functions.
+- **`code-review`** — antes de pedir aprobación de commit en cambios no triviales.
+- **`security-review`** — en cambios a Server Actions, API routes, o el Libro de Reclamaciones (maneja datos de terceros).
+
+## MCPs obligatorios
+
+- **`appwrite`** — único backend real (DB, Auth, Storage, Teams). Usar `appwrite_get_context` antes de cualquier operación server-side/repos para no adivinar el estado del proyecto.
+- **`codegraph`** (`codegraph_explore`) — antes de leer archivos a mano para entender arquitectura, call flow o impacto de un cambio (ver regla CodeGraph). No usar Read/Glob/Grep como primer paso en preguntas estructurales.
+
 ## Commits
 
 Conventional Commits en inglés, cortos, presente (`feat: add contact form validation`). **Nunca** `Co-Authored-By` ni metadata de autor. **Nunca commitear sin aprobación explícita:** implementar → lint limpio → usuario prueba → usuario pide commit.
