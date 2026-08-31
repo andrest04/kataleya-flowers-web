@@ -4,7 +4,13 @@ Landing + admin para **Kataleya Flowers**, florería real en Lima, Perú. Negoci
 
 **Estado:** Post-audit (Phases 1–5). Las convenciones de este archivo son **vinculantes** y la mayoría están **automatizadas** vía ESLint custom rules (`eslint.config.mjs`). Antes de pedir una excepción, leé `QA/audit/`.
 
-**Docs relacionados:** ante dudas de audiencia, marca o principios de producto, leé [`docs/product.md`](docs/product.md); ante dudas de sistema visual (color, tipografía, componentes, contraste), leé [`docs/design.md`](docs/design.md). Este archivo no repite ese contenido.
+**Autoridad por tema — este archivo no repite ese contenido:**
+
+| Tema | Fuente |
+|---|---|
+| Audiencia, marca, principios de producto | [`docs/product.md`](docs/product.md) |
+| Sistema visual: color, tipografía, componentes, contraste | [`docs/design.md`](docs/design.md) |
+| Todo lo demás (arquitectura, reglas, patrones) | este archivo |
 
 ## Stack
 
@@ -19,38 +25,81 @@ npm run lint:strict  # eslint . --max-warnings 0
 npx tsc --noEmit     # type-check
 npm run test:e2e     # e2e
 npx playwright test phase1-verify  # regression baseline (DEBE estar verde siempre)
-npm run doctor        # react-doctor@latest — lint/a11y/bundle/arquitectura
+npm run doctor       # react-doctor@latest — lint/a11y/bundle/arquitectura
 ```
 
 Pre-commit (manual, no hay hooks): `npm run lint:strict` + `npx tsc --noEmit`.
 
-## Reglas vinculantes (ESLint-enforced — no las silencies, corregilas o pedí excepción)
+---
 
-- **Nunca `eslint-disable`** (ni inline ni de archivo) — todo warning/error de ESLint se soluciona en la causa raíz, nunca se apaga.
+## Antes de tocar código: skills y MCPs obligatorios
 
-- **`next/image` siempre** — `<img>` nativo prohibido.
-- **Sin `any`** — usar `unknown` con narrowing.
-- **Promises:** toda promise await/then/catch; no pasar async a handlers `void`.
-- **Framer Motion:** siempre `LazyMotion + m`, **nunca** `import { motion }`. Standalone OK sin `LazyMotion`: `useMotionValue`, `animate`, `useInView`.
-- **Colores:** nada de hex/`rgb`/`rgba` hardcodeado en `style={{}}` ni en clases Tailwind arbitrarias (`text-[#fff]`). Solo `var(--color-*)` o `color-mix(in srgb, …)`. Excepción: valores dinámicos de DB en `style` (ej. `backgroundColor: colorDef.hex`).
-- **Datos de negocio:** nunca hardcodear teléfono / `wa.me/…` / handle Instagram — importar de `BUSINESS` (`src/lib/constants.ts`, único archivo exento de `no-restricted-syntax`).
-- **z-index en className:** solo `z-50` (WhatsAppFloat), `z-[90]` (Navbar), `z-[100]` (LightboxDialog). Excepciones inline documentadas: skip link `zIndex: 200`, Hero `var(--z-hero-overlay)` (=10).
-- `react/jsx-key` en listas. `no-console` (warn — `warn`/`error` OK, `log` no). `simple-import-sort` (warn, será error).
+Invocar la skill **antes** de trabajar en el área — no improvisar a mano.
 
-**Otras reglas no auto-enforced pero obligatorias:**
-- **Cero comentarios en código de producción** (`//`, `/* */`, JSDoc) — el código tiene que ser autoexplicativo por nombres. Excepción: tests (`tests/`, `*.spec.ts`) sí pueden tenerlos, y directivas funcionales (`eslint-disable`, `@ts-expect-error`) nunca se cuentan como comentario y no se borran.
-- **Componentes UI: una responsabilidad por componente.** Superar ~100 líneas es *trigger de revisión*, no infracción: detente y evalúa si sigue siendo UNA responsabilidad. Si lo es (markup denso, variantes del mismo concepto), se queda; si acumuló responsabilidades, dividir en carpeta con `index.tsx` orquestador (ej. `HeroSection/`). One component per file.
-- **No crear modales custom** — usar `LightboxDialog` / `ConfirmDialog`. **No SVG inline** para íconos comunes — usar `lucide-react`.
-- **No `@import url(...)` Google Fonts** en CSS (render-blocking) — usar `next/font/google`.
-- **No duplicar `NAV_LINKS`** — re-exportar de `src/lib/navigation.ts`.
-- **No tocar la paleta** ni **agregar dependencias** sin aprobación explícita.
-- **No modificar `app/layout.tsx`** sin entender que afecta toda la app.
+| Skill | Cuándo |
+|---|---|
+| `react-doctor` | Antes de commitear cualquier cambio en componentes React. Existe como `npm run doctor`, pero la skill corre el triage completo. |
+| `better-accessibility` | Forms, modales, drag & drop, navegación por teclado, cualquier `aria-*`. |
+| `better-colors` | Cualquier cambio de color. La paleta es fija → casi siempre es verificar contraste, no proponer colores. |
+| `better-layout` | Maquetar o reordenar secciones/páginas nuevas. |
+| `better-typography` | Tipografía, escalas de texto, line-height. |
+| `better-ui` | Polish: animaciones Framer Motion, hover states, sombras, íconos lucide-react. |
+| `better-writing` | Copy visible al usuario (botones, errores, empty states) — **tuteo, nunca voseo**. |
+| `appwrite-cli` / `appwrite-typescript` | Cualquier tarea de backend: repos, auth, storage, Teams (`admins`), functions. |
+| `code-review` | Antes de pedir aprobación de commit en cambios no triviales. |
+| `security-review` | Cambios a Server Actions, API routes, o Libro de Reclamaciones (datos de terceros). |
+
+| MCP | Cuándo |
+|---|---|
+| `appwrite` | Único backend real (DB, Auth, Storage, Teams). Correr `appwrite_get_context` antes de cualquier operación server-side/repos — no adivinar el estado del proyecto. |
+| `codegraph` (`codegraph_explore`) | Antes de leer archivos a mano para entender arquitectura, call flow o impacto. **No** usar Read/Glob/Grep como primer paso en preguntas estructurales. |
+
+> **Mantenimiento:** `npx skills add appwrite/skills` instala las 11 skills de SDK de Appwrite. Solo `appwrite-typescript` y `appwrite-cli` aplican aquí — borrar las otras nueve (dart, dotnet, go, kotlin, php, python, ruby, rust, swift) del directorio real `.agents/skills/` **y** de los symlinks en `.claude/skills/`. Ambos árboles están gitignoreados.
+
+---
+
+## Reglas vinculantes (ESLint-enforced)
+
+No las silencies: corregí la causa raíz o pedí excepción.
+
+| Regla | Detalle |
+|---|---|
+| **Nunca `eslint-disable` en `src/`** | Ni inline ni de archivo. Todo warning/error se soluciona en la causa raíz. En `tests/` se acepta con razón en la misma línea (ver `correlativo-concurrency.spec.ts`). |
+| **`next/image` siempre** | `<img>` nativo prohibido. |
+| **Sin `any`** | Usar `unknown` con narrowing. |
+| **Promises** | Toda promise `await`/`then`/`catch`. No pasar async a handlers `void`. |
+| **Framer Motion** | Siempre `LazyMotion + m`, **nunca** `import { motion }`. Standalone sin `LazyMotion` OK: `useMotionValue`, `animate`, `useInView`. |
+| **Colores** | Nada de hex/`rgb`/`rgba` hardcodeado en `style={{}}` ni en clases arbitrarias (`text-[#fff]`). Solo `var(--color-*)` o `color-mix(in srgb, …)`. *Excepción:* valores dinámicos de DB en `style` (ej. `backgroundColor: colorDef.hex`). |
+| **Datos de negocio** | Nunca hardcodear teléfono / `wa.me/…` / handle Instagram — importar de `BUSINESS`. `src/lib/constants.ts` es el único archivo exento de `no-restricted-syntax`. |
+| **z-index en className** | Solo `z-50` (WhatsAppFloat), `z-[90]` (Navbar), `z-[100]` (LightboxDialog). Excepciones inline documentadas: skip link `zIndex: 200`, Hero `var(--z-hero-overlay)` (=10). |
+| **Varias** | `react/jsx-key` en listas · `no-console` (warn — `warn`/`error` OK, `log` no) · `simple-import-sort` (warn, será error). |
+
+## Reglas vinculantes (no auto-enforced)
+
+| Regla | Detalle |
+|---|---|
+| **Cero comentarios en producción** | Sin `//`, `/* */` ni JSDoc — el código se explica por nombres. *Excepciones:* `tests/` y `*.spec.ts` sí pueden tener comentarios; las directivas funcionales (`eslint-disable`, `@ts-expect-error`) no cuentan como comentario y **no se borran**. |
+| **Una responsabilidad por componente UI** | Superar ~100 líneas es *trigger de revisión*, no infracción: parar y evaluar. Si sigue siendo UNA responsabilidad (markup denso, variantes del mismo concepto) se queda; si acumuló responsabilidades, dividir en carpeta con `index.tsx` orquestador (ej. `HeroSection/`). One component per file. |
+| **No modales custom** | Usar `LightboxDialog` / `ConfirmDialog`. |
+| **No SVG inline** para íconos comunes | Usar `lucide-react`. |
+| **No `@import url(...)` Google Fonts** en CSS | Render-blocking — usar `next/font/google`. |
+| **No duplicar `NAV_LINKS`** | Re-exportar de `src/lib/navigation.ts`. |
+| **Requieren aprobación explícita** | Tocar la paleta · agregar dependencias · modificar `app/layout.tsx` (afecta toda la app). |
 
 ## Fuentes únicas de verdad
 
-- `src/lib/constants.ts` → `BUSINESS` (teléfono, WhatsApp, Instagram, horarios, ubicación, website…).
-- `src/lib/navigation.ts` → `NAV_LINKS` (Navbar/constants.ts + Footer re-exportan).
-- **Paleta (fija):** `--color-primary #c0392b` (rojo, títulos) · `--color-secondary #e8b84b` (dorado, acentos) · `--color-accent #2d5a1b` (verde, highlights) · `--color-cream #fdfcfa` (fondo) · `--color-dark #1a1a1a` (texto) · `--color-whatsapp #25d366` (solo WhatsApp). Derivados `color-mix`: `--color-muted/-surface/-border`. Definidas en `globals.css`; fonts expuestas como `--font-heading` / `--font-body`.
+| Qué | Dónde |
+|---|---|
+| `BUSINESS` — teléfono, WhatsApp, Instagram, horarios, ubicación, website | `src/lib/constants.ts` |
+| `NAV_LINKS` — Navbar/constants.ts y Footer re-exportan | `src/lib/navigation.ts` |
+| Tokens de color y fuentes (definición CSS) | `globals.css` |
+| **Cuándo usar cada color, contraste, componentes** | [`docs/design.md`](docs/design.md) — autoridad única |
+
+**Paleta: fija, no se toca sin aprobación.** Tokens: `--color-primary` · `--color-secondary` · `--color-accent` · `--color-cream` · `--color-dark` · `--color-whatsapp`, más derivados `color-mix` (`--color-muted/-surface/-border`) y los tokens de contraste (`--color-gold-text`, `--color-gold-text-dark`). Fonts expuestas como `--font-heading` / `--font-body`.
+
+⚠️ **No memorices los hex desde acá — leé `docs/design.md`.** Varios tokens tienen restricciones de accesibilidad (el dorado falla AA como texto sobre fondos claros) que solo están documentadas ahí.
+
+---
 
 ## Arquitectura — Feature Folders
 
@@ -81,84 +130,77 @@ src/
 
 **Datos:** Appwrite es la fuente (landing pública + admin CRUD), vía `lib/appwrite/repositories/*`. Tipos dominio `Product`/`Category` en `features/catalog/types`; los repos Appwrite reusan las formas de fila de `lib/db/rows.ts` (tipos nativos). Categorías base (6): Amor y Romance, Cumpleaños, Orquídeas Premium, Flores Amarillas, Corporativo y Eventos, Condolencias. Filtros client-side (texto, categoría, precio S/30–800, colores, flores) en `filterProducts.ts`.
 
+---
+
 ## Server Actions (admin) — patrón obligatorio
 
 Toda action en `features/admin/actions/` **debe**:
 
-1. Envolverse con `requireAdmin()` / `withAdminAuth()` (`utils/auth.ts`) — verifican sesión Appwrite (`account.get()`) **y** membresía en el Team `admins` de Appwrite (`isAdminUserAppwrite`, ver `adminMembership.appwrite.ts`); si no, tira `FORBIDDEN`. *(Operacional: el Team `admins` debe estar seedeado o todos los admins quedan bloqueados.)*
-2. Validar input con schema zod de `schemas/`.
-3. Devolver `Result<T>` discriminado:
+1. **Envolverse con `requireAdmin()` / `withAdminAuth()`** (`utils/auth.ts`). Verifican sesión Appwrite (`account.get()`) **y** membresía en el Team `admins` (`isAdminUserAppwrite`, ver `adminMembership.appwrite.ts`); si no, tira `FORBIDDEN`.
+   *Operacional:* el Team `admins` debe estar seedeado o todos los admins quedan bloqueados.
+2. **Validar input** con schema zod de `schemas/`.
+3. **Devolver `Result<T>` discriminado:**
    ```ts
    type Result<T> =
      | { ok: true; data: T }
      | { ok: false; error: { code: string; message: string; issues?: ZodIssue[] } };
    ```
-4. URLs de imagen pasan por `imageStorage.isOwnedUrl` (`@/lib/imageStorage`) o el schema `storedImageUrl` de `schemas/common.ts`.
-5. `revalidatePath` — **Productos:** `/`, `/catalogo`, `/catalogo/{cat.slug}`, `/catalogo/{cat.slug}/{slug}`, `/admin/categorias`. **Categorías:** `/`, `/catalogo`, `/catalogo/{slug}` (cada slug afectado), `/admin/categorias`.
+4. **URLs de imagen** pasan por `imageStorage.isOwnedUrl` (`@/lib/imageStorage`) o el schema `storedImageUrl` de `schemas/common.ts`.
+5. **`revalidatePath`:**
+   - *Productos:* `/`, `/catalogo`, `/catalogo/{cat.slug}`, `/catalogo/{cat.slug}/{slug}`, `/admin/categorias`.
+   - *Categorías:* `/`, `/catalogo`, `/catalogo/{slug}` (cada slug afectado), `/admin/categorias`.
 
-No cambiar el contrato `Result<T>` ni la firma al evolucionar autorización.
+**No cambiar el contrato `Result<T>` ni la firma al evolucionar autorización.**
 
-**Slugs en edición:** preservar el original (no regenerar al cambiar `name`); regenerar solo opt-in (botón explícito). Server: mismo slug → no regenera; distinto → acepta. Impl: `useProductForm.autoSlug`, `CategoryForm` `readOnly`+botón.
+**Slugs en edición:** preservar el original (no regenerar al cambiar `name`); regenerar solo opt-in (botón explícito). Server: mismo slug → no regenera; distinto → acepta. Impl: `useProductForm.autoSlug`, `CategoryForm` `readOnly` + botón.
 
-**API routes** (`/api/images/upload`): `auth.getUser()` o 401 · validar folder con `isAllowedImageFolder` (allowlist `productos`, `categorias`) · valida tipo/tamaño server-side, sube vía `imageStorage.upload` · logs sin secretos.
+**API routes** (`/api/images/upload`): `auth.getUser()` o 401 · validar folder con `isAllowedImageFolder` (allowlist `productos`, `categorias`) · validar tipo/tamaño server-side, subir vía `imageStorage.upload` · logs sin secretos.
 
 ## Libro de Reclamaciones
 
-- Ruta pública: `/libro-de-reclamaciones`; panel autenticado: `/admin/reclamos` y `/admin/reclamos/[id]`.
-- El dominio vive en `features/complaints/`. Al registrar una hoja, se envía por Resend una copia al consumidor y una notificación al negocio.
-- El plazo operativo es de 15 días hábiles. El cálculo excluye sábados y domingos, pero **no** feriados peruanos; no lo presentes como cómputo legal exacto sin revisar ese límite.
-- No alterar los datos de la hoja ni las plantillas de email sin preservar el escape HTML de toda entrada pública.
+- Ruta pública `/libro-de-reclamaciones`; panel autenticado `/admin/reclamos` y `/admin/reclamos/[id]`. El dominio vive en `features/complaints/`.
+- Al registrar una hoja se envía por Resend una copia al consumidor y una notificación al negocio.
+- Plazo operativo: 15 días hábiles. El cálculo excluye sábados y domingos, pero **no** feriados peruanos — no presentarlo como cómputo legal exacto sin revisar ese límite.
+- No alterar los datos de la hoja ni las plantillas de email sin **preservar el escape HTML de toda entrada pública**.
 
 ## Convenciones Next 16 + estilos
 
 - `params`/`searchParams` son **async** → tipar `Promise<{…}>` y `await`.
 - `viewport` se exporta aparte de `metadata`: `export const viewport: Viewport = {…}`.
 - RSC por defecto; `'use client'` solo con hooks/eventos browser. Alias `@/*`. `import type {…}` agrupados.
-- className: arbitrary values + CSS vars: `bg-(--color-surface)`, `text-(--color-primary)`, `border-(--color-border)`.
+- className: arbitrary values + CSS vars → `bg-(--color-surface)`, `text-(--color-primary)`, `border-(--color-border)`.
 - **HeroSection `CAMPAIGN_MODE: 'contact' | 'catalog'`** (tope de `index.tsx`) cambia el CTA principal — entender antes de tocar el hero.
 
 ## SEO / metadata
 
 - Cada página relevante exporta `generateMetadata` (`title`, `description`, `alternates.canonical`, `openGraph.images`, `twitter`).
 - ⚠️ **Nunca concatenar `BUSINESS.name` en `title` de páginas hijas** — el root template `'%s | Kataleya Flowers'` ya lo agrega (evita duplicado).
-- JSON-LD solo via `<JsonLd data={…} />` (no `<script>` raw). Tipos: `Florist` (root), `Product`/`AggregateOffer` (detalle), `BreadcrumbList`, `ItemList`.
+- JSON-LD solo vía `<JsonLd data={…} />` (no `<script>` raw). Tipos: `Florist` (root), `Product`/`AggregateOffer` (detalle), `BreadcrumbList`, `ItemList`.
 - File-based metadata API vive en `src/app/` (`sitemap/robots/manifest/opengraph-image`) — **no** mover a metadata estática del layout.
 
 ## A11y + shared primitives
 
 - Skip link → `id="main-content"`. Forms: `aria-required/-invalid/-describedby` → `<FieldError role="alert">`. `<nav aria-label>`.
-- Drag & drop @dnd-kit: sensores Pointer+Keyboard+Touch + `<DndLiveRegion>` (announcements ES). Modales Radix (focus trap/restore/ESC/scroll-lock auto). Autocomplete: `role="combobox"` + `aria-autocomplete="list"` + `role="option"`.
-- `ui/`: `LightboxDialog`, `ConfirmDialog` (`default`/`destructive`), `JsonLd`, `Button`, `Input`, `Breadcrumb`, `FormField`, `EmptyState`, `FilterChip`, `PillToggle`, `ToggleSwitch`, `SectionHeader`.
+- Drag & drop @dnd-kit: sensores Pointer+Keyboard+Touch + `<DndLiveRegion>` (announcements ES). Modales Radix (focus trap/restore/ESC/scroll-lock automáticos). Autocomplete: `role="combobox"` + `aria-autocomplete="list"` + `role="option"`.
+- `ui/` disponibles: `LightboxDialog`, `ConfirmDialog` (`default`/`destructive`), `JsonLd`, `Button`, `Input`, `Breadcrumb`, `FormField`, `EmptyState`, `FilterChip`, `PillToggle`, `ToggleSwitch`, `SectionHeader`.
 
 ## Tests / seguridad
 
-- Tests en `tests/` (+ `helpers/`). **`phase1-verify.spec.ts` = regression baseline, siempre verde.** Specs admin leen `E2E_ADMIN_EMAIL`/`E2E_ADMIN_PASSWORD` del env — nunca hardcodear. Bug fuera de scope → `test.fixme` con razón.
+- Tests en `tests/` (+ `helpers/`). **`phase1-verify.spec.ts` = regression baseline, siempre verde.**
+- Specs admin leen `E2E_ADMIN_EMAIL` / `E2E_ADMIN_PASSWORD` del env — nunca hardcodear. Bug fuera de scope → `test.fixme` con razón.
 - `next.config.ts`: HSTS, X-Frame-Options DENY, nosniff, Referrer-Policy, Permissions-Policy, `poweredByHeader: false`. **CSP en Report-Only** (TODO Fase 6: enforced con nonce).
 
-## Skills obligatorias
-
-Antes de tocar el área correspondiente, invocar la skill — no improvisar a mano:
-
-- **`react-doctor`** — antes de commitear cualquier cambio en componentes React (lint/a11y/bundle/arquitectura). Ya es `npm run doctor`, pero como skill corre el triage completo.
-- **`better-accessibility`** — al tocar forms, modales, drag & drop, navegación por teclado o cualquier `aria-*`.
-- **`better-colors`** — ante cualquier cambio de color; la paleta es fija (ver arriba) así que casi siempre es para verificar contraste, no para proponer colores nuevos.
-- **`better-layout`** — al maquetar o reordenar secciones/páginas nuevas.
-- **`better-typography`** — al tocar tipografía, escalas de texto o line-height.
-- **`better-ui`** — en detalles de polish: animaciones Framer Motion, hover states, sombras, íconos lucide-react.
-- **`better-writing`** — al escribir o revisar copy visible al usuario (botones, errores, empty states) — recordar tuteo, nunca voseo.
-- **`appwrite-cli`** / **`appwrite-typescript`** — para cualquier tarea de backend: repos, auth, storage, Teams (`admins`), functions.
-- **`code-review`** — antes de pedir aprobación de commit en cambios no triviales.
-- **`security-review`** — en cambios a Server Actions, API routes, o el Libro de Reclamaciones (maneja datos de terceros).
-
-## MCPs obligatorios
-
-- **`appwrite`** — único backend real (DB, Auth, Storage, Teams). Usar `appwrite_get_context` antes de cualquier operación server-side/repos para no adivinar el estado del proyecto.
-- **`codegraph`** (`codegraph_explore`) — antes de leer archivos a mano para entender arquitectura, call flow o impacto de un cambio (ver regla CodeGraph). No usar Read/Glob/Grep como primer paso en preguntas estructurales.
+---
 
 ## Commits
 
-Conventional Commits en inglés, cortos, presente (`feat: add contact form validation`). **Nunca** `Co-Authored-By` ni metadata de autor. **Nunca commitear sin aprobación explícita:** implementar → lint limpio → usuario prueba → usuario pide commit.
+Conventional Commits en inglés, cortos, presente (`feat: add contact form validation`). **Nunca** `Co-Authored-By` ni metadata de autor.
+
+**Nunca commitear sin aprobación explícita.** Flujo: implementar → lint limpio → usuario prueba → usuario pide commit.
 
 ## Sesión (engram)
 
-Iniciar: `mem_context` (`project: kataleya-flawers-web`) + leer archivos antes de modificar. Cerrar: `mem_session_summary` (qué se hizo, archivos, decisiones) — no opcional.
+- **Iniciar:** `mem_context` (`project: kataleya-flowers-web`) + leer archivos antes de modificar.
+- **Cerrar:** `mem_session_summary` (qué se hizo, archivos, decisiones) — no opcional.
+
+> El directorio local sigue llamándose `kataleya-flawers-web` (typo histórico), pero engram resuelve el proyecto desde el git remote como **`kataleya-flowers-web`**. Usar siempre el nombre con `o`.
