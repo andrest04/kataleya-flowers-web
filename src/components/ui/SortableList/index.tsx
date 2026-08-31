@@ -18,7 +18,7 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import type { ReactNode } from 'react';
+import { type ReactNode, useId } from 'react';
 
 import { createSortableAnnouncements, sortableScreenReaderInstructions } from './announcements';
 
@@ -37,6 +37,8 @@ export default function SortableList({
   layout = 'vertical',
   onReorder,
 }: SortableListProps) {
+  const dndId = useId();
+
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 8 } }),
@@ -53,6 +55,7 @@ export default function SortableList({
 
   return (
     <DndContext
+      id={dndId}
       sensors={sensors}
       collisionDetection={closestCenter}
       modifiers={layout === 'vertical' ? [restrictToVerticalAxis, restrictToParentElement] : []}
