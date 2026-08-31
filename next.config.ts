@@ -56,7 +56,8 @@ const SECURITY_HEADERS = [
  *
  * Dominios permitidos:
  *   - nyc.cloud.appwrite.io -> Appwrite Storage (imágenes de productos/categorías)
- *   - www.google.com        -> iframe de Google Maps en /contacto
+ *   - www.google.com        -> iframe de Google Maps en la sección de contacto
+ *   - va.vercel-scripts.com -> @vercel/analytics y @vercel/speed-insights
  *
  * Appwrite DB/Auth se consume server-side (RSC + server actions); Storage sí
  * se sirve al browser (URLs de imagen en `<Image>`), de ahí la entrada en
@@ -64,7 +65,7 @@ const SECURITY_HEADERS = [
  */
 const CSP_REPORT_ONLY = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com",
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https://nyc.cloud.appwrite.io",
   "font-src 'self' data:",
