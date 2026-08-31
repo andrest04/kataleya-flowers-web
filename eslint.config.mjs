@@ -8,10 +8,6 @@ import simpleImportSort from 'eslint-plugin-simple-import-sort';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
-// TODO(fase 5+): subir `simple-import-sort/imports` y `simple-import-sort/exports`
-// de `'warn'` a `'error'` después de un pass global con `npm run lint -- --fix`
-// y revisar que ningún módulo dependa de un orden de import específico (side effects).
-//
 // La validación de "no `tailwind.config.*` en el repo" vive en
 // `scripts/check-no-tailwind-config.mjs` y corre vía `prebuild`. ESLint no
 // valida presencia de archivos.
@@ -217,8 +213,6 @@ export default defineConfig([
   },
 
   // 8. simple-import-sort — orden estable de imports/exports.
-  //    Arrancamos en `'warn'` para no explotar el lint con cientos de violaciones.
-  //    TODO: subir a `'error'` después de un pass global con `--fix` (ver header del archivo).
   {
     name: 'project/simple-import-sort',
     files: ['**/*.{js,jsx,ts,tsx,mjs}'],
@@ -226,8 +220,8 @@ export default defineConfig([
       'simple-import-sort': simpleImportSort,
     },
     rules: {
-      'simple-import-sort/imports': 'warn',
-      'simple-import-sort/exports': 'warn',
+      'simple-import-sort/imports': 'error',
+      'simple-import-sort/exports': 'error',
     },
   },
 
