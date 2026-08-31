@@ -23,6 +23,7 @@ import {
   getNextProductOrder,
   getProductCategorySlug,
   getProductImageUrls,
+  reorderProductsAppwrite,
   setProductActive,
   updateProductWithTaxonomy,
 } from '@/lib/appwrite/repositories/products';
@@ -145,6 +146,7 @@ export async function createProduct(data: ProductFormData): Promise<ProductActio
         flowerTypeNames: formData.flowerTypes,
         imageUrl: formData.imageUrl,
         galleryImages: formData.images,
+        imageAlts: formData.imageAlts,
       });
     } catch (writeErr) {
       if (writeErr instanceof AppwriteException && writeErr.code === 409) {
@@ -224,6 +226,7 @@ export async function updateProduct(
         flowerTypeNames: formData.flowerTypes,
         imageUrl: formData.imageUrl,
         galleryImages: formData.images,
+        imageAlts: formData.imageAlts,
       });
     } catch (writeErr) {
       if (writeErr instanceof AppwriteException && writeErr.code === 409) {
@@ -313,6 +316,23 @@ export async function bulkDeleteProducts(ids: string[]): Promise<ProductActionRe
       revalidateProductPaths(product.slug, product.categoryId, product.categorySlug),
     ));
     return { success: true, cleanupWarning };
+  } catch (err) {
+    return failureFromUnknown(err);
+  }
+}
+
+export async function reorderProducts(ids: string[]): Promise<ProductActionResult> {
+  try {
+    await requireAdmin();
+    const parsed = reorderSchema.safeParse({ ids });
+    if (!parsed.success) {
+      return { success: false, error: 'Lista de productos inválida.', code: 'VALIDATION' };
+    }
+    await reorderProductsAppwrite(parsed.data.ids);
+    BASE_REVALIDATE_PATHS.forEach((path) => revalidatePath(path));
+    updateTag('catalog-products');
+    updateTag('catalog-categories');
+    return { success: true };
   } catch (err) {
     return failureFromUnknown(err);
   }

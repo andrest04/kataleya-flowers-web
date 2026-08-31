@@ -5,6 +5,7 @@ import ImageUploader from '@/features/admin/components/ImageUploader';
 import type { ProductFormData } from '@/features/admin/types';
 
 import { FieldError } from './FieldError';
+import ProductGalleryManager from './ProductGalleryManager';
 import type { FieldErrors } from './validation';
 
 interface Props {
@@ -16,27 +17,39 @@ interface Props {
 export default function ProductFormImages({ form, fieldErrors, setField }: Props) {
   const imageUrlError = fieldErrors.imageUrl;
   const imagesError = Object.entries(fieldErrors).find(([key]) => key.startsWith('images'))?.[1];
+  const gallery = form.imageUrl
+    ? [form.imageUrl, ...form.images.filter((url) => url !== form.imageUrl)]
+    : form.images;
+
+  function setGallery(urls: string[]) {
+    setField('imageUrl', urls[0] ?? '');
+    setField('images', urls.slice(1));
+  }
+
+  function handleRemove(url: string) {
+    setGallery(gallery.filter((item) => item !== url));
+    const remainingAlts = Object.fromEntries(
+      Object.entries(form.imageAlts).filter(([key]) => key !== url),
+    );
+    setField('imageAlts', remainingAlts);
+  }
 
   return (
     <>
-      <FormField label="Imagen principal" required>
-        <ImageUploader
-          value={form.imageUrl}
-          onChange={(url) => setField('imageUrl', url)}
-          folder="productos"
-        />
+      <FormField label="Fotos del producto" required>
+        <ImageUploader multiple value={gallery} onChange={setGallery} folder="productos" />
         <FieldError id="product-imageUrl-error" message={imageUrlError} />
-      </FormField>
-
-      <FormField label="Imágenes adicionales">
-        <ImageUploader
-          multiple
-          value={form.images}
-          onChange={(urls) => setField('images', urls)}
-          folder="productos"
-        />
         <FieldError id="product-images-error" message={imagesError} />
       </FormField>
+
+      <ProductGalleryManager
+        images={gallery}
+        altTexts={form.imageAlts}
+        onReorder={setGallery}
+        onSetPrimary={(url) => setGallery([url, ...gallery.filter((item) => item !== url)])}
+        onRemove={handleRemove}
+        onChangeAlt={(url, alt) => setField('imageAlts', { ...form.imageAlts, [url]: alt })}
+      />
     </>
   );
 }

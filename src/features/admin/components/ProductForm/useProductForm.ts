@@ -62,6 +62,7 @@ function buildInitialState(product?: ProductInput, initialCategoryId?: string): 
       categoryId: initialCategoryId ?? '',
       imageUrl: '',
       images: [],
+      imageAlts: {},
       colors: [],
       flowerTypes: [],
       includes: [],
@@ -97,6 +98,13 @@ function buildInitialState(product?: ProductInput, initialCategoryId?: string): 
   const galleryImages = sortedImages
     ? sortedImages.map((i) => i.url)
     : (product.images ?? []);
+  const imageAlts = sortedImages
+    ? Object.fromEntries(
+        sortedImages
+          .filter((image) => image.alt_text && image.alt_text !== product.name)
+          .map((image) => [image.url, image.alt_text as string]),
+      )
+    : {};
 
   return {
     name: product.name,
@@ -106,6 +114,7 @@ function buildInitialState(product?: ProductInput, initialCategoryId?: string): 
     categoryId: product.category_id,
     imageUrl,
     images: galleryImages,
+    imageAlts,
     colors,
     flowerTypes,
     includes: (product.includes as unknown as string[]) ?? [],
