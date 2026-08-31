@@ -9,13 +9,22 @@ interface CategoryWorkspace {
   name: string;
 }
 
-async function pickCategoryWorkspace(page: Page): Promise<CategoryWorkspace | null> {
+/**
+ * Toma la primera categoría administrable. Falla si no hay ninguna: el admin
+ * sin categorías es un entorno mal sembrado, no un caso válido que saltear.
+ */
+async function pickCategoryWorkspace(page: Page): Promise<CategoryWorkspace> {
   await page.goto('/admin/categorias');
   const manageLink = page.getByRole('link', { name: 'Gestionar productos' }).first();
-  if ((await manageLink.count()) === 0) return null;
+  await expect(
+    manageLink,
+    'El admin no tiene categorías: el entorno de test no está sembrado',
+  ).toBeVisible();
 
   const href = await manageLink.getAttribute('href');
-  if (!href) return null;
+  if (!href) {
+    throw new Error('El link "Gestionar productos" no tiene href');
+  }
 
   // Desktop viewport renders CategoryList as a table; each category is a <tr>.
   const row = page.locator('tr', { has: manageLink });
@@ -36,10 +45,6 @@ test.describe('Administración de productos por categoría', () => {
 
   test('categorías muestra el conteo y lleva al espacio de productos', async ({ page }) => {
     const workspace = await pickCategoryWorkspace(page);
-    if (!workspace) {
-      test.skip(true, 'No hay categorías para administrar.');
-      return;
-    }
 
     await expect(page.getByText(/\d+ productos?/).first()).toBeVisible();
     await page.goto(workspace.href);
@@ -49,10 +54,6 @@ test.describe('Administración de productos por categoría', () => {
 
   test('nuevo producto conserva la categoría y vuelve a su espacio tras guardar', async ({ page }) => {
     const workspace = await pickCategoryWorkspace(page);
-    if (!workspace) {
-      test.skip(true, 'No hay categorías para administrar.');
-      return;
-    }
 
     await page.goto(workspace.href);
     await page.getByRole('link', { name: 'Nuevo producto' }).click();
@@ -63,17 +64,13 @@ test.describe('Administración de productos por categoría', () => {
 
   test('productos individuales exponen estado, edición y eliminación', async ({ page }) => {
     const workspace = await pickCategoryWorkspace(page);
-    if (!workspace) {
-      test.skip(true, 'No hay categorías para administrar.');
-      return;
-    }
 
     await page.goto(workspace.href);
     const editLink = page.getByRole('link', { name: 'Editar' }).first();
-    if ((await editLink.count()) === 0) {
-      test.skip(true, 'La categoría no tiene productos para administrar.');
-      return;
-    }
+    await expect(
+      editLink,
+      `La categoría ${workspace.name} no tiene productos: el entorno de test no está sembrado`,
+    ).toBeVisible();
 
     await expect(page.getByRole('switch').first()).toBeVisible();
     await expect(editLink).toBeVisible();

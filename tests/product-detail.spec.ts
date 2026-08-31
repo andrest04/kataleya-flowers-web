@@ -108,15 +108,16 @@ test.describe("Phase 4B — Product detail", () => {
         { timeout: 5_000 },
       )
       .catch(() => {
-        // Si no hay thumbnails, el siguiente check skippea por count<2.
+        // La aserción de abajo reporta el fallo con la cuenta real.
       });
 
+    // Cambiar de imagen solo es observable con 2+ thumbnails. El primer producto
+    // del catálogo debe tener galería múltiple para que este test signifique algo.
     const thumbCount = await thumbnails.count();
-
-    if (thumbCount < 2) {
-      test.skip(true, "Producto con una sola imagen — no aplica");
-      return;
-    }
+    expect(
+      thumbCount,
+      "El primer producto necesita ≥2 imágenes para validar el cambio de thumbnail",
+    ).toBeGreaterThanOrEqual(2);
 
     // Tomamos el primer thumbnail no-presionado para evitar el seleccionado por default.
     const firstUnpressed = thumbnails.filter({
@@ -221,8 +222,7 @@ test.describe("Phase 4B — Product detail", () => {
     // donde sabemos que NO hay imagen, ni botones, ni contador.
     const viewport = page.viewportSize();
     if (!viewport) {
-      test.skip(true, "Viewport no disponible");
-      return;
+      throw new Error("El proyecto de Playwright debe definir un viewport");
     }
     // Click cerca de la esquina inferior izquierda (lejos de imagen y controles).
     await page.mouse.click(10, viewport.height - 10);
