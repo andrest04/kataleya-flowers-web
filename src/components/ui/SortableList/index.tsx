@@ -59,6 +59,9 @@ export default function SortableList({
       accessibility={{
         announcements: createSortableAnnouncements(getItemLabel),
         screenReaderInstructions: sortableScreenReaderInstructions,
+        // Portal the live region out of the list. When the list is a <tbody>,
+        // rendering it in place would put a <div> inside a table body.
+        container: typeof document === 'undefined' ? undefined : document.body,
       }}
       onDragEnd={handleDragEnd}
     >
