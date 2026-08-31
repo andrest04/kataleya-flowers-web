@@ -1,4 +1,16 @@
+import { existsSync } from "node:fs";
+import { resolve } from "node:path";
+
 import { defineConfig } from "@playwright/test";
+
+// Playwright no lee .env por sí solo (a diferencia de Next, que sí lo hace para
+// el dev server que arranca `webServer`). Sin esto, los specs autenticados de
+// admin quedaban en "skipped" — un falso verde. loadEnvFile no pisa variables
+// ya presentes, así que en CI ganan los secretos reales.
+const envFile = resolve(__dirname, ".env");
+if (existsSync(envFile)) {
+  process.loadEnvFile(envFile);
+}
 
 export default defineConfig({
   testDir: "./tests",

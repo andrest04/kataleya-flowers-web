@@ -17,7 +17,8 @@ async function pickCategoryWorkspace(page: Page): Promise<CategoryWorkspace | nu
   const href = await manageLink.getAttribute('href');
   if (!href) return null;
 
-  const row = page.locator('li', { has: manageLink });
+  // Desktop viewport renders CategoryList as a table; each category is a <tr>.
+  const row = page.locator('tr', { has: manageLink });
   const name = (await row.locator('p').first().textContent())?.trim() ?? '';
   return { href, name };
 }
