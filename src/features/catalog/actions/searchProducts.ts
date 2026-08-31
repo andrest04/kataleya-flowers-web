@@ -1,6 +1,7 @@
 'use server';
 
 import type { SearchResult } from '@/components/shared/Navbar/constants';
+import { deriveProductImages } from '@/features/catalog/queries/mappers';
 import { listActiveCategories } from '@/lib/appwrite/repositories/categories';
 import { listActiveJoinedProducts } from '@/lib/appwrite/repositories/products';
 
@@ -21,6 +22,7 @@ export async function searchProducts(query: string): Promise<SearchResult[]> {
     .slice(0, 12)
     .map((row) => {
       const category = categoryById.get(row.category_id);
+      const { imageUrl } = deriveProductImages(row.product_images);
       return {
         name: row.name,
         slug: row.slug,
@@ -29,7 +31,7 @@ export async function searchProducts(query: string): Promise<SearchResult[]> {
         price: Number(row.price),
         hasVariants:
           Array.isArray(row.price_variants) && row.price_variants.length > 0,
-        imageUrl: row.image_url ?? '',
+        imageUrl,
       };
     });
 }

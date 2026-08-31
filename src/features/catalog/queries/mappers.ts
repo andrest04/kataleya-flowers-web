@@ -20,6 +20,17 @@ export type JoinedProductRow = ProductRow & {
     | null;
 };
 
+export function deriveProductImages(
+  productImages: JoinedProductRow['product_images'],
+): { imageUrl: string; gallery: string[] } {
+  const imgs = [...(productImages ?? [])].sort(
+    (a, b) => a.display_order - b.display_order,
+  );
+  const primary = imgs.find((i) => i.is_primary) ?? imgs[0];
+  const gallery = imgs.flatMap((i) => (i.is_primary ? [] : [i.url]));
+  return { imageUrl: primary?.url ?? '', gallery };
+}
+
 export function mapProductRow(row: JoinedProductRow): Product {
   const colors = (row.product_color_assignments ?? [])
     .map((a) => a.product_colors?.name)
@@ -29,11 +40,7 @@ export function mapProductRow(row: JoinedProductRow): Product {
     .map((a) => a.flower_types?.name)
     .filter((n): n is string => !!n);
 
-  const imgs = [...(row.product_images ?? [])].sort(
-    (a, b) => a.display_order - b.display_order,
-  );
-  const primary = imgs.find((i) => i.is_primary) ?? imgs[0];
-  const gallery = imgs.flatMap((i) => (i.is_primary ? [] : [i.url]));
+  const { imageUrl, gallery } = deriveProductImages(row.product_images);
 
   return {
     id: row.id,
@@ -42,7 +49,7 @@ export function mapProductRow(row: JoinedProductRow): Product {
     description: row.description,
     price: Number(row.price),
     categoryId: row.category_id,
-    imageUrl: primary?.url ?? '',
+    imageUrl,
     images: gallery,
     includes: (row.includes as string[]) ?? [],
     occasion: row.occasion ?? undefined,
