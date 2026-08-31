@@ -242,7 +242,7 @@ export async function deleteCategory(
       if (!reassignParsed.success) {
         return {
           success: false,
-          error: 'Seleccioná una categoría destino válida para reasignar los productos.',
+          error: 'Selecciona una categoría destino válida para reasignar los productos.',
           code: 'VALIDATION',
         };
       }

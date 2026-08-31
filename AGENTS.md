@@ -98,7 +98,7 @@ No las silencies: corregí la causa raíz o pedí excepción.
 
 **Paleta: fija, no se toca sin aprobación.** Tokens: `--color-primary` · `--color-secondary` · `--color-accent` · `--color-cream` · `--color-dark` · `--color-whatsapp`, más derivados `color-mix` (`--color-muted/-surface/-border`) y los tokens de contraste (`--color-gold-text`, `--color-gold-text-dark`). Fonts expuestas como `--font-heading` / `--font-body`.
 
-⚠️ **No memorices los hex desde acá — leé `docs/design.md`.** Varios tokens tienen restricciones de accesibilidad (el dorado falla AA como texto sobre fondos claros) que solo están documentadas ahí.
+⚠️ **No memorices los hex desde aquí — lee `docs/design.md`.** Varios tokens tienen restricciones de accesibilidad (el dorado falla AA como texto sobre fondos claros) que solo están documentadas ahí.
 
 ---
 
