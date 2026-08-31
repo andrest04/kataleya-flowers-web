@@ -1,5 +1,5 @@
 export const BUSINESS = {
-  name: "Kataleya Flawers",
+  name: "Kataleya Flowers",
   website: "https://kataleya-flawers.appwrite.network",
   phone: "51990051041",
   whatsapp: "https://wa.me/51990051041",
@@ -24,7 +24,7 @@ export const BUSINESS = {
   mapsEmbedUrl:
     "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3900.667835343661!2d-77.0213840240266!3d-12.134864543549192!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9105b7fe8f580c29%3A0xf37f77a4ef274530!2sFlorer%C3%ADa%20Floritel!5e0!3m2!1sen!2spe!4v1773457299751!5m2!1sen!2spe",
   messages: {
-    whatsappDefault: "Hola Kataleya Flawers, quiero hacer un pedido.",
+    whatsappDefault: "Hola Kataleya Flowers, quiero hacer un pedido.",
     whatsappFloat: "Hola, me gustaría hacer un pedido",
     whatsappProduct: (productName: string) =>
       `Hola, me interesa el producto: ${productName}`,

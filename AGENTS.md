@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Landing + admin para **Kataleya Flawers**, florería real en Lima, Perú. Negocio en producción — los cambios son reales.
+Landing + admin para **Kataleya Flowers**, florería real en Lima, Perú. Negocio en producción — los cambios son reales.
 
 **Estado:** Post-audit (Phases 1–5). Las convenciones de este archivo son **vinculantes** y la mayoría están **automatizadas** vía ESLint custom rules (`eslint.config.mjs`). Antes de pedir una excepción, leé `QA/audit/`.
 
@@ -120,7 +120,7 @@ No cambiar el contrato `Result<T>` ni la firma al evolucionar autorización.
 ## SEO / metadata
 
 - Cada página relevante exporta `generateMetadata` (`title`, `description`, `alternates.canonical`, `openGraph.images`, `twitter`).
-- ⚠️ **Nunca concatenar `BUSINESS.name` en `title` de páginas hijas** — el root template `'%s | Kataleya Flawers'` ya lo agrega (evita duplicado).
+- ⚠️ **Nunca concatenar `BUSINESS.name` en `title` de páginas hijas** — el root template `'%s | Kataleya Flowers'` ya lo agrega (evita duplicado).
 - JSON-LD solo via `<JsonLd data={…} />` (no `<script>` raw). Tipos: `Florist` (root), `Product`/`AggregateOffer` (detalle), `BreadcrumbList`, `ItemList`.
 - File-based metadata API vive en `src/app/` (`sitemap/robots/manifest/opengraph-image`) — **no** mover a metadata estática del layout.
 

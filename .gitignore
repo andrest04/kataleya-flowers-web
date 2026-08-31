@@ -64,3 +64,6 @@ skills-lock.json
 
 # Migration script exports (may contain PII — never commit)
 scripts/migration/data/
+
+.vercel
+.env*

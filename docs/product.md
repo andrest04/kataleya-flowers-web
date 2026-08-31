@@ -10,7 +10,7 @@ Clientes finales de una florería en Lima, Perú: parejas que regalan (amor y ro
 
 ## Product Purpose
 
-Landing + catálogo que convierte visitas en pedidos por WhatsApp para Kataleya Flawers, florería real con 32 años de trayectoria en Lima. Éxito = conversación de WhatsApp iniciada y confianza transmitida (negocio físico verificable, fotos reales de clientas). El repo incluye además un admin interno (registro: product) para gestionar el catálogo; la superficie primaria es la landing pública.
+Landing + catálogo que convierte visitas en pedidos por WhatsApp para Kataleya Flowers, florería real con 32 años de trayectoria en Lima. Éxito = conversación de WhatsApp iniciada y confianza transmitida (negocio físico verificable, fotos reales de clientas). El repo incluye además un admin interno (registro: product) para gestionar el catálogo; la superficie primaria es la landing pública.
 
 ## Brand Personality
 

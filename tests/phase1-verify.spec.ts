@@ -55,23 +55,23 @@ async function collectConsoleErrors(page: Page): Promise<string[]> {
 // A) Fonts + root metadata ----------------------------------------------------
 
 test.describe("Phase 1 — A) Root metadata + fonts", () => {
-  test("html lang=es-PE y title default contiene Kataleya Flawers", async ({
+  test("html lang=es-PE y title default contiene Kataleya Flowers", async ({
     page,
   }) => {
     await page.goto("/");
     await expect(page.locator("html")).toHaveAttribute("lang", "es-PE");
-    await expect(page).toHaveTitle(/Kataleya Flawers/);
+    await expect(page).toHaveTitle(/Kataleya Flowers/);
   });
 
-  test("title template '%s | Kataleya Flawers' aplica en páginas hijas", async ({
+  test("title template '%s | Kataleya Flowers' aplica en páginas hijas", async ({
     page,
   }) => {
     await page.goto("/catalogo");
-    // El layout define template `%s | Kataleya Flawers` y la página /catalogo
+    // El layout define template `%s | Kataleya Flowers` y la página /catalogo
     // setea su propio title (no default), por lo que debe contener el suffix.
     const title = await page.title();
     expect(title.length).toBeGreaterThan(0);
-    expect(title).toMatch(/Kataleya Flawers/);
+    expect(title).toMatch(/Kataleya Flowers/);
   });
 
   test("og:type=website, og:locale=es_PE, og:site_name, og:url, twitter:card", async ({
@@ -89,7 +89,7 @@ test.describe("Phase 1 — A) Root metadata + fonts", () => {
     );
     await expect(
       page.locator('meta[property="og:site_name"]'),
-    ).toHaveAttribute("content", "Kataleya Flawers");
+    ).toHaveAttribute("content", "Kataleya Flowers");
 
     const ogUrl = await page
       .locator('meta[property="og:url"]')
@@ -240,7 +240,7 @@ test.describe("Phase 1 — B) File-Based Metadata API", () => {
       theme_color?: string;
       background_color?: string;
     };
-    expect(json.name).toBe("Kataleya Flawers");
+    expect(json.name).toBe("Kataleya Flowers");
     expect(json.short_name).toBeTruthy();
     expect(json.theme_color?.toLowerCase()).toBe("#c0392b");
     expect(json.background_color?.toLowerCase()).toBe("#fdfcfa");

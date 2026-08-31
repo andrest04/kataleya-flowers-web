@@ -1,6 +1,6 @@
-# Kataleya Flawers
+# Kataleya Flowers
 
-Landing + panel de administración para **Kataleya Flawers**, florería con 32+ años de experiencia en arreglos florales y orquídeas en Lima, Perú. Negocio en producción — los cambios son reales.
+Landing + panel de administración para **Kataleya Flowers**, florería con 32+ años de experiencia en arreglos florales y orquídeas en Lima, Perú. Negocio en producción — los cambios son reales.
 
 ## Stack
 

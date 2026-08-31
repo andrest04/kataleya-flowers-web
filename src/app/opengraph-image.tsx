@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "Kataleya Flawers — Floristería en Lima, Perú";
+export const alt = "Kataleya Flowers — Floristería en Lima, Perú";
 export const size = { width: 1200, height: 630 } as const;
 export const contentType = "image/png";
 
@@ -65,7 +65,7 @@ export default async function Image(): Promise<ImageResponse> {
             letterSpacing: "-0.02em",
           }}
         >
-          Kataleya Flawers
+          Kataleya Flowers
         </div>
 
         <div

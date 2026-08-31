@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Kataleya Flawers",
+    name: "Kataleya Flowers",
     short_name: "Kataleya",
     description:
       "Floristería en Lima, Perú. Arreglos florales y orquídeas para celebraciones, homenajes y regalos.",

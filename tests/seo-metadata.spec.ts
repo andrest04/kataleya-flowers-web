@@ -3,7 +3,7 @@ import { expect, type Page,test } from "@playwright/test";
 /**
  * Phase 4B — SEO + structured data
  *
- * Phase 4A YA terminó: titles sin duplicar `| Kataleya Flawers`, JSON-LD
+ * Phase 4A YA terminó: titles sin duplicar `| Kataleya Flowers`, JSON-LD
  * Florist (root), Product + BreadcrumbList por producto, BreadcrumbList +
  * ItemList en /catalogo y /catalogo/[categoria], OG/Twitter por producto.
  */
@@ -94,16 +94,16 @@ test.describe("Phase 4B — SEO metadata + JSON-LD", () => {
 
   // ---- Titles sin duplicación ----------------------------------------------
 
-  test("title /catalogo NO tiene '| Kataleya Flawers' duplicado", async ({
+  test("title /catalogo NO tiene '| Kataleya Flowers' duplicado", async ({
     page,
   }) => {
     await page.goto("/catalogo");
     const title = await page.title();
-    const occurrences = (title.match(/Kataleya Flawers/g) ?? []).length;
+    const occurrences = (title.match(/Kataleya Flowers/g) ?? []).length;
     expect(occurrences).toBe(1);
   });
 
-  test("title /catalogo/{categoria} NO tiene '| Kataleya Flawers' duplicado", async ({
+  test("title /catalogo/{categoria} NO tiene '| Kataleya Flowers' duplicado", async ({
     page,
   }) => {
     await page.goto("/catalogo");
@@ -114,16 +114,16 @@ test.describe("Phase 4B — SEO metadata + JSON-LD", () => {
     await page.goto(href ?? "/catalogo");
 
     const title = await page.title();
-    const occurrences = (title.match(/Kataleya Flawers/g) ?? []).length;
+    const occurrences = (title.match(/Kataleya Flowers/g) ?? []).length;
     expect(occurrences).toBe(1);
   });
 
-  test("title producto detalle NO tiene '| Kataleya Flawers' duplicado", async ({
+  test("title producto detalle NO tiene '| Kataleya Flowers' duplicado", async ({
     page,
   }) => {
     await navigateToFirstProduct(page);
     const title = await page.title();
-    const occurrences = (title.match(/Kataleya Flawers/g) ?? []).length;
+    const occurrences = (title.match(/Kataleya Flowers/g) ?? []).length;
     expect(occurrences).toBe(1);
   });
 
@@ -131,7 +131,7 @@ test.describe("Phase 4B — SEO metadata + JSON-LD", () => {
     page,
   }) => {
     await page.goto("/libro-de-reclamaciones");
-    await expect(page).toHaveTitle("Libro de Reclamaciones | Kataleya Flawers");
+    await expect(page).toHaveTitle("Libro de Reclamaciones | Kataleya Flowers");
   });
 
   // ---- Structured data por página -----------------------------------------

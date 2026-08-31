@@ -90,7 +90,7 @@ export default function Navbar() {
 
               <Link
                 href="/"
-                className="font-heading text-[1.75rem] font-bold leading-none text-(--color-primary)"
+                className="font-heading text-[1.75rem] font-bold uppercase tracking-[0.1em] leading-none text-(--color-primary)"
               >
                 Kataleya
               </Link>

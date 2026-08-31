@@ -1,5 +1,5 @@
 ---
-name: Kataleya Flawers
+name: Kataleya Flowers
 description: Florería boutique en Lima — landing que convierte emoción en pedidos por WhatsApp
 colors:
   rojo-tulipan: "#c0392b"
@@ -48,7 +48,7 @@ components:
     note: "Usa las MISMAS clases que button-primary (blanco/tinta) — ya no es verde. Ver Named Rules."
 ---
 
-# Design System: Kataleya Flawers
+# Design System: Kataleya Flowers
 
 ## 0. Estado de este documento
 
