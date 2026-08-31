@@ -29,6 +29,7 @@ import {
   updateCategoryDocument,
 } from '@/lib/appwrite/repositories/categories';
 import { imageStorage } from '@/lib/imageStorage';
+import { BASE_REVALIDATE_PATHS } from '@/lib/revalidation';
 interface SuccessResult {
   success: true;
 }
@@ -42,9 +43,7 @@ type CountResult = CountSuccess | (AdminActionFailure & { count: 0 });
 async function revalidateAllCategoryPaths(
   affectedSlugs?: string[],
 ): Promise<void> {
-  revalidatePath('/');
-  revalidatePath('/catalogo');
-  revalidatePath('/admin/categorias');
+  BASE_REVALIDATE_PATHS.forEach((path) => revalidatePath(path));
   updateTag('catalog-categories');
   updateTag('catalog-products');
 

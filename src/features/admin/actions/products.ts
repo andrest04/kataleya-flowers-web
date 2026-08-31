@@ -32,6 +32,7 @@ import {
   ensureFlowerTypesAppwrite,
 } from '@/lib/appwrite/repositories/taxonomy';
 import { imageStorage } from '@/lib/imageStorage';
+import { BASE_REVALIDATE_PATHS } from '@/lib/revalidation';
 interface SuccessResult {
   cleanupWarning?: string;
   success: true;
@@ -55,8 +56,7 @@ async function revalidateProductPaths(
   categoryId?: string,
   knownCategorySlug?: string | null,
 ): Promise<void> {
-  revalidatePath('/');
-  revalidatePath('/catalogo');
+  BASE_REVALIDATE_PATHS.forEach((path) => revalidatePath(path));
   updateTag('catalog-products');
   updateTag('catalog-categories');
 
@@ -67,8 +67,6 @@ async function revalidateProductPaths(
     revalidatePath(`/catalogo/${categorySlug}`);
     if (slug) revalidatePath(`/catalogo/${categorySlug}/${slug}`);
   }
-
-  revalidatePath('/admin/categorias');
 }
 
 async function cleanUpDeletedProductImages(imageUrls: string[]): Promise<string | undefined> {
@@ -291,9 +289,7 @@ export async function bulkSetProductStatus(
       return { success: false, error: 'Productos o estado inválidos.', code: 'VALIDATION' };
     }
     await bulkSetProductActive(parsed.data.ids, isActive);
-    revalidatePath('/');
-    revalidatePath('/catalogo');
-    revalidatePath('/admin/categorias');
+    BASE_REVALIDATE_PATHS.forEach((path) => revalidatePath(path));
     updateTag('catalog-products');
     updateTag('catalog-categories');
     return { success: true };
