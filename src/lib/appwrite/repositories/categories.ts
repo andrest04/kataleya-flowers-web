@@ -302,6 +302,35 @@ export async function setCategoryActive(id: string, isActive: boolean): Promise<
   });
 }
 
+export async function reorderCategoriesAppwrite(orderedIds: string[]): Promise<void> {
+  const { databases, databaseId } = getRepositoryContext();
+  const documents = await listAllDocuments<CategoryDoc>(databases, databaseId, C.categories, [
+    Query.equal('$id', orderedIds),
+    Query.select(['$id', 'display_order']),
+  ]);
+  const slots = documents.map((document) => document.display_order).sort((a, b) => a - b);
+  const presentIds = orderedIds.filter((id) => documents.some((document) => document.$id === id));
+
+  if (slots.length !== presentIds.length) return;
+
+  await withAppwriteTransaction((transactionId) =>
+    databases.createOperations({
+      transactionId,
+      operations: presentIds.map((documentId, index) => ({
+        action: 'update',
+        resourceType: 'documents',
+        resourceId: documentId,
+        data: {
+          databaseId,
+          collectionId: C.categories,
+          documentId,
+          data: { display_order: slots[index] },
+        },
+      })),
+    }),
+  );
+}
+
 export async function setCategoryFeatured(id: string, isFeatured: boolean): Promise<void> {
   const { databases, databaseId } = getRepositoryContext();
   await databases.updateDocument<CategoryDoc>({
