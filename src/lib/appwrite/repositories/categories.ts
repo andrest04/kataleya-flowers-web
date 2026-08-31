@@ -318,14 +318,10 @@ export async function reorderCategoriesAppwrite(orderedIds: string[]): Promise<v
       transactionId,
       operations: presentIds.map((documentId, index) => ({
         action: 'update',
-        resourceType: 'documents',
-        resourceId: documentId,
-        data: {
-          databaseId,
-          collectionId: C.categories,
-          documentId,
-          data: { display_order: slots[index] },
-        },
+        databaseId,
+        collectionId: C.categories,
+        documentId,
+        data: { display_order: slots[index] },
       })),
     }),
   );

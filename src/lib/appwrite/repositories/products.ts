@@ -1004,9 +1004,10 @@ function updateProductOperation(
 ): object {
   return {
     action: 'update',
-    resourceType: 'documents',
-    resourceId: documentId,
-    data: { databaseId, collectionId: C.products, documentId, data },
+    databaseId,
+    collectionId: C.products,
+    documentId,
+    data,
   };
 }
 
@@ -1017,9 +1018,9 @@ function deleteProductOperation(
 ): object {
   return {
     action: 'delete',
-    resourceType: 'documents',
-    resourceId: documentId,
-    data: { databaseId, collectionId, documentId },
+    databaseId,
+    collectionId,
+    documentId,
   };
 }
 
