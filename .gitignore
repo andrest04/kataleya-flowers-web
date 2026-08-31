@@ -55,6 +55,7 @@ next-env.d.ts
 .gga
 .claude/
 .agents/
+.codex/
 .pi/
 .pi-lens/
 skills-lock.json
