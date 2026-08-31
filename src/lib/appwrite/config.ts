@@ -11,11 +11,17 @@ export const APPWRITE_COLLECTIONS = {
   flowerTypeAssignments: 'flower_type_assignments',
   complaints: 'complaints',
   counters: 'counters',
+  heroSlides: 'hero_slides',
+  promoBanners: 'promo_banners',
+  testimonials: 'testimonials',
+  discoverTiles: 'discover_tiles',
+  valueProps: 'value_props',
 } as const;
 
 export const APPWRITE_BUCKETS = {
   products: 'product_images',
   categories: 'category_images',
+  content: 'content_images',
 } as const;
 
 export type AppwriteCollectionIds = typeof APPWRITE_COLLECTIONS;

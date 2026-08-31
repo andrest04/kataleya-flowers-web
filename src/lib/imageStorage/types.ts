@@ -1,4 +1,4 @@
-export type AllowedImageFolder = 'productos' | 'categorias';
+export type AllowedImageFolder = 'productos' | 'categorias' | 'contenido';
 
 export interface ImageStorageProvider {
   upload(input: {
@@ -15,7 +15,7 @@ export interface ImageStorageProvider {
   isOwnedUrl(url: string): boolean;
 }
 
-export const ALLOWED_IMAGE_FOLDERS: readonly AllowedImageFolder[] = ['productos', 'categorias'];
+export const ALLOWED_IMAGE_FOLDERS: readonly AllowedImageFolder[] = ['productos', 'categorias', 'contenido'];
 
 export function isAllowedImageFolder(value: unknown): value is AllowedImageFolder {
   return typeof value === 'string' && (ALLOWED_IMAGE_FOLDERS as readonly string[]).includes(value);

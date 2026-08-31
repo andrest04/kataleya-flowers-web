@@ -31,7 +31,7 @@ export async function POST(request: Request) {
   if (!isAllowedImageFolder(folder)) {
     console.warn('[images/upload] folder rechazado', { folder });
     return NextResponse.json(
-      { error: 'invalid_folder', message: 'Folder debe ser uno de: productos, categorias' },
+        { error: 'invalid_folder', message: 'Folder debe ser uno de: productos, categorias, contenido' },
       { status: 400 },
     );
   }

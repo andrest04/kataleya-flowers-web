@@ -94,6 +94,25 @@ export interface CounterDoc extends Models.Document {
   value: number;
 }
 
+export type HeroCtaType = 'whatsapp' | 'catalogo' | 'url';
+
+export interface HeroSlideDoc extends Models.Document {
+  alt_text: string;
+  cta_label: string | null;
+  cta_type: HeroCtaType;
+  cta_value: string | null;
+  display_order: number;
+  ends_at: string | null;
+  focus: string | null;
+  image_url: string;
+  is_active: boolean;
+  kicker: string;
+  name: string | null;
+  starts_at: string | null;
+  subtitle: string | null;
+  title: string;
+}
+
 export interface JoinedProductDoc extends ProductDoc {
   product_color_assignments:
     | { product_colors: { name: string } | null }[]

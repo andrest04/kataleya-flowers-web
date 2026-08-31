@@ -61,6 +61,26 @@ export interface FlowerTypeRow {
   updated_at: string;
 }
 
+export type HeroCtaType = 'whatsapp' | 'catalogo' | 'url';
+
+export interface HeroSlideRow {
+  alt_text: string;
+  cta_label: string | null;
+  cta_type: HeroCtaType;
+  cta_value: string | null;
+  display_order: number;
+  ends_at: string | null;
+  focus: string | null;
+  id: string;
+  image_url: string;
+  is_active: boolean;
+  kicker: string;
+  name: string | null;
+  starts_at: string | null;
+  subtitle: string | null;
+  title: string;
+}
+
 export interface ComplaintRow {
   claimed_amount: number | null;
   complaint_type: string;
