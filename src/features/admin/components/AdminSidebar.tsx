@@ -1,6 +1,6 @@
 'use client';
 
-import { ClipboardList, Flower2, LayoutDashboard, Tags } from 'lucide-react';
+import { ClipboardList, Flower2, House, LayoutDashboard, Tags } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -8,6 +8,7 @@ import LogoutButton from '@/features/admin/components/LogoutButton';
 
 const NAV_LINKS = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/admin/inicio', label: 'Inicio', icon: House },
   { href: '/admin/categorias', label: 'Categorías', icon: Tags },
   { href: '/admin/productos', label: 'Productos', icon: Flower2 },
   { href: '/admin/reclamos', label: 'Reclamos', icon: ClipboardList },

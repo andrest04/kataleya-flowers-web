@@ -1,27 +1,26 @@
-"use client";
+'use client';
 
-import Button from "@/components/ui/Button";
-import { BUSINESS } from "@/lib/constants";
-
-type CampaignMode = "contact" | "catalog";
+import Button from '@/components/ui/Button';
 
 interface HeroButtonsProps {
-  campaignMode?: CampaignMode;
+  external?: boolean;
+  href: string;
+  label: string;
 }
 
 export default function HeroButtons({
-  campaignMode = "contact",
+  external = false,
+  href,
+  label,
 }: HeroButtonsProps) {
-  const isContact = campaignMode === "contact";
-
   return (
     <Button
       variant="ghost"
-      href={isContact ? BUSINESS.whatsapp : "/catalogo"}
-      external={isContact}
+      href={href}
+      external={external}
       className="rounded-none border-2 border-(--color-dark) bg-(--color-cream) px-8 py-3.5 text-xs font-bold tracking-[0.15em] text-(--color-dark) uppercase transition-colors duration-300 hover:bg-(--color-dark) hover:text-(--color-cream)"
     >
-      {isContact ? "Pedir por WhatsApp" : "Ver catálogo"}
+      {label}
     </Button>
   );
 }

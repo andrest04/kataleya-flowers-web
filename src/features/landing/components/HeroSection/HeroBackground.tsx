@@ -1,27 +1,30 @@
-import type { CSSProperties } from "react";
+import type { CSSProperties } from 'react';
 
 import Image from '@/components/ui/AppwriteImage';
 
-import { HERO_IMAGE } from "./constants";
+import { HERO_IMAGE_CLASS, HERO_SCRIM } from './frame';
 
-const SCRIM =
-  "linear-gradient(to right, color-mix(in srgb, var(--color-dark) 55%, transparent) 0%, color-mix(in srgb, var(--color-dark) 18%, transparent) 45%, transparent 70%)";
+interface HeroBackgroundProps {
+  alt: string;
+  focus: string;
+  src: string;
+}
 
-export default function HeroBackground() {
+export default function HeroBackground({ alt, focus, src }: HeroBackgroundProps) {
   return (
     <div className="absolute inset-0 isolate overflow-hidden">
       <Image
-        src={HERO_IMAGE.src}
-        alt={HERO_IMAGE.alt}
+        src={src}
+        alt={alt}
         fill
         priority
         sizes="100vw"
-        className="object-cover object-[var(--hero-focus)] sm:object-center"
-        style={{ "--hero-focus": HERO_IMAGE.focus } as CSSProperties}
+        className={HERO_IMAGE_CLASS}
+        style={{ '--hero-focus': focus } as CSSProperties}
       />
       <div
         className="pointer-events-none absolute inset-0"
-        style={{ background: SCRIM }}
+        style={{ background: HERO_SCRIM }}
       />
     </div>
   );
