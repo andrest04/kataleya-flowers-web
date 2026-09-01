@@ -7,10 +7,12 @@ import { draftFromLive } from '@/features/admin/components/HeroCanvasEditor/mapD
 import HeroSlideList from '@/features/admin/components/HeroSlideList';
 import PromoBannerList from '@/features/admin/components/PromoBannerList';
 import TestimonialList from '@/features/admin/components/TestimonialList';
+import ValuePropList from '@/features/admin/components/ValuePropList';
 import { getAdminDiscoverTiles } from '@/features/admin/queries/discoverTiles';
 import { getAdminHeroSlides } from '@/features/admin/queries/heroSlides';
 import { getAdminPromoBanners } from '@/features/admin/queries/promoBanners';
 import { getAdminTestimonials } from '@/features/admin/queries/testimonials';
+import { getAdminValueProps } from '@/features/admin/queries/valueProps';
 import { FALLBACK_DISCOVER_TILES } from '@/features/landing/queries/getPublishedDiscoverTiles';
 import {
   FALLBACK_HERO_SLIDE,
@@ -18,17 +20,19 @@ import {
 } from '@/features/landing/queries/getPublishedHeroSlide';
 import { getPublishedPromoBanners } from '@/features/landing/queries/getPublishedPromoBanners';
 import { FALLBACK_TESTIMONIALS } from '@/features/landing/queries/getPublishedTestimonials';
+import { FALLBACK_VALUE_PROPS } from '@/features/landing/queries/getPublishedValueProps';
 
 export const metadata = { title: 'Inicio' };
 
 export default async function AdminInicioPage() {
-  const [slides, liveHero, banners, liveBanners, testimonials, discoverTiles] = await Promise.all([
+  const [slides, liveHero, banners, liveBanners, testimonials, discoverTiles, valueProps] = await Promise.all([
     getAdminHeroSlides(),
     getPublishedHeroSlide(),
     getAdminPromoBanners(),
     getPublishedPromoBanners(),
     getAdminTestimonials(),
     getAdminDiscoverTiles(),
+    getAdminValueProps(),
   ]);
 
   return (
@@ -96,6 +100,21 @@ export default async function AdminInicioPage() {
         <DiscoverTileList
           items={discoverTiles}
           liveItems={FALLBACK_DISCOVER_TILES.map((item) => ({
+            description: item.description,
+            id: item.id,
+            title: item.title,
+          }))}
+        />
+      </section>
+
+      <section className="space-y-4" aria-labelledby="value-props-heading">
+        <div className="flex items-end justify-between gap-4">
+          <h2 id="value-props-heading" className="font-serif text-xl text-(--color-dark)">Destacados</h2>
+          <Button href="/admin/inicio/destacados/nuevo" size="sm">Agregar destacado</Button>
+        </div>
+        <ValuePropList
+          items={valueProps}
+          liveItems={FALLBACK_VALUE_PROPS.map((item) => ({
             description: item.description,
             id: item.id,
             title: item.title,

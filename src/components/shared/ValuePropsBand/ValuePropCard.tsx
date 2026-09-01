@@ -8,23 +8,42 @@ const LINK_CLASS =
 
 export interface ValueProp {
   Icon: LucideIcon;
-  title: string;
   description: string;
-  linkLabel: string;
   href: string;
   isAnchor?: boolean;
   isExternal?: boolean;
+  linkLabel: string;
+  preview?: boolean;
+  title: string;
 }
 
 export default function ValuePropCard({
   Icon,
-  title,
   description,
-  linkLabel,
   href,
   isAnchor,
   isExternal,
+  linkLabel,
+  preview = false,
+  title,
 }: ValueProp) {
+  const cta = preview ? (
+    <span className={LINK_CLASS}>{linkLabel}</span>
+  ) : isAnchor ? (
+    <FooterAnchorLink href={href} className={LINK_CLASS}>
+      {linkLabel}
+    </FooterAnchorLink>
+  ) : (
+    <Link
+      href={href}
+      {...(isExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+      className={LINK_CLASS}
+    >
+      {linkLabel}
+      {isExternal ? <span className="sr-only"> (se abre en una pestaña nueva)</span> : null}
+    </Link>
+  );
+
   return (
     <div className="flex flex-col items-center gap-4 border-t border-(--color-primary) px-6 py-16 text-center first:border-t-0 md:border-t-0 md:border-l md:py-28 md:first:border-l-0">
       <Icon size={48} strokeWidth={1} aria-hidden="true" className="text-(--color-dark)" />
@@ -33,20 +52,7 @@ export default function ValuePropCard({
 
       <p className="max-w-xs font-body text-sm leading-relaxed opacity-80">{description}</p>
 
-      {isAnchor ? (
-        <FooterAnchorLink href={href} className={LINK_CLASS}>
-          {linkLabel}
-        </FooterAnchorLink>
-      ) : (
-        <Link
-          href={href}
-          {...(isExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-          className={LINK_CLASS}
-        >
-          {linkLabel}
-          {isExternal ? <span className="sr-only"> (se abre en una pestaña nueva)</span> : null}
-        </Link>
-      )}
+      {cta}
     </div>
   );
 }

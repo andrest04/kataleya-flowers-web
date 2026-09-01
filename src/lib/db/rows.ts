@@ -125,6 +125,21 @@ export interface DiscoverTileRow {
   title: string;
 }
 
+export interface ValuePropRow {
+  description: string;
+  display_order: number;
+  ends_at: string | null;
+  href: string;
+  icon: string;
+  id: string;
+  is_active: boolean;
+  is_anchor: boolean;
+  is_external: boolean;
+  link_label: string;
+  starts_at: string | null;
+  title: string;
+}
+
 export interface ComplaintRow {
   claimed_amount: number | null;
   complaint_type: string;

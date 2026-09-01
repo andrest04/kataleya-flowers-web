@@ -154,6 +154,20 @@ export interface DiscoverTileDoc extends Models.Document {
   title: string;
 }
 
+export interface ValuePropDoc extends Models.Document {
+  description: string;
+  display_order: number;
+  ends_at: string | null;
+  href: string;
+  icon: string;
+  is_active: boolean;
+  is_anchor: boolean;
+  is_external: boolean;
+  link_label: string;
+  starts_at: string | null;
+  title: string;
+}
+
 export interface JoinedProductDoc extends ProductDoc {
   product_color_assignments:
     | { product_colors: { name: string } | null }[]
