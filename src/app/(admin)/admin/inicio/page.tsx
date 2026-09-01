@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 import Button from '@/components/ui/Button';
+import InfoTooltip from '@/components/ui/InfoTooltip';
 import DiscoverTileList from '@/features/admin/components/DiscoverTileList';
 import HeroCanvasEditor from '@/features/admin/components/HeroCanvasEditor';
 import { draftFromLive } from '@/features/admin/components/HeroCanvasEditor/mapDraft';
@@ -22,7 +23,10 @@ import { getPublishedPromoBanners } from '@/features/landing/queries/getPublishe
 import { FALLBACK_TESTIMONIALS } from '@/features/landing/queries/getPublishedTestimonials';
 import { FALLBACK_VALUE_PROPS } from '@/features/landing/queries/getPublishedValueProps';
 import { getSiteSettings } from '@/features/settings/queries/getSiteSettings';
+import { HOME_DISCOVER_TILE_LIMIT_COPY } from '@/lib/discoverTileLimit';
+import { HOME_TESTIMONIAL_LIMIT_COPY } from '@/lib/testimonialLimit';
 import { bindValuePropIdentity } from '@/lib/valuePropIdentity';
+import { HOME_VALUE_PROP_LIMIT_COPY } from '@/lib/valuePropLimit';
 
 export const metadata = { title: 'Inicio' };
 
@@ -82,7 +86,12 @@ export default async function AdminInicioPage() {
 
       <section className="space-y-4" aria-labelledby="testimonials-heading">
         <div className="flex items-end justify-between gap-4">
-          <h2 id="testimonials-heading" className="font-serif text-xl text-(--color-dark)">Testimonios</h2>
+          <div className="flex items-center gap-0.5">
+            <h2 id="testimonials-heading" className="font-serif text-xl text-(--color-dark)">
+              Testimonios
+            </h2>
+            <InfoTooltip label={HOME_TESTIMONIAL_LIMIT_COPY} />
+          </div>
           <Button href="/admin/inicio/testimonios/nuevo" size="sm">Agregar testimonio</Button>
         </div>
         <TestimonialList
@@ -97,7 +106,12 @@ export default async function AdminInicioPage() {
 
       <section className="space-y-4" aria-labelledby="discover-heading">
         <div className="flex items-end justify-between gap-4">
-          <h2 id="discover-heading" className="font-serif text-xl text-(--color-dark)">Descubre Kataleya</h2>
+          <div className="flex items-center gap-0.5">
+            <h2 id="discover-heading" className="font-serif text-xl text-(--color-dark)">
+              Descubre Kataleya
+            </h2>
+            <InfoTooltip label={HOME_DISCOVER_TILE_LIMIT_COPY} />
+          </div>
           <Button href="/admin/inicio/descubrir/nuevo" size="sm">Agregar tarjeta</Button>
         </div>
         <DiscoverTileList
@@ -112,7 +126,12 @@ export default async function AdminInicioPage() {
 
       <section className="space-y-4" aria-labelledby="value-props-heading">
         <div className="flex items-end justify-between gap-4">
-          <h2 id="value-props-heading" className="font-serif text-xl text-(--color-dark)">Destacados</h2>
+          <div className="flex items-center gap-0.5">
+            <h2 id="value-props-heading" className="font-serif text-xl text-(--color-dark)">
+              Destacados
+            </h2>
+            <InfoTooltip label={HOME_VALUE_PROP_LIMIT_COPY} />
+          </div>
           <Button href="/admin/inicio/destacados/nuevo" size="sm">Agregar destacado</Button>
         </div>
         <ValuePropList

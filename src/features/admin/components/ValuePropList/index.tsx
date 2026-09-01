@@ -7,6 +7,12 @@ import { toast } from 'sonner';
 import Button from '@/components/ui/Button';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import EmptyState from '@/components/ui/EmptyState';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/primitives/tooltip';
 import SortableList from '@/components/ui/SortableList';
 import DragHandle from '@/components/ui/SortableList/DragHandle';
 import SortableItem from '@/components/ui/SortableList/SortableItem';
@@ -141,75 +147,87 @@ export default function ValuePropList({
   const hasVisible = rows.some((item) => isPublished(item, now));
   const activeCount = rows.filter((item) => item.is_active).length;
   const atLimit = activeCount >= HOME_VALUE_PROP_LIMIT;
-  const showLimitNote = rows.length > HOME_VALUE_PROP_LIMIT || (atLimit && rows.some((item) => !item.is_active));
 
   return (
-    <div className="space-y-3">
-      {hasVisible ? null : (
-        <p className="rounded-xl border border-(--color-border) bg-(--color-surface) px-4 py-3 text-sm text-(--color-dark)">
-          Ningún destacado está visible. Activa uno para que el sitio muestre esta franja.
-        </p>
-      )}
-      {showLimitNote ? (
-        <p className="rounded-xl border border-(--color-border) bg-(--color-surface) px-4 py-3 text-sm text-(--color-dark)">
-          {HOME_VALUE_PROP_LIMIT_COPY}
-        </p>
-      ) : null}
-      <SortableList
-        ids={rows.map((item) => item.id)}
-        getItemLabel={(id) => rows.find((item) => item.id === id)?.title || 'el destacado'}
-        onReorder={(ids) => void reorder.handleReorder(ids)}
-      >
-        <ul className="space-y-3">
-          {rows.map((item) => (
-            <SortableItem key={item.id} id={item.id}>
-              {({ dragHandleProps, isDragging, setNodeRef, style }) => (
-                <li
-                  ref={setNodeRef as Ref<HTMLLIElement>}
-                  style={style}
-                  className={`flex items-center gap-3 rounded-xl border border-(--color-border) bg-(--color-white) p-3 ${
-                    isPublished(item, now) ? '' : 'opacity-60'
-                  }`}
-                >
-                  <DragHandle handleProps={dragHandleProps} label={item.title} />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate font-medium text-(--color-dark)">{item.title}</p>
-                    <p className="truncate text-xs text-(--color-muted)">{item.description}</p>
-                  </div>
-                  <ToggleSwitch
-                    checked={item.is_active}
-                    disabled={isDragging || (!item.is_active && atLimit)}
-                    label={`${item.is_active ? 'Ocultar' : 'Mostrar'} ${item.title}`}
-                    onChange={(checked) => void handleToggle(item.id, checked)}
-                  />
-                  <Button href={`/admin/inicio/destacados/${item.id}`} variant="ghost" size="sm">
-                    Editar
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setPendingDelete(item)}
-                  >
-                    Eliminar
-                  </Button>
-                </li>
-              )}
-            </SortableItem>
-          ))}
-        </ul>
-      </SortableList>
-      <ConfirmDialog
-        open={pendingDelete !== null}
-        title="Eliminar destacado"
-        description={pendingDelete ? `¿Eliminar “${pendingDelete.title}”? Esta acción no se puede deshacer.` : ''}
-        loading={isDeleting}
-        variant="destructive"
-        onOpenChange={(open) => {
-          if (!open) setPendingDelete(null);
-        }}
-        onConfirm={() => void handleConfirmDelete()}
-      />
-    </div>
+    <TooltipProvider>
+      <div className="space-y-3">
+        {hasVisible ? null : (
+          <p className="rounded-xl border border-(--color-border) bg-(--color-surface) px-4 py-3 text-sm text-(--color-dark)">
+            Ningún destacado está visible. Activa uno para que el sitio muestre esta franja.
+          </p>
+        )}
+        <SortableList
+          ids={rows.map((item) => item.id)}
+          getItemLabel={(id) => rows.find((item) => item.id === id)?.title || 'el destacado'}
+          onReorder={(ids) => void reorder.handleReorder(ids)}
+        >
+          <ul className="space-y-3">
+            {rows.map((item) => (
+              <SortableItem key={item.id} id={item.id}>
+                {({ dragHandleProps, isDragging, setNodeRef, style }) => {
+                  const limited = !item.is_active && atLimit;
+                  const label = `${item.is_active ? 'Ocultar' : 'Mostrar'} ${item.title}`;
+                  const toggle = (
+                    <ToggleSwitch
+                      checked={item.is_active}
+                      disabled={isDragging || limited}
+                      label={limited ? `${label}. ${HOME_VALUE_PROP_LIMIT_COPY}` : label}
+                      onChange={(checked) => void handleToggle(item.id, checked)}
+                    />
+                  );
+                  return (
+                    <li
+                      ref={setNodeRef as Ref<HTMLLIElement>}
+                      style={style}
+                      className={`flex items-center gap-3 rounded-xl border border-(--color-border) bg-(--color-white) p-3 ${
+                        isPublished(item, now) ? '' : 'opacity-60'
+                      }`}
+                    >
+                      <DragHandle handleProps={dragHandleProps} label={item.title} />
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-medium text-(--color-dark)">{item.title}</p>
+                        <p className="truncate text-xs text-(--color-muted)">{item.description}</p>
+                      </div>
+                      {limited ? (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="inline-flex">{toggle}</span>
+                          </TooltipTrigger>
+                          <TooltipContent>{HOME_VALUE_PROP_LIMIT_COPY}</TooltipContent>
+                        </Tooltip>
+                      ) : (
+                        toggle
+                      )}
+                      <Button href={`/admin/inicio/destacados/${item.id}`} variant="ghost" size="sm">
+                        Editar
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setPendingDelete(item)}
+                      >
+                        Eliminar
+                      </Button>
+                    </li>
+                  );
+                }}
+              </SortableItem>
+            ))}
+          </ul>
+        </SortableList>
+        <ConfirmDialog
+          open={pendingDelete !== null}
+          title="Eliminar destacado"
+          description={pendingDelete ? `¿Eliminar “${pendingDelete.title}”? Esta acción no se puede deshacer.` : ''}
+          loading={isDeleting}
+          variant="destructive"
+          onOpenChange={(open) => {
+            if (!open) setPendingDelete(null);
+          }}
+          onConfirm={() => void handleConfirmDelete()}
+        />
+      </div>
+    </TooltipProvider>
   );
 }
