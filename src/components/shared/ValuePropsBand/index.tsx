@@ -1,46 +1,36 @@
-import { Flower, Flower2, Sprout } from 'lucide-react';
-
+import { getPublishedValueProps } from '@/features/landing/queries/getPublishedValueProps';
 import { BUSINESS } from '@/lib/constants';
 
-import type { ValueProp } from './ValuePropCard';
+import { valuePropIcon } from './icons';
 import ValuePropCard from './ValuePropCard';
 
-const ITEMS: ValueProp[] = [
-  {
-    Icon: Flower2,
-    title: `${BUSINESS.experience} años floreciendo`,
-    description: `Tres décadas armando arreglos para las familias de ${BUSINESS.location}.`,
-    linkLabel: 'Conoce la historia',
-    href: '#nosotros',
-    isAnchor: true,
-  },
-  {
-    Icon: Sprout,
-    title: `${BUSINESS.hours.weekdays} · ${BUSINESS.hours.time}`,
-    description: `${BUSINESS.hours.weekdays}, de ${BUSINESS.hours.time}, en ${BUSINESS.address}.`,
-    linkLabel: 'Ver ubicación',
-    href: '#contacto',
-    isAnchor: true,
-  },
-  {
-    Icon: Flower,
-    title: 'Míranos en Instagram',
-    description: `Publicamos cada ramo que sale de la tienda en ${BUSINESS.instagramHandle}.`,
-    linkLabel: 'Ver Instagram',
-    href: BUSINESS.instagram,
-    isExternal: true,
-  },
-];
+function bandColumns(count: number): string {
+  if (count <= 1) return 'grid-cols-1';
+  if (count === 2) return 'grid-cols-1 md:grid-cols-2';
+  return 'grid-cols-1 md:grid-cols-3';
+}
 
-export default function ValuePropsBand() {
+export default async function ValuePropsBand() {
+  const items = await getPublishedValueProps();
+  if (items.length === 0) return null;
+
   return (
     <section
       aria-label={`Sobre ${BUSINESS.name}`}
       className="border-t border-(--color-primary) text-(--color-dark)"
     >
-      <div className="grid grid-cols-1 md:grid-cols-3">
-        {ITEMS.map((item) => (
-          <ValuePropCard key={item.title} {...item} />
+      <div className={`grid ${bandColumns(items.length)}`}>
+        {items.map((item) => (
+          <ValuePropCard
+            key={item.id}
+            Icon={valuePropIcon(item.icon)}
+            description={item.description}
+            href={item.href}
+            isAnchor={item.isAnchor}
+            isExternal={item.isExternal}
+            linkLabel={item.linkLabel}
+            title={item.title}
+          />
         ))}
       </div>
     </section>

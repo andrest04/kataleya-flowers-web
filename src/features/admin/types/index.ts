@@ -8,6 +8,7 @@ export interface ProductFormData {
   categoryId: string;
   imageUrl: string;
   images: string[];
+  imageAlts: Record<string, string>;
   colors: string[];
   flowerTypes: string[];
   includes: string[];

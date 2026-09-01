@@ -11,12 +11,12 @@ import {
   SheetDescription,
   SheetTitle,
 } from "@/components/ui/primitives/sheet";
-import { BUSINESS } from "@/lib/constants";
 
 import type { SearchResult } from "./constants";
 import { primaryLinks, secondaryLinks } from "./constants";
 
 interface MobileDrawerProps {
+  brandName: string;
   isDrawerOpen: boolean;
   onClose: () => void;
   searchQuery: string;
@@ -30,6 +30,7 @@ interface MobileDrawerProps {
 }
 
 export default function MobileDrawer({
+  brandName,
   isDrawerOpen,
   onClose,
   searchQuery,
@@ -55,7 +56,7 @@ export default function MobileDrawer({
       >
         <div className="flex items-center justify-between border-b border-border px-6 py-5">
           <SheetTitle className="text-lg text-primary font-heading">
-            {BUSINESS.name}
+            {brandName}
           </SheetTitle>
           <SheetDescription className="sr-only">
             Navegación principal, búsqueda de productos y enlace para hacer pedido por WhatsApp.

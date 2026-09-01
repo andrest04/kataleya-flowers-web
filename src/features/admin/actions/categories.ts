@@ -9,6 +9,7 @@ import {
   categoryUpdateSchema,
 } from '@/features/admin/schemas/category';
 import { uuid } from '@/features/admin/schemas/common';
+import { reorderSchema } from '@/features/admin/schemas/reorder';
 import type { CategoryFormData } from '@/features/admin/types';
 import {
   type AdminActionFailure,
@@ -24,6 +25,7 @@ import {
   findCategoryById,
   getNextCategoryOrder,
   listAllCategorySlugs,
+  reorderCategoriesAppwrite,
   setCategoryActive,
   setCategoryFeatured,
   updateCategoryDocument,
@@ -240,7 +242,7 @@ export async function deleteCategory(
       if (!reassignParsed.success) {
         return {
           success: false,
-          error: 'Seleccioná una categoría destino válida para reasignar los productos.',
+          error: 'Selecciona una categoría destino válida para reasignar los productos.',
           code: 'VALIDATION',
         };
       }
@@ -282,6 +284,21 @@ export async function toggleCategoryStatus(
     const current = await findCategoryById(idParsed.data);
     await setCategoryActive(idParsed.data, isActive);
     await revalidateAllCategoryPaths(current?.slug ? [current.slug] : undefined);
+    return { success: true };
+  } catch (err) {
+    return failureFromUnknown(err);
+  }
+}
+
+export async function reorderCategories(ids: string[]): Promise<CategoryActionResult> {
+  try {
+    await requireAdmin();
+    const parsed = reorderSchema.safeParse({ ids });
+    if (!parsed.success) {
+      return { success: false, error: 'Lista de categorías inválida.', code: 'VALIDATION' };
+    }
+    await reorderCategoriesAppwrite(parsed.data.ids);
+    await revalidateAllCategoryPaths();
     return { success: true };
   } catch (err) {
     return failureFromUnknown(err);

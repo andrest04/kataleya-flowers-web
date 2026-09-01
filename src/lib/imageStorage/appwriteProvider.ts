@@ -7,8 +7,14 @@ import { APPWRITE_BUCKETS, getAppwriteConfig } from '@/lib/appwrite/config';
 import type { AllowedImageFolder, ImageStorageProvider } from './types';
 import { isAppwriteStorageUrl, parseAppwriteStorageUrl } from './urlValidation';
 
+const FOLDER_BUCKETS: Record<AllowedImageFolder, string> = {
+  categorias: APPWRITE_BUCKETS.categories,
+  contenido: APPWRITE_BUCKETS.content,
+  productos: APPWRITE_BUCKETS.products,
+};
+
 function folderToBucketId(folder: AllowedImageFolder): string {
-  return folder === 'productos' ? APPWRITE_BUCKETS.products : APPWRITE_BUCKETS.categories;
+  return FOLDER_BUCKETS[folder];
 }
 
 class AppwriteImageStorageProvider implements ImageStorageProvider {

@@ -5,6 +5,8 @@ import { useState } from 'react';
 import Button from '@/components/ui/Button';
 import EmptyState from '@/components/ui/EmptyState';
 import { Table, TableBody } from '@/components/ui/primitives/table';
+import SortableList from '@/components/ui/SortableList';
+import SortableItem from '@/components/ui/SortableList/SortableItem';
 import type { CategoryRow } from '@/lib/db/rows';
 
 import CategoryListHeader from './CategoryListHeader';
@@ -14,6 +16,7 @@ import CategoryToggleFeatured from './CategoryToggleFeatured';
 import CategoryToggleStatus from './CategoryToggleStatus';
 import DeleteCategoryDialog from './DeleteCategoryDialog';
 import { useCategoryDelete } from './useCategoryDelete';
+import { useCategoryReorder } from './useCategoryReorder';
 
 interface CategoryListProps {
   categories: CategoryRow[];
@@ -32,6 +35,7 @@ export default function CategoryList({
   const deletion = useCategoryDelete({
     onDeleted: (id) => setItems((current) => current.filter((category) => category.id !== id)),
   });
+  const reorder = useCategoryReorder(items, applyOrder);
 
   function applyToggleStatus(id: string, isActive: boolean) {
     setItems((current) => current.map((category) => (
@@ -45,6 +49,16 @@ export default function CategoryList({
     )));
   }
 
+  function applyOrder(orderedIds: string[]) {
+    setItems((current) => {
+      const byId = new Map(current.map((category) => [category.id, category]));
+      const reordered = orderedIds
+        .map((id) => byId.get(id))
+        .filter((category): category is CategoryRow => category !== undefined);
+      return reordered.length === current.length ? reordered : current;
+    });
+  }
+
   if (items.length === 0) {
     return (
       <EmptyState
@@ -56,6 +70,11 @@ export default function CategoryList({
 
   return (
     <div>
+      <p className="mb-3 text-sm text-(--color-muted)">
+        Arrastra una categoría por el asa para cambiar el orden en que se ve en el sitio. Con
+        teclado: enfoca el asa, presiona la barra espaciadora, mueve con las flechas y suelta con la
+        barra espaciadora.
+      </p>
       <div
         className="hidden overflow-hidden rounded-xl md:block"
         style={{ border: '1px solid var(--color-border)' }}
@@ -63,18 +82,29 @@ export default function CategoryList({
         <Table aria-label="Categorías">
           <CategoryListHeader />
           <TableBody>
-            {items.map((category, index) => (
-              <CategoryRowItem
-                key={category.id}
-                category={category}
-                index={index}
-                deletingId={deletion.deletingId}
-                onDelete={(id, name) => void deletion.requestDelete(id, name)}
-                onLocalToggleStatus={applyToggleStatus}
-                onLocalToggleFeatured={applyToggleFeatured}
-                productCount={productCounts[category.id] ?? 0}
-              />
-            ))}
+            <SortableList
+              ids={items.map((category) => category.id)}
+              getItemLabel={(id) =>
+                items.find((category) => category.id === id)?.name ?? 'la categoría'}
+              onReorder={(ids) => void reorder.handleReorder(ids)}
+            >
+              {items.map((category, index) => (
+                <SortableItem key={category.id} id={category.id}>
+                  {(sortableProps) => (
+                    <CategoryRowItem
+                      category={category}
+                      index={index}
+                      deletingId={deletion.deletingId}
+                      onDelete={(id, name) => void deletion.requestDelete(id, name)}
+                      onLocalToggleStatus={applyToggleStatus}
+                      onLocalToggleFeatured={applyToggleFeatured}
+                      productCount={productCounts[category.id] ?? 0}
+                      sortableProps={sortableProps}
+                    />
+                  )}
+                </SortableItem>
+              ))}
+            </SortableList>
           </TableBody>
         </Table>
       </div>

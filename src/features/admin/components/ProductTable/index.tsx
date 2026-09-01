@@ -4,23 +4,42 @@ import Button from '@/components/ui/Button';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import EmptyState from '@/components/ui/EmptyState';
 import { Table, TableBody } from '@/components/ui/primitives/table';
+import SortableList from '@/components/ui/SortableList';
+import SortableItem from '@/components/ui/SortableList/SortableItem';
 import ToggleSwitch from '@/components/ui/ToggleSwitch';
 import type { AdminProductListRow } from '@/features/admin/queries/products';
 
+import ProductBulkBar from './ProductBulkBar';
+import ProductSelectCheckbox from './ProductSelectCheckbox';
 import ProductTableHeader from './ProductTableHeader';
 import ProductTableImage from './ProductTableImage';
 import ProductTableStaticRow from './ProductTableStaticRow';
+import { useProductReorder } from './useProductReorder';
+import { useProductSelection } from './useProductSelection';
 import { useProductTable } from './useProductTable';
 
 interface ProductTableProps {
+  emptyMessage?: string;
   products: AdminProductListRow[];
+  selectable?: boolean;
+  sortable?: boolean;
 }
 
-export default function ProductTable({ products }: ProductTableProps) {
+export default function ProductTable({
+  emptyMessage = 'No hay productos en esta categoría todavía.',
+  products,
+  selectable = false,
+  sortable = false,
+}: ProductTableProps) {
   const table = useProductTable(products);
+  const selection = useProductSelection(table.items);
+  const reorder = useProductReorder(table.items, table.applyOrder);
+  const orderedIds = table.items.map((product) => product.id);
+  const labelOf = (id: string) =>
+    table.items.find((product) => product.id === id)?.name ?? 'el producto';
 
   if (table.items.length === 0) {
-    return <EmptyState message="No hay productos en esta categoría todavía." />;
+    return <EmptyState message={emptyMessage} />;
   }
 
   const dialog = (
@@ -35,22 +54,81 @@ export default function ProductTable({ products }: ProductTableProps) {
     />
   );
 
+  const bulkDialog = (
+    <ConfirmDialog
+      open={selection.confirmingDelete}
+      title="Eliminar productos"
+      description={`¿Eliminar ${selection.selectedCount} producto${selection.selectedCount !== 1 ? 's' : ''}? Esta acción no se puede deshacer y también borra sus fotos.`}
+      confirmLabel="Eliminar"
+      loading={selection.isPending}
+      onConfirm={() => void selection.confirmDelete()}
+      onCancel={selection.cancelDelete}
+    />
+  );
+
   return (
     <div className="space-y-3">
+      {selectable ? (
+        <ProductBulkBar
+          disabled={selection.isPending}
+          selectedCount={selection.selectedCount}
+          onDelete={selection.requestDelete}
+          onSetStatus={(isActive) => void selection.setStatus(isActive)}
+        />
+      ) : null}
+      {sortable ? (
+        <p className="text-sm text-(--color-muted)">
+          Arrastra una fila por el asa para cambiar el orden en que se ven en el sitio. Con teclado:
+          enfoca el asa, presiona la barra espaciadora, mueve con las flechas y suelta con la barra
+          espaciadora.
+        </p>
+      ) : null}
       <div className="hidden overflow-hidden rounded-xl md:block" style={{ border: '1px solid var(--color-border)' }}>
         <Table style={{ fontFamily: 'var(--font-body)' }}>
-          <ProductTableHeader />
+          <ProductTableHeader
+            allSelected={selection.allSelected}
+            someSelected={selection.selectedCount > 0}
+            onToggleAll={selectable ? selection.toggleAll : undefined}
+            sortable={sortable}
+          />
           <TableBody>
-            {table.items.map((product, index) => (
-              <ProductTableStaticRow
-                key={product.id}
-                product={product}
-                zebra={index % 2 === 0}
-                deletingId={table.deletingId}
-                onToggleStatus={(id, checked) => void table.handleToggleStatus(id, checked)}
-                onDelete={(id, name) => table.requestDelete({ id, name })}
-              />
-            ))}
+            {sortable ? (
+              <SortableList
+                ids={orderedIds}
+                getItemLabel={labelOf}
+                onReorder={(ids) => void reorder.handleReorder(ids)}
+              >
+                {table.items.map((product, index) => (
+                  <SortableItem key={product.id} id={product.id}>
+                    {(sortableProps) => (
+                      <ProductTableStaticRow
+                        product={product}
+                        zebra={index % 2 === 0}
+                        deletingId={table.deletingId}
+                        isSelected={selection.isSelected(product.id)}
+                        onSelect={selectable ? selection.toggleOne : undefined}
+                        onToggleStatus={(id, checked) => void table.handleToggleStatus(id, checked)}
+                        onDelete={(id, name) => table.requestDelete({ id, name })}
+                        sortableProps={sortableProps}
+                      />
+                    )}
+                  </SortableItem>
+                ))}
+              </SortableList>
+            ) : (
+              table.items.map((product, index) => (
+                <ProductTableStaticRow
+                  key={product.id}
+                  product={product}
+                  zebra={index % 2 === 0}
+                  deletingId={table.deletingId}
+                  isSelected={selection.isSelected(product.id)}
+                  onSelect={selectable ? selection.toggleOne : undefined}
+                  onToggleStatus={(id, checked) => void table.handleToggleStatus(id, checked)}
+                  onDelete={(id, name) => table.requestDelete({ id, name })}
+                />
+              ))
+            )}
           </TableBody>
         </Table>
       </div>
@@ -61,6 +139,13 @@ export default function ProductTable({ products }: ProductTableProps) {
             className="flex flex-col gap-2 rounded-xl p-3"
             style={{ background: 'var(--color-white)', border: '1px solid var(--color-border)' }}
           >
+            {selectable ? (
+              <ProductSelectCheckbox
+                checked={selection.isSelected(product.id)}
+                label={`Seleccionar ${product.name}`}
+                onChange={(selected) => selection.toggleOne(product.id, selected)}
+              />
+            ) : null}
             <ProductTableImage product={product} sizeClass="w-full aspect-square" sizes="(max-width: 768px) 50vw, 200px" />
             <div className="min-w-0">
               <p className="truncate text-sm font-medium">{product.name}</p>
@@ -91,6 +176,7 @@ export default function ProductTable({ products }: ProductTableProps) {
         ))}
       </div>
       {dialog}
+      {bulkDialog}
     </div>
   );
 }

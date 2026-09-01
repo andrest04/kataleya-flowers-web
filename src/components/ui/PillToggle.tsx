@@ -41,7 +41,8 @@ export default function PillToggle({
     <button
       type="button"
       onClick={onClick}
-      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${className}`}
+      aria-pressed={active}
+      className={`inline-flex min-h-11 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary) ${className}`}
       style={active ? activeStyle : (filled ? inactiveStyle : inactiveStyleAlt)}
     >
       {icon}

@@ -32,6 +32,16 @@ export function useProductTable(initial: AdminProductListRow[]) {
     }
   }
 
+  function applyOrder(orderedIds: string[]) {
+    setItems((current) => {
+      const byId = new Map(current.map((product) => [product.id, product]));
+      const reordered = orderedIds
+        .map((id) => byId.get(id))
+        .filter((product): product is AdminProductListRow => product !== undefined);
+      return reordered.length === current.length ? reordered : current;
+    });
+  }
+
   function requestDelete(target: DeleteTarget) {
     setDeleteTarget(target);
   }
@@ -51,6 +61,7 @@ export function useProductTable(initial: AdminProductListRow[]) {
   }
 
   return {
+    applyOrder,
     items,
     deletingId,
     deleteTarget,

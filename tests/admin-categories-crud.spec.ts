@@ -29,13 +29,17 @@ interface CategorySnapshot {
 }
 
 /**
- * Toma la primera categoría visible. Devuelve null si no hay.
+ * Toma la primera categoría visible. Falla si no hay ninguna: el admin sin
+ * categorías es un entorno mal sembrado, no un caso válido que saltear.
  */
-async function pickFirstCategory(page: Page): Promise<CategorySnapshot | null> {
+async function pickFirstCategory(page: Page): Promise<CategorySnapshot> {
   await page.goto('/admin/categorias');
 
   const editLink = page.getByRole('link', { name: 'Editar' }).first();
-  if ((await editLink.count()) === 0) return null;
+  await expect(
+    editLink,
+    'El admin no tiene categorías: el entorno de test no está sembrado',
+  ).toBeVisible();
 
   const href = (await editLink.getAttribute('href')) ?? '';
   const id = href.split('/').pop() ?? '';
@@ -80,10 +84,6 @@ test.describe('Phase 4C — Admin categorías CRUD', () => {
 
   test('editar categoría: form carga con valores actuales', async ({ page }) => {
     const cat = await pickFirstCategory(page);
-    if (!cat) {
-      test.skip(true, 'No hay categorías para editar.');
-      return;
-    }
 
     await page.goto(cat.rowSelector);
     await expect(page.getByRole('heading', { name: /Editar categoría|Categoría/ })).toBeVisible({
@@ -99,10 +99,6 @@ test.describe('Phase 4C — Admin categorías CRUD', () => {
 
   test('toggle status: cambia y revierte', async ({ page }) => {
     const cat = await pickFirstCategory(page);
-    if (!cat) {
-      test.skip(true, 'No hay categorías.');
-      return;
-    }
 
     await page.goto('/admin/categorias');
 
@@ -131,10 +127,10 @@ test.describe('Phase 4C — Admin categorías CRUD', () => {
     await page.goto('/admin/categorias');
 
     const firstDelete = page.getByRole('button', { name: 'Eliminar' }).first();
-    if ((await firstDelete.count()) === 0) {
-      test.skip(true, 'No hay categorías para verificar dialog.');
-      return;
-    }
+    await expect(
+      firstDelete,
+      'El admin no tiene categorías: el entorno de test no está sembrado',
+    ).toBeVisible();
     await firstDelete.click();
 
     // Dialog Radix.

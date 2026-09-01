@@ -24,6 +24,53 @@ import { expect, type Page, test } from "@playwright/test";
  */
 
 // ---------------------------------------------------------------------------
+// Shared helpers
+// ---------------------------------------------------------------------------
+
+function escapeForRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/**
+ * Abre el sheet "Filtrar y ordenar", despliega la sección `title` y devuelve
+ * el primer checkbox habilitado que contiene.
+ *
+ * Los filtros ya no viven en un `<aside>`: están en un Sheet (CatalogFilterSheet)
+ * con secciones `<details>` y checkboxes `sr-only` dentro de labels.
+ */
+async function openFilterSection(page: Page, title: string) {
+  await page
+    .getByRole("button", { name: "Filtrar y ordenar" })
+    .first()
+    .click();
+
+  const dialog = page.getByRole("dialog", { name: "Filtrar y ordenar" });
+  await expect(dialog).toBeVisible();
+
+  const section = dialog.locator("details").filter({
+    has: page.getByText(title, { exact: true }),
+  });
+  await expect(
+    section,
+    `La sección "${title}" debe existir en el sheet de filtros`,
+  ).toHaveCount(1);
+
+  // <details> arranca cerrado salvo Precio; el summary lo despliega.
+  const isOpen = await section.evaluate(
+    (element: HTMLDetailsElement) => element.open,
+  );
+  if (!isOpen) await section.locator("summary").click();
+
+  const options = section.locator('input[type="checkbox"]:not([disabled])');
+  await expect(
+    options,
+    `La sección "${title}" no tiene opciones: el entorno de test no está sembrado`,
+  ).not.toHaveCount(0);
+
+  return options.first();
+}
+
+// ---------------------------------------------------------------------------
 // Shared helper — navigate to the first available product detail page.
 // Mirrors the helper in product-detail.spec.ts exactly to stay consistent.
 // ---------------------------------------------------------------------------
@@ -158,16 +205,14 @@ test.describe("Taxonomy baseline — Group 1: catalog grid", () => {
         { timeout: 10_000 },
       )
       .catch(() => {
-        // handled below
+        // La aserción de abajo reporta el fallo con el slug concreto.
       });
 
     const productCards = page.locator(`a[href^="/catalogo/${slug}/"]`);
-    const count = await productCards.count();
-
-    if (count === 0) {
-      test.skip(true, "Categoría sin productos — cubierto en empty-state test");
-      return;
-    }
+    await expect(
+      productCards,
+      `La categoría ${slug} no tiene productos: el entorno de test no está sembrado`,
+    ).not.toHaveCount(0);
 
     // First card: name visible + image with a non-empty src.
     const firstCard = productCards.first();
@@ -218,8 +263,6 @@ test.describe("Taxonomy baseline — Group 2: product detail", () => {
   }) => {
     await navigateToFirstProduct(page);
 
-    // Thumbnails: button[aria-label^="Ver imagen "] — may not exist if
-    // the product has only one image; that case is skipped gracefully.
     const thumbnails = page.locator('button[aria-label^="Ver imagen "]');
 
     await page
@@ -231,17 +274,16 @@ test.describe("Taxonomy baseline — Group 2: product detail", () => {
         { timeout: 5_000 },
       )
       .catch(() => {
-        // single-image product — handled below
+        // La aserción de abajo reporta el fallo con la cuenta real.
       });
 
+    // El primer producto del catálogo debe tener galería múltiple: sin 2+
+    // thumbnails este baseline no verifica nada.
     const thumbCount = await thumbnails.count();
-
-    if (thumbCount < 2) {
-      // Single-image product is valid. The baseline still asserts the
-      // main image button is present (covered in previous test).
-      test.skip(true, "Producto con una sola imagen — thumbnails no aplican");
-      return;
-    }
+    expect(
+      thumbCount,
+      "El primer producto necesita ≥2 imágenes para validar los thumbnails",
+    ).toBeGreaterThanOrEqual(2);
 
     // Each thumbnail must be visible.
     for (let i = 0; i < Math.min(thumbCount, 4); i++) {
@@ -264,158 +306,55 @@ test.describe("Taxonomy baseline — Group 2: product detail", () => {
 // ---------------------------------------------------------------------------
 
 test.describe("Taxonomy baseline — Group 3: color and flower-type filters", () => {
-  test("color filter chip: clicking toggles aria-pressed and updates URL", async ({
+  test("filtro de color: marcar el checkbox del sheet sincroniza ?color=", async ({
     page,
   }) => {
     await page.goto("/catalogo");
 
-    // Color filter chips live in the sidebar desktop (CatalogFilterColors).
-    // They are <button aria-pressed="..."> inside a block preceded by
-    // <p>Color</p>. We locate the sidebar's color section.
-    const sidebar = page.locator("aside").first();
-    await expect(sidebar).toBeVisible();
+    const firstColor = await openFilterSection(page, "Color");
+    const colorName = (await firstColor.getAttribute("value")) ?? "";
+    expect(colorName, "El checkbox de color debe exponer su value").toBeTruthy();
 
-    // Wait for the client component to hydrate (color chips may not be
-    // present if no product_colors rows exist in the DB).
-    const colorSection = sidebar.getByText("Color");
-    const colorSectionVisible = await colorSection
-      .isVisible()
-      .catch(() => false);
+    await firstColor.check();
+    await expect(page).toHaveURL(
+      new RegExp(`[?&]color=${escapeForRegExp(encodeURIComponent(colorName))}`),
+      { timeout: 10_000 },
+    );
+    await expect(firstColor).toBeChecked();
 
-    if (!colorSectionVisible) {
-      test.skip(true, "Sección Color no visible — sin datos de colores en DB");
-      return;
-    }
-
-    // Color filter chips rendered by CatalogFilterColors: button[aria-pressed]
-    // inside the color section. We need to distinguish them from category chips
-    // (which also use aria-pressed) — we look for chips that follow the "Color"
-    // label paragraph.
-    const colorLabel = sidebar.locator("p").filter({ hasText: /^Color$/ });
-    await expect(colorLabel).toBeVisible({ timeout: 5_000 });
-
-    // Parent div contains the label + chip row.
-    const colorBlock = colorLabel.locator("..");
-    const colorChips = colorBlock.locator("button[aria-pressed]");
-
-    const chipCount = await colorChips.count();
-    if (chipCount === 0) {
-      test.skip(true, "Sin chips de color disponibles en el sidebar");
-      return;
-    }
-
-    const firstChip = colorChips.first();
-    const chipName = (await firstChip.textContent())?.trim() ?? "";
-    expect(chipName.length).toBeGreaterThan(0);
-
-    // Wait 500ms for useCatalogFilters debounce (300ms) to settle after
-    // mount — same guard used by catalog-flow.spec.ts chip tests.
-    await page.waitForTimeout(500);
-
-    // Click the chip — should toggle to active and update the URL.
-    await firstChip.click();
-    await expect(page).toHaveURL(/[?&]color=/, { timeout: 10_000 });
-    await expect(firstChip).toHaveAttribute("aria-pressed", "true", {
-      timeout: 10_000,
-    });
-
-    // "Limpiar filtros" button appears and works.
-    const clearBtn = page.getByRole("button", { name: /limpiar filtros/i });
-    await expect(clearBtn).toBeVisible();
-    await clearBtn.click();
-    await expect(page).toHaveURL(/\/catalogo$/, { timeout: 5_000 });
-    await expect(firstChip).toHaveAttribute("aria-pressed", "false");
+    await firstColor.uncheck();
+    await expect(page).not.toHaveURL(/[?&]color=/, { timeout: 10_000 });
   });
 
-  test("flower-type filter chip: clicking toggles aria-pressed and updates URL", async ({
+  test("filtro de tipo de flor: marcar el checkbox del sheet sincroniza ?tipo=", async ({
     page,
   }) => {
     await page.goto("/catalogo");
 
-    const sidebar = page.locator("aside").first();
-    await expect(sidebar).toBeVisible();
+    const firstType = await openFilterSection(page, "Tipo de flor");
+    const typeName = (await firstType.getAttribute("value")) ?? "";
+    expect(typeName, "El checkbox de tipo de flor debe exponer su value").toBeTruthy();
 
-    const flowerLabel = sidebar
-      .locator("p")
-      .filter({ hasText: /^Tipo de flor$/ });
-    const flowerSectionVisible = await flowerLabel
-      .isVisible()
-      .catch(() => false);
+    await firstType.check();
+    await expect(page).toHaveURL(
+      new RegExp(`[?&]tipo=${escapeForRegExp(encodeURIComponent(typeName))}`),
+      { timeout: 10_000 },
+    );
+    await expect(firstType).toBeChecked();
 
-    if (!flowerSectionVisible) {
-      test.skip(
-        true,
-        "Sección Tipo de flor no visible — sin datos en DB",
-      );
-      return;
-    }
-
-    await expect(flowerLabel).toBeVisible({ timeout: 5_000 });
-    const flowerBlock = flowerLabel.locator("..");
-    const flowerChips = flowerBlock.locator("button[aria-pressed]");
-
-    const chipCount = await flowerChips.count();
-    if (chipCount === 0) {
-      test.skip(true, "Sin chips de tipo de flor disponibles");
-      return;
-    }
-
-    const firstChip = flowerChips.first();
-    const chipName = (await firstChip.textContent())?.trim() ?? "";
-    expect(chipName.length).toBeGreaterThan(0);
-
-    // Wait 500ms for useCatalogFilters debounce (300ms) to settle after
-    // mount — same guard used by catalog-flow.spec.ts chip tests.
-    await page.waitForTimeout(500);
-
-    await firstChip.click();
-    await expect(page).toHaveURL(/[?&]tipo=/, { timeout: 10_000 });
-    await expect(firstChip).toHaveAttribute("aria-pressed", "true", {
-      timeout: 10_000,
-    });
-
-    const clearBtn = page.getByRole("button", { name: /limpiar filtros/i });
-    await expect(clearBtn).toBeVisible();
-    await clearBtn.click();
-    await expect(page).toHaveURL(/\/catalogo$/, { timeout: 5_000 });
-    await expect(firstChip).toHaveAttribute("aria-pressed", "false");
+    await firstType.uncheck();
+    await expect(page).not.toHaveURL(/[?&]tipo=/, { timeout: 10_000 });
   });
 
   test("color filter via URL: ?color=<name> activates filter and shows results", async ({
     page,
   }) => {
-    // Navigate to the catalog sidebar to discover an actual color name.
+    // Descubrimos un nombre de color real desde el sheet de filtros.
     await page.goto("/catalogo");
 
-    const sidebar = page.locator("aside").first();
-    const colorLabel = sidebar.locator("p").filter({ hasText: /^Color$/ });
-    const labelVisible = await colorLabel.isVisible().catch(() => false);
-
-    if (!labelVisible) {
-      test.skip(true, "Sin sección Color en sidebar");
-      return;
-    }
-
-    const colorBlock = colorLabel.locator("..");
-    const colorChips = colorBlock.locator("button[aria-pressed]");
-    const chipCount = await colorChips.count();
-
-    if (chipCount === 0) {
-      test.skip(true, "Sin chips de color para obtener nombre real");
-      return;
-    }
-
-    // Read the color name from the DOM chip (without the color dot span).
-    // The chip text includes the label; we use allTextContents.
-    const rawText = (await colorChips.first().textContent())?.trim() ?? "";
-    // The chip renders: [dot] <label text>. We take the full textContent
-    // which may include the dot's empty string; trim handles it.
-    const colorName = rawText.replace(/^\s+|\s+$/g, "");
-
-    if (!colorName) {
-      test.skip(true, "No se pudo leer el nombre del color del chip");
-      return;
-    }
+    const firstColor = await openFilterSection(page, "Color");
+    const colorName = (await firstColor.getAttribute("value")) ?? "";
+    expect(colorName, "El checkbox de color debe exponer su value").toBeTruthy();
 
     // Navigate with that color name as a URL param.
     await page.goto(`/catalogo?color=${encodeURIComponent(colorName)}`);

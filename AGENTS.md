@@ -53,6 +53,7 @@ Invocar la skill **antes** de trabajar en el área — no improvisar a mano.
 |---|---|
 | `appwrite` | Único backend real (DB, Auth, Storage, Teams). Correr `appwrite_get_context` antes de cualquier operación server-side/repos — no adivinar el estado del proyecto. |
 | `codegraph` (`codegraph_explore`) | Antes de leer archivos a mano para entender arquitectura, call flow o impacto. **No** usar Read/Glob/Grep como primer paso en preguntas estructurales. |
+| `context7` (`resolve-library-id` → `query-docs`) | Cualquier duda de comportamiento de una librería, framework, SDK o CLI (Playwright, Next, `node-appwrite`, @dnd-kit, zod…). Consultar la doc **antes** de formular una hipótesis, no después de que fallen dos — vale incluso cuando creés saber la respuesta. Preferirlo a WebSearch para documentación; WebSearch queda para lo que no es doc de librería (investigación de negocio, UX, referencias visuales). |
 
 > **Mantenimiento:** `npx skills add appwrite/skills` instala las 11 skills de SDK de Appwrite. Solo `appwrite-typescript` y `appwrite-cli` aplican aquí — borrar las otras nueve (dart, dotnet, go, kotlin, php, python, ruby, rust, swift) del directorio real `.agents/skills/` **y** de los symlinks en `.claude/skills/`. Ambos árboles están gitignoreados.
 
@@ -97,7 +98,7 @@ No las silencies: corregí la causa raíz o pedí excepción.
 
 **Paleta: fija, no se toca sin aprobación.** Tokens: `--color-primary` · `--color-secondary` · `--color-accent` · `--color-cream` · `--color-dark` · `--color-whatsapp`, más derivados `color-mix` (`--color-muted/-surface/-border`) y los tokens de contraste (`--color-gold-text`, `--color-gold-text-dark`). Fonts expuestas como `--font-heading` / `--font-body`.
 
-⚠️ **No memorices los hex desde acá — leé `docs/design.md`.** Varios tokens tienen restricciones de accesibilidad (el dorado falla AA como texto sobre fondos claros) que solo están documentadas ahí.
+⚠️ **No memorices los hex desde aquí — lee `docs/design.md`.** Varios tokens tienen restricciones de accesibilidad (el dorado falla AA como texto sobre fondos claros) que solo están documentadas ahí.
 
 ---
 

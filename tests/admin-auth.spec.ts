@@ -70,7 +70,12 @@ test.describe('Phase 4C — Admin auth (con sesión)', () => {
     // Click en LogoutButton — match flexible (carga "Cerrar sesión" o "Cerrando…")
     await page.getByRole('button', { name: /cerrar sesión/i }).click();
 
-    // Después del logout, ir a /admin/productos debe redirigir a /login
+    // El logout hace redirect('/login') desde el server action. Hay que esperar
+    // esa navegación antes de disparar la siguiente: si no, el goto de abajo
+    // compite con el redirect y el test se vuelve flaky.
+    await page.waitForURL(/\/login/);
+
+    // Ya sin sesión, entrar a /admin/productos debe volver a redirigir a /login
     await page.goto('/admin/productos');
     await page.waitForURL(/\/login/);
     await expect(page).toHaveURL(/\/login/);

@@ -75,7 +75,7 @@ test.describe("Phase 4B — Category page", () => {
         { timeout: 5_000 },
       )
       .catch(() => {
-        // si no aparecen, el siguiente check skippea por count=0
+        // La aserción de abajo reporta el fallo con el slug concreto.
       });
 
     // ProductCard envuelve todo en <Link href="/catalogo/{categorySlug}/{productSlug}">.
@@ -83,14 +83,12 @@ test.describe("Phase 4B — Category page", () => {
       `a[href^="/catalogo/${slug}/"]`,
     );
 
-    const count = await productCards.count();
-    if (count === 0) {
-      test.skip(
-        true,
-        `Categoría ${slug} sin productos — empty state cubierto en otro test`,
-      );
-      return;
-    }
+    // La primera categoría del catálogo debe tener productos. Si no los tiene,
+    // el entorno de test está mal sembrado y eso es un fallo, no un skip.
+    await expect(
+      productCards,
+      `La categoría ${slug} no tiene productos: el entorno de test no está sembrado`,
+    ).not.toHaveCount(0);
 
     const firstCard = productCards.first();
     await expect(firstCard).toBeVisible();
@@ -125,14 +123,10 @@ test.describe("Phase 4B — Category page", () => {
     // Esperamos a que el ProductGrid (client component) hidrate y monte
     // el <select> de ordenamiento.
     const sortSelect = page.locator("select").first();
-    await sortSelect.waitFor({ state: "visible", timeout: 5_000 }).catch(() => {
-      // Si no aparece, el siguiente check resuelve con skip.
-    });
-    const isVisible = await sortSelect.isVisible().catch(() => false);
-    if (!isVisible) {
-      test.skip(true, "No hay <select> de orden — categoría puede estar vacía");
-      return;
-    }
+    await expect(
+      sortSelect,
+      "El <select> de orden debe montarse tras hidratar el grid",
+    ).toBeVisible({ timeout: 5_000 });
 
     const slug = new URL(page.url()).pathname.split("/").filter(Boolean)[1];
     const cards = page.locator(`a[href^="/catalogo/${slug}/"]`);
@@ -146,14 +140,16 @@ test.describe("Phase 4B — Category page", () => {
         { timeout: 5_000 },
       )
       .catch(() => {
-        // Si no hay productos, dejamos que el siguiente check decida.
+        // La aserción de abajo reporta el fallo con la cuenta real.
       });
 
+    // Reordenar solo es observable con 2+ productos. Menos que eso significa
+    // entorno mal sembrado, no un caso válido que se pueda saltear.
     const initialCount = await cards.count();
-    if (initialCount < 2) {
-      test.skip(true, "Necesitamos ≥2 productos para validar reorden");
-      return;
-    }
+    expect(
+      initialCount,
+      "Se necesitan ≥2 productos en la primera categoría para validar el reorden",
+    ).toBeGreaterThanOrEqual(2);
 
     const firstNameBefore = await cards.nth(0).locator("h3").textContent();
 
@@ -182,23 +178,24 @@ test.describe("Phase 4B — Category page", () => {
     expect(firstNameBefore).toBeTruthy();
   });
 
-  test("empty state — skipped salvo que exista una categoría vacía", async ({
+  test("categoría inexistente renderiza el not-found con categorías sugeridas", async ({
     page,
   }) => {
-    // El empty state real (categoría existente con 0 productos) es difícil
-    // de reproducir sin manipular DB. Para una categoría inexistente, Next
-    // dispara notFound() que renderiza la app/not-found.tsx — el status HTTP
-    // puede ser 200 o 404 según versión de Next; lo que importa es que el
-    // contenido es la página de "no encontrada".
+    // Next dispara notFound() y renderiza app/(public)/not-found.tsx. El status
+    // HTTP varía según versión de Next, así que asertamos el contenido real.
     await page.goto("/catalogo/__categoria-que-no-existe__");
-    // Renderiza la página de not-found (típicamente con texto 404 o
-    // "no encontrada").
-    const body = await page.content();
-    expect(body.length).toBeGreaterThan(0);
-    test.skip(
-      true,
-      "Empty state real con categoría vacía requiere mock de DB — fuera de scope E2E",
-    );
+
+    await expect(
+      page.getByRole("heading", { name: /esta página se cortó/i }),
+    ).toBeVisible();
+
+    const suggestions = page.getByRole("navigation", {
+      name: "Categorías sugeridas",
+    });
+    await expect(suggestions).toBeVisible();
+    await expect(
+      suggestions.getByRole("link", { name: "Ver todo el catálogo" }),
+    ).toBeVisible();
   });
 
   test("back button vuelve a /catalogo", async ({ page }) => {

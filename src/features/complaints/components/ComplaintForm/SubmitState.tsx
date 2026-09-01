@@ -4,7 +4,10 @@ import { CheckCircle2, Printer } from 'lucide-react';
 
 import Button from '@/components/ui/Button';
 
-import { consumerCopyEmail } from '../../email/templates';
+import {
+  type ComplaintProvider,
+  consumerCopyEmail,
+} from '../../email/templates';
 import type { ComplaintFormData } from '../../schemas/complaint';
 import { RESPONSE_BUSINESS_DAYS } from '../../utils/format';
 
@@ -13,6 +16,7 @@ interface SubmitStateProps {
   createdAt: string;
   emailSent: boolean;
   data: ComplaintFormData;
+  provider: ComplaintProvider;
 }
 
 export default function SubmitState({
@@ -20,9 +24,10 @@ export default function SubmitState({
   createdAt,
   emailSent,
   data,
+  provider,
 }: SubmitStateProps) {
   function handlePrint() {
-    const { html } = consumerCopyEmail({ ...data, complaintNumber, createdAt });
+    const { html } = consumerCopyEmail({ ...data, complaintNumber, createdAt }, provider);
     const win = window.open('', '_blank', 'width=820,height=640');
     if (!win) return;
     win.document.write(

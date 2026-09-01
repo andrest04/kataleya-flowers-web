@@ -5,28 +5,35 @@ import { FaInstagram, FaWhatsapp } from "react-icons/fa";
 import FooterAnchorLink from "@/components/shared/FooterAnchorLink";
 import Image from '@/components/ui/AppwriteImage';
 import { getCategories } from "@/features/catalog/queries/getCategories";
-import { BUSINESS } from "@/lib/constants";
+import { whatsappWithMessage } from "@/lib/contactLinks";
 import { allNavLinks } from "@/lib/navigation";
+import type { SiteSettings } from "@/lib/siteSettings";
 
-const WHATSAPP_LINK = BUSINESS.whatsappWithMessage(BUSINESS.messages.whatsappDefault);
-const COPYRIGHT_YEAR = 2026;
+interface FooterProps {
+  settings: SiteSettings;
+}
 
-export default async function Footer() {
+export default async function Footer({ settings }: FooterProps) {
   const categories = await getCategories();
+  const whatsappLink = whatsappWithMessage(
+    settings.phone,
+    settings.messages.whatsappDefault,
+  );
+  const copyrightYear = new Date().getFullYear();
 
   return (
     <footer className="border-t border-(--color-primary) bg-(--color-surface) text-(--color-dark)">
       <div className="px-4 pt-[74px] sm:px-6 lg:px-[77px]">
         <div className="grid gap-10 lg:grid-cols-[1.3fr_2fr] lg:gap-20 xl:grid-cols-[1fr_2.4fr]">
           <div className="space-y-6 lg:pb-[74px]">
-            <h2 className="font-heading text-2xl tracking-[0.1em] uppercase">{BUSINESS.name}</h2>
+            <h2 className="font-heading text-2xl tracking-[0.1em] uppercase">{settings.name}</h2>
 
             <p className="font-heading text-2xl leading-tight sm:text-3xl">
-              Flores frescas para cada momento especial en {BUSINESS.location}.
+              Flores frescas para cada momento especial en {settings.location}.
             </p>
 
             <Link
-              href={WHATSAPP_LINK}
+              href={whatsappLink}
               target="_blank"
               rel="noopener noreferrer"
               className="flex w-full max-w-sm items-center justify-between border border-(--color-dark) bg-(--color-white) px-4 py-3 text-sm font-semibold transition-colors hover:bg-(--color-surface) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-secondary)"
@@ -138,9 +145,9 @@ export default async function Footer() {
                   </FooterAnchorLink>
                 </li>
                 <li className="opacity-80">
-                  {BUSINESS.hours.weekdays} · {BUSINESS.hours.time}
+                  {settings.hours.weekdays} · {settings.hours.time}
                 </li>
-                <li className="opacity-80">{BUSINESS.location}</li>
+                <li className="opacity-80">{settings.location}</li>
               </ul>
             </div>
           </div>
@@ -150,20 +157,20 @@ export default async function Footer() {
       <div className="flex items-center px-4 pt-6 pb-14 sm:px-6 lg:px-[77px]">
         <div className="-ml-1 flex items-center gap-5">
           <a
-            href={BUSINESS.instagram}
+            href={settings.instagram}
             target="_blank"
             rel="noopener noreferrer"
-            aria-label={`Seguir a ${BUSINESS.name} en Instagram`}
+            aria-label={`Seguir a ${settings.name} en Instagram`}
             className="-m-3 p-3 transition-opacity hover:opacity-70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-secondary)"
           >
             <FaInstagram size={20} aria-hidden="true" />
             <span className="sr-only"> (se abre en una pestaña nueva)</span>
           </a>
           <a
-            href={WHATSAPP_LINK}
+            href={whatsappLink}
             target="_blank"
             rel="noopener noreferrer"
-            aria-label={`Escribir a ${BUSINESS.name} por WhatsApp`}
+            aria-label={`Escribir a ${settings.name} por WhatsApp`}
             className="-m-3 p-3 transition-opacity hover:opacity-70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-secondary)"
           >
             <FaWhatsapp size={20} aria-hidden="true" />
@@ -178,7 +185,7 @@ export default async function Footer() {
             href="#contacto"
             className="inline-flex items-center gap-1 font-body text-sm font-semibold transition-colors hover:text-(--color-primary) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-secondary)"
           >
-            Entregas en {BUSINESS.location}
+            Entregas en {settings.location}
             <ChevronRight className="h-4 w-4" aria-hidden="true" />
           </FooterAnchorLink>
         </div>
@@ -187,7 +194,7 @@ export default async function Footer() {
       <div className="border-t border-(--color-primary)">
         <div className="px-4 pt-5 pb-[18px] sm:px-6 lg:px-[77px]">
           <p className="font-heading text-sm opacity-80">
-            © {COPYRIGHT_YEAR} {BUSINESS.name}
+            © {copyrightYear} {settings.name}
           </p>
         </div>
       </div>

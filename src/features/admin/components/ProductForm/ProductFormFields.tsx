@@ -107,7 +107,7 @@ export default function ProductFormFields({
             aria-invalid={Boolean(catError)}
             aria-describedby={catError ? `${ID_CAT}-error` : undefined}
           >
-            <option value="">Seleccioná una categoría</option>
+            <option value="">Selecciona una categoría</option>
             {categories.map((cat) => (
               <option key={cat.id} value={cat.id}>
                 {cat.name}

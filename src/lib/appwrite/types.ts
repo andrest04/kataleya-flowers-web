@@ -94,6 +94,109 @@ export interface CounterDoc extends Models.Document {
   value: number;
 }
 
+export type HeroCtaType = 'whatsapp' | 'catalogo' | 'url';
+
+export interface HeroSlideDoc extends Models.Document {
+  alt_text: string;
+  cta_label: string | null;
+  cta_type: HeroCtaType;
+  cta_value: string | null;
+  display_order: number;
+  ends_at: string | null;
+  focus: string | null;
+  image_url: string;
+  is_active: boolean;
+  kicker: string;
+  name: string | null;
+  starts_at: string | null;
+  subtitle: string | null;
+  title: string;
+}
+
+export interface PromoBannerDoc extends Models.Document {
+  content_position: 'top' | 'bottom';
+  cta_external: boolean;
+  cta_href: string;
+  cta_label: string;
+  description: string;
+  display_order: number;
+  ends_at: string | null;
+  image_url: string;
+  is_active: boolean;
+  name: string | null;
+  starts_at: string | null;
+  title: string;
+}
+
+export interface TestimonialDoc extends Models.Document {
+  display_order: number;
+  ends_at: string | null;
+  is_active: boolean;
+  name: string;
+  occasion: string;
+  photo_alt: string;
+  photo_url: string;
+  quote: string;
+  stars: number;
+  starts_at: string | null;
+}
+
+export interface DiscoverTileDoc extends Models.Document {
+  description: string;
+  display_order: number;
+  ends_at: string | null;
+  href: string;
+  icon: string;
+  image_url: string;
+  is_active: boolean;
+  is_external: boolean;
+  starts_at: string | null;
+  title: string;
+}
+
+export interface ValuePropDoc extends Models.Document {
+  description: string;
+  display_order: number;
+  ends_at: string | null;
+  href: string;
+  icon: string;
+  is_active: boolean;
+  is_anchor: boolean;
+  is_external: boolean;
+  link_label: string;
+  starts_at: string | null;
+  title: string;
+}
+
+export interface SiteSettingsDoc extends Models.Document {
+  address: string;
+  announcement_cta_href: string;
+  announcement_cta_label: string;
+  announcement_ends_at: string | null;
+  announcement_is_active: boolean;
+  announcement_starts_at: string | null;
+  announcement_text: string;
+  bestsellers_title: string;
+  catalog_title: string;
+  contact_title: string;
+  discover_title: string;
+  email: string;
+  hours_closes: string;
+  hours_open_days: string;
+  hours_opens: string;
+  hours_time: string;
+  hours_weekdays: string;
+  instagram_handle: string;
+  location: string;
+  maps_embed_url: string;
+  phone: string;
+  razon_social: string;
+  ruc: string;
+  whatsapp_default: string;
+  whatsapp_float: string;
+  whatsapp_product: string;
+}
+
 export interface JoinedProductDoc extends ProductDoc {
   product_color_assignments:
     | { product_colors: { name: string } | null }[]

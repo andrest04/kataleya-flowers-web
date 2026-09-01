@@ -2,29 +2,18 @@
 
 import { useEffect, useState } from "react";
 
-import { BUSINESS } from "@/lib/constants";
+import { isOpenNow, type SiteHours } from "@/lib/siteSettings";
 
-function isBusinessOpen(): boolean {
-  const now = new Date();
-  const utcMs = now.getTime() + now.getTimezoneOffset() * 60_000;
-  const peruMs = utcMs - 5 * 60 * 60 * 1_000;
-  const peru = new Date(peruMs);
-
-  const day = peru.getDay();
-  const hour = peru.getHours();
-
-  const opensHour = Number(BUSINESS.hours.opens.split(":")[0]);
-  const closesHour = Number(BUSINESS.hours.closes.split(":")[0]);
-
-  return BUSINESS.hours.openDays.includes(day) && hour >= opensHour && hour < closesHour;
+interface BusinessHoursBadgeProps {
+  hours: SiteHours;
 }
 
-export default function BusinessHoursBadge() {
+export default function BusinessHoursBadge({ hours }: BusinessHoursBadgeProps) {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
     const updateOpenState = () => {
-      setOpen(isBusinessOpen());
+      setOpen(isOpenNow(hours));
     };
 
     const timeoutId = window.setTimeout(updateOpenState, 0);
@@ -35,7 +24,7 @@ export default function BusinessHoursBadge() {
       window.clearTimeout(timeoutId);
       window.clearInterval(intervalId);
     };
-  }, []);
+  }, [hours]);
 
   return (
     <span

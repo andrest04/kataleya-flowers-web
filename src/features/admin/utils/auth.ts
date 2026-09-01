@@ -40,7 +40,7 @@ export function failureFromUnknown(err: unknown): AdminActionFailure {
       success: false,
       error:
         err.code === 'UNAUTHENTICATED'
-          ? 'Sesión inválida. Iniciá sesión nuevamente.'
+          ? 'Sesión inválida. Inicia sesión nuevamente.'
           : 'No tienes permisos para esta acción.',
       code: err.code,
     };
@@ -48,7 +48,7 @@ export function failureFromUnknown(err: unknown): AdminActionFailure {
   console.error('[admin-action] unexpected error:', err);
   return {
     success: false,
-    error: 'No se pudo completar la operación. Intentá de nuevo en unos minutos.',
+    error: 'No se pudo completar la operación. Intenta de nuevo en unos minutos.',
     code: 'INTERNAL',
   };
 }

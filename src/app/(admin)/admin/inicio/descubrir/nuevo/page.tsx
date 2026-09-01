@@ -1,0 +1,56 @@
+import Link from 'next/link';
+
+import DiscoverTileEditor from '@/features/admin/components/DiscoverTileEditor';
+import { draftFromFallback } from '@/features/admin/components/DiscoverTileEditor/mapDraft';
+import { getAdminDiscoverTiles } from '@/features/admin/queries/discoverTiles';
+import {
+  FALLBACK_DISCOVER_TILES,
+  getPublishedDiscoverTiles,
+} from '@/features/landing/queries/getPublishedDiscoverTiles';
+import { HOME_DISCOVER_TILE_LIMIT } from '@/lib/discoverTileLimit';
+
+export const metadata = { title: 'Nueva tarjeta' };
+
+interface NuevaTarjetaPageProps {
+  searchParams: Promise<{ from?: string }>;
+}
+
+export default async function NuevaTarjetaPage({ searchParams }: NuevaTarjetaPageProps) {
+  const { from } = await searchParams;
+  const [tiles, liveTiles] = await Promise.all([
+    getAdminDiscoverTiles(),
+    getPublishedDiscoverTiles(),
+  ]);
+  const fromFallback = FALLBACK_DISCOVER_TILES.find((item) => item.id === from);
+  const source = fromFallback ?? liveTiles[0] ?? FALLBACK_DISCOVER_TILES[0];
+  const isEditingFallback = Boolean(fromFallback) && tiles.length === 0;
+  const initial = {
+    ...draftFromFallback(source),
+    isActive: isEditingFallback,
+  };
+  const activeCount = tiles.length === 0
+    ? FALLBACK_DISCOVER_TILES.length
+    : tiles.filter((item) => item.is_active).length;
+  const allowActivate = initial.isActive || activeCount < HOME_DISCOVER_TILE_LIMIT;
+
+  return (
+    <div className="space-y-6">
+      <Link
+        href="/admin/inicio"
+        className="text-sm text-(--color-muted) transition-opacity hover:opacity-70"
+      >
+        ← Volver a inicio
+      </Link>
+      <h1 className="font-serif text-2xl font-semibold text-(--color-dark)">
+        {isEditingFallback ? 'Editar tarjeta' : 'Nueva tarjeta'}
+      </h1>
+      <DiscoverTileEditor
+        allowActivate={allowActivate}
+        allowHide
+        fromFallbackId={fromFallback?.id}
+        initial={initial}
+        showCancel
+      />
+    </div>
+  );
+}

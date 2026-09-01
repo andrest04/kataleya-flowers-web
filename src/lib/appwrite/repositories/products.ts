@@ -14,6 +14,7 @@ import type {
   ProductDoc,
   ProductImageDoc,
 } from '@/lib/appwrite/types';
+import { matchesSearchText } from '@/lib/searchText';
 
 import {
   APPWRITE_PAGE_SIZE,
@@ -587,37 +588,46 @@ export async function listAdminProductPage({
     : status === 'inactive'
       ? [Query.equal('is_active', false)]
       : [];
-  const searchQuery = search ? [Query.search('name', search)] : [];
+  const searchTerm = search?.trim() ?? '';
   const baseQueries = [
     ...categoryQuery,
     ...statusQuery,
-    ...searchQuery,
     Query.orderAsc('display_order'),
   ];
 
-  if (gallery === 'at-most-one-image') {
+  if (gallery === 'at-most-one-image' || searchTerm) {
+    const galleryScopeQuery = gallery === 'at-most-one-image' && !status
+      ? [Query.equal('is_active', true)]
+      : [];
     const products = await listAllDocuments<ProductDoc>(databases, databaseId, C.products, [
       ...baseQueries,
-      Query.equal('is_active', true),
+      ...galleryScopeQuery,
       Query.select(ADMIN_PRODUCT_LIST_FIELDS),
     ]);
-    const imageCountByProduct = new Map<string, number>();
 
-    const imageDocs = await listProductImagesForProducts(
-      databases,
-      databaseId,
-      products.map((product) => product.$id),
-    );
-    for (const image of imageDocs) {
-      imageCountByProduct.set(
-        image.product_id,
-        (imageCountByProduct.get(image.product_id) ?? 0) + 1,
+    const matchingSearch = searchTerm
+      ? products.filter((product) => matchesSearchText(product.name, searchTerm))
+      : products;
+
+    let filtered = matchingSearch;
+    if (gallery === 'at-most-one-image') {
+      const imageCountByProduct = new Map<string, number>();
+      const imageDocs = await listProductImagesForProducts(
+        databases,
+        databaseId,
+        matchingSearch.map((product) => product.$id),
+      );
+      for (const image of imageDocs) {
+        imageCountByProduct.set(
+          image.product_id,
+          (imageCountByProduct.get(image.product_id) ?? 0) + 1,
+        );
+      }
+      filtered = matchingSearch.filter(
+        (product) => (imageCountByProduct.get(product.$id) ?? 0) <= 1,
       );
     }
 
-    const filtered = products.filter(
-      (product) => (imageCountByProduct.get(product.$id) ?? 0) <= 1,
-    );
     const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
     const currentPage = Math.min(requestedPage, totalPages);
     const offset = (currentPage - 1) * pageSize;
@@ -856,6 +866,7 @@ export interface TaxonomySyncInput {
   flowerTypeNames: string[];
   imageUrl: string;
   galleryImages: string[];
+  imageAlts?: Record<string, string>;
 }
 
 export async function syncProductTaxonomyAppwrite(
@@ -863,7 +874,16 @@ export async function syncProductTaxonomyAppwrite(
   transactionId?: string,
 ): Promise<{ code: string; message: string } | null> {
   const { databases, databaseId } = getRepositoryContext();
-  const { productId, productName, colorNames, flowerTypeNames, imageUrl, galleryImages } = input;
+  const {
+    productId,
+    productName,
+    colorNames,
+    flowerTypeNames,
+    imageUrl,
+    galleryImages,
+    imageAlts,
+  } = input;
+  const altFor = (url: string) => imageAlts?.[url]?.trim() || productName;
 
   try {
     await deleteProductRelations(productId, transactionId);
@@ -893,11 +913,11 @@ export async function syncProductTaxonomyAppwrite(
 
     const imageDocs: { url: string; altText: string; isPrimary: boolean; displayOrder: number }[] = [];
     if (imageUrl) {
-      imageDocs.push({ url: imageUrl, altText: productName, isPrimary: true, displayOrder: 0 });
+      imageDocs.push({ url: imageUrl, altText: altFor(imageUrl), isPrimary: true, displayOrder: 0 });
     }
     galleryImages.forEach((url, i) => {
       if (url !== imageUrl) {
-        imageDocs.push({ url, altText: productName, isPrimary: false, displayOrder: i + 1 });
+        imageDocs.push({ url, altText: altFor(url), isPrimary: false, displayOrder: i + 1 });
       }
     });
 
@@ -984,9 +1004,10 @@ function updateProductOperation(
 ): object {
   return {
     action: 'update',
-    resourceType: 'documents',
-    resourceId: documentId,
-    data: { databaseId, collectionId: C.products, documentId, data },
+    databaseId,
+    collectionId: C.products,
+    documentId,
+    data,
   };
 }
 
@@ -997,9 +1018,9 @@ function deleteProductOperation(
 ): object {
   return {
     action: 'delete',
-    resourceType: 'documents',
-    resourceId: documentId,
-    data: { databaseId, collectionId, documentId },
+    databaseId,
+    collectionId,
+    documentId,
   };
 }
 
@@ -1033,6 +1054,26 @@ export async function bulkSetProductActive(ids: string[], isActive: boolean): Pr
       transactionId,
       operations: ids.map((documentId) =>
         updateProductOperation(databaseId, documentId, { is_active: isActive })),
+    }),
+  );
+}
+
+export async function reorderProductsAppwrite(orderedIds: string[]): Promise<void> {
+  const { databases, databaseId } = getRepositoryContext();
+  const documents = await listAllDocuments<ProductDoc>(databases, databaseId, C.products, [
+    Query.equal('$id', orderedIds),
+    Query.select(['$id', 'display_order']),
+  ]);
+  const slots = documents.map((document) => document.display_order).sort((a, b) => a - b);
+  const presentIds = orderedIds.filter((id) => documents.some((document) => document.$id === id));
+
+  if (slots.length !== presentIds.length) return;
+
+  await withAppwriteTransaction((transactionId) =>
+    databases.createOperations({
+      transactionId,
+      operations: presentIds.map((documentId, index) =>
+        updateProductOperation(databaseId, documentId, { display_order: slots[index] })),
     }),
   );
 }
