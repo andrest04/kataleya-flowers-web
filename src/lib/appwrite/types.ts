@@ -113,6 +113,34 @@ export interface HeroSlideDoc extends Models.Document {
   title: string;
 }
 
+export interface PromoBannerDoc extends Models.Document {
+  content_position: 'top' | 'bottom';
+  cta_external: boolean;
+  cta_href: string;
+  cta_label: string;
+  description: string;
+  display_order: number;
+  ends_at: string | null;
+  image_url: string;
+  is_active: boolean;
+  name: string | null;
+  starts_at: string | null;
+  title: string;
+}
+
+export interface TestimonialDoc extends Models.Document {
+  display_order: number;
+  ends_at: string | null;
+  is_active: boolean;
+  name: string;
+  occasion: string;
+  photo_alt: string;
+  photo_url: string;
+  quote: string;
+  stars: number;
+  starts_at: string | null;
+}
+
 export interface JoinedProductDoc extends ProductDoc {
   product_color_assignments:
     | { product_colors: { name: string } | null }[]

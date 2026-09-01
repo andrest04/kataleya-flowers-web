@@ -27,13 +27,17 @@ export default function PromoBannerCard({
     <div
       className={`group relative isolate flex aspect-[3/4] overflow-hidden rounded-md outline outline-1 -outline-offset-1 outline-black/10 sm:aspect-[4/3] ${isTop ? 'items-start' : 'items-end'}`}
     >
-      <Image
-        src={imageSrc}
-        alt=""
-        fill
-        sizes="(max-width: 1023px) 100vw, 50vw"
-        className="object-cover"
-      />
+      {imageSrc ? (
+        <Image
+          src={imageSrc}
+          alt=""
+          fill
+          sizes="(max-width: 1023px) 100vw, 50vw"
+          className="object-cover"
+        />
+      ) : (
+        <div className="absolute inset-0 bg-(--color-surface)" />
+      )}
       <div
         aria-hidden="true"
         className="absolute inset-0"

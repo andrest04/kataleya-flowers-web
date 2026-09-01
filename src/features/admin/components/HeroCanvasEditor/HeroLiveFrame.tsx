@@ -1,8 +1,8 @@
 'use client';
 
-import { Pencil } from 'lucide-react';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 
+import CoverButton from '@/features/admin/components/CoverEditor/CoverButton';
 import { HERO_MIN_HEIGHT_PX } from '@/features/landing/components/HeroSection/frame';
 
 interface HeroLiveFrameProps {
@@ -48,14 +48,7 @@ export default function HeroLiveFrame({ children, onEditPhoto }: HeroLiveFramePr
       >
         {children}
       </div>
-      <button
-        type="button"
-        aria-label="Editar foto"
-        className="absolute top-4 right-4 flex size-11 cursor-pointer items-center justify-center rounded-full bg-(--color-cream) text-(--color-dark) shadow-sm transition-[transform,background-color,box-shadow] duration-200 ease-out hover:bg-(--color-white) hover:shadow-md active:scale-[0.96] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-cream) motion-reduce:transition-none motion-reduce:active:scale-100"
-        onClick={onEditPhoto}
-      >
-        <Pencil className="size-4" aria-hidden="true" strokeWidth={1.8} />
-      </button>
+      <CoverButton onClick={onEditPhoto} />
     </div>
   );
 }

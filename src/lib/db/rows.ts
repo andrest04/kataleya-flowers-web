@@ -81,6 +81,36 @@ export interface HeroSlideRow {
   title: string;
 }
 
+export interface PromoBannerRow {
+  content_position: 'top' | 'bottom';
+  cta_external: boolean;
+  cta_href: string;
+  cta_label: string;
+  description: string;
+  display_order: number;
+  ends_at: string | null;
+  id: string;
+  image_url: string;
+  is_active: boolean;
+  name: string | null;
+  starts_at: string | null;
+  title: string;
+}
+
+export interface TestimonialRow {
+  display_order: number;
+  ends_at: string | null;
+  id: string;
+  is_active: boolean;
+  name: string;
+  occasion: string;
+  photo_alt: string;
+  photo_url: string;
+  quote: string;
+  stars: number;
+  starts_at: string | null;
+}
+
 export interface ComplaintRow {
   claimed_amount: number | null;
   complaint_type: string;

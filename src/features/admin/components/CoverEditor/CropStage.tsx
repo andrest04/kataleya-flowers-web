@@ -3,22 +3,18 @@
 import { RotateCcw, RotateCw } from 'lucide-react';
 import { type PointerEvent, useEffect, useRef, useState } from 'react';
 
-import {
-  clampPan,
-  coverScale,
-  liveHeroCropAspect,
-  renderHeroCrop,
-  rotatedSize,
-} from './crop';
+import { clampPan, coverScale, renderCoverCrop, rotatedSize } from './crop';
+import type { CoverCropProfile } from './profile';
 
 interface CropStageProps {
   busy: boolean;
+  profile: CoverCropProfile;
   src: string;
   onCancel: () => void;
   onSave: (file: File) => void;
 }
 
-export default function CropStage({ busy, src, onCancel, onSave }: CropStageProps) {
+export default function CropStage({ busy, profile, src, onCancel, onSave }: CropStageProps) {
   const viewRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const dragRef = useRef<{ x: number; y: number; panX: number; panY: number } | null>(null);
@@ -28,7 +24,7 @@ export default function CropStage({ busy, src, onCancel, onSave }: CropStageProp
   const [rotation, setRotation] = useState(0);
   const [panX, setPanX] = useState(0);
   const [panY, setPanY] = useState(0);
-  const [aspect, setAspect] = useState(liveHeroCropAspect);
+  const [aspect, setAspect] = useState(() => profile.getAspect());
 
   useEffect(() => {
     const next = new window.Image();
@@ -41,7 +37,7 @@ export default function CropStage({ busy, src, onCancel, onSave }: CropStageProp
     const element = viewRef.current;
     if (!element) return;
     function sync() {
-      setAspect(liveHeroCropAspect());
+      setAspect(profile.getAspect());
       setViewWidth(element?.clientWidth ?? 0);
     }
     sync();
@@ -52,7 +48,7 @@ export default function CropStage({ busy, src, onCancel, onSave }: CropStageProp
       observer.disconnect();
       window.removeEventListener('resize', sync);
     };
-  }, []);
+  }, [profile]);
 
   const viewHeight = viewWidth / aspect;
   const size = image
@@ -98,8 +94,9 @@ export default function CropStage({ busy, src, onCancel, onSave }: CropStageProp
 
   async function handleSave() {
     if (!image || viewWidth === 0) return;
-    const blob = await renderHeroCrop({
+    const blob = await renderCoverCrop({
       image,
+      outputWidth: profile.outputWidth,
       panX: clampedX,
       panY: clampedY,
       rotation,
@@ -107,15 +104,18 @@ export default function CropStage({ busy, src, onCancel, onSave }: CropStageProp
       viewWidth,
       zoom,
     });
-    onSave(new File([blob], 'hero.jpg', { type: 'image/jpeg' }));
+    onSave(new File([blob], profile.fileName, { type: 'image/jpeg' }));
   }
 
   return (
     <div className="space-y-4">
       <div
         ref={viewRef}
-        className="relative cursor-grab overflow-hidden bg-(--color-surface) active:cursor-grabbing"
-        style={{ aspectRatio: String(aspect) }}
+        className="relative mx-auto max-h-[min(50dvh,24rem)] cursor-grab overflow-hidden bg-(--color-surface) active:cursor-grabbing"
+        style={{
+          aspectRatio: String(aspect),
+          width: `min(100%, calc(min(50dvh, 24rem) * ${aspect}))`,
+        }}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}

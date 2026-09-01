@@ -8,11 +8,12 @@ import { FormError, FormField } from '@/components/ui/FormField';
 import { Input, Select } from '@/components/ui/Input';
 import ToggleSwitch from '@/components/ui/ToggleSwitch';
 import { createHeroSlide, updateHeroSlide } from '@/features/admin/actions/heroSlides';
+import CoverDialog from '@/features/admin/components/CoverEditor/CoverDialog';
+import { HERO_COVER_CROP } from '@/features/admin/components/CoverEditor/profile';
 import { useImageUpload } from '@/features/admin/hooks/useImageUpload';
 import type { HeroCtaType } from '@/lib/db/rows';
 
 import Canvas from './Canvas';
-import CoverDialog from './CoverDialog';
 import HeroLiveFrame from './HeroLiveFrame';
 import type { HeroDraft } from './types';
 
@@ -127,6 +128,7 @@ export default function HeroCanvasEditor({
         imageAlt={draft.altText}
         imageUrl={draft.imageUrl}
         open={coverOpen}
+        profile={HERO_COVER_CROP}
         onOpenChange={setCoverOpen}
         onPickFile={(file) => void handlePickImage(file)}
       />

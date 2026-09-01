@@ -4,26 +4,32 @@ import Button from '@/components/ui/Button';
 import HeroCanvasEditor from '@/features/admin/components/HeroCanvasEditor';
 import { draftFromLive } from '@/features/admin/components/HeroCanvasEditor/mapDraft';
 import HeroSlideList from '@/features/admin/components/HeroSlideList';
+import PromoBannerList from '@/features/admin/components/PromoBannerList';
 import { getAdminHeroSlides } from '@/features/admin/queries/heroSlides';
+import { getAdminPromoBanners } from '@/features/admin/queries/promoBanners';
 import {
   FALLBACK_HERO_SLIDE,
   getPublishedHeroSlide,
 } from '@/features/landing/queries/getPublishedHeroSlide';
+import { getPublishedPromoBanners } from '@/features/landing/queries/getPublishedPromoBanners';
 
 export const metadata = { title: 'Inicio' };
 
 export default async function AdminInicioPage() {
-  const [slides, liveHero] = await Promise.all([
+  const [slides, liveHero, banners, liveBanners] = await Promise.all([
     getAdminHeroSlides(),
     getPublishedHeroSlide(),
+    getAdminPromoBanners(),
+    getPublishedPromoBanners(),
   ]);
 
   return (
     <div className="space-y-8">
-      <div>
+      <div className="space-y-1">
         <h1 className="font-serif text-2xl font-semibold text-(--color-dark)">Inicio</h1>
-        <p className="mt-1 text-sm text-(--color-muted)">
-          El que está prendido es el de la portada.
+        <p className="text-xs text-(--color-muted)">
+          ¿Quieres ver el sitio publicado?{' '}
+          <Link href="/" className="underline underline-offset-4">Abrir el sitio</Link>
         </p>
       </div>
 
@@ -46,10 +52,17 @@ export default async function AdminInicioPage() {
             <HeroSlideList slides={slides} />
           </>
         )}
-        <p className="text-xs text-(--color-muted)">
-          ¿Quieres ver el sitio publicado?{' '}
-          <Link href="/" className="underline underline-offset-4">Abrir el sitio</Link>
-        </p>
+      </section>
+
+      <section className="space-y-4" aria-labelledby="banners-heading">
+        <div className="flex items-end justify-between gap-4">
+          <h2 id="banners-heading" className="font-serif text-xl text-(--color-dark)">Banners</h2>
+          <Button href="/admin/inicio/banners/nuevo" size="sm">Agregar banners</Button>
+        </div>
+        <PromoBannerList
+          banners={banners}
+          liveTitles={liveBanners.map((banner) => banner.heading)}
+        />
       </section>
     </div>
   );

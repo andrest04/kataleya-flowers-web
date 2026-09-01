@@ -9,3 +9,8 @@ export const HERO_SCRIM =
 export function heroCropAspect(viewportWidth = 1280): number {
   return viewportWidth / HERO_MIN_HEIGHT_PX;
 }
+
+export function liveHeroCropAspect(): number {
+  if (typeof window === 'undefined') return heroCropAspect();
+  return heroCropAspect(window.innerWidth);
+}

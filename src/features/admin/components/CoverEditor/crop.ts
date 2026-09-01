@@ -1,12 +1,3 @@
-import { HERO_IMAGE_WIDTH_PX, heroCropAspect } from '@/features/landing/components/HeroSection/frame';
-
-export const HERO_CROP_WIDTH = HERO_IMAGE_WIDTH_PX;
-
-export function liveHeroCropAspect(): number {
-  if (typeof window === 'undefined') return heroCropAspect();
-  return heroCropAspect(window.innerWidth);
-}
-
 export function rotatedSize(width: number, height: number, rotation: number): {
   height: number;
   width: number;
@@ -33,8 +24,9 @@ export function clampPan(pan: number, view: number, drawn: number): number {
   return Math.min(max, Math.max(-max, pan));
 }
 
-export async function renderHeroCrop(input: {
+export async function renderCoverCrop(input: {
   image: HTMLImageElement;
+  outputWidth: number;
   panX: number;
   panY: number;
   rotation: number;
@@ -42,10 +34,9 @@ export async function renderHeroCrop(input: {
   viewWidth: number;
   zoom: number;
 }): Promise<Blob> {
-  const outputWidth = HERO_CROP_WIDTH;
-  const outputHeight = Math.round(outputWidth / liveHeroCropAspect());
+  const outputHeight = Math.round(input.outputWidth * input.viewHeight / input.viewWidth);
   const canvas = document.createElement('canvas');
-  canvas.width = outputWidth;
+  canvas.width = input.outputWidth;
   canvas.height = outputHeight;
   const context = canvas.getContext('2d');
   if (!context) throw new Error('canvas');
@@ -57,11 +48,11 @@ export async function renderHeroCrop(input: {
     input.viewHeight,
     input.rotation,
   ) * input.zoom;
-  const k = outputWidth / input.viewWidth;
+  const k = input.outputWidth / input.viewWidth;
 
   context.fillStyle = 'black';
-  context.fillRect(0, 0, outputWidth, outputHeight);
-  context.translate(outputWidth / 2 + input.panX * k, outputHeight / 2 + input.panY * k);
+  context.fillRect(0, 0, input.outputWidth, outputHeight);
+  context.translate(input.outputWidth / 2 + input.panX * k, outputHeight / 2 + input.panY * k);
   context.rotate((input.rotation * Math.PI) / 180);
   context.scale(scale * k, scale * k);
   context.drawImage(

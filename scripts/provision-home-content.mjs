@@ -52,6 +52,7 @@ const COLLECTIONS = [
       { kind: 'string', key: 'cta_href', size: 2048, required: true },
       { kind: 'boolean', key: 'cta_external', required: true },
       { kind: 'enum', key: 'content_position', elements: ['top', 'bottom'], required: true },
+      { kind: 'string', key: 'name', size: 255, required: false },
       ...PUBLISHING,
     ],
   },
