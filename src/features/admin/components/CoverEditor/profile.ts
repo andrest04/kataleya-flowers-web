@@ -1,4 +1,10 @@
 import {
+  DISCOVER_CROP_HINT,
+  DISCOVER_FILE_NAME,
+  DISCOVER_IMAGE_WIDTH_PX,
+  liveDiscoverCropAspect,
+} from '@/features/landing/components/DiscoverMoreSection/frame';
+import {
   HERO_IMAGE_WIDTH_PX,
   HERO_MIN_HEIGHT_PX,
   liveHeroCropAspect,
@@ -41,4 +47,11 @@ export const TESTIMONIAL_COVER_CROP: CoverCropProfile = {
   getAspect: liveTestimonialCropAspect,
   hint: TESTIMONIAL_CROP_HINT,
   outputWidth: TESTIMONIAL_IMAGE_WIDTH_PX,
+};
+
+export const DISCOVER_COVER_CROP: CoverCropProfile = {
+  fileName: DISCOVER_FILE_NAME,
+  getAspect: liveDiscoverCropAspect,
+  hint: DISCOVER_CROP_HINT,
+  outputWidth: DISCOVER_IMAGE_WIDTH_PX,
 };

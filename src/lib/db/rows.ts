@@ -111,6 +111,20 @@ export interface TestimonialRow {
   starts_at: string | null;
 }
 
+export interface DiscoverTileRow {
+  description: string;
+  display_order: number;
+  ends_at: string | null;
+  href: string;
+  icon: string;
+  id: string;
+  image_url: string;
+  is_active: boolean;
+  is_external: boolean;
+  starts_at: string | null;
+  title: string;
+}
+
 export interface ComplaintRow {
   claimed_amount: number | null;
   complaint_type: string;

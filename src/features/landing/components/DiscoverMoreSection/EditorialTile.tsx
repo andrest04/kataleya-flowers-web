@@ -1,35 +1,43 @@
 import type { LucideIcon } from 'lucide-react';
 import Link from 'next/link';
+import { type ReactNode } from 'react';
 
 import Image from '@/components/ui/AppwriteImage';
 
 interface EditorialTileProps {
-  readonly imageSrc: string;
-  readonly Icon: LucideIcon;
-  readonly title: string;
+  readonly cover?: ReactNode;
   readonly description: string;
-  readonly href: string;
   readonly external?: boolean;
+  readonly href: string;
+  readonly Icon: LucideIcon;
+  readonly imageSrc: string;
+  readonly preview?: boolean;
+  readonly title: string;
 }
 
 export default function EditorialTile({
-  imageSrc,
-  Icon,
-  title,
+  cover,
   description,
-  href,
   external,
+  href,
+  Icon,
+  imageSrc,
+  preview = false,
+  title,
 }: EditorialTileProps) {
   const content = (
     <>
       <div className="relative aspect-[4/5] overflow-hidden rounded-md bg-(--color-surface) outline outline-1 -outline-offset-1 outline-black/10">
-        <Image
-          src={imageSrc}
-          alt=""
-          fill
-          sizes="(max-width: 1023px) 100vw, 33vw"
-          className="object-cover motion-safe:transition-transform motion-safe:duration-700 motion-safe:ease-out motion-safe:group-hover:scale-[1.03]"
-        />
+        {imageSrc ? (
+          <Image
+            src={imageSrc}
+            alt=""
+            fill
+            sizes="(max-width: 1023px) 100vw, 33vw"
+            className="object-cover motion-safe:transition-transform motion-safe:duration-700 motion-safe:ease-out motion-safe:group-hover:scale-[1.03]"
+          />
+        ) : null}
+        {cover}
       </div>
       <div className="pt-7 text-center">
         <div className="flex items-center justify-center gap-3">
@@ -43,6 +51,10 @@ export default function EditorialTile({
 
   const className =
     'group block focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-secondary)';
+
+  if (preview) {
+    return <div className={className}>{content}</div>;
+  }
 
   if (external) {
     return (

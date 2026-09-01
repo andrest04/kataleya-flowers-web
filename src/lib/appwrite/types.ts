@@ -141,6 +141,19 @@ export interface TestimonialDoc extends Models.Document {
   starts_at: string | null;
 }
 
+export interface DiscoverTileDoc extends Models.Document {
+  description: string;
+  display_order: number;
+  ends_at: string | null;
+  href: string;
+  icon: string;
+  image_url: string;
+  is_active: boolean;
+  is_external: boolean;
+  starts_at: string | null;
+  title: string;
+}
+
 export interface JoinedProductDoc extends ProductDoc {
   product_color_assignments:
     | { product_colors: { name: string } | null }[]
