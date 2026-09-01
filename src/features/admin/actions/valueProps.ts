@@ -14,6 +14,7 @@ import {
   FALLBACK_VALUE_PROPS,
   type ValuePropView,
 } from '@/features/landing/queries/getPublishedValueProps';
+import { getSiteSettings } from '@/features/settings/queries/getSiteSettings';
 import {
   createValuePropDocument,
   deleteValuePropDocument,
@@ -25,6 +26,7 @@ import {
   updateValuePropDocument,
   type ValuePropWritePayload,
 } from '@/lib/appwrite/repositories/valueProps';
+import { tokenizeValuePropIdentity } from '@/lib/valuePropIdentity';
 import {
   HOME_VALUE_PROP_LIMIT,
   HOME_VALUE_PROP_LIMIT_COPY,
@@ -63,22 +65,34 @@ function readFromFallbackId(data: unknown): string | undefined {
   return typeof value === 'string' && value.trim() !== '' ? value : undefined;
 }
 
-function toWritePayload(
+async function toWritePayload(
   value: ReturnType<typeof valuePropSchema.parse>,
   displayOrder: number,
-): ValuePropWritePayload {
+): Promise<ValuePropWritePayload> {
+  const settings = await getSiteSettings();
+  const tokenized = tokenizeValuePropIdentity(
+    {
+      description: value.description,
+      href: value.href,
+      isAnchor: value.isAnchor,
+      isExternal: value.isExternal,
+      linkLabel: value.linkLabel,
+      title: value.title,
+    },
+    settings,
+  );
   return {
-    description: value.description,
+    description: tokenized.description,
     displayOrder,
     endsAt: value.endsAt,
-    href: value.href,
+    href: tokenized.href,
     icon: value.icon,
     isActive: value.isActive,
-    isAnchor: value.isAnchor,
-    isExternal: value.isExternal,
-    linkLabel: value.linkLabel,
+    isAnchor: tokenized.isAnchor,
+    isExternal: tokenized.isExternal,
+    linkLabel: tokenized.linkLabel,
     startsAt: value.startsAt,
-    title: value.title,
+    title: tokenized.title,
   };
 }
 
@@ -90,19 +104,24 @@ function limitFailure(): AdminActionFailure {
   return { success: false, error: HOME_VALUE_PROP_LIMIT_COPY, code: 'VALIDATION' };
 }
 
-function payloadFromFallback(view: ValuePropView, displayOrder: number): ValuePropWritePayload {
+async function payloadFromFallback(
+  view: ValuePropView,
+  displayOrder: number,
+): Promise<ValuePropWritePayload> {
+  const settings = await getSiteSettings();
+  const tokenized = tokenizeValuePropIdentity(view, settings);
   return {
-    description: view.description,
+    description: tokenized.description,
     displayOrder,
     endsAt: null,
-    href: view.href,
+    href: tokenized.href,
     icon: view.icon,
     isActive: true,
-    isAnchor: view.isAnchor,
-    isExternal: view.isExternal,
-    linkLabel: view.linkLabel,
+    isAnchor: tokenized.isAnchor,
+    isExternal: tokenized.isExternal,
+    linkLabel: tokenized.linkLabel,
     startsAt: null,
-    title: view.title,
+    title: tokenized.title,
   };
 }
 
@@ -116,7 +135,7 @@ async function seedFallbackDocuments(
       await createValuePropDocument({ ...replacement, displayOrder });
       continue;
     }
-    await createValuePropDocument(payloadFromFallback(item, displayOrder));
+    await createValuePropDocument(await payloadFromFallback(item, displayOrder));
   }
 }
 
@@ -130,12 +149,12 @@ export async function createValueProp(data: unknown): Promise<ValuePropActionRes
     if (existing.length === 0) {
       const matchesFallback = FALLBACK_VALUE_PROPS.some((item) => item.id === fromFallbackId);
       if (matchesFallback) {
-        await seedFallbackDocuments(fromFallbackId, toWritePayload(parsed.value, 1));
+        await seedFallbackDocuments(fromFallbackId, await toWritePayload(parsed.value, 1));
       } else {
         await seedFallbackDocuments(undefined);
         if (parsed.value.isActive) return limitFailure();
         const displayOrder = await getNextValuePropOrder();
-        await createValuePropDocument(toWritePayload(parsed.value, displayOrder));
+        await createValuePropDocument(await toWritePayload(parsed.value, displayOrder));
       }
       revalidateValueProps();
       return { success: true };
@@ -144,7 +163,7 @@ export async function createValueProp(data: unknown): Promise<ValuePropActionRes
       return limitFailure();
     }
     const displayOrder = await getNextValuePropOrder();
-    await createValuePropDocument(toWritePayload(parsed.value, displayOrder));
+    await createValuePropDocument(await toWritePayload(parsed.value, displayOrder));
     revalidateValueProps();
     return { success: true };
   } catch (err) {
@@ -173,7 +192,7 @@ export async function updateValueProp(id: string, data: unknown): Promise<ValueP
     }
     await updateValuePropDocument(
       idParsed.data,
-      toWritePayload(parsed.value, existing.display_order),
+      await toWritePayload(parsed.value, existing.display_order),
     );
     revalidateValueProps();
     return { success: true };
@@ -198,7 +217,7 @@ export async function toggleValuePropStatus(
         return { success: false, error: 'No encontramos ese destacado.', code: 'INTERNAL' };
       }
       await seedFallbackDocuments(id, {
-        ...payloadFromFallback(fallback, 1),
+        ...(await payloadFromFallback(fallback, 1)),
         isActive,
       });
       revalidateValueProps();

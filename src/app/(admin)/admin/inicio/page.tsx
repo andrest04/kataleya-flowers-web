@@ -21,11 +21,13 @@ import {
 import { getPublishedPromoBanners } from '@/features/landing/queries/getPublishedPromoBanners';
 import { FALLBACK_TESTIMONIALS } from '@/features/landing/queries/getPublishedTestimonials';
 import { FALLBACK_VALUE_PROPS } from '@/features/landing/queries/getPublishedValueProps';
+import { getSiteSettings } from '@/features/settings/queries/getSiteSettings';
+import { bindValuePropIdentity } from '@/lib/valuePropIdentity';
 
 export const metadata = { title: 'Inicio' };
 
 export default async function AdminInicioPage() {
-  const [slides, liveHero, banners, liveBanners, testimonials, discoverTiles, valueProps] = await Promise.all([
+  const [slides, liveHero, banners, liveBanners, testimonials, discoverTiles, valueProps, settings] = await Promise.all([
     getAdminHeroSlides(),
     getPublishedHeroSlide(),
     getAdminPromoBanners(),
@@ -33,6 +35,7 @@ export default async function AdminInicioPage() {
     getAdminTestimonials(),
     getAdminDiscoverTiles(),
     getAdminValueProps(),
+    getSiteSettings(),
   ]);
 
   return (
@@ -113,12 +116,34 @@ export default async function AdminInicioPage() {
           <Button href="/admin/inicio/destacados/nuevo" size="sm">Agregar destacado</Button>
         </div>
         <ValuePropList
-          items={valueProps}
-          liveItems={FALLBACK_VALUE_PROPS.map((item) => ({
-            description: item.description,
-            id: item.id,
-            title: item.title,
-          }))}
+          items={valueProps.map((item) => {
+            const bound = bindValuePropIdentity(
+              {
+                description: item.description,
+                href: item.href,
+                isAnchor: item.is_anchor,
+                isExternal: item.is_external,
+                title: item.title,
+              },
+              settings,
+            );
+            return {
+              ...item,
+              description: bound.description,
+              href: bound.href,
+              is_anchor: bound.isAnchor,
+              is_external: bound.isExternal,
+              title: bound.title,
+            };
+          })}
+          liveItems={FALLBACK_VALUE_PROPS.map((item) => {
+            const bound = bindValuePropIdentity(item, settings);
+            return {
+              description: bound.description,
+              id: bound.id,
+              title: bound.title,
+            };
+          })}
         />
       </section>
     </div>

@@ -1,8 +1,14 @@
 import { unstable_cache } from 'next/cache';
 
+import { getSiteSettings } from '@/features/settings/queries/getSiteSettings';
 import { listValueProps } from '@/lib/appwrite/repositories/valueProps';
 import { BUSINESS } from '@/lib/constants';
 import { isPublished } from '@/lib/publishing';
+import {
+  bindValuePropIdentity,
+  VALUE_PROP_IDENTITY_TOKEN,
+  VALUE_PROP_INSTAGRAM_HREF,
+} from '@/lib/valuePropIdentity';
 import { HOME_VALUE_PROP_LIMIT } from '@/lib/valuePropLimit';
 
 export interface ValuePropView {
@@ -18,7 +24,7 @@ export interface ValuePropView {
 
 export const FALLBACK_VALUE_PROPS: readonly ValuePropView[] = [
   {
-    description: `Tres décadas armando arreglos para las familias de ${BUSINESS.location}.`,
+    description: `Tres décadas armando arreglos para las familias de ${VALUE_PROP_IDENTITY_TOKEN.location}.`,
     href: '#nosotros',
     icon: 'flower2',
     id: 'v-001',
@@ -28,18 +34,18 @@ export const FALLBACK_VALUE_PROPS: readonly ValuePropView[] = [
     title: `${BUSINESS.experience} años floreciendo`,
   },
   {
-    description: `${BUSINESS.hours.weekdays}, de ${BUSINESS.hours.time}, en ${BUSINESS.address}.`,
+    description: `${VALUE_PROP_IDENTITY_TOKEN.weekdays}, de ${VALUE_PROP_IDENTITY_TOKEN.time}, en ${VALUE_PROP_IDENTITY_TOKEN.address}.`,
     href: '#contacto',
     icon: 'sprout',
     id: 'v-002',
     isAnchor: true,
     isExternal: false,
     linkLabel: 'Ver ubicación',
-    title: `${BUSINESS.hours.weekdays} · ${BUSINESS.hours.time}`,
+    title: `${VALUE_PROP_IDENTITY_TOKEN.weekdays} · ${VALUE_PROP_IDENTITY_TOKEN.time}`,
   },
   {
-    description: `Publicamos cada ramo que sale de la tienda en ${BUSINESS.instagramHandle}.`,
-    href: BUSINESS.instagram,
+    description: `Publicamos cada ramo que sale de la tienda en ${VALUE_PROP_IDENTITY_TOKEN.handle}.`,
+    href: VALUE_PROP_INSTAGRAM_HREF,
     icon: 'flower',
     id: 'v-003',
     isAnchor: false,
@@ -82,7 +88,12 @@ const getCachedValuePropState = unstable_cache(
 
 export async function getPublishedValueProps(): Promise<ValuePropView[]> {
   const state = await getCachedValuePropState();
-  if (state.status === 'published') return state.items;
-  if (state.status === 'fallback') return [...FALLBACK_VALUE_PROPS];
+  const settings = await getSiteSettings();
+  if (state.status === 'published') {
+    return state.items.map((item) => bindValuePropIdentity(item, settings));
+  }
+  if (state.status === 'fallback') {
+    return FALLBACK_VALUE_PROPS.map((item) => bindValuePropIdentity(item, settings));
+  }
   return [];
 }

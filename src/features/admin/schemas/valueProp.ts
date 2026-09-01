@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { isValuePropIconName } from '@/lib/valuePropIcons';
+import { isInstagramHref } from '@/lib/valuePropIdentity';
 
 import { nonEmptyString } from './common';
 
@@ -68,7 +69,7 @@ export const valuePropSchema = z
         path: ['href'],
       });
     }
-    if (value.isExternal && !isHttpUrl(value.href)) {
+    if (value.isExternal && !isHttpUrl(value.href) && !isInstagramHref(value.href)) {
       ctx.addIssue({
         code: 'custom',
         message: 'Usa una URL que empiece con https://',
