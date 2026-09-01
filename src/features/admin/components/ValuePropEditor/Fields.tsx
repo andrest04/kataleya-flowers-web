@@ -4,8 +4,8 @@ import { valuePropIcon } from '@/components/shared/ValuePropsBand/icons';
 import ValuePropCard from '@/components/shared/ValuePropsBand/ValuePropCard';
 import { FormField } from '@/components/ui/FormField';
 import { Input, Textarea } from '@/components/ui/Input';
-import ToggleSwitch from '@/components/ui/ToggleSwitch';
 import { FieldError } from '@/features/admin/components/ProductForm/FieldError';
+import VisibilityLimitControl from '@/features/admin/components/VisibilityLimitControl';
 import { HOME_VALUE_PROP_LIMIT_COPY } from '@/lib/valuePropLimit';
 
 import DestinationModePicker from './DestinationModePicker';
@@ -124,26 +124,15 @@ export default function ValuePropFields({
           />
           <FieldError id={`${idPrefix}-href-error`} message={errors.href} />
         </FormField>
-        <div className="space-y-2">
-          <div className="flex items-center gap-3">
-            <ToggleSwitch
-              checked={draft.isActive}
-              disabled={(!allowHide && draft.isActive) || (!allowActivate && !draft.isActive)}
-              label={draft.isActive ? 'Ocultar en el sitio' : 'Mostrar en el sitio'}
-              onChange={(checked) => {
-                if (!checked && !allowHide) return;
-                if (checked && !allowActivate) return;
-                onChange({ isActive: checked });
-              }}
-            />
-            <span className="text-sm text-(--color-dark)">
-              {draft.isActive ? 'Visible' : 'Oculto'}
-            </span>
-          </div>
-          {allowActivate || draft.isActive ? null : (
-            <p className="text-sm text-(--color-muted)">{HOME_VALUE_PROP_LIMIT_COPY}</p>
-          )}
-        </div>
+        <VisibilityLimitControl
+          allowActivate={allowActivate}
+          allowHide={allowHide}
+          checked={draft.isActive}
+          hideLabel="Ocultar en el sitio"
+          limitCopy={HOME_VALUE_PROP_LIMIT_COPY}
+          showLabel="Mostrar en el sitio"
+          onChange={(checked) => onChange({ isActive: checked })}
+        />
         <FormField label="Mostrar desde" htmlFor={`${idPrefix}-starts`}>
           <Input
             id={`${idPrefix}-starts`}

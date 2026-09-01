@@ -9,6 +9,7 @@ import CoverButton from '@/features/admin/components/CoverEditor/CoverButton';
 import CoverDialog from '@/features/admin/components/CoverEditor/CoverDialog';
 import { DISCOVER_COVER_CROP } from '@/features/admin/components/CoverEditor/profile';
 import { FieldError } from '@/features/admin/components/ProductForm/FieldError';
+import VisibilityLimitControl from '@/features/admin/components/VisibilityLimitControl';
 import { useImageUpload } from '@/features/admin/hooks/useImageUpload';
 import EditorialTile from '@/features/landing/components/DiscoverMoreSection/EditorialTile';
 import { discoverIcon } from '@/features/landing/components/DiscoverMoreSection/icons';
@@ -114,26 +115,15 @@ export default function DiscoverTileFields({
               onChange={(icon) => onChange({ icon })}
             />
           </div>
-          <div className="space-y-2">
-            <div className="flex items-center gap-3">
-              <ToggleSwitch
-                checked={draft.isActive}
-                disabled={(!allowHide && draft.isActive) || (!allowActivate && !draft.isActive)}
-                label={draft.isActive ? 'Ocultar en la portada' : 'Mostrar en la portada'}
-                onChange={(checked) => {
-                  if (!checked && !allowHide) return;
-                  if (checked && !allowActivate) return;
-                  onChange({ isActive: checked });
-                }}
-              />
-              <span className="text-sm text-(--color-dark)">
-                {draft.isActive ? 'Visible' : 'Oculto'}
-              </span>
-            </div>
-            {allowActivate || draft.isActive ? null : (
-              <p className="text-sm text-(--color-muted)">{HOME_DISCOVER_TILE_LIMIT_COPY}</p>
-            )}
-          </div>
+          <VisibilityLimitControl
+            allowActivate={allowActivate}
+            allowHide={allowHide}
+            checked={draft.isActive}
+            hideLabel="Ocultar en la portada"
+            limitCopy={HOME_DISCOVER_TILE_LIMIT_COPY}
+            showLabel="Mostrar en la portada"
+            onChange={(checked) => onChange({ isActive: checked })}
+          />
           <FormField label="Mostrar desde" htmlFor={`${idPrefix}-starts`}>
             <Input
               id={`${idPrefix}-starts`}

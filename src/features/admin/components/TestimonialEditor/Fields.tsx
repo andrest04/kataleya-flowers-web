@@ -4,11 +4,11 @@ import { useState } from 'react';
 
 import { FormError, FormField } from '@/components/ui/FormField';
 import { Input, Select, Textarea } from '@/components/ui/Input';
-import ToggleSwitch from '@/components/ui/ToggleSwitch';
 import CoverButton from '@/features/admin/components/CoverEditor/CoverButton';
 import CoverDialog from '@/features/admin/components/CoverEditor/CoverDialog';
 import { TESTIMONIAL_COVER_CROP } from '@/features/admin/components/CoverEditor/profile';
 import { FieldError } from '@/features/admin/components/ProductForm/FieldError';
+import VisibilityLimitControl from '@/features/admin/components/VisibilityLimitControl';
 import { useImageUpload } from '@/features/admin/hooks/useImageUpload';
 import TestimonialCard from '@/features/landing/components/TestimonialsGallery/TestimonialCard';
 import { HOME_TESTIMONIAL_LIMIT_COPY } from '@/lib/testimonialLimit';
@@ -120,26 +120,15 @@ export default function TestimonialFields({
             />
             <FieldError id={`${idPrefix}-alt-error`} message={errors.photoAlt} />
           </FormField>
-          <div className="space-y-2">
-            <div className="flex items-center gap-3">
-              <ToggleSwitch
-                checked={draft.isActive}
-                disabled={(!allowHide && draft.isActive) || (!allowActivate && !draft.isActive)}
-                label={draft.isActive ? 'Ocultar en la portada' : 'Mostrar en la portada'}
-                onChange={(checked) => {
-                  if (!checked && !allowHide) return;
-                  if (checked && !allowActivate) return;
-                  onChange({ isActive: checked });
-                }}
-              />
-              <span className="text-sm text-(--color-dark)">
-                {draft.isActive ? 'Visible' : 'Oculto'}
-              </span>
-            </div>
-            {allowActivate || draft.isActive ? null : (
-              <p className="text-sm text-(--color-muted)">{HOME_TESTIMONIAL_LIMIT_COPY}</p>
-            )}
-          </div>
+          <VisibilityLimitControl
+            allowActivate={allowActivate}
+            allowHide={allowHide}
+            checked={draft.isActive}
+            hideLabel="Ocultar en la portada"
+            limitCopy={HOME_TESTIMONIAL_LIMIT_COPY}
+            showLabel="Mostrar en la portada"
+            onChange={(checked) => onChange({ isActive: checked })}
+          />
           <FormField label="Mostrar desde" htmlFor={`${idPrefix}-starts`}>
             <Input
               id={`${idPrefix}-starts`}
