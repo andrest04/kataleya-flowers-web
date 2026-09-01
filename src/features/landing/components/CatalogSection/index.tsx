@@ -5,9 +5,10 @@ import CategoryTile from './CategoryTile';
 
 interface CatalogSectionProps {
   categories: Category[];
+  title: string;
 }
 
-export default function CatalogSection({ categories }: CatalogSectionProps) {
+export default function CatalogSection({ categories, title }: CatalogSectionProps) {
   const featured = categories.filter((category) => category.isFeatured);
   const rest = categories.filter((category) => !category.isFeatured);
   const tiles = [...featured, ...rest];
@@ -20,7 +21,7 @@ export default function CatalogSection({ categories }: CatalogSectionProps) {
     <section id="catalogo" className="scroll-mt-20 overflow-x-hidden py-12 sm:py-16">
       <div className="mx-auto max-w-[110rem] px-4 sm:px-6 lg:px-8">
         <h2 className="font-heading text-3xl leading-tight text-balance text-(--color-primary) sm:text-4xl lg:text-5xl">
-          Flores y regalos para cada ocasión
+          {title}
         </h2>
       </div>
 

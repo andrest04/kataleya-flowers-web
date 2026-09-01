@@ -140,6 +140,36 @@ export interface ValuePropRow {
   title: string;
 }
 
+export interface SiteSettingsRow {
+  address: string;
+  announcement_cta_href: string;
+  announcement_cta_label: string;
+  announcement_ends_at: string | null;
+  announcement_is_active: boolean;
+  announcement_starts_at: string | null;
+  announcement_text: string;
+  bestsellers_title: string;
+  catalog_title: string;
+  contact_title: string;
+  discover_title: string;
+  email: string;
+  hours_closes: string;
+  hours_open_days: string;
+  hours_opens: string;
+  hours_time: string;
+  hours_weekdays: string;
+  id: string;
+  instagram_handle: string;
+  location: string;
+  maps_embed_url: string;
+  phone: string;
+  razon_social: string;
+  ruc: string;
+  whatsapp_default: string;
+  whatsapp_float: string;
+  whatsapp_product: string;
+}
+
 export interface ComplaintRow {
   claimed_amount: number | null;
   complaint_type: string;

@@ -16,6 +16,7 @@ export const APPWRITE_COLLECTIONS = {
   testimonials: 'testimonials',
   discoverTiles: 'discover_tiles',
   valueProps: 'value_props',
+  siteSettings: 'site_settings',
 } as const;
 
 export const APPWRITE_BUCKETS = {

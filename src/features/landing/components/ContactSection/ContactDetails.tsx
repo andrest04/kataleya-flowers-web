@@ -3,9 +3,14 @@ import { FaInstagram, FaWhatsapp } from 'react-icons/fa';
 
 import BusinessHoursBadge from '@/components/shared/BusinessHoursBadge';
 import Button from '@/components/ui/Button';
-import { BUSINESS } from '@/lib/constants';
+import { whatsappWithMessage } from '@/lib/contactLinks';
+import type { SiteSettings } from '@/lib/siteSettings';
 
-export default function ContactDetails() {
+interface ContactDetailsProps {
+  settings: SiteSettings;
+}
+
+export default function ContactDetails({ settings }: ContactDetailsProps) {
   return (
     <div className="space-y-8">
       <dl className="space-y-6">
@@ -13,7 +18,7 @@ export default function ContactDetails() {
           <MapPin className="mt-0.5 size-5 shrink-0 text-(--color-primary)" aria-hidden="true" strokeWidth={1.8} />
           <div>
             <dt className="text-sm font-semibold text-(--color-dark)">Dónde estamos</dt>
-            <dd className="mt-1 text-(--color-dark)">{BUSINESS.address}</dd>
+            <dd className="mt-1 text-(--color-dark)">{settings.address}</dd>
           </div>
         </div>
 
@@ -22,10 +27,10 @@ export default function ContactDetails() {
           <div>
             <dt className="flex flex-wrap items-center gap-2 text-sm font-semibold text-(--color-dark)">
               Horario de atención
-              <BusinessHoursBadge />
+              <BusinessHoursBadge hours={settings.hours} />
             </dt>
             <dd className="mt-1 text-(--color-dark)">
-              {BUSINESS.hours.weekdays} · {BUSINESS.hours.time}
+              {settings.hours.weekdays} · {settings.hours.time}
             </dd>
           </div>
         </div>
@@ -36,10 +41,10 @@ export default function ContactDetails() {
             <dt className="text-sm font-semibold text-(--color-dark)">Correo</dt>
             <dd className="mt-1">
               <a
-                href={`mailto:${BUSINESS.email}`}
+                href={`mailto:${settings.email}`}
                 className="text-(--color-dark) underline underline-offset-4 transition-opacity hover:opacity-70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary)"
               >
-                {BUSINESS.email}
+                {settings.email}
               </a>
             </dd>
           </div>
@@ -48,7 +53,7 @@ export default function ContactDetails() {
 
       <div className="flex flex-wrap items-center gap-3">
         <Button
-          href={BUSINESS.whatsappWithMessage(BUSINESS.messages.whatsappDefault)}
+          href={whatsappWithMessage(settings.phone, settings.messages.whatsappDefault)}
           external
           variant="primary"
           size="lg"
@@ -57,14 +62,14 @@ export default function ContactDetails() {
           Pedir por WhatsApp
         </Button>
         <a
-          href={BUSINESS.instagram}
+          href={settings.instagram}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-(--color-primary) transition-opacity hover:opacity-70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary)"
           style={{ border: '1px solid var(--color-primary)' }}
         >
           <FaInstagram className="size-4" aria-hidden="true" />
-          {BUSINESS.instagramHandle}
+          {settings.instagramHandle}
         </a>
       </div>
     </div>

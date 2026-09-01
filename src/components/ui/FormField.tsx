@@ -1,19 +1,23 @@
 import { Label } from '@/components/ui/primitives/label';
 
 interface FormFieldProps {
+  action?: React.ReactNode;
+  children: React.ReactNode;
+  htmlFor?: string;
   label: string;
   required?: boolean;
-  htmlFor?: string;
-  children: React.ReactNode;
 }
 
-export function FormField({ label, required, htmlFor, children }: FormFieldProps) {
+export function FormField({ action, children, htmlFor, label, required }: FormFieldProps) {
   return (
     <div className="space-y-1.5">
-      <Label htmlFor={htmlFor}>
-        {label}
-        {required && <span className="text-primary"> *</span>}
-      </Label>
+      <div className="flex items-baseline justify-between gap-3">
+        <Label htmlFor={htmlFor}>
+          {label}
+          {required && <span className="text-primary"> *</span>}
+        </Label>
+        {action}
+      </div>
       {children}
     </div>
   );

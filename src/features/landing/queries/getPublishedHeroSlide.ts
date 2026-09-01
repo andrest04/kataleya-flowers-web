@@ -1,5 +1,6 @@
 import { unstable_cache } from 'next/cache';
 
+import { getSiteSettings } from '@/features/settings/queries/getSiteSettings';
 import { listHeroSlides } from '@/lib/appwrite/repositories/heroSlides';
 import { BUSINESS } from '@/lib/constants';
 import { isPublished } from '@/lib/publishing';
@@ -7,11 +8,14 @@ import { isPublished } from '@/lib/publishing';
 import { CAMPAIGN_MODE, HERO_IMAGE } from '../components/HeroSection/constants';
 import type { HeroSlideView } from '../components/HeroSection/types';
 
-function resolveCta(slide: {
-  cta_label: string | null;
-  cta_type: 'whatsapp' | 'catalogo' | 'url';
-  cta_value: string | null;
-}): Pick<HeroSlideView, 'ctaExternal' | 'ctaHref' | 'ctaLabel'> {
+function resolveCta(
+  slide: {
+    cta_label: string | null;
+    cta_type: 'whatsapp' | 'catalogo' | 'url';
+    cta_value: string | null;
+  },
+  whatsappHref: string,
+): Pick<HeroSlideView, 'ctaExternal' | 'ctaHref' | 'ctaLabel'> {
   if (slide.cta_type === 'catalogo') {
     return {
       ctaExternal: false,
@@ -28,7 +32,7 @@ function resolveCta(slide: {
   }
   return {
     ctaExternal: true,
-    ctaHref: BUSINESS.whatsapp,
+    ctaHref: whatsappHref,
     ctaLabel: slide.cta_label || 'Pedir por WhatsApp',
   };
 }
@@ -51,14 +55,14 @@ type CachedHeroState =
 
 const getCachedHeroState = unstable_cache(
   async (): Promise<CachedHeroState> => {
-    const slides = await listHeroSlides();
+    const [slides, settings] = await Promise.all([listHeroSlides(), getSiteSettings()]);
     const now = new Date();
     const published = slides.filter((slide) => isPublished(slide, now))[0];
     if (published) {
       return {
         status: 'published',
         slide: {
-          ...resolveCta(published),
+          ...resolveCta(published, settings.whatsapp),
           focus: published.focus || HERO_IMAGE.focus,
           imageAlt: published.alt_text,
           imageSrc: published.image_url,
@@ -70,7 +74,7 @@ const getCachedHeroState = unstable_cache(
     return { status: slides.length === 0 ? 'fallback' : 'hidden' };
   },
   ['home-published-hero-slide'],
-  { tags: ['home-content'], revalidate: 300 },
+  { tags: ['home-content', 'site-settings'], revalidate: 300 },
 );
 
 export async function getPublishedHeroSlide(): Promise<HeroSlideView | null> {

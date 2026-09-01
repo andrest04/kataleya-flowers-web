@@ -8,6 +8,24 @@ export interface ComplaintEmailData extends ComplaintFormData {
   createdAt: string | Date;
 }
 
+export interface ComplaintProvider {
+  address: string;
+  name: string;
+  razonSocial: string;
+  ruc: string;
+  website: string;
+}
+
+export function defaultComplaintProvider(): ComplaintProvider {
+  return {
+    address: BUSINESS.address,
+    name: BUSINESS.name,
+    razonSocial: BUSINESS.razonSocial,
+    ruc: BUSINESS.ruc,
+    website: BUSINESS.website,
+  };
+}
+
 interface EmailContent {
   subject: string;
   html: string;
@@ -65,20 +83,23 @@ function hojaTable(data: ComplaintEmailData): string {
   </table>`;
 }
 
-function shell(title: string, inner: string): string {
+function shell(title: string, inner: string, provider: ComplaintProvider): string {
   return `<div style="font-family:Arial,Helvetica,sans-serif;max-width:640px;margin:0 auto;background:#fdfcfa;padding:24px;">
-    <h1 style="color:${BRAND};font-size:20px;margin:0 0 4px;">${BUSINESS.name}</h1>
+    <h1 style="color:${BRAND};font-size:20px;margin:0 0 4px;">${escapeHtml(provider.name)}</h1>
     <p style="color:#666;font-size:13px;margin:0 0 16px;">Libro de Reclamaciones</p>
     <h2 style="color:#1a1a1a;font-size:16px;margin:0 0 8px;">${title}</h2>
     ${inner}
     <hr style="border:none;border-top:1px solid #e5e5e5;margin:20px 0;" />
     <p style="color:#999;font-size:12px;line-height:1.5;">
-      ${BUSINESS.razonSocial} · RUC ${BUSINESS.ruc}<br/>${BUSINESS.address}
+      ${escapeHtml(provider.razonSocial)} · RUC ${escapeHtml(provider.ruc)}<br/>${escapeHtml(provider.address)}
     </p>
   </div>`;
 }
 
-export function consumerCopyEmail(data: ComplaintEmailData): EmailContent {
+export function consumerCopyEmail(
+  data: ComplaintEmailData,
+  provider: ComplaintProvider = defaultComplaintProvider(),
+): EmailContent {
   const inner = `
     <p style="color:#1a1a1a;font-size:14px;line-height:1.6;">
       Hemos registrado tu ${data.complaintType === 'QUEJA' ? 'queja' : 'reclamo'}.
@@ -90,16 +111,17 @@ export function consumerCopyEmail(data: ComplaintEmailData): EmailContent {
       Te responderemos en un plazo máximo de ${RESPONSE_BUSINESS_DAYS} días hábiles.
     </p>`;
   return {
-    subject: `Tu hoja de reclamación N° ${data.complaintNumber} — ${BUSINESS.name}`,
-    html: shell('Copia de tu hoja de reclamación', inner),
+    subject: `Tu hoja de reclamación N° ${data.complaintNumber} — ${provider.name}`,
+    html: shell('Copia de tu hoja de reclamación', inner, provider),
   };
 }
 
 export function businessNotificationEmail(
   data: ComplaintEmailData,
   complaintId: string,
+  provider: ComplaintProvider = defaultComplaintProvider(),
 ): EmailContent {
-  const adminUrl = `${BUSINESS.website}/admin/reclamos/${complaintId}`;
+  const adminUrl = `${provider.website}/admin/reclamos/${complaintId}`;
   const inner = `
     <p style="color:#1a1a1a;font-size:14px;line-height:1.6;">
       Se registró una nueva ${data.complaintType === 'QUEJA' ? 'queja' : 'reclamación'}
@@ -116,6 +138,6 @@ export function businessNotificationEmail(
     </p>`;
   return {
     subject: `Nueva reclamación N° ${data.complaintNumber} — ${data.complaintType}`,
-    html: shell('Nueva reclamación recibida', inner),
+    html: shell('Nueva reclamación recibida', inner, provider),
   };
 }

@@ -6,6 +6,7 @@ import Button from '@/components/ui/Button';
 import { FormError } from '@/components/ui/FormField';
 
 import { submitComplaint } from '../../actions/submitComplaint';
+import type { ComplaintProvider } from '../../email/templates';
 import type { ComplaintFormData } from '../../schemas/complaint';
 import type { ComplaintType, DocType, ItemType } from '../../types';
 import ConsumerFields from './ConsumerFields';
@@ -40,7 +41,7 @@ function Section({ n, title, children }: { n: number; title: string; children: R
   );
 }
 
-export default function ComplaintForm() {
+export default function ComplaintForm({ provider }: { provider: ComplaintProvider }) {
   const [complaintType, setComplaintType] = useState<ComplaintType>('RECLAMO');
   const [isMinor, setIsMinor] = useState(false);
 
@@ -89,7 +90,7 @@ export default function ComplaintForm() {
   );
 
   if (state.success) {
-    return <SubmitState {...state.success} />;
+    return <SubmitState {...state.success} provider={provider} />;
   }
 
   return (

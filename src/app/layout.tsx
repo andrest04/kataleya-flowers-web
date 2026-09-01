@@ -9,40 +9,11 @@ import type React from "react";
 import { MotionProvider } from "@/components/shared/MotionProvider";
 import { JsonLd } from "@/components/ui/JsonLd";
 import { Toaster } from "@/components/ui/primitives/sonner";
+import { getSiteSettings } from "@/features/settings/queries/getSiteSettings";
 import { BUSINESS } from "@/lib/constants";
+import { schemaDayNames } from "@/lib/siteSettings";
 
 const SITE_URL = BUSINESS.website;
-
-const floristJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "Florist",
-  name: BUSINESS.name,
-  description: `Floristería en ${BUSINESS.location} con ${BUSINESS.experience} años de experiencia en arreglos florales y orquídeas.`,
-  url: SITE_URL,
-  telephone: `+${BUSINESS.phone}`,
-  address: {
-    "@type": "PostalAddress",
-    addressLocality: "Lima",
-    addressCountry: "PE",
-  },
-  openingHoursSpecification: [
-    {
-      "@type": "OpeningHoursSpecification",
-      dayOfWeek: [
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday",
-      ],
-      opens: BUSINESS.hours.opens,
-      closes: BUSINESS.hours.closes,
-    },
-  ],
-  sameAs: [BUSINESS.instagram],
-  priceRange: "S/30 — S/800",
-} as const;
 
 const crimsonText = Crimson_Text({
   subsets: ["latin"],
@@ -95,11 +66,37 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const settings = await getSiteSettings();
+  const floristJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Florist",
+    name: BUSINESS.name,
+    description: `Floristería en ${settings.location} con ${BUSINESS.experience} años de experiencia en arreglos florales y orquídeas.`,
+    url: SITE_URL,
+    telephone: `+${settings.phone}`,
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: settings.address,
+      addressLocality: "Lima",
+      addressCountry: "PE",
+    },
+    openingHoursSpecification: [
+      {
+        "@type": "OpeningHoursSpecification",
+        dayOfWeek: schemaDayNames(settings.hours.openDays),
+        opens: settings.hours.opens,
+        closes: settings.hours.closes,
+      },
+    ],
+    sameAs: [settings.instagram],
+    priceRange: "S/30 — S/800",
+  };
+
   return (
     <html lang="es-PE" className={`${crimsonText.variable} ${mulish.variable}`}>
       <head>

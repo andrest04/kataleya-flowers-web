@@ -6,19 +6,23 @@ import DiscoverMoreSection from "@/features/landing/components/DiscoverMoreSecti
 import HeroSection from "@/features/landing/components/HeroSection";
 import PromoBanners from "@/features/landing/components/PromoBanners";
 import TestimonialsSection from "@/features/landing/components/TestimonialsSection";
+import { getSiteSettings } from "@/features/settings/queries/getSiteSettings";
 
 export default async function Home() {
-  const categories = await getCategories();
+  const [categories, settings] = await Promise.all([
+    getCategories(),
+    getSiteSettings(),
+  ]);
 
   return (
     <main id="main-content">
       <HeroSection />
-      <CatalogSection categories={categories} />
-      <TestimonialsSection />
+      <CatalogSection categories={categories} title={settings.titles.catalog} />
+      <TestimonialsSection location={settings.location} />
       <PromoBanners />
       <BestSellersSection categories={categories} />
-      <DiscoverMoreSection />
-      <ContactSection />
+      <DiscoverMoreSection title={settings.titles.discover} />
+      <ContactSection settings={settings} />
     </main>
   );
 }

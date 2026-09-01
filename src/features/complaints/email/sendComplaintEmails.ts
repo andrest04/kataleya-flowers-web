@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 
+import { getSiteSettings } from '@/features/settings/queries/getSiteSettings';
 import { emailProvider } from '@/lib/email';
 
 import {
@@ -20,8 +21,16 @@ export async function sendComplaintEmails(
     return false;
   }
 
-  const consumer = consumerCopyEmail(data);
-  const business = businessNotificationEmail(data, complaintId);
+  const settings = await getSiteSettings();
+  const provider = {
+    address: settings.address,
+    name: settings.name,
+    razonSocial: settings.razonSocial,
+    ruc: settings.ruc,
+    website: settings.website,
+  };
+  const consumer = consumerCopyEmail(data, provider);
+  const business = businessNotificationEmail(data, complaintId, provider);
 
   const result = await emailProvider.sendBatch([
     {

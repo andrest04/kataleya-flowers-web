@@ -168,6 +168,35 @@ export interface ValuePropDoc extends Models.Document {
   title: string;
 }
 
+export interface SiteSettingsDoc extends Models.Document {
+  address: string;
+  announcement_cta_href: string;
+  announcement_cta_label: string;
+  announcement_ends_at: string | null;
+  announcement_is_active: boolean;
+  announcement_starts_at: string | null;
+  announcement_text: string;
+  bestsellers_title: string;
+  catalog_title: string;
+  contact_title: string;
+  discover_title: string;
+  email: string;
+  hours_closes: string;
+  hours_open_days: string;
+  hours_opens: string;
+  hours_time: string;
+  hours_weekdays: string;
+  instagram_handle: string;
+  location: string;
+  maps_embed_url: string;
+  phone: string;
+  razon_social: string;
+  ruc: string;
+  whatsapp_default: string;
+  whatsapp_float: string;
+  whatsapp_product: string;
+}
+
 export interface JoinedProductDoc extends ProductDoc {
   product_color_assignments:
     | { product_colors: { name: string } | null }[]

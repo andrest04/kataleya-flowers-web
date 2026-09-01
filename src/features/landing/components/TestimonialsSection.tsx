@@ -1,9 +1,12 @@
 import { getPublishedTestimonials } from '@/features/landing/queries/getPublishedTestimonials';
-import { BUSINESS } from '@/lib/constants';
 
 import TestimonialsGallery from './TestimonialsGallery';
 
-export default async function TestimonialsSection() {
+interface TestimonialsSectionProps {
+  location: string;
+}
+
+export default async function TestimonialsSection({ location }: TestimonialsSectionProps) {
   const testimonials = await getPublishedTestimonials();
   if (testimonials.length === 0) return null;
 
@@ -14,7 +17,7 @@ export default async function TestimonialsSection() {
     >
       <div className="mx-auto max-w-8xl px-4 sm:px-6 lg:px-8">
         <h2 className="font-heading text-3xl text-balance text-(--color-primary) sm:text-4xl">
-          {`Clientas felices eligiendo flores para celebrar en ${BUSINESS.location}`}
+          {`Clientas felices eligiendo flores para celebrar en ${location}`}
         </h2>
       </div>
 

@@ -6,7 +6,7 @@ import SectionHeader from '@/components/ui/SectionHeader';
 import ComplaintForm from '@/features/complaints/components/ComplaintForm';
 import OtherContactMethods from '@/features/complaints/components/OtherContactMethods';
 import { RESPONSE_BUSINESS_DAYS } from '@/features/complaints/utils/format';
-import { BUSINESS } from '@/lib/constants';
+import { getSiteSettings } from '@/features/settings/queries/getSiteSettings';
 
 export const metadata: Metadata = {
   title: 'Libro de Reclamaciones',
@@ -23,7 +23,16 @@ export const metadata: Metadata = {
   twitter: { card: 'summary_large_image' },
 };
 
-export default function LibroDeReclamacionesPage() {
+export default async function LibroDeReclamacionesPage() {
+  const settings = await getSiteSettings();
+  const provider = {
+    address: settings.address,
+    name: settings.name,
+    razonSocial: settings.razonSocial,
+    ruc: settings.ruc,
+    website: settings.website,
+  };
+
   return (
     <main id="main-content" className="bg-(--color-cream)">
       <div className="mx-auto max-w-3xl px-4 pt-10 pb-16 sm:pb-20">
@@ -45,9 +54,9 @@ export default function LibroDeReclamacionesPage() {
         <div className="mt-8 flex flex-col gap-1 border-t border-(--color-secondary)/40 pt-6 text-sm text-(--color-dark)">
           <p className="font-semibold">Datos del proveedor</p>
           <p>
-            {BUSINESS.razonSocial} · RUC {BUSINESS.ruc}
+            {settings.razonSocial} · RUC {settings.ruc}
           </p>
-          <p>{BUSINESS.address}</p>
+          <p>{settings.address}</p>
           <p className="mt-2 flex items-center gap-2" style={{ color: 'var(--color-accent)' }}>
             <Clock size={16} aria-hidden="true" />
             Plazo de respuesta: {RESPONSE_BUSINESS_DAYS} días hábiles.
@@ -55,10 +64,10 @@ export default function LibroDeReclamacionesPage() {
         </div>
 
         <div className="mt-12">
-          <ComplaintForm />
+          <ComplaintForm provider={provider} />
         </div>
 
-        <OtherContactMethods />
+        <OtherContactMethods settings={settings} />
       </div>
     </main>
   );

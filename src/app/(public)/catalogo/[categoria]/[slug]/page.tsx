@@ -13,6 +13,7 @@ import { getCategories } from "@/features/catalog/queries/getCategories";
 import { getProductBySlug } from "@/features/catalog/queries/getProductBySlug";
 import { getProducts } from "@/features/catalog/queries/getProducts";
 import { getProductsByCategory } from "@/features/catalog/queries/getProductsByCategory";
+import { getSiteSettings } from "@/features/settings/queries/getSiteSettings";
 import { BUSINESS } from "@/lib/constants";
 
 const SITE_URL = BUSINESS.website;
@@ -118,9 +119,10 @@ export default async function ProductoPage({
 }: ProductoPageProps): Promise<React.ReactElement> {
   const { categoria, slug } = await params;
 
-  const [product, categories] = await Promise.all([
+  const [product, categories, settings] = await Promise.all([
     getProductBySlug(slug),
     getCategories(),
+    getSiteSettings(),
   ]);
 
   if (!product) {
@@ -234,7 +236,11 @@ export default async function ProductoPage({
             <h1 className="font-heading font-normal text-3xl md:text-[2.3rem] text-primary mb-3">
               {product.name}
             </h1>
-            <ProductPurchasePanel product={product} />
+            <ProductPurchasePanel
+              phone={settings.phone}
+              product={product}
+              whatsappProductTemplate={settings.messages.whatsappProduct}
+            />
           </div>
         </div>
 

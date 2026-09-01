@@ -5,22 +5,29 @@ import { useState } from 'react';
 import Image from '@/components/ui/AppwriteImage';
 import Button from '@/components/ui/Button';
 import type { Product } from '@/features/catalog/types';
-import { BUSINESS } from '@/lib/constants';
+import { interpolateProductMessage, whatsappWithMessage } from '@/lib/contactLinks';
 
 interface ProductPurchasePanelProps {
+  phone: string;
   product: Product;
+  whatsappProductTemplate: string;
 }
 
-export function ProductPurchasePanel({ product }: ProductPurchasePanelProps) {
+export function ProductPurchasePanel({
+  phone,
+  product,
+  whatsappProductTemplate,
+}: ProductPurchasePanelProps) {
   const variants = product.priceTable ?? [];
   const [selectedLabel, setSelectedLabel] = useState(variants[0]?.label);
   const selectedVariant = variants.find((v) => v.label === selectedLabel);
   const displayPrice = selectedVariant?.price ?? product.price;
 
+  const baseMessage = interpolateProductMessage(whatsappProductTemplate, product.name);
   const whatsappMessage = selectedVariant
-    ? `${BUSINESS.messages.whatsappProduct(product.name)} (${selectedVariant.label})`
-    : BUSINESS.messages.whatsappProduct(product.name);
-  const whatsappUrl = BUSINESS.whatsappWithMessage(whatsappMessage);
+    ? `${baseMessage} (${selectedVariant.label})`
+    : baseMessage;
+  const whatsappUrl = whatsappWithMessage(phone, whatsappMessage);
 
   return (
     <div className="flex flex-col">

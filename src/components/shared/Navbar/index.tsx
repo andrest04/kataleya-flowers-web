@@ -3,6 +3,8 @@
 import { Menu, Search, X } from "lucide-react";
 import Link from "next/link";
 
+import { type SiteSettings, visibleAnnouncement } from "@/lib/siteSettings";
+
 import AnnouncementBar from "./AnnouncementBar";
 import CatalogMenu from "./CatalogMenu";
 import DesktopActions from "./DesktopActions";
@@ -11,7 +13,11 @@ import MobileDrawer from "./MobileDrawer";
 import SearchOverlay from "./SearchOverlay";
 import { useNavbar } from "./useNavbar";
 
-export default function Navbar() {
+interface NavbarProps {
+  settings: SiteSettings;
+}
+
+export default function Navbar({ settings }: NavbarProps) {
   const {
     isDrawerOpen,
     setIsDrawerOpen,
@@ -39,15 +45,22 @@ export default function Navbar() {
     handleResultClick,
   } = useNavbar();
 
+  const announcement = visibleAnnouncement(settings);
+  const chromeHeight = announcement ? "h-26" : "h-16";
+
   return (
     <>
-      <div className="sticky top-0 z-[90] h-26 pointer-events-none [overflow-anchor:none]">
+      <div className={`sticky top-0 z-[90] ${chromeHeight} pointer-events-none [overflow-anchor:none]`}>
         <div
-          className={`h-26 transition-transform duration-300 ease-out motion-reduce:transition-none ${
+          className={`${chromeHeight} transition-transform duration-300 ease-out motion-reduce:transition-none ${
             isHeaderHidden ? "pointer-events-none -translate-y-full" : "pointer-events-auto translate-y-0"
           }`}
         >
-          <AnnouncementBar />
+          <AnnouncementBar
+            announcement={announcement}
+            phone={settings.phone}
+            whatsappDefault={settings.messages.whatsappDefault}
+          />
 
           <header
             className={`h-16 border-b border-(--color-primary) bg-(--color-cream) ${
@@ -105,7 +118,11 @@ export default function Navbar() {
                   <Search className="h-5 w-5" aria-hidden="true" strokeWidth={2} />
                 </button>
 
-                <DesktopActions handleNavigate={handleNavigate} openSearch={openSearch} />
+                <DesktopActions
+                  brandName={settings.name}
+                  handleNavigate={handleNavigate}
+                  openSearch={openSearch}
+                />
               </div>
             </div>
 
@@ -148,6 +165,7 @@ export default function Navbar() {
       )}
 
       <MobileDrawer
+        brandName={settings.name}
         isDrawerOpen={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
         searchQuery={searchQuery}
