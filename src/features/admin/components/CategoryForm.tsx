@@ -5,6 +5,7 @@ import { useActionState, useRef, useState } from 'react';
 
 import Button from '@/components/ui/Button';
 import { FormError,FormField } from '@/components/ui/FormField';
+import InfoTooltip from '@/components/ui/InfoTooltip';
 import { Input, Textarea } from '@/components/ui/Input';
 import ToggleSwitch from '@/components/ui/ToggleSwitch';
 import { createCategory, updateCategory } from '@/features/admin/actions/categories';
@@ -127,7 +128,14 @@ export default function CategoryForm({ category }: CategoryFormProps) {
         </FormField>
       </div>
 
-      <FormField label="Descripción" required htmlFor="description">
+      <FormField
+        label="Descripción"
+        required
+        htmlFor="description"
+        action={
+          <InfoTooltip label="Esta descripción se usa como meta description para Google. Mencioná tu distrito (Barranco) y Lima para aparecer en búsquedas locales." />
+        }
+      >
         <Textarea
           id="description"
           name="description"
