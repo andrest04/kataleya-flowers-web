@@ -2,8 +2,8 @@ import { unstable_cache } from 'next/cache';
 
 import { getSiteSettings } from '@/features/settings/queries/getSiteSettings';
 import { listHeroSlides } from '@/lib/appwrite/repositories/heroSlides';
-import { BUSINESS } from '@/lib/constants';
 import { isPublished } from '@/lib/publishing';
+import type { SiteSettings } from '@/lib/siteSettings';
 
 import { CAMPAIGN_MODE, HERO_IMAGE } from '../components/HeroSection/constants';
 import type { HeroSlideView } from '../components/HeroSection/types';
@@ -37,20 +37,22 @@ function resolveCta(
   };
 }
 
-export const FALLBACK_HERO_SLIDE: HeroSlideView = {
-  ctaExternal: CAMPAIGN_MODE === 'contact',
-  ctaHref: CAMPAIGN_MODE === 'contact' ? BUSINESS.whatsapp : '/catalogo',
-  ctaLabel: CAMPAIGN_MODE === 'contact' ? 'Pedir por WhatsApp' : 'Ver catálogo',
-  focus: HERO_IMAGE.focus,
-  imageAlt: HERO_IMAGE.alt,
-  imageSrc: HERO_IMAGE.src,
-  kicker: `Florería premium en ${BUSINESS.location}`,
-  title: 'Flores que emocionan',
-};
+export function fallbackHeroSlide(settings: SiteSettings): HeroSlideView {
+  return {
+    ctaExternal: CAMPAIGN_MODE === 'contact',
+    ctaHref: CAMPAIGN_MODE === 'contact' ? settings.whatsapp : '/catalogo',
+    ctaLabel: CAMPAIGN_MODE === 'contact' ? 'Pedir por WhatsApp' : 'Ver catálogo',
+    focus: HERO_IMAGE.focus,
+    imageAlt: HERO_IMAGE.alt,
+    imageSrc: HERO_IMAGE.src,
+    kicker: `Florería premium en ${settings.location}`,
+    title: 'Flores que emocionan',
+  };
+}
 
 type CachedHeroState =
   | { status: 'published'; slide: HeroSlideView }
-  | { status: 'fallback' }
+  | { status: 'fallback'; slide: HeroSlideView }
   | { status: 'hidden' };
 
 const getCachedHeroState = unstable_cache(
@@ -71,7 +73,10 @@ const getCachedHeroState = unstable_cache(
         },
       };
     }
-    return { status: slides.length === 0 ? 'fallback' : 'hidden' };
+    if (slides.length === 0) {
+      return { status: 'fallback', slide: fallbackHeroSlide(settings) };
+    }
+    return { status: 'hidden' };
   },
   ['home-published-hero-slide'],
   { tags: ['home-content', 'site-settings'], revalidate: 300 },
@@ -79,7 +84,6 @@ const getCachedHeroState = unstable_cache(
 
 export async function getPublishedHeroSlide(): Promise<HeroSlideView | null> {
   const state = await getCachedHeroState();
-  if (state.status === 'published') return state.slide;
-  if (state.status === 'fallback') return FALLBACK_HERO_SLIDE;
-  return null;
+  if (state.status === 'hidden') return null;
+  return state.slide;
 }

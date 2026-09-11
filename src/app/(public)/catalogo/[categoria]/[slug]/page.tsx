@@ -15,6 +15,7 @@ import { getProducts } from "@/features/catalog/queries/getProducts";
 import { getProductsByCategory } from "@/features/catalog/queries/getProductsByCategory";
 import { getSiteSettings } from "@/features/settings/queries/getSiteSettings";
 import { BUSINESS } from "@/lib/constants";
+import { floralArrangementsSeoDescription } from "@/lib/siteSettings";
 
 const SITE_URL = BUSINESS.website;
 
@@ -107,9 +108,10 @@ export async function generateMetadata({
       },
     };
   } catch {
+    const settings = await getSiteSettings();
     return {
-      title: BUSINESS.name,
-      description: `Arreglos florales premium en ${BUSINESS.location}.`,
+      title: "Producto no encontrado",
+      description: floralArrangementsSeoDescription(settings.location),
     };
   }
 }
@@ -174,7 +176,7 @@ export default async function ProductoPage({
     image: productImages,
     brand: {
       "@type": "Brand",
-      name: BUSINESS.name,
+      name: settings.name,
     },
     category: category.name,
     offers,

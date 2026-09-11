@@ -15,7 +15,7 @@ export default async function PublicLayout({ children }: { children: ReactNode }
         <Navbar settings={settings} />
       </Suspense>
       {children}
-      <ValuePropsBand />
+      <ValuePropsBand brandName={settings.name} />
       <Footer settings={settings} />
     </>
   );

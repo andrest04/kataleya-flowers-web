@@ -9,7 +9,9 @@ import { getCategories } from "@/features/catalog/queries/getCategories";
 import { getFlowerTypes } from "@/features/catalog/queries/getFlowerTypes";
 import { getProductColors } from "@/features/catalog/queries/getProductColors";
 import { getProductsByCategory } from "@/features/catalog/queries/getProductsByCategory";
+import { getSiteSettings } from "@/features/settings/queries/getSiteSettings";
 import { BUSINESS } from "@/lib/constants";
+import { floralArrangementsSeoDescription } from "@/lib/siteSettings";
 
 const SITE_URL = BUSINESS.website;
 
@@ -75,9 +77,10 @@ export async function generateMetadata({
       },
     };
   } catch {
+    const settings = await getSiteSettings();
     return {
       title: "Catálogo",
-      description: `Arreglos florales premium en ${BUSINESS.location}.`,
+      description: floralArrangementsSeoDescription(settings.location),
     };
   }
 }

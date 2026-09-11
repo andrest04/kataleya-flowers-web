@@ -8,7 +8,9 @@ import { getCategories } from '@/features/catalog/queries/getCategories';
 import { getFlowerTypes } from '@/features/catalog/queries/getFlowerTypes';
 import { getProductColors } from '@/features/catalog/queries/getProductColors';
 import { getProducts } from '@/features/catalog/queries/getProducts';
+import { getSiteSettings } from '@/features/settings/queries/getSiteSettings';
 import { BUSINESS } from '@/lib/constants';
+import { catalogSeoDescription } from '@/lib/siteSettings';
 
 const SITE_URL = BUSINESS.website;
 
@@ -33,24 +35,29 @@ const BREADCRUMB_LD = {
 
 export const revalidate = 3600;
 
-export const metadata: Metadata = {
-  title: 'Catálogo de Flores',
-  description: `Explora nuestro catálogo de arreglos florales, orquídeas y regalos premium disponibles en ${BUSINESS.location}.`,
-  alternates: {
-    canonical: '/catalogo',
-  },
-  openGraph: {
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSiteSettings();
+  const description = catalogSeoDescription(settings.location);
+
+  return {
     title: 'Catálogo de Flores',
-    description: `Explora nuestro catálogo de arreglos florales, orquídeas y regalos premium disponibles en ${BUSINESS.location}.`,
-    url: '/catalogo',
-    type: 'website',
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Catálogo de Flores',
-    description: `Explora nuestro catálogo de arreglos florales, orquídeas y regalos premium disponibles en ${BUSINESS.location}.`,
-  },
-};
+    description,
+    alternates: {
+      canonical: '/catalogo',
+    },
+    openGraph: {
+      title: 'Catálogo de Flores',
+      description,
+      url: '/catalogo',
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: 'Catálogo de Flores',
+      description,
+    },
+  };
+}
 
 interface CatalogoPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;

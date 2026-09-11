@@ -39,6 +39,7 @@ interface PromoBannerEditorProps {
   heading?: ReactNode;
   initial: PromoBannerDraft;
   showCancel?: boolean;
+  whatsappHref: string;
 }
 
 export default function PromoBannerEditor({
@@ -47,6 +48,7 @@ export default function PromoBannerEditor({
   heading,
   initial,
   showCancel = true,
+  whatsappHref,
 }: PromoBannerEditorProps) {
   const router = useRouter();
   const [draft, setDraft] = useState(initial);
@@ -128,6 +130,7 @@ export default function PromoBannerEditor({
         errors={fieldErrors}
         idPrefix="banner"
         onChange={patch}
+        whatsappHref={whatsappHref}
       />
     </div>
   );

@@ -1,11 +1,15 @@
 import type { MetadataRoute } from "next";
 
-export default function manifest(): MetadataRoute.Manifest {
+import { getSiteSettings } from "@/features/settings/queries/getSiteSettings";
+import { floristSeoDescription } from "@/lib/siteSettings";
+
+export default async function manifest(): Promise<MetadataRoute.Manifest> {
+  const settings = await getSiteSettings();
+
   return {
-    name: "Kataleya Flowers",
+    name: settings.name,
     short_name: "Kataleya",
-    description:
-      "Floristería en Lima, Perú. Arreglos florales y orquídeas para celebraciones, homenajes y regalos.",
+    description: floristSeoDescription(settings),
     start_url: "/",
     display: "standalone",
     background_color: "#fdfcfa",

@@ -1,5 +1,4 @@
 import { getPublishedValueProps } from '@/features/landing/queries/getPublishedValueProps';
-import { BUSINESS } from '@/lib/constants';
 
 import { valuePropIcon } from './icons';
 import ValuePropCard from './ValuePropCard';
@@ -10,13 +9,13 @@ function bandColumns(count: number): string {
   return 'grid-cols-1 md:grid-cols-3';
 }
 
-export default async function ValuePropsBand() {
+export default async function ValuePropsBand({ brandName }: { brandName: string }) {
   const items = await getPublishedValueProps();
   if (items.length === 0) return null;
 
   return (
     <section
-      aria-label={`Sobre ${BUSINESS.name}`}
+      aria-label={`Sobre ${brandName}`}
       className="border-t border-(--color-primary) text-(--color-dark)"
     >
       <div className={`grid ${bandColumns(items.length)}`}>

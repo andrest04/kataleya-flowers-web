@@ -45,6 +45,7 @@ interface PromoBannerPairEditorProps {
   heading?: ReactNode;
   initials: [PromoBannerDraft, PromoBannerDraft];
   showCancel?: boolean;
+  whatsappHref: string;
 }
 
 export default function PromoBannerPairEditor({
@@ -53,6 +54,7 @@ export default function PromoBannerPairEditor({
   heading,
   initials,
   showCancel = false,
+  whatsappHref,
 }: PromoBannerPairEditorProps) {
   const router = useRouter();
   const [drafts, setDrafts] = useState(initials);
@@ -188,6 +190,7 @@ export default function PromoBannerPairEditor({
         idPrefix="banner-a"
         showSchedule={false}
         onChange={(next) => patch(0, next)}
+        whatsappHref={whatsappHref}
       />
       <PromoBannerFields
         draft={drafts[1]}
@@ -195,6 +198,7 @@ export default function PromoBannerPairEditor({
         idPrefix="banner-b"
         showSchedule={false}
         onChange={(next) => patch(1, next)}
+        whatsappHref={whatsappHref}
       />
     </div>
   );

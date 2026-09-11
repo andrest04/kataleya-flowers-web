@@ -15,8 +15,9 @@ import {
 } from '@/features/admin/utils/auth';
 import {
   type DiscoverTileView,
-  FALLBACK_DISCOVER_TILES,
+  fallbackDiscoverTiles,
 } from '@/features/landing/queries/getPublishedDiscoverTiles';
+import { getSiteSettings } from '@/features/settings/queries/getSiteSettings';
 import { APPWRITE_BUCKETS } from '@/lib/appwrite/config';
 import {
   createDiscoverTileDocument,
@@ -139,7 +140,8 @@ async function seedFallbackDocuments(
   exceptId: string | undefined,
   replacement?: DiscoverTileWritePayload,
 ): Promise<AdminActionFailure | null> {
-  for (const [index, item] of FALLBACK_DISCOVER_TILES.entries()) {
+  const fallbacks = fallbackDiscoverTiles(await getSiteSettings());
+  for (const [index, item] of fallbacks.entries()) {
     const displayOrder = index + 1;
     if (exceptId && item.id === exceptId && replacement) {
       await createDiscoverTileDocument({ ...replacement, displayOrder });
@@ -160,7 +162,9 @@ export async function createDiscoverTile(data: unknown): Promise<DiscoverTileAct
     if (!parsed.ok) return parsed.failure;
     const existing = await listDiscoverTiles();
     if (existing.length === 0) {
-      const matchesFallback = FALLBACK_DISCOVER_TILES.some((item) => item.id === fromFallbackId);
+      const matchesFallback = fallbackDiscoverTiles(await getSiteSettings()).some(
+        (item) => item.id === fromFallbackId,
+      );
       if (matchesFallback) {
         const seedError = await seedFallbackDocuments(
           fromFallbackId,
@@ -230,7 +234,7 @@ export async function toggleDiscoverTileStatus(
     }
     const existingRows = await listDiscoverTiles();
     if (existingRows.length === 0) {
-      const fallback = FALLBACK_DISCOVER_TILES.find((item) => item.id === id);
+      const fallback = fallbackDiscoverTiles(await getSiteSettings()).find((item) => item.id === id);
       if (!fallback) {
         return { success: false, error: 'No encontramos esa tarjeta.', code: 'INTERNAL' };
       }

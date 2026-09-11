@@ -4,20 +4,22 @@ import HeroCanvasEditor from '@/features/admin/components/HeroCanvasEditor';
 import { draftFromLive } from '@/features/admin/components/HeroCanvasEditor/mapDraft';
 import { getAdminHeroSlides } from '@/features/admin/queries/heroSlides';
 import {
-  FALLBACK_HERO_SLIDE,
+  fallbackHeroSlide,
   getPublishedHeroSlide,
 } from '@/features/landing/queries/getPublishedHeroSlide';
+import { getSiteSettings } from '@/features/settings/queries/getSiteSettings';
 
 export const metadata = { title: 'Nuevo slide del hero' };
 
 export default async function NuevoHeroSlidePage() {
-  const [slides, liveHero] = await Promise.all([
+  const [slides, liveHero, settings] = await Promise.all([
     getAdminHeroSlides(),
     getPublishedHeroSlide(),
+    getSiteSettings(),
   ]);
   const allowHide = slides.some((slide) => slide.is_active);
   const initial = {
-    ...draftFromLive(liveHero ?? FALLBACK_HERO_SLIDE),
+    ...draftFromLive(liveHero ?? fallbackHeroSlide(settings)),
     isActive: slides.length === 0,
   };
 

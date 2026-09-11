@@ -1,8 +1,11 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "Kataleya Flowers — Floristería en Lima, Perú";
+import { getSiteSettings } from "@/features/settings/queries/getSiteSettings";
+
+export const alt = "Kataleya Flowers";
 export const size = { width: 1200, height: 630 } as const;
 export const contentType = "image/png";
+export const runtime = "nodejs";
 
 const COLOR_CREAM = "#fdfcfa";
 const COLOR_PRIMARY = "#c0392b";
@@ -10,6 +13,8 @@ const COLOR_SECONDARY = "#e8b84b";
 const COLOR_DARK = "#1a1a1a";
 
 export default async function Image(): Promise<ImageResponse> {
+  const settings = await getSiteSettings();
+
   return new ImageResponse(
     (
       <div
@@ -51,7 +56,7 @@ export default async function Image(): Promise<ImageResponse> {
             fontFamily: "sans-serif",
           }}
         >
-          Floristería · Lima, Perú
+          {`Floristería · ${settings.location}`}
         </div>
 
         <div
@@ -65,7 +70,7 @@ export default async function Image(): Promise<ImageResponse> {
             letterSpacing: "-0.02em",
           }}
         >
-          Kataleya Flowers
+          {settings.name}
         </div>
 
         <div
@@ -80,7 +85,7 @@ export default async function Image(): Promise<ImageResponse> {
             fontStyle: "italic",
           }}
         >
-          Flores que cuentan historias en Lima
+          {`Flores que cuentan historias en ${settings.location}`}
         </div>
 
         <div

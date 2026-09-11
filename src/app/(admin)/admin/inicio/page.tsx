@@ -14,14 +14,14 @@ import { getAdminHeroSlides } from '@/features/admin/queries/heroSlides';
 import { getAdminPromoBanners } from '@/features/admin/queries/promoBanners';
 import { getAdminTestimonials } from '@/features/admin/queries/testimonials';
 import { getAdminValueProps } from '@/features/admin/queries/valueProps';
-import { FALLBACK_DISCOVER_TILES } from '@/features/landing/queries/getPublishedDiscoverTiles';
+import { fallbackDiscoverTiles } from '@/features/landing/queries/getPublishedDiscoverTiles';
 import {
-  FALLBACK_HERO_SLIDE,
+  fallbackHeroSlide,
   getPublishedHeroSlide,
 } from '@/features/landing/queries/getPublishedHeroSlide';
 import { getPublishedPromoBanners } from '@/features/landing/queries/getPublishedPromoBanners';
 import { FALLBACK_TESTIMONIALS } from '@/features/landing/queries/getPublishedTestimonials';
-import { FALLBACK_VALUE_PROPS } from '@/features/landing/queries/getPublishedValueProps';
+import { fallbackValueProps } from '@/features/landing/queries/getPublishedValueProps';
 import { getSiteSettings } from '@/features/settings/queries/getSiteSettings';
 import { HOME_DISCOVER_TILE_LIMIT_COPY } from '@/lib/discoverTileLimit';
 import { HOME_TESTIMONIAL_LIMIT_COPY } from '@/lib/testimonialLimit';
@@ -56,7 +56,7 @@ export default async function AdminInicioPage() {
         {slides.length === 0 ? (
           <HeroCanvasEditor
             allowHide={false}
-            initial={draftFromLive(liveHero ?? FALLBACK_HERO_SLIDE)}
+            initial={draftFromLive(liveHero ?? fallbackHeroSlide(settings))}
             showCancel={false}
             heading={(
               <h2 id="hero-heading" className="font-serif text-xl text-(--color-dark)">Hero</h2>
@@ -116,7 +116,7 @@ export default async function AdminInicioPage() {
         </div>
         <DiscoverTileList
           items={discoverTiles}
-          liveItems={FALLBACK_DISCOVER_TILES.map((item) => ({
+          liveItems={fallbackDiscoverTiles(settings).map((item) => ({
             description: item.description,
             id: item.id,
             title: item.title,
@@ -155,7 +155,7 @@ export default async function AdminInicioPage() {
               title: bound.title,
             };
           })}
-          liveItems={FALLBACK_VALUE_PROPS.map((item) => {
+          liveItems={fallbackValueProps(settings).map((item) => {
             const bound = bindValuePropIdentity(item, settings);
             return {
               description: bound.description,

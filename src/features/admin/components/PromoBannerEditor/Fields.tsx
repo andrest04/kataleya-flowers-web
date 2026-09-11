@@ -23,6 +23,7 @@ interface PromoBannerFieldsProps {
   idPrefix: string;
   onChange: (patch: Partial<PromoBannerDraft>) => void;
   showSchedule?: boolean;
+  whatsappHref: string;
 }
 
 export default function PromoBannerFields({
@@ -32,10 +33,11 @@ export default function PromoBannerFields({
   idPrefix,
   onChange,
   showSchedule = true,
+  whatsappHref,
 }: PromoBannerFieldsProps) {
   const { uploadImage, isUploading, error: uploadError } = useImageUpload();
   const [coverOpen, setCoverOpen] = useState(false);
-  const persisted = persistCta(draft);
+  const persisted = persistCta(draft, whatsappHref);
   const previewCta = {
     external: persisted.ctaExternal,
     href: persisted.ctaHref || '#',

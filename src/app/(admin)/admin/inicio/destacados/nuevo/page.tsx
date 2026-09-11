@@ -4,9 +4,10 @@ import ValuePropEditor from '@/features/admin/components/ValuePropEditor';
 import { draftFromFallback } from '@/features/admin/components/ValuePropEditor/mapDraft';
 import { getAdminValueProps } from '@/features/admin/queries/valueProps';
 import {
-  FALLBACK_VALUE_PROPS,
+  fallbackValueProps,
   getPublishedValueProps,
 } from '@/features/landing/queries/getPublishedValueProps';
+import { getSiteSettings } from '@/features/settings/queries/getSiteSettings';
 import { HOME_VALUE_PROP_LIMIT } from '@/lib/valuePropLimit';
 
 export const metadata = { title: 'Nuevo destacado' };
@@ -17,19 +18,21 @@ interface NuevoDestacadoPageProps {
 
 export default async function NuevoDestacadoPage({ searchParams }: NuevoDestacadoPageProps) {
   const { from } = await searchParams;
-  const [items, liveItems] = await Promise.all([
+  const [items, liveItems, settings] = await Promise.all([
     getAdminValueProps(),
     getPublishedValueProps(),
+    getSiteSettings(),
   ]);
-  const fromFallback = FALLBACK_VALUE_PROPS.find((item) => item.id === from);
-  const source = fromFallback ?? liveItems[0] ?? FALLBACK_VALUE_PROPS[0];
+  const fallbacks = fallbackValueProps(settings);
+  const fromFallback = fallbacks.find((item) => item.id === from);
+  const source = fromFallback ?? liveItems[0] ?? fallbacks[0];
   const isEditingFallback = Boolean(fromFallback) && items.length === 0;
   const initial = {
     ...draftFromFallback(source),
     isActive: isEditingFallback,
   };
   const activeCount = items.length === 0
-    ? FALLBACK_VALUE_PROPS.length
+    ? fallbacks.length
     : items.filter((item) => item.is_active).length;
   const allowActivate = initial.isActive || activeCount < HOME_VALUE_PROP_LIMIT;
 
