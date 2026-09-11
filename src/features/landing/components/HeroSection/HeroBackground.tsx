@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react';
+import { preconnect } from 'react-dom';
 
 import Image from '@/components/ui/AppwriteImage';
 
@@ -11,13 +12,18 @@ interface HeroBackgroundProps {
 }
 
 export default function HeroBackground({ alt, focus, src }: HeroBackgroundProps) {
+  if (URL.canParse(src)) {
+    preconnect(new URL(src).origin);
+  }
+
   return (
     <div className="absolute inset-0 isolate overflow-hidden">
       <Image
         src={src}
         alt={alt}
         fill
-        priority
+        preload
+        fetchPriority="high"
         sizes="100vw"
         className={HERO_IMAGE_CLASS}
         style={{ '--hero-focus': focus } as CSSProperties}
