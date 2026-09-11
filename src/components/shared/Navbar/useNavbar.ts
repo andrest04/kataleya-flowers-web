@@ -55,7 +55,7 @@ export function useNavbar() {
       const q = search.searchQuery.trim();
       if (!q) return;
       closeAll();
-      router.push(`/catalogo?q=${encodeURIComponent(q)}`);
+      router.push(`/buscar?q=${encodeURIComponent(q)}`);
     },
     [search.searchQuery, closeAll, router],
   );

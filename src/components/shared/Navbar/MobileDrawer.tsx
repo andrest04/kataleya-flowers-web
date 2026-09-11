@@ -123,7 +123,7 @@ export default function MobileDrawer({
               ))}
               <li>
                 <Link
-                  href={`/catalogo?q=${encodeURIComponent(searchQuery)}`}
+                  href={`/buscar?q=${encodeURIComponent(searchQuery)}`}
                   onClick={() => {
                     clearSearch();
                     onClose();
