@@ -88,6 +88,7 @@ export default function TestimonialCard({ cover, testimonial }: TestimonialCardP
       </p>
       <div
         className="mt-3 flex gap-0.5 text-(--color-secondary)"
+        role="img"
         aria-label={`${stars} de 5 estrellas`}
       >
         {Array.from({ length: 5 }, (_, index) => (

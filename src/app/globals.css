@@ -29,7 +29,7 @@
   --z-hero-overlay: 10;
   --color-gold-text: #8a6a1f;
   --color-gold-text-dark: #f0c668;
-  --color-muted: color-mix(in srgb, var(--color-dark) 50%, transparent);
+  --color-muted: color-mix(in srgb, var(--color-dark) 65%, transparent);
   --color-surface: color-mix(in srgb, var(--color-dark) 6%, var(--color-cream));
   --color-overlay: color-mix(in srgb, var(--color-dark) 3%, var(--color-white));
   --color-border: color-mix(in srgb, var(--color-dark) 12%, var(--color-cream));
@@ -44,7 +44,7 @@
   --secondary: #e8b84b;
   --secondary-foreground: #1a1a1a;
   --muted: color-mix(in srgb, var(--color-dark) 6%, var(--color-cream));
-  --muted-foreground: color-mix(in srgb, var(--color-dark) 50%, transparent);
+  --muted-foreground: color-mix(in srgb, var(--color-dark) 65%, transparent);
   --accent: #2d5a1b;
   --accent-foreground: #fdfcfa;
   --destructive: #c0392b;
