@@ -123,6 +123,7 @@ export default function SiteSettingsFields({
                 title="Vista del mapa en el sitio"
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
+                sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox allow-forms"
                 className="absolute inset-0 size-full border-0"
               />
             </div>
