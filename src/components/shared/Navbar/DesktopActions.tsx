@@ -1,7 +1,5 @@
 "use client";
 
-import { ShoppingBag } from "lucide-react";
-
 import DesktopSearch from "./DesktopSearch";
 
 interface DesktopActionsProps {
@@ -27,14 +25,6 @@ export default function DesktopActions({
       </button>
 
       <DesktopSearch onOpen={openSearch} />
-
-      <button
-        type="button"
-        className="flex h-11 w-11 cursor-pointer items-center justify-center text-(--color-dark) transition-colors duration-200 hover:text-(--color-primary)"
-        aria-label="Carrito"
-      >
-        <ShoppingBag className="h-5 w-5" aria-hidden="true" strokeWidth={2} />
-      </button>
     </div>
   );
 }
