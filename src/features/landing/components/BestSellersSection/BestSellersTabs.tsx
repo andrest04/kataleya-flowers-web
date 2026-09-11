@@ -5,10 +5,9 @@ import Link from 'next/link';
 import { useMemo,useState } from 'react';
 
 import type { Category, Product } from '@/features/catalog/types';
+import { pickBestSellers } from '@/features/catalog/utils/pickBestSellers';
 
 import BestSellerProductCard from './BestSellerProductCard';
-
-const MAX_VISIBLE = 4;
 
 interface BestSellersTabsProps {
   products: Product[];
@@ -27,8 +26,7 @@ export default function BestSellersTabs({
     const scoped = activeCategoryId
       ? products.filter((product) => product.categoryId === activeCategoryId)
       : products;
-    const featured = scoped.filter((product) => product.isFeatured);
-    return (featured.length > 0 ? featured : scoped).slice(0, MAX_VISIBLE);
+    return pickBestSellers(scoped);
   }, [products, activeCategoryId]);
 
   return (
