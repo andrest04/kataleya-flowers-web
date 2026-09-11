@@ -43,7 +43,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'invalid_url' }, { status: 400 });
   }
 
-  const response = await fetch(url);
+  const response = await fetch(url, { redirect: 'manual' });
   if (!response.ok) {
     return NextResponse.json({ error: 'fetch_failed' }, { status: 502 });
   }
