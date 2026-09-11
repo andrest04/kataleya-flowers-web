@@ -60,6 +60,13 @@ function toggle(values: string[], value: string): string[] {
     : [...values, value];
 }
 
+function parsePriceInput(raw: string): number | undefined {
+  if (raw === '') return undefined;
+  const next = Number(raw);
+  if (!Number.isFinite(next)) return undefined;
+  return next;
+}
+
 const AccordionSection = forwardRef<
   HTMLDetailsElement,
   {
@@ -290,7 +297,11 @@ export default function CatalogFilterSheet({
                     min={0}
                     max={maximumPrice}
                     value={filters.priceMin}
-                    onChange={(event) => update('priceMin', Number(event.target.value))}
+                                    onChange={(event) => {
+                                      const next = parsePriceInput(event.target.value);
+                                      if (next === undefined) return;
+                                      update('priceMin', next);
+                                    }}
                     className="w-full bg-transparent text-base focus:outline-none"
                   />
                 </span>
@@ -307,7 +318,11 @@ export default function CatalogFilterSheet({
                     min={0}
                     max={maximumPrice}
                     value={filters.priceMax}
-                    onChange={(event) => update('priceMax', Number(event.target.value))}
+                                    onChange={(event) => {
+                                      const next = parsePriceInput(event.target.value);
+                                      if (next === undefined) return;
+                                      update('priceMax', next);
+                                    }}
                     className="w-full bg-transparent text-base focus:outline-none"
                   />
                 </span>
