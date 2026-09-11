@@ -4,9 +4,10 @@ import DiscoverTileEditor from '@/features/admin/components/DiscoverTileEditor';
 import { draftFromFallback } from '@/features/admin/components/DiscoverTileEditor/mapDraft';
 import { getAdminDiscoverTiles } from '@/features/admin/queries/discoverTiles';
 import {
-  FALLBACK_DISCOVER_TILES,
+  fallbackDiscoverTiles,
   getPublishedDiscoverTiles,
 } from '@/features/landing/queries/getPublishedDiscoverTiles';
+import { getSiteSettings } from '@/features/settings/queries/getSiteSettings';
 import { HOME_DISCOVER_TILE_LIMIT } from '@/lib/discoverTileLimit';
 
 export const metadata = { title: 'Nueva tarjeta' };
@@ -16,20 +17,22 @@ interface NuevaTarjetaPageProps {
 }
 
 export default async function NuevaTarjetaPage({ searchParams }: NuevaTarjetaPageProps) {
-  const { from } = await searchParams;
-  const [tiles, liveTiles] = await Promise.all([
+  const [{ from }, tiles, liveTiles, settings] = await Promise.all([
+    searchParams,
     getAdminDiscoverTiles(),
     getPublishedDiscoverTiles(),
+    getSiteSettings(),
   ]);
-  const fromFallback = FALLBACK_DISCOVER_TILES.find((item) => item.id === from);
-  const source = fromFallback ?? liveTiles[0] ?? FALLBACK_DISCOVER_TILES[0];
+  const fallbacks = fallbackDiscoverTiles(settings);
+  const fromFallback = fallbacks.find((item) => item.id === from);
+  const source = fromFallback ?? liveTiles[0] ?? fallbacks[0];
   const isEditingFallback = Boolean(fromFallback) && tiles.length === 0;
   const initial = {
     ...draftFromFallback(source),
     isActive: isEditingFallback,
   };
   const activeCount = tiles.length === 0
-    ? FALLBACK_DISCOVER_TILES.length
+    ? fallbacks.length
     : tiles.filter((item) => item.is_active).length;
   const allowActivate = initial.isActive || activeCount < HOME_DISCOVER_TILE_LIMIT;
 

@@ -39,6 +39,7 @@ interface PromoBannerEditorProps {
   heading?: ReactNode;
   initial: PromoBannerDraft;
   showCancel?: boolean;
+  whatsappHref: string;
 }
 
 export default function PromoBannerEditor({
@@ -47,6 +48,7 @@ export default function PromoBannerEditor({
   heading,
   initial,
   showCancel = true,
+  whatsappHref,
 }: PromoBannerEditorProps) {
   const router = useRouter();
   const [draft, setDraft] = useState(initial);
@@ -70,17 +72,20 @@ export default function PromoBannerEditor({
     setIsSaving(true);
     setError(null);
     setFieldErrors({});
-    const result = bannerId
-      ? await updatePromoBanner(bannerId, toPayload(draft))
-      : await createPromoBanner(toPayload(draft));
-    setIsSaving(false);
-    if (!result.success) {
-      setFieldErrors(fieldErrorsFromIssues(result.issues));
-      setError(messageFromFailure(result));
-      return;
+    try {
+      const result = bannerId
+        ? await updatePromoBanner(bannerId, toPayload(draft))
+        : await createPromoBanner(toPayload(draft));
+      if (!result.success) {
+        setFieldErrors(fieldErrorsFromIssues(result.issues));
+        setError(messageFromFailure(result));
+        return;
+      }
+      router.push('/admin/inicio');
+      router.refresh();
+    } finally {
+      setIsSaving(false);
     }
-    router.push('/admin/inicio');
-    router.refresh();
   }
 
   const actions = (
@@ -128,6 +133,7 @@ export default function PromoBannerEditor({
         errors={fieldErrors}
         idPrefix="banner"
         onChange={patch}
+        whatsappHref={whatsappHref}
       />
     </div>
   );

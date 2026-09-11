@@ -71,20 +71,23 @@ export default function TestimonialEditor({
     setIsSaving(true);
     setError(null);
     setFieldErrors({});
-    const payload = fromFallbackId
-      ? { ...toPayload(draft), fromFallbackId }
-      : toPayload(draft);
-    const result = testimonialId
-      ? await updateTestimonial(testimonialId, toPayload(draft))
-      : await createTestimonial(payload);
-    setIsSaving(false);
-    if (!result.success) {
-      setFieldErrors(fieldErrorsFromIssues(result.issues));
-      setError(messageFromFailure(result));
-      return;
+    try {
+      const payload = fromFallbackId
+        ? { ...toPayload(draft), fromFallbackId }
+        : toPayload(draft);
+      const result = testimonialId
+        ? await updateTestimonial(testimonialId, toPayload(draft))
+        : await createTestimonial(payload);
+      if (!result.success) {
+        setFieldErrors(fieldErrorsFromIssues(result.issues));
+        setError(messageFromFailure(result));
+        return;
+      }
+      router.push('/admin/inicio');
+      router.refresh();
+    } finally {
+      setIsSaving(false);
     }
-    router.push('/admin/inicio');
-    router.refresh();
   }
 
   const actions = (

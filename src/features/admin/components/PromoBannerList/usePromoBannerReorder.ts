@@ -15,15 +15,18 @@ export function usePromoBannerReorder(
     const previousIds = keys;
     applyOrder(orderedIds);
     setIsSaving(true);
-    const result = await reorderPromoPresets(orderedIds);
-    setIsSaving(false);
+    try {
+      const result = await reorderPromoPresets(orderedIds);
 
-    if (!result.success) {
-      applyOrder(previousIds);
-      toast.error(`No se pudo guardar el orden: ${result.error ?? 'Error desconocido'}`);
-      return;
+      if (!result.success) {
+        applyOrder(previousIds);
+        toast.error(`No se pudo guardar el orden: ${result.error ?? 'Error desconocido'}`);
+        return;
+      }
+      toast.success('Orden guardado.');
+    } finally {
+      setIsSaving(false);
     }
-    toast.success('Orden guardado.');
   }
 
   return { handleReorder, isSaving };

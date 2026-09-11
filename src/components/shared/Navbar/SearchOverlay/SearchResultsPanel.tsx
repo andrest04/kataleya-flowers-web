@@ -68,7 +68,7 @@ export default function SearchResultsPanel({
               {searchResults.length === 1 ? "" : "s"})
             </h3>
             <Link
-              href={`/catalogo?q=${encodeURIComponent(searchQuery)}`}
+              href={`/buscar?q=${encodeURIComponent(searchQuery)}`}
               onClick={closeSearch}
               className="shrink-0 font-body text-xs font-semibold tracking-[0.06em] text-(--color-primary) uppercase underline-offset-4 hover:underline"
             >

@@ -10,10 +10,7 @@ import { MotionProvider } from "@/components/shared/MotionProvider";
 import { JsonLd } from "@/components/ui/JsonLd";
 import { Toaster } from "@/components/ui/primitives/sonner";
 import { getSiteSettings } from "@/features/settings/queries/getSiteSettings";
-import { BUSINESS } from "@/lib/constants";
-import { schemaDayNames } from "@/lib/siteSettings";
-
-const SITE_URL = BUSINESS.website;
+import { floristSeoDescription, schemaDayNames } from "@/lib/siteSettings";
 
 const crimsonText = Crimson_Text({
   subsets: ["latin"],
@@ -29,36 +26,39 @@ const mulish = Mulish({
   variable: "--font-body",
 });
 
-const baseDescription = `Floristería en ${BUSINESS.location} con ${BUSINESS.experience} años de experiencia en arreglos florales y orquídeas. Encargos para celebraciones, homenajes y regalos.`;
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSiteSettings();
+  const description = floristSeoDescription(settings);
 
-export const metadata: Metadata = {
-  metadataBase: new URL(BUSINESS.website),
-  title: {
-    default: `${BUSINESS.name} | Floristería en ${BUSINESS.location}`,
-    template: `%s | ${BUSINESS.name}`,
-  },
-  description: baseDescription,
-  alternates: {
-    canonical: "/",
-  },
-  robots: {
-    index: true,
-    follow: true,
-  },
-  openGraph: {
-    type: "website",
-    locale: "es_PE",
-    url: "/",
-    siteName: BUSINESS.name,
-    title: `${BUSINESS.name} — Floristería en ${BUSINESS.location}`,
-    description: baseDescription,
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: `${BUSINESS.name} — Floristería en ${BUSINESS.location}`,
-    description: baseDescription,
-  },
-};
+  return {
+    metadataBase: new URL(settings.website),
+    title: {
+      default: `${settings.name} | Floristería en ${settings.location}`,
+      template: `%s | ${settings.name}`,
+    },
+    description,
+    alternates: {
+      canonical: "/",
+    },
+    robots: {
+      index: true,
+      follow: true,
+    },
+    openGraph: {
+      type: "website",
+      locale: "es_PE",
+      url: "/",
+      siteName: settings.name,
+      title: `${settings.name} — Floristería en ${settings.location}`,
+      description,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${settings.name} — Floristería en ${settings.location}`,
+      description,
+    },
+  };
+}
 
 export const viewport: Viewport = {
   themeColor: "#c0392b",
@@ -75,14 +75,14 @@ export default async function RootLayout({
   const floristJsonLd = {
     "@context": "https://schema.org",
     "@type": "Florist",
-    name: BUSINESS.name,
-    description: `Floristería en ${settings.location} con ${BUSINESS.experience} años de experiencia en arreglos florales y orquídeas.`,
-    url: SITE_URL,
+    name: settings.name,
+    description: floristSeoDescription(settings),
+    url: settings.website,
     telephone: `+${settings.phone}`,
     address: {
       "@type": "PostalAddress",
       streetAddress: settings.address,
-      addressLocality: "Lima",
+      addressLocality: settings.location,
       addressCountry: "PE",
     },
     openingHoursSpecification: [

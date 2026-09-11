@@ -72,20 +72,23 @@ export default function ValuePropEditor({
     setIsSaving(true);
     setError(null);
     setFieldErrors({});
-    const payload = fromFallbackId
-      ? { ...toPayload(draft), fromFallbackId }
-      : toPayload(draft);
-    const result = valuePropId
-      ? await updateValueProp(valuePropId, toPayload(draft))
-      : await createValueProp(payload);
-    setIsSaving(false);
-    if (!result.success) {
-      setFieldErrors(fieldErrorsFromIssues(result.issues));
-      setError(messageFromFailure(result));
-      return;
+    try {
+      const payload = fromFallbackId
+        ? { ...toPayload(draft), fromFallbackId }
+        : toPayload(draft);
+      const result = valuePropId
+        ? await updateValueProp(valuePropId, toPayload(draft))
+        : await createValueProp(payload);
+      if (!result.success) {
+        setFieldErrors(fieldErrorsFromIssues(result.issues));
+        setError(messageFromFailure(result));
+        return;
+      }
+      router.push('/admin/inicio');
+      router.refresh();
+    } finally {
+      setIsSaving(false);
     }
-    router.push('/admin/inicio');
-    router.refresh();
   }
 
   const actions = (

@@ -15,6 +15,7 @@ export default function ContactMap({ settings }: ContactMapProps) {
         title={`Ubicación de ${settings.name} en ${settings.address}`}
         loading="lazy"
         referrerPolicy="no-referrer-when-downgrade"
+        sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox allow-forms"
         allowFullScreen
         className="absolute inset-0 size-full border-0"
       />

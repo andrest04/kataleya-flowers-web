@@ -1,5 +1,4 @@
 import type { PromoBannerView } from '@/features/landing/queries/getPublishedPromoBanners';
-import { BUSINESS } from '@/lib/constants';
 import type { PromoBannerRow } from '@/lib/db/rows';
 
 import type { PromoBannerCtaType, PromoBannerDraft } from './types';
@@ -18,11 +17,14 @@ export function ctaTypeFromHref(href: string): PromoBannerCtaType {
   return 'url';
 }
 
-export function persistCta(input: {
-  ctaLabel: string;
-  ctaType: PromoBannerCtaType;
-  ctaValue: string | null;
-}): { ctaExternal: boolean; ctaHref: string; ctaLabel: string } {
+export function persistCta(
+  input: {
+    ctaLabel: string;
+    ctaType: PromoBannerCtaType;
+    ctaValue: string | null;
+  },
+  whatsappHref: string,
+): { ctaExternal: boolean; ctaHref: string; ctaLabel: string } {
   if (input.ctaType === 'catalogo') {
     return {
       ctaExternal: false,
@@ -39,7 +41,7 @@ export function persistCta(input: {
   }
   return {
     ctaExternal: true,
-    ctaHref: BUSINESS.whatsappWithMessage(BUSINESS.messages.whatsappDefault),
+    ctaHref: whatsappHref,
     ctaLabel: input.ctaLabel,
   };
 }

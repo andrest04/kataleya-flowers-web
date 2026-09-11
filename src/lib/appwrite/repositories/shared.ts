@@ -15,10 +15,6 @@ export function getRepositoryContext(): {
   return { databases, databaseId };
 }
 
-/**
- * Stages a group of legacy Documents API writes and commits them together.
- * The installed Appwrite SDK supports `transactionId` on these operations.
- */
 export async function withAppwriteTransaction<T>(
   work: (transactionId: string) => Promise<T>,
 ): Promise<T> {

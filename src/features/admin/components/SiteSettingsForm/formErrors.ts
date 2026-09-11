@@ -20,10 +20,12 @@ const FIELD_LABELS: Record<string, string> = {
   location: 'Ciudad',
   mapsEmbedUrl: 'Link de Google Maps',
   mapsLink: 'Link de Google Maps',
+  name: 'Nombre del negocio',
   openDays: 'Días abierto',
   phone: 'Teléfono',
   razonSocial: 'Razón social',
   ruc: 'RUC',
+  website: 'Sitio web',
   whatsappDefault: 'Mensaje de Pedir por WhatsApp',
   whatsappFloat: 'Mensaje del botón verde',
   whatsappProduct: 'Mensaje de la ficha de producto',
@@ -32,6 +34,8 @@ const FIELD_LABELS: Record<string, string> = {
 export type FieldErrors = Record<string, string>;
 
 export const FIELD_FOCUS_ORDER = [
+  'name',
+  'website',
   'phone',
   'email',
   'instagramHandle',

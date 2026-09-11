@@ -16,15 +16,18 @@ export function useHeroSlideReorder(
     const previousIds = items.map((item) => item.id);
     applyOrder(orderedIds);
     setIsSaving(true);
-    const result = await reorderHeroSlides(orderedIds);
-    setIsSaving(false);
+    try {
+      const result = await reorderHeroSlides(orderedIds);
 
-    if (!result.success) {
-      applyOrder(previousIds);
-      toast.error(`No se pudo guardar el orden: ${result.error ?? 'Error desconocido'}`);
-      return;
+      if (!result.success) {
+        applyOrder(previousIds);
+        toast.error(`No se pudo guardar el orden: ${result.error ?? 'Error desconocido'}`);
+        return;
+      }
+      toast.success('Orden guardado.');
+    } finally {
+      setIsSaving(false);
     }
-    toast.success('Orden guardado.');
   }
 
   return { handleReorder, isSaving };

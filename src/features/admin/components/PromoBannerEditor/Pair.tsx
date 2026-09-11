@@ -4,11 +4,8 @@ import { useRouter } from 'next/navigation';
 import { type ReactNode, useState } from 'react';
 
 import Button from '@/components/ui/Button';
-import { FormError, FormField } from '@/components/ui/FormField';
-import { Input } from '@/components/ui/Input';
-import ToggleSwitch from '@/components/ui/ToggleSwitch';
+import { FormError } from '@/components/ui/FormField';
 import { createPromoBannerPair, updatePromoBannerPair } from '@/features/admin/actions/promoBanners';
-import { FieldError } from '@/features/admin/components/ProductForm/FieldError';
 
 import PromoBannerFields from './Fields';
 import {
@@ -17,10 +14,31 @@ import {
   messageFromFailure,
   pickBannerErrors,
 } from './formErrors';
+import SharedFields from './SharedFields';
 import type { PromoBannerDraft } from './types';
 
 function hasDraftChanges(current: PromoBannerDraft, baseline: PromoBannerDraft): boolean {
   return JSON.stringify(current) !== JSON.stringify(baseline);
+}
+
+interface SharedState {
+  endsAt: string;
+  isActive: boolean;
+  name: string;
+  startsAt: string;
+}
+
+function computeIsDirty(
+  shared: SharedState,
+  initialShared: SharedState,
+  drafts: [PromoBannerDraft, PromoBannerDraft],
+  initials: [PromoBannerDraft, PromoBannerDraft],
+): boolean {
+  return shared.name !== initialShared.name
+    || shared.isActive !== initialShared.isActive
+    || shared.startsAt !== initialShared.startsAt
+    || shared.endsAt !== initialShared.endsAt
+    || drafts.some((draft, index) => hasDraftChanges(draft, initials[index]));
 }
 
 function toPayload(draft: PromoBannerDraft, shared: Pick<PromoBannerDraft, 'endsAt' | 'isActive' | 'name' | 'startsAt'>) {
@@ -45,6 +63,7 @@ interface PromoBannerPairEditorProps {
   heading?: ReactNode;
   initials: [PromoBannerDraft, PromoBannerDraft];
   showCancel?: boolean;
+  whatsappHref: string;
 }
 
 export default function PromoBannerPairEditor({
@@ -53,6 +72,7 @@ export default function PromoBannerPairEditor({
   heading,
   initials,
   showCancel = false,
+  whatsappHref,
 }: PromoBannerPairEditorProps) {
   const router = useRouter();
   const [drafts, setDrafts] = useState(initials);
@@ -63,11 +83,12 @@ export default function PromoBannerPairEditor({
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [isSaving, setIsSaving] = useState(false);
-  const isDirty = name !== initials[0].name
-    || isActive !== initials[0].isActive
-    || startsAt !== initials[0].startsAt
-    || endsAt !== initials[0].endsAt
-    || drafts.some((draft, index) => hasDraftChanges(draft, initials[index]));
+  const isDirty = computeIsDirty(
+    { endsAt, isActive, name, startsAt },
+    { endsAt: initials[0].endsAt, isActive: initials[0].isActive, name: initials[0].name, startsAt: initials[0].startsAt },
+    drafts,
+    initials,
+  );
 
   function patch(index: 0 | 1, next: Partial<PromoBannerDraft>) {
     setDrafts((current) => {
@@ -92,21 +113,24 @@ export default function PromoBannerPairEditor({
     setIsSaving(true);
     setError(null);
     setFieldErrors({});
-    const shared = { endsAt, isActive, name, startsAt };
-    const payloads = [toPayload(drafts[0], shared), toPayload(drafts[1], shared)];
-    const result = bannerIds
-      ? await updatePromoBannerPair(bannerIds, payloads)
-      : await createPromoBannerPair(payloads);
-    setIsSaving(false);
-    if (!result.success) {
-      setFieldErrors(fieldErrorsFromIssues(result.issues));
-      setError(messageFromFailure(result));
-      return;
+    try {
+      const shared = { endsAt, isActive, name, startsAt };
+      const payloads = [toPayload(drafts[0], shared), toPayload(drafts[1], shared)];
+      const result = bannerIds
+        ? await updatePromoBannerPair(bannerIds, payloads)
+        : await createPromoBannerPair(payloads);
+      if (!result.success) {
+        setFieldErrors(fieldErrorsFromIssues(result.issues));
+        setError(messageFromFailure(result));
+        return;
+      }
+      if (showCancel || bannerIds) {
+        router.push('/admin/inicio');
+      }
+      router.refresh();
+    } finally {
+      setIsSaving(false);
     }
-    if (showCancel || bannerIds) {
-      router.push('/admin/inicio');
-    }
-    router.refresh();
   }
 
   return (
@@ -133,61 +157,25 @@ export default function PromoBannerPairEditor({
         </div>
       </div>
       <FormError message={error} />
-      <div className="grid gap-4 rounded-xl border border-(--color-border) bg-(--color-white) p-4 md:grid-cols-2">
-        <FormField label="Nombre" required htmlFor="preset-name">
-          <Input
-            id="preset-name"
-            value={name}
-            aria-invalid={Boolean(fieldErrors.name)}
-            aria-describedby={fieldErrors.name ? 'preset-name-error' : undefined}
-            onChange={(event) => setName(event.target.value)}
-            placeholder="Flores Amarillas"
-          />
-          <FieldError id="preset-name-error" message={fieldErrors.name} />
-        </FormField>
-        <div className="flex items-center gap-3">
-          <ToggleSwitch
-            checked={isActive}
-            disabled={!allowHide && isActive}
-            label={isActive ? 'Ocultar en la portada' : 'Mostrar en la portada'}
-            onChange={(checked) => {
-              if (!checked && !allowHide) return;
-              setIsActive(checked);
-            }}
-          />
-          <span className="text-sm text-(--color-dark)">
-            {isActive ? 'Visible' : 'Oculto'}
-          </span>
-        </div>
-        <FormField label="Mostrar desde" htmlFor="preset-starts">
-          <Input
-            id="preset-starts"
-            type="datetime-local"
-            value={startsAt}
-            aria-invalid={Boolean(fieldErrors.startsAt)}
-            aria-describedby={fieldErrors.startsAt ? 'preset-starts-error' : undefined}
-            onChange={(event) => setStartsAt(event.target.value)}
-          />
-          <FieldError id="preset-starts-error" message={fieldErrors.startsAt} />
-        </FormField>
-        <FormField label="Ocultar desde" htmlFor="preset-ends">
-          <Input
-            id="preset-ends"
-            type="datetime-local"
-            value={endsAt}
-            aria-invalid={Boolean(fieldErrors.endsAt)}
-            aria-describedby={fieldErrors.endsAt ? 'preset-ends-error' : undefined}
-            onChange={(event) => setEndsAt(event.target.value)}
-          />
-          <FieldError id="preset-ends-error" message={fieldErrors.endsAt} />
-        </FormField>
-      </div>
+      <SharedFields
+        allowHide={allowHide}
+        endsAt={endsAt}
+        errors={fieldErrors}
+        isActive={isActive}
+        name={name}
+        startsAt={startsAt}
+        onEndsAtChange={setEndsAt}
+        onIsActiveChange={setIsActive}
+        onNameChange={setName}
+        onStartsAtChange={setStartsAt}
+      />
       <PromoBannerFields
         draft={drafts[0]}
         errors={pickBannerErrors(fieldErrors, 'a')}
         idPrefix="banner-a"
         showSchedule={false}
         onChange={(next) => patch(0, next)}
+        whatsappHref={whatsappHref}
       />
       <PromoBannerFields
         draft={drafts[1]}
@@ -195,6 +183,7 @@ export default function PromoBannerPairEditor({
         idPrefix="banner-b"
         showSchedule={false}
         onChange={(next) => patch(1, next)}
+        whatsappHref={whatsappHref}
       />
     </div>
   );

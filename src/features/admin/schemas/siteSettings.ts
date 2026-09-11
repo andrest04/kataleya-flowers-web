@@ -103,6 +103,11 @@ export const siteSettingsSchema = z
       .trim()
       .max(4000, 'Máximo 4000 caracteres')
       .optional(),
+    name: z
+      .string()
+      .trim()
+      .min(1, 'Campo obligatorio')
+      .max(255, 'Máximo 255 caracteres'),
     openDays: z
       .array(z.number().int().min(0).max(6))
       .min(1, 'Elige al menos un día'),
@@ -115,6 +120,11 @@ export const siteSettingsSchema = z
       .string()
       .trim()
       .regex(/^\d{11}$/, 'Escribe los 11 dígitos del RUC'),
+    website: z
+      .string()
+      .trim()
+      .max(2048, 'URL demasiado larga')
+      .refine(isHttpUrl, 'Usa una URL que empiece con https://'),
     whatsappDefault: z
       .string()
       .trim()

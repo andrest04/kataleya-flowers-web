@@ -63,7 +63,9 @@ export default function Navbar({ settings }: NavbarProps) {
           />
 
           <header
-            className={`h-16 border-b border-(--color-primary) bg-(--color-cream) ${
+            className={`h-16 border-b border-(--color-primary) ${
+              isSearchOpen ? "bg-(--color-overlay)" : "bg-(--color-cream)"
+            } ${
               isSearchOpen || isCatalogMenuOpen ? "overflow-visible" : "overflow-hidden"
             }`}
           >
@@ -105,7 +107,7 @@ export default function Navbar({ settings }: NavbarProps) {
                 href="/"
                 className="font-heading text-[1.75rem] font-bold uppercase tracking-[0.1em] leading-none text-(--color-primary)"
               >
-                Kataleya
+                {settings.name}
               </Link>
 
               <div className="flex items-center justify-end">

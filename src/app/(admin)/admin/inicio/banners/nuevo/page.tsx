@@ -4,20 +4,24 @@ import { draftFromFallback } from '@/features/admin/components/PromoBannerEditor
 import PromoBannerPairEditor from '@/features/admin/components/PromoBannerEditor/Pair';
 import { getAdminPromoBanners } from '@/features/admin/queries/promoBanners';
 import {
-  FALLBACK_PROMO_BANNERS,
+  fallbackPromoBanners,
   getPublishedPromoBanners,
 } from '@/features/landing/queries/getPublishedPromoBanners';
+import { getSiteSettings } from '@/features/settings/queries/getSiteSettings';
+import { defaultWhatsappHref } from '@/lib/siteSettings';
 
 export const metadata = { title: 'Nuevos banners' };
 
 export default async function NuevoPromoBannerPage() {
-  const [banners, liveBanners] = await Promise.all([
+  const [banners, liveBanners, settings] = await Promise.all([
     getAdminPromoBanners(),
     getPublishedPromoBanners(),
+    getSiteSettings(),
   ]);
   const allowHide = banners.some((banner) => banner.is_active);
-  const first = draftFromFallback(liveBanners[0] ?? FALLBACK_PROMO_BANNERS[0]);
-  const second = draftFromFallback(liveBanners[1] ?? FALLBACK_PROMO_BANNERS[1]);
+  const fallbacks = fallbackPromoBanners(settings);
+  const first = draftFromFallback(liveBanners[0] ?? fallbacks[0]);
+  const second = draftFromFallback(liveBanners[1] ?? fallbacks[1]);
   const isActive = banners.length === 0;
 
   return (
@@ -36,6 +40,7 @@ export default async function NuevoPromoBannerPage() {
           { ...first, isActive, name: '' },
           { ...second, isActive, name: '' },
         ]}
+        whatsappHref={defaultWhatsappHref(settings)}
       />
     </div>
   );

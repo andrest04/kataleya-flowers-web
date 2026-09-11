@@ -8,8 +8,6 @@ export function formatComplaintNumber(
   return `${String(correlativo).padStart(5, '0')}-${year}`;
 }
 
-// Feriados fijos vigentes bajo el D.L. 713 y sus modificatorias (Leyes 31530, 31788, 31822).
-// El Congreso agrega feriados puntuales por ley cada cierto tiempo: revisar esta lista una vez al año.
 const FIXED_PERU_HOLIDAYS: readonly [month: number, day: number][] = [
   [0, 1],
   [4, 1],

@@ -9,7 +9,9 @@ import {
   getAdminPromoBanners,
   getAdminPromoPresetByBannerId,
 } from '@/features/admin/queries/promoBanners';
+import { getSiteSettings } from '@/features/settings/queries/getSiteSettings';
 import { promoPresetKey } from '@/lib/promoPresetKey';
+import { defaultWhatsappHref } from '@/lib/siteSettings';
 
 interface EditarPromoBannerPageProps {
   params: Promise<{ id: string }>;
@@ -23,10 +25,12 @@ export async function generateMetadata({ params }: EditarPromoBannerPageProps) {
 
 export default async function EditarPromoBannerPage({ params }: EditarPromoBannerPageProps) {
   const { id } = await params;
-  const [members, banners] = await Promise.all([
+  const [members, banners, settings] = await Promise.all([
     getAdminPromoPresetByBannerId(id),
     getAdminPromoBanners(),
+    getSiteSettings(),
   ]);
+  const whatsappHref = defaultWhatsappHref(settings);
   const banner = members.find((item) => item.id === id) ?? members[0];
   if (!banner) notFound();
   const allowHide = banners.some((item) => (
@@ -51,12 +55,14 @@ export default async function EditarPromoBannerPage({ params }: EditarPromoBanne
           bannerIds={[banner.id, sibling.id]}
           initials={[draftFromBanner(banner), draftFromBanner(sibling)]}
           showCancel
+          whatsappHref={whatsappHref}
         />
       ) : (
         <PromoBannerEditor
           allowHide={allowHide}
           bannerId={banner.id}
           initial={draftFromBanner(banner)}
+          whatsappHref={whatsappHref}
         />
       )}
     </div>

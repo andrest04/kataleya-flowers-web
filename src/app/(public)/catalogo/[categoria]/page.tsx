@@ -9,9 +9,8 @@ import { getCategories } from "@/features/catalog/queries/getCategories";
 import { getFlowerTypes } from "@/features/catalog/queries/getFlowerTypes";
 import { getProductColors } from "@/features/catalog/queries/getProductColors";
 import { getProductsByCategory } from "@/features/catalog/queries/getProductsByCategory";
-import { BUSINESS } from "@/lib/constants";
-
-const SITE_URL = BUSINESS.website;
+import { getSiteSettings } from "@/features/settings/queries/getSiteSettings";
+import { floralArrangementsSeoDescription } from "@/lib/siteSettings";
 
 export const revalidate = 3600;
 
@@ -75,9 +74,10 @@ export async function generateMetadata({
       },
     };
   } catch {
+    const settings = await getSiteSettings();
     return {
       title: "Catálogo",
-      description: `Arreglos florales premium en ${BUSINESS.location}.`,
+      description: floralArrangementsSeoDescription(settings.location),
     };
   }
 }
@@ -86,11 +86,13 @@ export default async function CategoriaPage({
   params,
   searchParams,
 }: CategoriaPageProps): Promise<React.ReactElement> {
-  const [{ categoria }, categories, resolvedSearchParams] = await Promise.all([
+  const [{ categoria }, categories, resolvedSearchParams, settings] = await Promise.all([
     params,
     getCategories(),
     searchParams,
+    getSiteSettings(),
   ]);
+  const SITE_URL = settings.website;
   const category = categories.find((cat) => cat.slug === categoria);
 
   if (!category) {

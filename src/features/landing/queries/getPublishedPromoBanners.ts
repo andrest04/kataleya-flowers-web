@@ -1,8 +1,9 @@
 import { unstable_cache } from 'next/cache';
 
+import { getSiteSettings } from '@/features/settings/queries/getSiteSettings';
 import { listPromoBanners } from '@/lib/appwrite/repositories/promoBanners';
-import { BUSINESS } from '@/lib/constants';
 import { isPublished } from '@/lib/publishing';
+import { defaultWhatsappHref, type SiteSettings } from '@/lib/siteSettings';
 
 export interface PromoBannerView {
   contentPosition: 'top' | 'bottom';
@@ -31,35 +32,39 @@ function resolvePromoCta(banner: {
   };
 }
 
-export const FALLBACK_PROMO_BANNERS: readonly [PromoBannerView, PromoBannerView] = [
-  {
-    contentPosition: 'top',
-    cta: {
-      external: true,
-      href: BUSINESS.whatsappWithMessage(BUSINESS.messages.whatsappDefault),
-      label: 'Pedir por WhatsApp',
-      variant: 'whatsapp',
+export function fallbackPromoBanners(
+  settings: SiteSettings,
+): readonly [PromoBannerView, PromoBannerView] {
+  return [
+    {
+      contentPosition: 'top',
+      cta: {
+        external: true,
+        href: defaultWhatsappHref(settings),
+        label: 'Pedir por WhatsApp',
+        variant: 'whatsapp',
+      },
+      description:
+        'Pedidos confirmados a tiempo llegan el mismo día, directo a la puerta de quien más quieres.',
+      heading: `Entrega el mismo día en ${settings.location}`,
+      id: 'fallback-peonias',
+      imageSrc: '/images/hero/peonias.jpg',
     },
-    description:
-      'Pedidos confirmados a tiempo llegan el mismo día, directo a la puerta de quien más quieres.',
-    heading: 'Entrega el mismo día en Lima',
-    id: 'fallback-peonias',
-    imageSrc: '/images/hero/peonias.jpg',
-  },
-  {
-    contentPosition: 'bottom',
-    cta: {
-      href: '/catalogo',
-      label: 'Ver catálogo',
-      variant: 'primary',
+    {
+      contentPosition: 'bottom',
+      cta: {
+        href: '/catalogo',
+        label: 'Ver catálogo',
+        variant: 'primary',
+      },
+      description:
+        'Cumpleaños, aniversarios, condolencias — flores frescas diseñadas para cada momento.',
+      heading: 'Arreglos para toda ocasión',
+      id: 'fallback-gerberas',
+      imageSrc: '/images/hero/gerberas.jpg',
     },
-    description:
-      'Cumpleaños, aniversarios, condolencias — flores frescas diseñadas para cada momento.',
-    heading: 'Arreglos para toda ocasión',
-    id: 'fallback-gerberas',
-    imageSrc: '/images/hero/gerberas.jpg',
-  },
-];
+  ];
+}
 
 type CachedPromoState =
   | { banners: PromoBannerView[]; status: 'published' }
@@ -91,8 +96,11 @@ const getCachedPromoState = unstable_cache(
 );
 
 export async function getPublishedPromoBanners(): Promise<PromoBannerView[]> {
-  const state = await getCachedPromoState();
+  const [state, settings] = await Promise.all([
+    getCachedPromoState(),
+    getSiteSettings(),
+  ]);
   if (state.status === 'published') return state.banners;
-  if (state.status === 'fallback') return [...FALLBACK_PROMO_BANNERS];
+  if (state.status === 'fallback') return [...fallbackPromoBanners(settings)];
   return [];
 }

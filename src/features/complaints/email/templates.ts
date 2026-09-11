@@ -1,5 +1,3 @@
-import { BUSINESS } from '@/lib/constants';
-
 import type { ComplaintFormData } from '../schemas/complaint';
 import { RESPONSE_BUSINESS_DAYS } from '../utils/format';
 
@@ -14,16 +12,6 @@ export interface ComplaintProvider {
   razonSocial: string;
   ruc: string;
   website: string;
-}
-
-export function defaultComplaintProvider(): ComplaintProvider {
-  return {
-    address: BUSINESS.address,
-    name: BUSINESS.name,
-    razonSocial: BUSINESS.razonSocial,
-    ruc: BUSINESS.ruc,
-    website: BUSINESS.website,
-  };
 }
 
 interface EmailContent {
@@ -98,7 +86,7 @@ function shell(title: string, inner: string, provider: ComplaintProvider): strin
 
 export function consumerCopyEmail(
   data: ComplaintEmailData,
-  provider: ComplaintProvider = defaultComplaintProvider(),
+  provider: ComplaintProvider,
 ): EmailContent {
   const inner = `
     <p style="color:#1a1a1a;font-size:14px;line-height:1.6;">
@@ -119,7 +107,7 @@ export function consumerCopyEmail(
 export function businessNotificationEmail(
   data: ComplaintEmailData,
   complaintId: string,
-  provider: ComplaintProvider = defaultComplaintProvider(),
+  provider: ComplaintProvider,
 ): EmailContent {
   const adminUrl = `${provider.website}/admin/reclamos/${complaintId}`;
   const inner = `

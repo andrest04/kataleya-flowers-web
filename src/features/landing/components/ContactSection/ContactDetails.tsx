@@ -13,18 +13,18 @@ interface ContactDetailsProps {
 export default function ContactDetails({ settings }: ContactDetailsProps) {
   return (
     <div className="space-y-8">
-      <dl className="space-y-6">
+      <div className="space-y-6">
         <div className="flex gap-4">
           <MapPin className="mt-0.5 size-5 shrink-0 text-(--color-primary)" aria-hidden="true" strokeWidth={1.8} />
-          <div>
+          <dl>
             <dt className="text-sm font-semibold text-(--color-dark)">Dónde estamos</dt>
             <dd className="mt-1 text-(--color-dark)">{settings.address}</dd>
-          </div>
+          </dl>
         </div>
 
         <div className="flex gap-4">
           <Clock className="mt-0.5 size-5 shrink-0 text-(--color-primary)" aria-hidden="true" strokeWidth={1.8} />
-          <div>
+          <dl>
             <dt className="flex flex-wrap items-center gap-2 text-sm font-semibold text-(--color-dark)">
               Horario de atención
               <BusinessHoursBadge hours={settings.hours} />
@@ -32,12 +32,12 @@ export default function ContactDetails({ settings }: ContactDetailsProps) {
             <dd className="mt-1 text-(--color-dark)">
               {settings.hours.weekdays} · {settings.hours.time}
             </dd>
-          </div>
+          </dl>
         </div>
 
         <div className="flex gap-4">
           <Mail className="mt-0.5 size-5 shrink-0 text-(--color-primary)" aria-hidden="true" strokeWidth={1.8} />
-          <div>
+          <dl>
             <dt className="text-sm font-semibold text-(--color-dark)">Correo</dt>
             <dd className="mt-1">
               <a
@@ -47,9 +47,9 @@ export default function ContactDetails({ settings }: ContactDetailsProps) {
                 {settings.email}
               </a>
             </dd>
-          </div>
+          </dl>
         </div>
-      </dl>
+      </div>
 
       <div className="flex flex-wrap items-center gap-3">
         <Button

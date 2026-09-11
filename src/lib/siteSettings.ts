@@ -198,6 +198,26 @@ export function visibleAnnouncement(
   };
 }
 
+export function floristSeoDescription(
+  settings: Pick<SiteSettings, 'experience' | 'location'>,
+): string {
+  return `Floristería en ${settings.location} con ${settings.experience} años de experiencia en arreglos florales y orquídeas. Encargos para celebraciones, homenajes y regalos.`;
+}
+
+export function catalogSeoDescription(location: string): string {
+  return `Explora nuestro catálogo de arreglos florales, orquídeas y regalos premium disponibles en ${location}.`;
+}
+
+export function floralArrangementsSeoDescription(location: string): string {
+  return `Arreglos florales premium en ${location}.`;
+}
+
+export function defaultWhatsappHref(
+  settings: Pick<SiteSettings, 'messages' | 'phone'>,
+): string {
+  return whatsappWithMessage(settings.phone, settings.messages.whatsappDefault);
+}
+
 export function derivedContact(phone: string, handle: string): {
   instagram: string;
   instagramHandle: string;

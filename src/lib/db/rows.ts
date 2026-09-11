@@ -162,9 +162,11 @@ export interface SiteSettingsRow {
   instagram_handle: string;
   location: string;
   maps_embed_url: string;
+  name: string | null;
   phone: string;
   razon_social: string;
   ruc: string;
+  website: string | null;
   whatsapp_default: string;
   whatsapp_float: string;
   whatsapp_product: string;

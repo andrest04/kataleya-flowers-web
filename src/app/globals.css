@@ -8,8 +8,6 @@
   --color-accent: #2d5a1b;
   --color-cream: #fdfcfa;
   --color-dark: #1a1a1a;
-  /* --font-heading y --font-body son inyectadas por next/font en <html>
-     (ver src/app/layout.tsx). No redefinir aquí. */
   --font-sans: var(--font-body);
   --bg-about: color-mix(
     in srgb,
@@ -28,17 +26,12 @@
   --color-status-created: #27ae60;
   --color-status-updated: #2980b9;
   --color-white: #ffffff;
-  /* Z-stack interno del Hero (badge, flechas, dots, swipe hint).
-     Z-stack global del proyecto: Sheet/AlertDialog z-50, search backdrop
-     z-[85], Navbar z-[90], Lightbox z-[100]. Este token vive aislado al
-     carousel y no compite con esos niveles globales. */
   --z-hero-overlay: 10;
-  /* AA-safe gold variants — La Regla del Dorado-No-Es-Texto (DESIGN.md + QA/audit/10).
-     Base #e8b84b (1.8:1 on cream) is decoration-only; these tokens are text-safe. */
-  --color-gold-text: #8a6a1f; /* 4.92:1 on cream #fdfcfa — text on light backgrounds */
-  --color-gold-text-dark: #f0c668; /* 5.01:1 on footer green #2d5a1b — text on dark green */
-  --color-muted: color-mix(in srgb, var(--color-dark) 50%, transparent);
+  --color-gold-text: #8a6a1f;
+  --color-gold-text-dark: #f0c668;
+  --color-muted: color-mix(in srgb, var(--color-dark) 65%, transparent);
   --color-surface: color-mix(in srgb, var(--color-dark) 6%, var(--color-cream));
+  --color-overlay: color-mix(in srgb, var(--color-dark) 3%, var(--color-white));
   --color-border: color-mix(in srgb, var(--color-dark) 12%, var(--color-cream));
   --background: #fdfcfa;
   --foreground: #1a1a1a;
@@ -51,7 +44,7 @@
   --secondary: #e8b84b;
   --secondary-foreground: #1a1a1a;
   --muted: color-mix(in srgb, var(--color-dark) 6%, var(--color-cream));
-  --muted-foreground: color-mix(in srgb, var(--color-dark) 50%, transparent);
+  --muted-foreground: color-mix(in srgb, var(--color-dark) 65%, transparent);
   --accent: #2d5a1b;
   --accent-foreground: #fdfcfa;
   --destructive: #c0392b;
@@ -90,6 +83,7 @@
   --color-gold-text-dark: var(--color-gold-text-dark);
   --color-muted: var(--color-muted);
   --color-surface: var(--color-surface);
+  --color-overlay: var(--color-overlay);
   --color-border: var(--color-border);
   --font-sans: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);

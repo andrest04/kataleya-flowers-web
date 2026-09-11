@@ -4,7 +4,6 @@ import { useState } from 'react';
 
 import { FormError, FormField } from '@/components/ui/FormField';
 import { Input, Select, Textarea } from '@/components/ui/Input';
-import ToggleSwitch from '@/components/ui/ToggleSwitch';
 import CoverButton from '@/features/admin/components/CoverEditor/CoverButton';
 import CoverDialog from '@/features/admin/components/CoverEditor/CoverDialog';
 import { BANNER_COVER_CROP } from '@/features/admin/components/CoverEditor/profile';
@@ -12,9 +11,11 @@ import { FieldError } from '@/features/admin/components/ProductForm/FieldError';
 import { useImageUpload } from '@/features/admin/hooks/useImageUpload';
 import PromoBannerCard from '@/features/landing/components/PromoBanners/PromoBannerCard';
 
+import CtaFields from './CtaFields';
 import type { FieldErrors } from './formErrors';
 import { persistCta } from './mapDraft';
-import type { PromoBannerCtaType, PromoBannerDraft } from './types';
+import ScheduleFields from './ScheduleFields';
+import type { PromoBannerDraft } from './types';
 
 interface PromoBannerFieldsProps {
   allowHide?: boolean;
@@ -23,6 +24,7 @@ interface PromoBannerFieldsProps {
   idPrefix: string;
   onChange: (patch: Partial<PromoBannerDraft>) => void;
   showSchedule?: boolean;
+  whatsappHref: string;
 }
 
 export default function PromoBannerFields({
@@ -32,10 +34,11 @@ export default function PromoBannerFields({
   idPrefix,
   onChange,
   showSchedule = true,
+  whatsappHref,
 }: PromoBannerFieldsProps) {
   const { uploadImage, isUploading, error: uploadError } = useImageUpload();
   const [coverOpen, setCoverOpen] = useState(false);
-  const persisted = persistCta(draft);
+  const persisted = persistCta(draft, whatsappHref);
   const previewCta = {
     external: persisted.ctaExternal,
     href: persisted.ctaHref || '#',
@@ -89,41 +92,14 @@ export default function PromoBannerFields({
           />
           <FieldError id={`${idPrefix}-description-error`} message={errors.description} />
         </FormField>
-        <FormField label="El botón lleva a" htmlFor={`${idPrefix}-cta-type`}>
-          <Select
-            id={`${idPrefix}-cta-type`}
-            value={draft.ctaType}
-            onChange={(event) => onChange({ ctaType: event.target.value as PromoBannerCtaType })}
-          >
-            <option value="whatsapp">WhatsApp</option>
-            <option value="catalogo">Catálogo</option>
-            <option value="url">Otra URL</option>
-          </Select>
-        </FormField>
-        <FormField label="Texto del botón" required htmlFor={`${idPrefix}-cta-label`}>
-          <Input
-            id={`${idPrefix}-cta-label`}
-            value={draft.ctaLabel}
-            aria-invalid={Boolean(errors.ctaLabel)}
-            aria-describedby={errors.ctaLabel ? `${idPrefix}-cta-label-error` : undefined}
-            onChange={(event) => onChange({ ctaLabel: event.target.value })}
-            placeholder={draft.ctaType === 'catalogo' ? 'Ver catálogo' : 'Pedir por WhatsApp'}
-          />
-          <FieldError id={`${idPrefix}-cta-label-error`} message={errors.ctaLabel} />
-        </FormField>
-        {draft.ctaType === 'url' ? (
-          <FormField label="URL del botón" required htmlFor={`${idPrefix}-cta-value`}>
-            <Input
-              id={`${idPrefix}-cta-value`}
-              type="url"
-              value={draft.ctaValue}
-              aria-invalid={Boolean(errors.ctaValue)}
-              aria-describedby={errors.ctaValue ? `${idPrefix}-cta-value-error` : undefined}
-              onChange={(event) => onChange({ ctaValue: event.target.value })}
-            />
-            <FieldError id={`${idPrefix}-cta-value-error`} message={errors.ctaValue} />
-          </FormField>
-        ) : null}
+        <CtaFields
+          ctaLabel={draft.ctaLabel}
+          ctaType={draft.ctaType}
+          ctaValue={draft.ctaValue}
+          errors={errors}
+          idPrefix={idPrefix}
+          onChange={onChange}
+        />
         <FormField label="Posición del texto" htmlFor={`${idPrefix}-position`}>
           <Select
             id={`${idPrefix}-position`}
@@ -137,44 +113,15 @@ export default function PromoBannerFields({
           </Select>
         </FormField>
         {showSchedule ? (
-          <>
-            <div className="flex items-center gap-3">
-              <ToggleSwitch
-                checked={draft.isActive}
-                disabled={!allowHide && draft.isActive}
-                label={draft.isActive ? 'Ocultar en la portada' : 'Mostrar en la portada'}
-                onChange={(checked) => {
-                  if (!checked && !allowHide) return;
-                  onChange({ isActive: checked });
-                }}
-              />
-              <span className="text-sm text-(--color-dark)">
-                {draft.isActive ? 'Visible' : 'Oculto'}
-              </span>
-            </div>
-            <FormField label="Mostrar desde" htmlFor={`${idPrefix}-starts`}>
-              <Input
-                id={`${idPrefix}-starts`}
-                type="datetime-local"
-                value={draft.startsAt}
-                aria-invalid={Boolean(errors.startsAt)}
-                aria-describedby={errors.startsAt ? `${idPrefix}-starts-error` : undefined}
-                onChange={(event) => onChange({ startsAt: event.target.value })}
-              />
-              <FieldError id={`${idPrefix}-starts-error`} message={errors.startsAt} />
-            </FormField>
-            <FormField label="Ocultar desde" htmlFor={`${idPrefix}-ends`}>
-              <Input
-                id={`${idPrefix}-ends`}
-                type="datetime-local"
-                value={draft.endsAt}
-                aria-invalid={Boolean(errors.endsAt)}
-                aria-describedby={errors.endsAt ? `${idPrefix}-ends-error` : undefined}
-                onChange={(event) => onChange({ endsAt: event.target.value })}
-              />
-              <FieldError id={`${idPrefix}-ends-error`} message={errors.endsAt} />
-            </FormField>
-          </>
+          <ScheduleFields
+            allowHide={allowHide}
+            endsAt={draft.endsAt}
+            errors={errors}
+            idPrefix={idPrefix}
+            isActive={draft.isActive}
+            startsAt={draft.startsAt}
+            onChange={onChange}
+          />
         ) : null}
       </div>
     </div>

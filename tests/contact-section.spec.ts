@@ -22,9 +22,6 @@ test.describe('Sección de contacto', () => {
     await expect(map).toHaveAttribute('title', /.+/);
   });
 
-  // Los anchor links de la app hacen scroll suave sin actualizar el hash
-  // (ver FooterAnchorLink + useAnchorNavigation), así que lo verificable es
-  // que la sección quede a la vista, no que cambie la URL.
   test('el link Contacto del footer desplaza hasta la sección', async ({ page }) => {
     await page.goto('/');
     await expect(page.locator('#contacto')).not.toBeInViewport();

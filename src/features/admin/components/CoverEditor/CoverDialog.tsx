@@ -125,6 +125,7 @@ export default function CoverDialog({
             ref={fileRef}
             type="file"
             accept="image/*"
+            aria-label="Cambiar foto"
             className="sr-only"
             onChange={handleFile}
           />

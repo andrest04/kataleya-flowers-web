@@ -230,7 +230,7 @@ export default function CatalogCollection({
       <section
         aria-label="Opciones del catálogo"
         className={cn(
-          'sticky z-50 my-8 ml-[calc(50%-50vw)] flex min-h-20 w-screen items-stretch border-y border-(--color-primary) bg-(--color-cream) transition-[top] duration-300 ease-out',
+          'sticky z-50 mt-8 mb-14 ml-[calc(50%-50vw)] flex min-h-20 w-screen items-stretch border-y border-(--color-primary) bg-(--color-cream) transition-[top] duration-300 ease-out',
           isHeaderHidden ? 'top-0' : 'top-[calc(6.5rem-1px)]',
         )}
       >

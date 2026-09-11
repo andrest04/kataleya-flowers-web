@@ -64,30 +64,33 @@ export default function HeroCanvasEditor({
     if (!hasDraftChanges(draft, initial)) return;
     setIsSaving(true);
     setError(null);
-    const payload = {
-      altText: draft.altText,
-      ctaLabel: draft.ctaLabel,
-      ctaType: draft.ctaType,
-      ctaValue: draft.ctaValue,
-      endsAt: draft.endsAt,
-      focus: draft.focus,
-      imageUrl: draft.imageUrl,
-      isActive: draft.isActive,
-      kicker: draft.kicker,
-      name: draft.name,
-      startsAt: draft.startsAt,
-      title: draft.title,
-    };
-    const result = slideId
-      ? await updateHeroSlide(slideId, payload)
-      : await createHeroSlide(payload);
-    setIsSaving(false);
-    if (!result.success) {
-      setError(result.error ?? 'No se pudo guardar el hero.');
-      return;
+    try {
+      const payload = {
+        altText: draft.altText,
+        ctaLabel: draft.ctaLabel,
+        ctaType: draft.ctaType,
+        ctaValue: draft.ctaValue,
+        endsAt: draft.endsAt,
+        focus: draft.focus,
+        imageUrl: draft.imageUrl,
+        isActive: draft.isActive,
+        kicker: draft.kicker,
+        name: draft.name,
+        startsAt: draft.startsAt,
+        title: draft.title,
+      };
+      const result = slideId
+        ? await updateHeroSlide(slideId, payload)
+        : await createHeroSlide(payload);
+      if (!result.success) {
+        setError(result.error ?? 'No se pudo guardar el hero.');
+        return;
+      }
+      router.push('/admin/inicio');
+      router.refresh();
+    } finally {
+      setIsSaving(false);
     }
-    router.push('/admin/inicio');
-    router.refresh();
   }
 
   const actions = (

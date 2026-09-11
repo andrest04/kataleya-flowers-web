@@ -27,6 +27,9 @@ async function fetchColorUsageCount(name: string): Promise<number> {
   const res = await fetch(
     `/api/admin/product-color-usage?name=${encodeURIComponent(name)}`,
   );
+  if (!res.ok) {
+    throw new Error(`Request failed: ${res.status}`);
+  }
   const data = (await res.json()) as { products: { product_id: string }[] };
   return data.products.length;
 }

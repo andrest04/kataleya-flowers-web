@@ -81,27 +81,33 @@ export default function TestimonialList({
   async function handleLiveToggle(id: string, isActive: boolean) {
     if (togglingId) return;
     setTogglingId(id);
-    const result = await toggleTestimonialStatus(id, isActive);
-    setTogglingId(null);
-    if (!result.success) {
-      toast.error(`No se pudo cambiar el estado: ${result.error ?? 'Error desconocido'}`);
-      return;
+    try {
+      const result = await toggleTestimonialStatus(id, isActive);
+      if (!result.success) {
+        toast.error(`No se pudo cambiar el estado: ${result.error ?? 'Error desconocido'}`);
+        return;
+      }
+      router.refresh();
+    } finally {
+      setTogglingId(null);
     }
-    router.refresh();
   }
 
   async function handleConfirmDelete() {
     if (!pendingDelete) return;
     setIsDeleting(true);
-    const result = await deleteTestimonial(pendingDelete.id);
-    setIsDeleting(false);
-    if (!result.success) {
-      toast.error(`No se pudo eliminar: ${result.error ?? 'Error desconocido'}`);
-      return;
+    try {
+      const result = await deleteTestimonial(pendingDelete.id);
+      if (!result.success) {
+        toast.error(`No se pudo eliminar: ${result.error ?? 'Error desconocido'}`);
+        return;
+      }
+      setItems((current) => current.filter((item) => item.id !== pendingDelete.id));
+      setPendingDelete(null);
+      toast.success('Testimonio eliminado.');
+    } finally {
+      setIsDeleting(false);
     }
-    setItems((current) => current.filter((item) => item.id !== pendingDelete.id));
-    setPendingDelete(null);
-    toast.success('Testimonio eliminado.');
   }
 
   if (initialItems.length === 0) {

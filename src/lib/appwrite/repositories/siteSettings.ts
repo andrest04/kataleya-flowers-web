@@ -30,9 +30,11 @@ export interface SiteSettingsWritePayload {
   instagramHandle: string;
   location: string;
   mapsEmbedUrl: string;
+  name: string;
   phone: string;
   razonSocial: string;
   ruc: string;
+  website: string;
   whatsappDefault: string;
   whatsappFloat: string;
   whatsappProduct: string;
@@ -61,9 +63,11 @@ function toSiteSettingsRow(doc: SiteSettingsDoc): SiteSettingsRow {
     instagram_handle: doc.instagram_handle,
     location: doc.location,
     maps_embed_url: doc.maps_embed_url,
+    name: doc.name,
     phone: doc.phone,
     razon_social: doc.razon_social,
     ruc: doc.ruc,
+    website: doc.website,
     whatsapp_default: doc.whatsapp_default,
     whatsapp_float: doc.whatsapp_float,
     whatsapp_product: doc.whatsapp_product,
@@ -92,9 +96,11 @@ function toDocumentData(payload: SiteSettingsWritePayload) {
     instagram_handle: payload.instagramHandle,
     location: payload.location,
     maps_embed_url: payload.mapsEmbedUrl,
+    name: payload.name,
     phone: payload.phone,
     razon_social: payload.razonSocial,
     ruc: payload.ruc,
+    website: payload.website,
     whatsapp_default: payload.whatsappDefault,
     whatsapp_float: payload.whatsappFloat,
     whatsapp_product: payload.whatsappProduct,

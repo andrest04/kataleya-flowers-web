@@ -11,7 +11,7 @@ import {
   requireAdmin,
 } from '@/features/admin/utils/auth';
 import {
-  FALLBACK_VALUE_PROPS,
+  fallbackValueProps,
   type ValuePropView,
 } from '@/features/landing/queries/getPublishedValueProps';
 import { getSiteSettings } from '@/features/settings/queries/getSiteSettings';
@@ -129,7 +129,8 @@ async function seedFallbackDocuments(
   exceptId: string | undefined,
   replacement?: ValuePropWritePayload,
 ): Promise<void> {
-  for (const [index, item] of FALLBACK_VALUE_PROPS.entries()) {
+  const fallbacks = fallbackValueProps(await getSiteSettings());
+  for (const [index, item] of fallbacks.entries()) {
     const displayOrder = index + 1;
     if (exceptId && item.id === exceptId && replacement) {
       await createValuePropDocument({ ...replacement, displayOrder });
@@ -147,7 +148,9 @@ export async function createValueProp(data: unknown): Promise<ValuePropActionRes
     if (!parsed.ok) return parsed.failure;
     const existing = await listValueProps();
     if (existing.length === 0) {
-      const matchesFallback = FALLBACK_VALUE_PROPS.some((item) => item.id === fromFallbackId);
+      const matchesFallback = fallbackValueProps(await getSiteSettings()).some(
+        (item) => item.id === fromFallbackId,
+      );
       if (matchesFallback) {
         await seedFallbackDocuments(fromFallbackId, await toWritePayload(parsed.value, 1));
       } else {
@@ -212,7 +215,7 @@ export async function toggleValuePropStatus(
     }
     const existingRows = await listValueProps();
     if (existingRows.length === 0) {
-      const fallback = FALLBACK_VALUE_PROPS.find((item) => item.id === id);
+      const fallback = fallbackValueProps(await getSiteSettings()).find((item) => item.id === id);
       if (!fallback) {
         return { success: false, error: 'No encontramos ese destacado.', code: 'INTERNAL' };
       }

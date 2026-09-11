@@ -14,6 +14,7 @@ import {
   failureFromUnknown,
   requireAdmin,
 } from '@/features/admin/utils/auth';
+import { getSiteSettings } from '@/features/settings/queries/getSiteSettings';
 import {
   activatePromoPresetExclusive,
   countActivePromoPresets,
@@ -29,6 +30,7 @@ import {
 } from '@/lib/appwrite/repositories/promoBanners';
 import { imageStorage } from '@/lib/imageStorage';
 import { promoPresetKey } from '@/lib/promoPresetKey';
+import { defaultWhatsappHref } from '@/lib/siteSettings';
 
 const LAST_ACTIVE_ERROR = 'Tiene que quedar al menos uno activo.';
 
@@ -116,11 +118,12 @@ function revalidateHomeContent(): void {
   updateTag('home-content');
 }
 
-function toWritePayload(
+async function toWritePayload(
   value: ReturnType<typeof promoBannerSchema.parse>,
   displayOrder: number,
 ) {
-  const cta = persistCta(value);
+  const settings = await getSiteSettings();
+  const cta = persistCta(value, defaultWhatsappHref(settings));
   return {
     contentPosition: value.contentPosition,
     ctaExternal: cta.ctaExternal,
@@ -145,7 +148,7 @@ export async function createPromoBanner(data: unknown): Promise<PromoBannerActio
     const hasOtherActive = (await countActivePromoPresets()) > 0;
     const displayOrder = await getNextPromoBannerOrder();
     const isActive = hasOtherActive ? parsed.value.isActive : true;
-    await createPromoBannerDocument(toWritePayload({ ...parsed.value, isActive }, displayOrder));
+    await createPromoBannerDocument(await toWritePayload({ ...parsed.value, isActive }, displayOrder));
     if (isActive && hasOtherActive) {
       await activatePromoPresetExclusive(parsed.value.name);
     }
@@ -171,8 +174,8 @@ export async function createPromoBannerPair(data: unknown): Promise<PromoBannerA
     const displayOrder = await getNextPromoBannerOrder();
     const isActive = hasOtherActive ? parsed[0].value.isActive : true;
     const name = parsed[0].value.name;
-    await createPromoBannerDocument(toWritePayload({ ...parsed[0].value, isActive, name }, displayOrder));
-    await createPromoBannerDocument(toWritePayload({ ...parsed[1].value, isActive, name }, displayOrder + 1));
+    await createPromoBannerDocument(await toWritePayload({ ...parsed[0].value, isActive, name }, displayOrder));
+    await createPromoBannerDocument(await toWritePayload({ ...parsed[1].value, isActive, name }, displayOrder + 1));
     if (isActive && hasOtherActive) {
       await activatePromoPresetExclusive(name);
     }
@@ -202,7 +205,7 @@ export async function updatePromoBanner(id: string, data: unknown): Promise<Prom
         return { success: false, error: LAST_ACTIVE_ERROR, code: 'VALIDATION' };
       }
     }
-    await updatePromoBannerDocument(idParsed.data, toWritePayload(parsed.value, existing.display_order));
+    await updatePromoBannerDocument(idParsed.data, await toWritePayload(parsed.value, existing.display_order));
     if (parsed.value.isActive) {
       await activatePromoPresetExclusive(parsed.value.name);
     }
@@ -242,8 +245,8 @@ export async function updatePromoBannerPair(ids: unknown, data: unknown): Promis
         return { success: false, error: LAST_ACTIVE_ERROR, code: 'VALIDATION' };
       }
     }
-    await updatePromoBannerDocument(idA.data, toWritePayload({ ...parsed[0].value, name, isActive }, existingA.display_order));
-    await updatePromoBannerDocument(idB.data, toWritePayload({ ...parsed[1].value, name, isActive }, existingB.display_order));
+    await updatePromoBannerDocument(idA.data, await toWritePayload({ ...parsed[0].value, name, isActive }, existingA.display_order));
+    await updatePromoBannerDocument(idB.data, await toWritePayload({ ...parsed[1].value, name, isActive }, existingB.display_order));
     if (isActive) {
       await activatePromoPresetExclusive(name);
     }

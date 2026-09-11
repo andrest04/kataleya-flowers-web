@@ -80,15 +80,18 @@ export default function PromoBannerList({
   async function handleConfirmDelete() {
     if (!pendingDelete) return;
     setIsDeleting(true);
-    const result = await deletePromoPreset(pendingDelete.key);
-    setIsDeleting(false);
-    if (!result.success) {
-      toast.error(`No se pudo eliminar: ${result.error ?? 'Error desconocido'}`);
-      return;
+    try {
+      const result = await deletePromoPreset(pendingDelete.key);
+      if (!result.success) {
+        toast.error(`No se pudo eliminar: ${result.error ?? 'Error desconocido'}`);
+        return;
+      }
+      setItems((current) => current.filter((banner) => promoPresetKey(banner) !== pendingDelete.key));
+      setPendingDelete(null);
+      toast.success('Banners eliminados.');
+    } finally {
+      setIsDeleting(false);
     }
-    setItems((current) => current.filter((banner) => promoPresetKey(banner) !== pendingDelete.key));
-    setPendingDelete(null);
-    toast.success('Banners eliminados.');
   }
 
   if (presets.length === 0) {

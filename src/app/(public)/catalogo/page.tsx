@@ -8,49 +8,55 @@ import { getCategories } from '@/features/catalog/queries/getCategories';
 import { getFlowerTypes } from '@/features/catalog/queries/getFlowerTypes';
 import { getProductColors } from '@/features/catalog/queries/getProductColors';
 import { getProducts } from '@/features/catalog/queries/getProducts';
-import { BUSINESS } from '@/lib/constants';
+import { getSiteSettings } from '@/features/settings/queries/getSiteSettings';
+import { catalogSeoDescription } from '@/lib/siteSettings';
 
-const SITE_URL = BUSINESS.website;
-
-const BREADCRUMB_LD = {
-  '@context': 'https://schema.org',
-  '@type': 'BreadcrumbList',
-  itemListElement: [
-    {
-      '@type': 'ListItem',
-      position: 1,
-      name: 'Inicio',
-      item: `${SITE_URL}/`,
-    },
-    {
-      '@type': 'ListItem',
-      position: 2,
-      name: 'Catálogo',
-      item: `${SITE_URL}/catalogo`,
-    },
-  ],
-};
+function buildBreadcrumbLd(siteUrl: string) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Inicio',
+        item: `${siteUrl}/`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'Catálogo',
+        item: `${siteUrl}/catalogo`,
+      },
+    ],
+  };
+}
 
 export const revalidate = 3600;
 
-export const metadata: Metadata = {
-  title: 'Catálogo de Flores',
-  description: `Explora nuestro catálogo de arreglos florales, orquídeas y regalos premium disponibles en ${BUSINESS.location}.`,
-  alternates: {
-    canonical: '/catalogo',
-  },
-  openGraph: {
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSiteSettings();
+  const description = catalogSeoDescription(settings.location);
+
+  return {
     title: 'Catálogo de Flores',
-    description: `Explora nuestro catálogo de arreglos florales, orquídeas y regalos premium disponibles en ${BUSINESS.location}.`,
-    url: '/catalogo',
-    type: 'website',
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Catálogo de Flores',
-    description: `Explora nuestro catálogo de arreglos florales, orquídeas y regalos premium disponibles en ${BUSINESS.location}.`,
-  },
-};
+    description,
+    alternates: {
+      canonical: '/catalogo',
+    },
+    openGraph: {
+      title: 'Catálogo de Flores',
+      description,
+      url: '/catalogo',
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: 'Catálogo de Flores',
+      description,
+    },
+  };
+}
 
 interface CatalogoPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -63,13 +69,15 @@ function firstParam(value: string | string[] | undefined): string {
 export default async function CatalogoPage({
   searchParams,
 }: CatalogoPageProps): Promise<ReactElement> {
-  const [categories, products, colorRows, flowerTypeRows, params] = await Promise.all([
+  const [categories, products, colorRows, flowerTypeRows, params, settings] = await Promise.all([
     getCategories(),
     getProducts(),
     getProductColors(),
     getFlowerTypes(),
     searchParams,
+    getSiteSettings(),
   ]);
+  const SITE_URL = settings.website;
   const categorySlugs = new Map(
     categories.map((category) => [category.id, category.slug]),
   );
@@ -112,7 +120,7 @@ export default async function CatalogoPage({
 
   return (
     <main id="main-content" className="min-h-screen bg-cream px-2 pb-16 pt-10 sm:px-2 lg:px-3">
-      <JsonLd data={[BREADCRUMB_LD, itemListLd]} />
+      <JsonLd data={[buildBreadcrumbLd(SITE_URL), itemListLd]} />
       <div className="mx-auto max-w-8xl">
         <header className="mx-auto mb-10 max-w-3xl text-center sm:mb-12">
           <h1 className="text-balance font-heading text-4xl leading-tight text-(--color-primary) sm:text-5xl">
