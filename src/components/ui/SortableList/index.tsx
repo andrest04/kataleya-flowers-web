@@ -18,7 +18,7 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { type ReactNode, useId } from 'react';
+import { type ReactNode, useId, useSyncExternalStore } from 'react';
 
 import { createSortableAnnouncements, sortableScreenReaderInstructions } from './announcements';
 
@@ -30,6 +30,18 @@ interface SortableListProps {
   onReorder: (ids: string[]) => void;
 }
 
+function subscribeDocumentBody() {
+  return () => undefined;
+}
+
+function getDocumentBody(): HTMLElement | undefined {
+  return document.body;
+}
+
+function getServerDocumentBody(): HTMLElement | undefined {
+  return undefined;
+}
+
 export default function SortableList({
   children,
   getItemLabel,
@@ -38,6 +50,11 @@ export default function SortableList({
   onReorder,
 }: SortableListProps) {
   const dndId = useId();
+  const overlayContainer = useSyncExternalStore(
+    subscribeDocumentBody,
+    getDocumentBody,
+    getServerDocumentBody,
+  );
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -64,7 +81,7 @@ export default function SortableList({
         screenReaderInstructions: sortableScreenReaderInstructions,
         // Portal the live region out of the list. When the list is a <tbody>,
         // rendering it in place would put a <div> inside a table body.
-        container: typeof document === 'undefined' ? undefined : document.body,
+        container: overlayContainer,
       }}
       onDragEnd={handleDragEnd}
     >
