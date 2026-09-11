@@ -60,10 +60,12 @@ export function applySearchFilters(
 
   if (filters.categorySlugs.length <= 1) return filtered;
 
+  const selectedSlugs = new Set(filters.categorySlugs);
   const allowedIds = new Set(
-    categories
-      .filter((category) => filters.categorySlugs.includes(category.slug))
-      .map((category) => category.id),
+    categories.reduce<string[]>((ids, category) => {
+      if (selectedSlugs.has(category.slug)) ids.push(category.id);
+      return ids;
+    }, []),
   );
   return filtered.filter((product) => allowedIds.has(product.categoryId));
 }

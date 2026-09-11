@@ -91,9 +91,10 @@ export default async function BuscarPage({
     results.flatMap(({ product }) => product.flowerTypes ?? []),
   );
   const colors = colorRows.filter(({ name }) => assignedColors.has(name));
-  const flowerTypes = flowerTypeRows
-    .map(({ name }) => name)
-    .filter((name) => assignedFlowerTypes.has(name));
+  const flowerTypes = flowerTypeRows.reduce<string[]>((names, { name }) => {
+    if (assignedFlowerTypes.has(name)) names.push(name);
+    return names;
+  }, []);
   const initialQuery = {
     category: firstParam(params.categoria),
     priceMin: firstParam(params.precio_min),

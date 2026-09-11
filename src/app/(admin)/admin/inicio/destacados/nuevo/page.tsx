@@ -17,8 +17,8 @@ interface NuevoDestacadoPageProps {
 }
 
 export default async function NuevoDestacadoPage({ searchParams }: NuevoDestacadoPageProps) {
-  const { from } = await searchParams;
-  const [items, liveItems, settings] = await Promise.all([
+  const [{ from }, items, liveItems, settings] = await Promise.all([
+    searchParams,
     getAdminValueProps(),
     getPublishedValueProps(),
     getSiteSettings(),

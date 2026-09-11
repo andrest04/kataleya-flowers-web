@@ -17,8 +17,8 @@ interface NuevaTarjetaPageProps {
 }
 
 export default async function NuevaTarjetaPage({ searchParams }: NuevaTarjetaPageProps) {
-  const { from } = await searchParams;
-  const [tiles, liveTiles, settings] = await Promise.all([
+  const [{ from }, tiles, liveTiles, settings] = await Promise.all([
+    searchParams,
     getAdminDiscoverTiles(),
     getPublishedDiscoverTiles(),
     getSiteSettings(),
