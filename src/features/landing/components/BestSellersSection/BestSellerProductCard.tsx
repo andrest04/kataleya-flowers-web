@@ -28,7 +28,7 @@ export default function BestSellerProductCard({
       onClick={onClick}
       className={`group block ${className}`}
     >
-      <div className="relative aspect-[4/5] overflow-hidden rounded-md bg-(--color-surface) outline outline-1 -outline-offset-1 outline-black/10">
+      <div className="relative aspect-[4/5] overflow-hidden rounded-sm bg-(--color-surface) outline outline-1 -outline-offset-1 outline-[color-mix(in_srgb,var(--color-dark)_5%,transparent)]">
         <Image
           src={product.imageUrl}
           alt={product.name}
