@@ -4,7 +4,7 @@ import { domAnimation, LazyMotion, m } from "framer-motion";
 import Link from "next/link";
 
 import type { SearchSuggestions } from "@/features/catalog/actions/getSearchSuggestions";
-import BestSellerProductCard from "@/features/landing/components/BestSellersSection/BestSellerProductCard";
+import CatalogCollectionCard from "@/features/catalog/components/CatalogCollectionCard";
 
 import { PANEL_CONTAINER } from "./constants";
 import SearchSuggestionsSkeleton from "./SearchSuggestionsSkeleton";
@@ -36,7 +36,7 @@ export default function SearchSuggestionsPanel({
       <div className={`${PANEL_CONTAINER} pt-6 pb-15`}>
         <div className="flex flex-col gap-10 lg:flex-row lg:gap-10">
           {featuredCategories.length > 0 && (
-            <div className="lg:w-64 lg:shrink-0 lg:border-r lg:border-(--color-border) lg:pr-10">
+            <div className="lg:w-64 lg:shrink-0">
               <h3 className="mb-6 font-body text-sm font-semibold text-(--color-dark)">
                 Categorías destacadas
               </h3>
@@ -59,24 +59,29 @@ export default function SearchSuggestionsPanel({
           {suggestions.products.length > 0 && (
             <div className="min-w-0 flex-1">
               <h3 className="mb-6 font-body text-sm font-semibold text-(--color-dark)">
-                Destacados
+                Más vendidos
               </h3>
-              <div className="grid grid-cols-2 gap-8 lg:grid-cols-4 lg:gap-10">
-                {suggestions.products.map((product, index) => (
-                  <m.div
-                    key={product.id}
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: index * 0.05, ease: "easeOut" }}
-                  >
-                    <BestSellerProductCard
-                      product={product}
-                      categorySlug={categoryById.get(product.categoryId)?.slug}
-                      className="w-full"
-                      onClick={onNavigate}
-                    />
-                  </m.div>
-                ))}
+              <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 lg:gap-5">
+                {suggestions.products.map((product, index) => {
+                  const categorySlug = categoryById.get(product.categoryId)?.slug;
+                  if (!categorySlug) return null;
+
+                  return (
+                    <m.div
+                      key={product.id}
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: index * 0.05, ease: "easeOut" }}
+                    >
+                      <CatalogCollectionCard
+                        product={product}
+                        categorySlug={categorySlug}
+                        size="compact"
+                        onClick={onNavigate}
+                      />
+                    </m.div>
+                  );
+                })}
               </div>
             </div>
           )}
