@@ -14,10 +14,7 @@ import { getProductBySlug } from "@/features/catalog/queries/getProductBySlug";
 import { getProducts } from "@/features/catalog/queries/getProducts";
 import { getProductsByCategory } from "@/features/catalog/queries/getProductsByCategory";
 import { getSiteSettings } from "@/features/settings/queries/getSiteSettings";
-import { BUSINESS } from "@/lib/constants";
 import { floralArrangementsSeoDescription } from "@/lib/siteSettings";
-
-const SITE_URL = BUSINESS.website;
 
 export const revalidate = 3600;
 
@@ -143,6 +140,7 @@ export default async function ProductoPage({
     .filter((p) => p.id !== product.id)
     .slice(0, 8);
 
+  const SITE_URL = settings.website;
   const productUrl = `${SITE_URL}/catalogo/${category.slug}/${product.slug}`;
   const productImages =
     product.images && product.images.length > 0

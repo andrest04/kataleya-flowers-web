@@ -2,11 +2,11 @@ import type { MetadataRoute } from "next";
 
 import { getCategories } from "@/features/catalog/queries/getCategories";
 import { getSitemapProducts } from "@/features/catalog/queries/getSitemapProducts";
-import { BUSINESS } from "@/lib/constants";
-
-const SITE_URL = BUSINESS.website;
+import { getSiteSettings } from "@/features/settings/queries/getSiteSettings";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const settings = await getSiteSettings();
+  const SITE_URL = settings.website;
   const now = new Date();
 
   const staticEntries: MetadataRoute.Sitemap = [

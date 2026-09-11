@@ -15,9 +15,8 @@ import { getFlowerTypes } from '@/features/catalog/queries/getFlowerTypes';
 import { getProductColors } from '@/features/catalog/queries/getProductColors';
 import { getProducts } from '@/features/catalog/queries/getProducts';
 import { getEffectivePrice } from '@/features/catalog/utils/filterProducts';
-import { BUSINESS } from '@/lib/constants';
+import { getSiteSettings } from '@/features/settings/queries/getSiteSettings';
 
-const SITE_URL = BUSINESS.website;
 const FREQUENT_LIMIT = 4;
 
 export const revalidate = 3600;
@@ -58,7 +57,7 @@ export async function generateMetadata({
 export default async function BuscarPage({
   searchParams,
 }: BuscarPageProps): Promise<ReactElement> {
-  const [categories, products, featured, colorRows, flowerTypeRows, params] =
+  const [categories, products, featured, colorRows, flowerTypeRows, params, settings] =
     await Promise.all([
       getCategories(),
       getProducts(),
@@ -66,7 +65,9 @@ export default async function BuscarPage({
       getProductColors(),
       getFlowerTypes(),
       searchParams,
+      getSiteSettings(),
     ]);
+  const SITE_URL = settings.website;
 
   const q = firstParam(params.q).trim();
   const prices = products.map(getEffectivePrice);

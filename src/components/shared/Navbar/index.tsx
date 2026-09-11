@@ -107,7 +107,7 @@ export default function Navbar({ settings }: NavbarProps) {
                 href="/"
                 className="font-heading text-[1.75rem] font-bold uppercase tracking-[0.1em] leading-none text-(--color-primary)"
               >
-                Kataleya
+                {settings.name}
               </Link>
 
               <div className="flex items-center justify-end">

@@ -19,10 +19,12 @@ export interface SiteSettingsDraft {
   location: string;
   mapsEmbedUrl: string;
   mapsLink: string;
+  name: string;
   openDays: number[];
   phone: string;
   razonSocial: string;
   ruc: string;
+  website: string;
   whatsappDefault: string;
   whatsappFloat: string;
   whatsappProduct: string;

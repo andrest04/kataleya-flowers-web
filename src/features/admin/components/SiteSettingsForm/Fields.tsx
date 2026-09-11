@@ -30,6 +30,40 @@ export default function SiteSettingsFields({
     <div className="grid gap-6 xl:grid-cols-2">
       <SectionCard
         className="xl:col-span-2"
+        headingId="settings-identity-heading"
+        title="Identidad"
+      >
+        <div className="grid gap-4 sm:grid-cols-2">
+          <FormField label="Nombre del negocio" required htmlFor={fieldId('name')}>
+            <Input
+              id={fieldId('name')}
+              autoComplete="organization"
+              value={draft.name}
+              aria-invalid={Boolean(errors.name)}
+              aria-describedby={errors.name ? fieldId('name-error') : undefined}
+              onChange={(event) => onChange({ name: event.target.value })}
+            />
+            <FieldError id={fieldId('name-error')} message={errors.name} />
+          </FormField>
+          <FormField label="Sitio web" required htmlFor={fieldId('website')}>
+            <Input
+              id={fieldId('website')}
+              type="url"
+              autoComplete="off"
+              spellCheck={false}
+              placeholder="https://www.tudominio.com"
+              value={draft.website}
+              aria-invalid={Boolean(errors.website)}
+              aria-describedby={errors.website ? fieldId('website-error') : undefined}
+              onChange={(event) => onChange({ website: event.target.value })}
+            />
+            <FieldError id={fieldId('website-error')} message={errors.website} />
+          </FormField>
+        </div>
+      </SectionCard>
+
+      <SectionCard
+        className="xl:col-span-2"
         headingId="settings-contact-heading"
         title="Contacto"
       >

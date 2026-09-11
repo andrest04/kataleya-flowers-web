@@ -10,10 +10,7 @@ import { getFlowerTypes } from "@/features/catalog/queries/getFlowerTypes";
 import { getProductColors } from "@/features/catalog/queries/getProductColors";
 import { getProductsByCategory } from "@/features/catalog/queries/getProductsByCategory";
 import { getSiteSettings } from "@/features/settings/queries/getSiteSettings";
-import { BUSINESS } from "@/lib/constants";
 import { floralArrangementsSeoDescription } from "@/lib/siteSettings";
-
-const SITE_URL = BUSINESS.website;
 
 export const revalidate = 3600;
 
@@ -89,11 +86,13 @@ export default async function CategoriaPage({
   params,
   searchParams,
 }: CategoriaPageProps): Promise<React.ReactElement> {
-  const [{ categoria }, categories, resolvedSearchParams] = await Promise.all([
+  const [{ categoria }, categories, resolvedSearchParams, settings] = await Promise.all([
     params,
     getCategories(),
     searchParams,
+    getSiteSettings(),
   ]);
+  const SITE_URL = settings.website;
   const category = categories.find((cat) => cat.slug === categoria);
 
   if (!category) {

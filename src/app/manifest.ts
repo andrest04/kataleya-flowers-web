@@ -8,7 +8,7 @@ export default async function manifest(): Promise<MetadataRoute.Manifest> {
 
   return {
     name: settings.name,
-    short_name: "Kataleya",
+    short_name: settings.name,
     description: floristSeoDescription(settings),
     start_url: "/",
     display: "standalone",

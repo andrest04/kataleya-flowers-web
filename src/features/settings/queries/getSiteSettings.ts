@@ -43,7 +43,7 @@ function fromRow(row: SiteSettingsRow): SiteSettings {
       whatsappProduct: row.whatsapp_product || defaults.messages.whatsappProduct,
     },
     monthlyOrders: defaults.monthlyOrders,
-    name: defaults.name,
+    name: row.name || defaults.name,
     phone,
     razonSocial: row.razon_social || defaults.razonSocial,
     ruc: row.ruc || defaults.ruc,
@@ -53,7 +53,7 @@ function fromRow(row: SiteSettingsRow): SiteSettings {
       contact: row.contact_title || defaults.titles.contact,
       discover: row.discover_title || defaults.titles.discover,
     },
-    website: defaults.website,
+    website: row.website || defaults.website,
     whatsapp: contact.whatsapp,
   };
 }

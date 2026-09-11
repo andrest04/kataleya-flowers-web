@@ -1,10 +1,11 @@
 import type { MetadataRoute } from "next";
 
-import { BUSINESS } from "@/lib/constants";
+import { getSiteSettings } from "@/features/settings/queries/getSiteSettings";
 
-const SITE_URL = BUSINESS.website;
+export default async function robots(): Promise<MetadataRoute.Robots> {
+  const settings = await getSiteSettings();
+  const SITE_URL = settings.website;
 
-export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
       {
