@@ -63,7 +63,9 @@ export default function Navbar({ settings }: NavbarProps) {
           />
 
           <header
-            className={`h-16 border-b border-(--color-primary) bg-(--color-cream) ${
+            className={`h-16 border-b border-(--color-primary) ${
+              isSearchOpen ? "bg-(--color-overlay)" : "bg-(--color-cream)"
+            } ${
               isSearchOpen || isCatalogMenuOpen ? "overflow-visible" : "overflow-hidden"
             }`}
           >

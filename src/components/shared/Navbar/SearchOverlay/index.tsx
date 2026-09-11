@@ -60,7 +60,7 @@ export default function SearchOverlay({
 
         <div
           id="search-panel"
-          className="absolute inset-x-0 top-full w-full overflow-hidden border-t border-(--color-border) bg-(--color-cream)"
+          className="absolute inset-x-0 top-full w-full overflow-hidden border-t border-(--color-border) bg-(--color-overlay)"
           style={{
             boxShadow:
               "0 16px 32px color-mix(in srgb, var(--color-dark) 12%, transparent)",

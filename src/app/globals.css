@@ -39,6 +39,7 @@
   --color-gold-text-dark: #f0c668; /* 5.01:1 on footer green #2d5a1b — text on dark green */
   --color-muted: color-mix(in srgb, var(--color-dark) 50%, transparent);
   --color-surface: color-mix(in srgb, var(--color-dark) 6%, var(--color-cream));
+  --color-overlay: color-mix(in srgb, var(--color-dark) 3%, var(--color-white));
   --color-border: color-mix(in srgb, var(--color-dark) 12%, var(--color-cream));
   --background: #fdfcfa;
   --foreground: #1a1a1a;
@@ -90,6 +91,7 @@
   --color-gold-text-dark: var(--color-gold-text-dark);
   --color-muted: var(--color-muted);
   --color-surface: var(--color-surface);
+  --color-overlay: var(--color-overlay);
   --color-border: var(--color-border);
   --font-sans: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
