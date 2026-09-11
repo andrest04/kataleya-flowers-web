@@ -72,17 +72,20 @@ export default function PromoBannerEditor({
     setIsSaving(true);
     setError(null);
     setFieldErrors({});
-    const result = bannerId
-      ? await updatePromoBanner(bannerId, toPayload(draft))
-      : await createPromoBanner(toPayload(draft));
-    setIsSaving(false);
-    if (!result.success) {
-      setFieldErrors(fieldErrorsFromIssues(result.issues));
-      setError(messageFromFailure(result));
-      return;
+    try {
+      const result = bannerId
+        ? await updatePromoBanner(bannerId, toPayload(draft))
+        : await createPromoBanner(toPayload(draft));
+      if (!result.success) {
+        setFieldErrors(fieldErrorsFromIssues(result.issues));
+        setError(messageFromFailure(result));
+        return;
+      }
+      router.push('/admin/inicio');
+      router.refresh();
+    } finally {
+      setIsSaving(false);
     }
-    router.push('/admin/inicio');
-    router.refresh();
   }
 
   const actions = (

@@ -81,27 +81,33 @@ export default function DiscoverTileList({
   async function handleLiveToggle(id: string, isActive: boolean) {
     if (togglingId) return;
     setTogglingId(id);
-    const result = await toggleDiscoverTileStatus(id, isActive);
-    setTogglingId(null);
-    if (!result.success) {
-      toast.error(`No se pudo cambiar el estado: ${result.error ?? 'Error desconocido'}`);
-      return;
+    try {
+      const result = await toggleDiscoverTileStatus(id, isActive);
+      if (!result.success) {
+        toast.error(`No se pudo cambiar el estado: ${result.error ?? 'Error desconocido'}`);
+        return;
+      }
+      router.refresh();
+    } finally {
+      setTogglingId(null);
     }
-    router.refresh();
   }
 
   async function handleConfirmDelete() {
     if (!pendingDelete) return;
     setIsDeleting(true);
-    const result = await deleteDiscoverTile(pendingDelete.id);
-    setIsDeleting(false);
-    if (!result.success) {
-      toast.error(`No se pudo eliminar: ${result.error ?? 'Error desconocido'}`);
-      return;
+    try {
+      const result = await deleteDiscoverTile(pendingDelete.id);
+      if (!result.success) {
+        toast.error(`No se pudo eliminar: ${result.error ?? 'Error desconocido'}`);
+        return;
+      }
+      setItems((current) => current.filter((item) => item.id !== pendingDelete.id));
+      setPendingDelete(null);
+      toast.success('Tarjeta eliminada.');
+    } finally {
+      setIsDeleting(false);
     }
-    setItems((current) => current.filter((item) => item.id !== pendingDelete.id));
-    setPendingDelete(null);
-    toast.success('Tarjeta eliminada.');
   }
 
   if (initialItems.length === 0) {

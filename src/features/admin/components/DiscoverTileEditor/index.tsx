@@ -71,20 +71,23 @@ export default function DiscoverTileEditor({
     setIsSaving(true);
     setError(null);
     setFieldErrors({});
-    const payload = fromFallbackId
-      ? { ...toPayload(draft), fromFallbackId }
-      : toPayload(draft);
-    const result = tileId
-      ? await updateDiscoverTile(tileId, toPayload(draft))
-      : await createDiscoverTile(payload);
-    setIsSaving(false);
-    if (!result.success) {
-      setFieldErrors(fieldErrorsFromIssues(result.issues));
-      setError(messageFromFailure(result));
-      return;
+    try {
+      const payload = fromFallbackId
+        ? { ...toPayload(draft), fromFallbackId }
+        : toPayload(draft);
+      const result = tileId
+        ? await updateDiscoverTile(tileId, toPayload(draft))
+        : await createDiscoverTile(payload);
+      if (!result.success) {
+        setFieldErrors(fieldErrorsFromIssues(result.issues));
+        setError(messageFromFailure(result));
+        return;
+      }
+      router.push('/admin/inicio');
+      router.refresh();
+    } finally {
+      setIsSaving(false);
     }
-    router.push('/admin/inicio');
-    router.refresh();
   }
 
   const actions = (

@@ -54,15 +54,18 @@ export default function HeroSlideList({ slides: initialSlides }: HeroSlideListPr
   async function handleConfirmDelete() {
     if (!pendingDelete) return;
     setIsDeleting(true);
-    const result = await deleteHeroSlide(pendingDelete.id);
-    setIsDeleting(false);
-    if (!result.success) {
-      toast.error(`No se pudo eliminar: ${result.error ?? 'Error desconocido'}`);
-      return;
+    try {
+      const result = await deleteHeroSlide(pendingDelete.id);
+      if (!result.success) {
+        toast.error(`No se pudo eliminar: ${result.error ?? 'Error desconocido'}`);
+        return;
+      }
+      setItems((current) => current.filter((slide) => slide.id !== pendingDelete.id));
+      setPendingDelete(null);
+      toast.success('Slide eliminado.');
+    } finally {
+      setIsDeleting(false);
     }
-    setItems((current) => current.filter((slide) => slide.id !== pendingDelete.id));
-    setPendingDelete(null);
-    toast.success('Slide eliminado.');
   }
 
   if (items.length === 0) {

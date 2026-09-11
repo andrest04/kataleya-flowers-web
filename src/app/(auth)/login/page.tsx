@@ -35,18 +35,21 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
 
-    const result = await loginAction({ email, password });
-    if (!result.ok) {
-      const safeError =
-        result.code === 'VALIDATION' || result.code === 'INVALID_CREDENTIALS'
-          ? result.error
-          : 'No se pudo iniciar sesión. Intenta de nuevo.';
-      setError(safeError);
+    try {
+      const result = await loginAction({ email, password });
+      if (!result.ok) {
+        const safeError =
+          result.code === 'VALIDATION' || result.code === 'INVALID_CREDENTIALS'
+            ? result.error
+            : 'No se pudo iniciar sesión. Intenta de nuevo.';
+        setError(safeError);
+        return;
+      }
+      router.push('/admin');
+      router.refresh();
+    } finally {
       setLoading(false);
-      return;
     }
-    router.push('/admin');
-    router.refresh();
   }
 
   return (

@@ -93,27 +93,30 @@ export default function SiteSettingsForm({ initial }: SiteSettingsFormProps) {
     setError(null);
     setFieldErrors({});
     setSaved(false);
-    const result = await saveSiteSettings(toPayload(draft));
-    setIsSaving(false);
-    if (!result.success) {
-      const nextErrors = fieldErrorsFromIssues(result.issues);
-      setFieldErrors(nextErrors);
-      setError(messageFromFailure(result));
-      focusFirstInvalid(nextErrors);
-      return;
+    try {
+      const result = await saveSiteSettings(toPayload(draft));
+      if (!result.success) {
+        const nextErrors = fieldErrorsFromIssues(result.issues);
+        setFieldErrors(nextErrors);
+        setError(messageFromFailure(result));
+        focusFirstInvalid(nextErrors);
+        return;
+      }
+      const next: SiteSettingsDraft = {
+        ...draft,
+        announcementCtaHref: isDerivedWhatsappCta(draft.announcementCtaHref)
+          ? ''
+          : draft.announcementCtaHref,
+        mapsEmbedUrl: result.mapsEmbedUrl,
+        mapsLink: '',
+      };
+      setDraft(next);
+      setBaseline(next);
+      setSaved(true);
+      router.refresh();
+    } finally {
+      setIsSaving(false);
     }
-    const next: SiteSettingsDraft = {
-      ...draft,
-      announcementCtaHref: isDerivedWhatsappCta(draft.announcementCtaHref)
-        ? ''
-        : draft.announcementCtaHref,
-      mapsEmbedUrl: result.mapsEmbedUrl,
-      mapsLink: '',
-    };
-    setDraft(next);
-    setBaseline(next);
-    setSaved(true);
-    router.refresh();
   }
 
   return (

@@ -94,21 +94,24 @@ export default function PromoBannerPairEditor({
     setIsSaving(true);
     setError(null);
     setFieldErrors({});
-    const shared = { endsAt, isActive, name, startsAt };
-    const payloads = [toPayload(drafts[0], shared), toPayload(drafts[1], shared)];
-    const result = bannerIds
-      ? await updatePromoBannerPair(bannerIds, payloads)
-      : await createPromoBannerPair(payloads);
-    setIsSaving(false);
-    if (!result.success) {
-      setFieldErrors(fieldErrorsFromIssues(result.issues));
-      setError(messageFromFailure(result));
-      return;
+    try {
+      const shared = { endsAt, isActive, name, startsAt };
+      const payloads = [toPayload(drafts[0], shared), toPayload(drafts[1], shared)];
+      const result = bannerIds
+        ? await updatePromoBannerPair(bannerIds, payloads)
+        : await createPromoBannerPair(payloads);
+      if (!result.success) {
+        setFieldErrors(fieldErrorsFromIssues(result.issues));
+        setError(messageFromFailure(result));
+        return;
+      }
+      if (showCancel || bannerIds) {
+        router.push('/admin/inicio');
+      }
+      router.refresh();
+    } finally {
+      setIsSaving(false);
     }
-    if (showCancel || bannerIds) {
-      router.push('/admin/inicio');
-    }
-    router.refresh();
   }
 
   return (
