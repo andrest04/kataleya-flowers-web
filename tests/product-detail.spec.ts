@@ -2,29 +2,12 @@ import { expect, type Page,test } from "@playwright/test";
 
 import { BUSINESS } from "../src/lib/constants";
 
-/**
- * Phase 4B — Detalle de producto + lightbox
- *
- * Valida:
- *  - Carga del detalle (título, precio, descripción, galería)
- *  - Click en thumbnails cambia imagen principal
- *  - Lightbox abre/cierra con click, Escape, botón cerrar y backdrop
- *  - Navegación con teclado (←/→) entre imágenes
- *  - A11y: role="dialog", aria-modal, focus trap
- *  - WhatsApp CTA con wa.me/51990051041 + nombre del producto en mensaje
- *
- * Helper: descubrimos un producto navegando desde /catalogo → primera categoría
- * → primer producto. Evita hardcodear slugs reales.
- */
-
 async function navigateToFirstProduct(page: Page): Promise<{
   productHref: string;
   productName: string;
 }> {
   await page.goto("/catalogo");
 
-  // Tomamos el href de la primera categoría y navegamos directo por URL
-  // (equivalente al click, evita flake de transición en dev).
   const firstCategoryLink = page
     .locator('a[href^="/catalogo/"]:not([href="/catalogo"])')
     .first();
@@ -36,7 +19,6 @@ async function navigateToFirstProduct(page: Page): Promise<{
   const slug = new URL(page.url()).pathname.split("/").filter(Boolean)[1];
   const productCards = page.locator(`a[href^="/catalogo/${slug}/"]`);
 
-  // Esperamos a que las cards aparezcan en el DOM.
   await page
     .waitForFunction(
       ({ s }) =>
@@ -44,9 +26,7 @@ async function navigateToFirstProduct(page: Page): Promise<{
       { s: slug },
       { timeout: 10_000 },
     )
-    .catch(() => {
-      // count=0 manejado abajo
-    });
+    .catch(() => {});
 
   const count = await productCards.count();
   if (count === 0) {
@@ -60,7 +40,6 @@ async function navigateToFirstProduct(page: Page): Promise<{
 
   await page.goto(productHref);
   await expect(page).toHaveURL(/\/catalogo\/[a-z0-9-]+\/[a-z0-9-]+$/);
-  // Esperamos a que el client component (ProductGallery) se hidrate.
   await page
     .locator('button[aria-haspopup="dialog"]')
     .waitFor({ state: "visible", timeout: 15_000 });
@@ -74,16 +53,12 @@ test.describe("Phase 4B — Product detail", () => {
   }) => {
     await navigateToFirstProduct(page);
 
-    // Título h1.
     await expect(page.locator("h1").first()).toBeVisible();
 
-    // Precio en formato S/ ...
     await expect(page.getByText(/S\/\s/i).first()).toBeVisible();
 
-    // Descripción (párrafo dentro de .prose).
     await expect(page.locator(".prose p").first()).toBeVisible();
 
-    // Galería: botón principal con aria-haspopup="dialog".
     await expect(page.locator('button[aria-haspopup="dialog"]')).toBeVisible();
   });
 
@@ -92,13 +67,10 @@ test.describe("Phase 4B — Product detail", () => {
   }) => {
     await navigateToFirstProduct(page);
 
-    // Sanity: estamos en una URL de producto (no en /catalogo plano).
     await expect(page).toHaveURL(/\/catalogo\/[a-z0-9-]+\/[a-z0-9-]+$/);
 
-    // Thumbnails son <button aria-pressed="true|false" aria-label="Ver imagen N de ...">.
     const thumbnails = page.locator('button[aria-label^="Ver imagen "]');
 
-    // Damos un tick a que el componente cliente hidrate.
     await page
       .waitForFunction(
         () =>
@@ -107,19 +79,14 @@ test.describe("Phase 4B — Product detail", () => {
         undefined,
         { timeout: 5_000 },
       )
-      .catch(() => {
-        // La aserción de abajo reporta el fallo con la cuenta real.
-      });
+      .catch(() => {});
 
-    // Cambiar de imagen solo es observable con 2+ thumbnails. El primer producto
-    // del catálogo debe tener galería múltiple para que este test signifique algo.
     const thumbCount = await thumbnails.count();
     expect(
       thumbCount,
       "El primer producto necesita ≥2 imágenes para validar el cambio de thumbnail",
     ).toBeGreaterThanOrEqual(2);
 
-    // Tomamos el primer thumbnail no-presionado para evitar el seleccionado por default.
     const firstUnpressed = thumbnails.filter({
       has: page.locator(":scope[aria-pressed='false']"),
     });
@@ -140,21 +107,14 @@ test.describe("Phase 4B — Product detail", () => {
     await expect(mainImageButton).toBeVisible();
     await mainImageButton.click();
 
-    // Radix Dialog renderiza el content con role="dialog". El atributo
-    // aria-modal es opcional en Radix Modal (lo aplica condicionalmente
-    // según `modal` prop). Verificamos role="dialog" como contrato firme
-    // y aria-modal como soft check.
     const dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible({ timeout: 8_000 });
 
     const ariaModal = await dialog.getAttribute("aria-modal");
-    // Si aria-modal está, debe ser "true". Si no está, no falla — solo
-    // documentamos en consola.
     if (ariaModal !== null) {
       expect(ariaModal).toBe("true");
     }
 
-    // Z-index del overlay > navbar (z-[90]).
     const overlayZ = await page
       .locator(".fixed.inset-0.z-\\[100\\]")
       .first()
@@ -167,7 +127,6 @@ test.describe("Phase 4B — Product detail", () => {
   }) => {
     await navigateToFirstProduct(page);
 
-    // Detectamos cantidad de thumbnails para saber si hay múltiples imágenes.
     const thumbnails = page.locator('button[aria-label^="Ver imagen "]');
     const thumbCount = await thumbnails.count();
 
@@ -177,12 +136,10 @@ test.describe("Phase 4B — Product detail", () => {
     await expect(dialog).toBeVisible();
 
     if (thumbCount >= 2) {
-      // Hay contador "n / total" con aria-live=polite. Capturamos antes/después.
       const counter = page.locator("[aria-live='polite']").first();
       const before = (await counter.textContent())?.trim();
 
       await page.keyboard.press("ArrowRight");
-      // Damos un tick a que React update el state.
       await expect
         .poll(async () => (await counter.textContent())?.trim())
         .not.toBe(before);
@@ -210,21 +167,16 @@ test.describe("Phase 4B — Product detail", () => {
     const dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible();
 
-    // Botón con aria-label="Cerrar".
     await page.getByRole("button", { name: "Cerrar" }).click();
     await expect(dialog).toBeHidden();
 
-    // Re-abrimos y probamos backdrop.
     await mainImageButton.click();
     await expect(dialog).toBeVisible();
 
-    // El overlay de Radix Dialog cierra con click. Pulsamos en una esquina
-    // donde sabemos que NO hay imagen, ni botones, ni contador.
     const viewport = page.viewportSize();
     if (!viewport) {
       throw new Error("El proyecto de Playwright debe definir un viewport");
     }
-    // Click cerca de la esquina inferior izquierda (lejos de imagen y controles).
     await page.mouse.click(10, viewport.height - 10);
 
     await expect(dialog).toBeHidden();
@@ -238,20 +190,17 @@ test.describe("Phase 4B — Product detail", () => {
     const mainImageButton = page.locator('button[aria-haspopup="dialog"]');
     await expect(mainImageButton).toBeVisible();
 
-    // Ponemos foco en el botón antes de abrir y luego abrimos con click.
     await mainImageButton.focus();
     await mainImageButton.click();
 
     const dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible({ timeout: 8_000 });
 
-    // aria-modal: si Radix lo expone, debe ser "true".
     const ariaModal = await dialog.getAttribute("aria-modal");
     if (ariaModal !== null) {
       expect(ariaModal).toBe("true");
     }
 
-    // Focus debe estar dentro del dialog (Radix lo mueve al primer focusable).
     const activeInsideDialog = await page.evaluate(() => {
       const active = document.activeElement;
       if (!active) return false;
@@ -260,7 +209,6 @@ test.describe("Phase 4B — Product detail", () => {
     });
     expect(activeInsideDialog).toBe(true);
 
-    // Cerramos con Escape — el dialog desaparece.
     await page.keyboard.press("Escape");
     await expect(dialog).toBeHidden();
   });
@@ -280,7 +228,6 @@ test.describe("Phase 4B — Product detail", () => {
     await page.keyboard.press("Escape");
     await expect(dialog).toBeHidden();
 
-    // El focus debería volver al botón que abrió el lightbox.
     await expect
       .poll(
         async () =>
@@ -297,7 +244,6 @@ test.describe("Phase 4B — Product detail", () => {
   }) => {
     const { productName } = await navigateToFirstProduct(page);
 
-    // El botón WhatsApp es un Link/anchor con href wa.me.
     const whatsappSelector = `a[href*="wa.me/${BUSINESS.phone}"]`;
     const whatsappLink = page.locator(whatsappSelector);
     await expect(whatsappLink.first()).toBeVisible();
@@ -307,8 +253,6 @@ test.describe("Phase 4B — Product detail", () => {
     expect(href).toContain(`wa.me/${BUSINESS.phone}`);
     expect(href).toMatch(/\?text=/);
 
-    // El nombre del producto debe estar URL-encoded en el query param `text`.
-    // BUSINESS.messages.whatsappProduct(name) = `Hola, me interesa el producto: ${name}`.
     const url = new URL(href ?? "");
     const text = url.searchParams.get("text") ?? "";
     expect(text).toContain(productName);

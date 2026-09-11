@@ -2,24 +2,6 @@ import { expect, type Page,test } from '@playwright/test';
 
 import { getAdminCredentials, loginAsAdmin } from './helpers/adminAuth';
 
-/**
- * Phase 4C — Admin categorías CRUD E2E.
- *
- * IMPORTANTE — alcance defensivo:
- *
- * Las categorías son data crítica del negocio (las usan productos, sitemap,
- * URLs públicas). Por eso NO ejecutamos creación / borrado real:
- *
- *  - "Crear categoría": sólo verificamos que el form renderiza con todos los
- *    campos requeridos.
- *  - "Editar": navegamos al form y verificamos que carga con valores.
- *  - "Toggle status / featured": cambiamos y revertimos en el mismo test.
- *  - "Eliminar con productos": verificamos que el dialog elaborado aparece y
- *    que cancelar funciona (NO se ejecuta el cascade real).
- *
- * Requiere E2E_ADMIN_EMAIL + E2E_ADMIN_PASSWORD en env.
- */
-
 const credentials = getAdminCredentials();
 
 interface CategorySnapshot {
@@ -28,10 +10,6 @@ interface CategorySnapshot {
   rowSelector: string;
 }
 
-/**
- * Toma la primera categoría visible. Falla si no hay ninguna: el admin sin
- * categorías es un entorno mal sembrado, no un caso válido que saltear.
- */
 async function pickFirstCategory(page: Page): Promise<CategorySnapshot> {
   await page.goto('/admin/categorias');
 
@@ -89,8 +67,6 @@ test.describe('Phase 4C — Admin categorías CRUD', () => {
     await expect(page.getByRole('heading', { name: /Editar categoría|Categoría/ })).toBeVisible({
       timeout: 5000,
     }).catch(async () => {
-      // Algunos layouts no usan "Editar categoría" como heading literal.
-      // Aceptamos que el form esté visible (Nombre con valor).
       await expect(page.getByLabel(/^Nombre/)).toBeVisible();
     });
 
@@ -113,7 +89,6 @@ test.describe('Phase 4C — Admin categorías CRUD', () => {
       initial ? 'false' : 'true',
     );
 
-    // Revertir.
     await statusSwitch.click();
     await expect(statusSwitch).toHaveAttribute(
       'aria-checked',
@@ -133,17 +108,11 @@ test.describe('Phase 4C — Admin categorías CRUD', () => {
     ).toBeVisible();
     await firstDelete.click();
 
-    // Dialog Radix.
     const dialog = page.getByRole('alertdialog');
     await expect(dialog).toBeVisible();
 
-    // El dialog debe tener un título "Eliminar categoría" (scope al heading: la
-    // opción cascade "Eliminar categoría y todos sus productos" también contiene
-    // ese texto).
     await expect(dialog.getByRole('heading', { name: /Eliminar categoría/ })).toBeVisible();
 
-    // Si la categoría tiene productos, el dialog tendrá las opciones reassign / cascade.
-    // Si no, sólo tendrá el confirm/cancel simple.
     const hasReassign = await dialog
       .getByText(/Mover productos a otra categoría/)
       .isVisible()
@@ -154,7 +123,6 @@ test.describe('Phase 4C — Admin categorías CRUD', () => {
       .catch(() => false);
 
     if (hasReassign || hasCascade) {
-      // Es el dialog elaborado — verificamos ambas opciones.
       await expect(
         dialog.getByText(/Mover productos a otra categoría/),
       ).toBeVisible();
@@ -163,7 +131,6 @@ test.describe('Phase 4C — Admin categorías CRUD', () => {
       ).toBeVisible();
     }
 
-    // Cancelar en cualquier caso.
     await dialog.getByRole('button', { name: 'Cancelar' }).click();
     await expect(dialog).not.toBeVisible();
   });

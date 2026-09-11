@@ -1,17 +1,8 @@
 import { expect, type Page,test } from "@playwright/test";
 
-/**
- * Phase 4B — SEO + structured data
- *
- * Phase 4A YA terminó: titles sin duplicar `| Kataleya Flowers`, JSON-LD
- * Florist (root), Product + BreadcrumbList por producto, BreadcrumbList +
- * ItemList en /catalogo y /catalogo/[categoria], OG/Twitter por producto.
- */
-
 interface JsonLdScript {
   "@type"?: string | string[];
   "@graph"?: JsonLdScript[];
-  // Permitimos el resto de propiedades sin tiparlas (cada @type tiene su shape).
   [key: string]: unknown;
 }
 
@@ -29,7 +20,6 @@ async function getJsonLdBlocks(page: Page): Promise<JsonLdScript[]> {
         parsed.push(json);
       }
     } catch {
-      // Ignore — JSON-LD malformed shouldn't crash el spec aquí.
     }
   }
   return parsed;
@@ -69,7 +59,6 @@ async function navigateToFirstProduct(page: Page): Promise<void> {
       { timeout: 10_000 },
     )
     .catch(() => {
-      // skip handling below
     });
   const count = await productCards.count();
   if (count === 0) {
@@ -81,8 +70,6 @@ async function navigateToFirstProduct(page: Page): Promise<void> {
 }
 
 test.describe("Phase 4B — SEO metadata + JSON-LD", () => {
-  // ---- Structured data global ----------------------------------------------
-
   test("JSON-LD Florist en root /", async ({ page }) => {
     await page.goto("/");
     const blocks = await getJsonLdBlocks(page);
@@ -91,8 +78,6 @@ test.describe("Phase 4B — SEO metadata + JSON-LD", () => {
       "Debe haber un bloque JSON-LD con @type Florist",
     ).toBe(true);
   });
-
-  // ---- Titles sin duplicación ----------------------------------------------
 
   test("title /catalogo NO tiene '| Kataleya Flowers' duplicado", async ({
     page,
@@ -134,8 +119,6 @@ test.describe("Phase 4B — SEO metadata + JSON-LD", () => {
     await expect(page).toHaveTitle("Libro de Reclamaciones | Kataleya Flowers");
   });
 
-  // ---- Structured data por página -----------------------------------------
-
   test("JSON-LD Product en /catalogo/{categoria}/{slug}", async ({ page }) => {
     await navigateToFirstProduct(page);
     const blocks = await getJsonLdBlocks(page);
@@ -170,10 +153,7 @@ test.describe("Phase 4B — SEO metadata + JSON-LD", () => {
       .getAttribute("content");
 
     expect(productOgImage).toBeTruthy();
-    // La imagen del producto NO debe ser la imagen genérica del root
-    // (next/metadata genera /opengraph-image cuando no se setea openGraph.images).
     expect(productOgImage).not.toContain("/opengraph-image");
-    // Debe ser una URL absoluta — Appwrite Storage o fallback a public/.
     expect(productOgImage).toMatch(/^https?:\/\//);
   });
 });

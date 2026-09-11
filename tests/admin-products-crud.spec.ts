@@ -9,10 +9,6 @@ interface CategoryWorkspace {
   name: string;
 }
 
-/**
- * Toma la primera categoría administrable. Falla si no hay ninguna: el admin
- * sin categorías es un entorno mal sembrado, no un caso válido que saltear.
- */
 async function pickCategoryWorkspace(page: Page): Promise<CategoryWorkspace> {
   await page.goto('/admin/categorias');
   const manageLink = page.getByRole('link', { name: 'Gestionar productos' }).first();
@@ -26,7 +22,6 @@ async function pickCategoryWorkspace(page: Page): Promise<CategoryWorkspace> {
     throw new Error('El link "Gestionar productos" no tiene href');
   }
 
-  // Desktop viewport renders CategoryList as a table; each category is a <tr>.
   const row = page.locator('tr', { has: manageLink });
   const name = (await row.locator('p').first().textContent())?.trim() ?? '';
   return { href, name };

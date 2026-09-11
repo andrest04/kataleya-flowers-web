@@ -1,17 +1,5 @@
 import { expect,test } from "@playwright/test";
 
-/**
- * Phase 4B — Flujo público del catálogo
- *
- * Cubre:
- *  - Listado de productos en /catalogo, sin sidebar, con rutas válidas
- *  - Filtro de precio desde el sheet "Filtrar y ordenar" → ?precio_max=
- *  - Layout mobile sin desborde horizontal
- *
- * Los tests del input de búsqueda y de los chips de categoría en `<aside>` se
- * eliminaron: esa UI ya no existe. Los filtros viven ahora en CatalogFilterSheet.
- */
-
 const SCREENSHOT_DIR = "QA/screenshots/phase4";
 
 test.describe("Phase 4B — Catalog flow", () => {
@@ -57,12 +45,9 @@ test.describe("Phase 4B — Catalog flow", () => {
     const dialog = page.getByRole("dialog", { name: "Filtrar y ordenar" });
     await expect(dialog).toBeVisible();
 
-    // La sección Precio arranca abierta (defaultOpen). Los inputs están
-    // envueltos en <label> con los textos "Desde" y "Hasta".
     const maxInput = dialog.getByLabel(/hasta/i);
     await expect(maxInput).toBeVisible();
 
-    // El valor inicial es el precio máximo del catálogo; bajarlo debe filtrar.
     const initialMax = Number(await maxInput.inputValue());
     expect(initialMax, "El input 'Hasta' arranca en el precio máximo").toBeGreaterThan(0);
 
