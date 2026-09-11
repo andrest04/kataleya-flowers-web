@@ -40,10 +40,10 @@ export default function CatalogCollectionCard({
           />
         </span>
         <span className="block px-1 pb-2 pt-4 text-center">
-          <span className="line-clamp-2 block min-h-14 font-heading text-2xl leading-tight text-(--color-dark)">
+          <span className="line-clamp-2 block font-heading text-2xl leading-tight text-(--color-dark)">
             {product.name}
           </span>
-          <span className="-mt-1.5 block font-body text-base leading-none tabular-nums text-(--color-dark)">
+          <span className="mt-1 block font-body text-lg leading-none tabular-nums text-(--color-dark)">
             {product.priceTable?.length ? 'Desde ' : ''}S/ {formattedPrice}
           </span>
         </span>
