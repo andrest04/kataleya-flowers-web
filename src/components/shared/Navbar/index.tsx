@@ -81,7 +81,7 @@ export default function Navbar({ settings }: NavbarProps) {
               <div className="flex items-center justify-start">
                 <button
                   type="button"
-                  className="flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center text-(--color-primary) md:hidden"
+                  className="flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center text-(--color-primary) transition-opacity hover:opacity-70 md:hidden"
                   aria-label={isDrawerOpen ? "Cerrar menu" : "Abrir menu"}
                   aria-expanded={isDrawerOpen}
                   aria-controls="nav-drawer"
@@ -113,7 +113,7 @@ export default function Navbar({ settings }: NavbarProps) {
               <div className="flex items-center justify-end">
                 <button
                   type="button"
-                  className="flex h-11 w-11 cursor-pointer items-center justify-center text-(--color-primary) md:hidden"
+                  className="flex h-11 w-11 cursor-pointer items-center justify-center text-(--color-primary) transition-opacity hover:opacity-70 md:hidden"
                   aria-label="Buscar"
                   onClick={openDrawer}
                 >

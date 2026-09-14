@@ -1,5 +1,6 @@
 'use client';
 
+import { Loader2 } from 'lucide-react';
 import Link from 'next/link';
 
 import { Button as ShadcnButton } from '@/components/ui/primitives/button';
@@ -112,10 +113,12 @@ export default function Button(props: ButtonProps) {
       variant={shadcnVariant}
       type={buttonProps.type ?? 'button'}
       disabled={loading || buttonProps.disabled}
+      aria-busy={loading}
       className={combinedClassName}
       style={style}
       {...buttonProps}
     >
+      {loading ? <Loader2 className="size-4 animate-spin" aria-hidden="true" /> : null}
       {children}
     </ShadcnButton>
   );

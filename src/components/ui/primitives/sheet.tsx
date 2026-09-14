@@ -48,6 +48,7 @@ function SheetOverlay({
 function SheetContent({
   className,
   overlayClassName,
+  closeButtonClassName,
   children,
   side = "right",
   showCloseButton = true,
@@ -56,6 +57,7 @@ function SheetContent({
   side?: "top" | "right" | "bottom" | "left"
   showCloseButton?: boolean
   overlayClassName?: string
+  closeButtonClassName?: string
 }) {
   return (
     <SheetPortal>
@@ -74,12 +76,11 @@ function SheetContent({
           <SheetPrimitive.Close data-slot="sheet-close" asChild>
             <Button
               variant="ghost"
-              className="absolute top-3 right-3"
+              className={cn("absolute top-3 right-3", closeButtonClassName)}
               size="icon-sm"
             >
-              <XIcon
-              />
-              <span className="sr-only">Close</span>
+              <XIcon aria-hidden="true" />
+              <span className="sr-only">Cerrar</span>
             </Button>
           </SheetPrimitive.Close>
         )}
