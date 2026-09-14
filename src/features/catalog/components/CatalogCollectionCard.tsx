@@ -9,6 +9,7 @@ interface CatalogCollectionCardProps {
   categorySlug: string;
   onClick?: () => void;
   size?: 'default' | 'compact';
+  priority?: boolean;
 }
 
 export default function CatalogCollectionCard({
@@ -16,6 +17,7 @@ export default function CatalogCollectionCard({
   categorySlug,
   onClick,
   size = 'default',
+  priority = false,
 }: CatalogCollectionCardProps) {
   const effectivePrice = getEffectivePrice(product);
   const imageUrl = product.imageUrl.trim();
@@ -40,6 +42,7 @@ export default function CatalogCollectionCard({
             src={imageSrc}
             alt=""
             fill
+            priority={priority}
             className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
             sizes={
               size === 'compact'

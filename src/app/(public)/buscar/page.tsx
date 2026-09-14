@@ -102,6 +102,7 @@ export default async function BuscarPage({
     colors: firstParam(params.color),
     flowerTypes: firstParam(params.tipo),
     sort: firstParam(params.orden),
+    density: firstParam(params.densidad),
   };
 
   const productCountByCategory = new Map<string, number>();

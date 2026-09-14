@@ -34,6 +34,7 @@ interface CatalogInitialQuery {
   colors: string;
   flowerTypes: string;
   sort: string;
+  density: string;
 }
 
 interface CatalogCollectionProps {
@@ -47,6 +48,8 @@ interface CatalogCollectionProps {
 type SortOption = 'featured' | 'price-asc' | 'price-desc' | 'name-asc';
 
 const SORT_OPTIONS: SortOption[] = ['featured', 'price-asc', 'price-desc', 'name-asc'];
+const DENSITY_OPTIONS: CatalogDensity[] = [2, 3, 4];
+const DEFAULT_DENSITY: CatalogDensity = 3;
 const PAGE_SIZE = 10;
 
 function parseList(value: string, allowedValues: Set<string>): string[] {
@@ -134,12 +137,17 @@ export default function CatalogCollection({
       ? (initialQuery.sort as SortOption)
       : 'featured',
   );
-  const [density, setDensity] = useState<CatalogDensity>(3);
+  const [density, setDensity] = useState<CatalogDensity>(() => {
+    const parsed = Number(initialQuery.density);
+    return DENSITY_OPTIONS.includes(parsed as CatalogDensity)
+      ? (parsed as CatalogDensity)
+      : DEFAULT_DENSITY;
+  });
   const isHeaderHidden = useHeaderVisibility();
 
-  const syncQuery = (filters: CatalogFilters, sort: SortOption) => {
+  const syncQuery = (filters: CatalogFilters, sort: SortOption, density: CatalogDensity) => {
     const params = new URLSearchParams(window.location.search);
-    ['categoria', 'precio_min', 'precio_max', 'color', 'tipo'].forEach((key) =>
+    ['categoria', 'precio_min', 'precio_max', 'color', 'tipo', 'densidad'].forEach((key) =>
       params.delete(key),
     );
     if (filters.category.length) params.set('categoria', filters.category.join(','));
@@ -149,6 +157,8 @@ export default function CatalogCollection({
     if (filters.flowerTypes.length) params.set('tipo', filters.flowerTypes.join(','));
     if (sort === 'featured') params.delete('orden');
     else params.set('orden', sort);
+    if (density === DEFAULT_DENSITY) params.delete('densidad');
+    else params.set('densidad', String(density));
     const query = params.toString();
     router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
   };
@@ -196,9 +206,14 @@ export default function CatalogCollection({
 
   const updateFilters = (next: CatalogFilters) => {
     setFilters(next);
-    syncQuery(next, sortOption);
+    syncQuery(next, sortOption, density);
   };
   const clearFilters = () => updateFilters(defaultFilters);
+
+  const updateDensity = (next: CatalogDensity) => {
+    setDensity(next);
+    syncQuery(filters, sortOption, next);
+  };
 
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const resetKey = `${JSON.stringify(filters)}|${sortOption}`;
@@ -251,25 +266,30 @@ export default function CatalogCollection({
               sortOption={sortOption}
               onSortChange={(sort) => {
                 setSortOption(sort);
-                syncQuery(filters, sort);
+                syncQuery(filters, sort, density);
               }}
             />
           </div>
         </div>
         <div className="absolute inset-y-0 right-0 hidden items-center border-l border-(--color-primary) px-14 sm:flex">
-          <CatalogDensityToggle density={density} onDensityChange={setDensity} />
+          <CatalogDensityToggle density={density} onDensityChange={updateDensity} />
         </div>
       </section>
 
       <section aria-label="Productos">
+        <p className="sr-only" aria-live="polite" aria-atomic="true">
+          {sortedItems.length} producto{sortedItems.length === 1 ? '' : 's'} encontrado
+          {sortedItems.length === 1 ? '' : 's'}
+        </p>
         {sortedItems.length > 0 ? (
           <>
             <div className={cn('grid', DENSITY_GRID_CLASSES[density])}>
-              {visibleItems.map(({ product, categorySlug }) => (
+              {visibleItems.map(({ product, categorySlug }, index) => (
                 <CatalogCollectionCard
                   key={product.id}
                   product={product}
                   categorySlug={categorySlug}
+                  priority={index < 4}
                 />
               ))}
             </div>

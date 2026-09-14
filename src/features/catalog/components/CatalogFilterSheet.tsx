@@ -2,7 +2,7 @@
 
 import { Minus, Plus, SlidersHorizontal, X } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { forwardRef, useRef } from 'react';
+import { forwardRef, useEffect, useRef, useState } from 'react';
 
 import {
   Sheet,
@@ -66,6 +66,15 @@ function parsePriceInput(raw: string): number | undefined {
   if (!Number.isFinite(next)) return undefined;
   return next;
 }
+
+function formatPeruvianSoles(value: number): string {
+  return value.toLocaleString('es-PE', {
+    minimumFractionDigits: value % 1 === 0 ? 0 : 2,
+    maximumFractionDigits: 2,
+  });
+}
+
+const PRICE_FILTER_DEBOUNCE_MS = 350;
 
 const AccordionSection = forwardRef<
   HTMLDetailsElement,
@@ -141,6 +150,46 @@ export default function CatalogFilterSheet({
     value: CatalogFilters[Key],
   ) => onFiltersChange({ ...filters, [key]: value });
 
+  const latestRef = useRef({ filters, onFiltersChange });
+  useEffect(() => {
+    latestRef.current = { filters, onFiltersChange };
+  });
+
+  const [priceMinDraft, setPriceMinDraft] = useState(() => String(filters.priceMin));
+  const [priceMaxDraft, setPriceMaxDraft] = useState(() => String(filters.priceMax));
+  const [syncedPriceMin, setSyncedPriceMin] = useState(filters.priceMin);
+  const [syncedPriceMax, setSyncedPriceMax] = useState(filters.priceMax);
+
+  if (filters.priceMin !== syncedPriceMin) {
+    setSyncedPriceMin(filters.priceMin);
+    setPriceMinDraft(String(filters.priceMin));
+  }
+
+  if (filters.priceMax !== syncedPriceMax) {
+    setSyncedPriceMax(filters.priceMax);
+    setPriceMaxDraft(String(filters.priceMax));
+  }
+
+  useEffect(() => {
+    const next = parsePriceInput(priceMinDraft);
+    if (next === undefined || next === latestRef.current.filters.priceMin) return;
+    const timer = setTimeout(() => {
+      const { filters: currentFilters, onFiltersChange: currentOnFiltersChange } = latestRef.current;
+      currentOnFiltersChange({ ...currentFilters, priceMin: next });
+    }, PRICE_FILTER_DEBOUNCE_MS);
+    return () => clearTimeout(timer);
+  }, [priceMinDraft]);
+
+  useEffect(() => {
+    const next = parsePriceInput(priceMaxDraft);
+    if (next === undefined || next === latestRef.current.filters.priceMax) return;
+    const timer = setTimeout(() => {
+      const { filters: currentFilters, onFiltersChange: currentOnFiltersChange } = latestRef.current;
+      currentOnFiltersChange({ ...currentFilters, priceMax: next });
+    }, PRICE_FILTER_DEBOUNCE_MS);
+    return () => clearTimeout(timer);
+  }, [priceMaxDraft]);
+
   const sortSectionRef = useRef<HTMLDetailsElement>(null);
   const selectSort = (option: CatalogSortOption) => {
     onSortChange(option);
@@ -191,7 +240,7 @@ export default function CatalogFilterSheet({
             <button
               type="button"
               aria-label="Cerrar"
-              className="flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full border border-(--color-border) transition-colors hover:bg-(--color-dark)/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary)"
+              className="flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-full border border-(--color-border) transition-colors hover:bg-(--color-dark)/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary)"
             >
               <X className="size-4" aria-hidden="true" />
             </button>
@@ -210,7 +259,7 @@ export default function CatalogFilterSheet({
                     key={chip.key}
                     type="button"
                     onClick={chip.onRemove}
-                    className="flex cursor-pointer items-center gap-1.5 rounded-full border border-(--color-border) bg-(--color-surface) px-3 py-1.5 font-body text-xs font-semibold text-(--color-dark) transition-colors hover:bg-(--color-dark)/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary)"
+                    className="flex min-h-11 cursor-pointer items-center gap-1.5 rounded-full border border-(--color-border) bg-(--color-surface) px-3 py-1.5 font-body text-xs font-semibold text-(--color-dark) transition-colors hover:bg-(--color-dark)/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary)"
                   >
                     {chip.label}
                     <X className="size-3" aria-hidden="true" />
@@ -272,14 +321,14 @@ export default function CatalogFilterSheet({
 
           <AccordionSection title="Precio" defaultOpen>
             <p className="mb-3 font-body text-sm text-(--color-dark)">
-              El precio más alto es S/ {maximumPrice.toFixed(2)}{' '}
+              El precio más alto es S/ {formatPeruvianSoles(maximumPrice)}{' '}
               <button
                 type="button"
                 onClick={() => {
                   update('priceMin', 0);
                   update('priceMax', maximumPrice);
                 }}
-                className="font-semibold text-(--color-muted) underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary)"
+                className="inline-block px-2 py-2 font-semibold text-(--color-muted) underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary)"
               >
                 Restablecer
               </button>
@@ -294,14 +343,14 @@ export default function CatalogFilterSheet({
                   <input
                     type="number"
                     inputMode="decimal"
+                    name="priceMin"
+                    autoComplete="off"
                     min={0}
                     max={maximumPrice}
-                    value={filters.priceMin}
-                                    onChange={(event) => {
-                                      const next = parsePriceInput(event.target.value);
-                                      if (next === undefined) return;
-                                      update('priceMin', next);
-                                    }}
+                    value={priceMinDraft}
+                    onChange={(event) => {
+                      setPriceMinDraft(event.target.value);
+                    }}
                     className="w-full bg-transparent text-base focus:outline-none"
                   />
                 </span>
@@ -315,14 +364,14 @@ export default function CatalogFilterSheet({
                   <input
                     type="number"
                     inputMode="decimal"
+                    name="priceMax"
+                    autoComplete="off"
                     min={0}
                     max={maximumPrice}
-                    value={filters.priceMax}
-                                    onChange={(event) => {
-                                      const next = parsePriceInput(event.target.value);
-                                      if (next === undefined) return;
-                                      update('priceMax', next);
-                                    }}
+                    value={priceMaxDraft}
+                    onChange={(event) => {
+                      setPriceMaxDraft(event.target.value);
+                    }}
                     className="w-full bg-transparent text-base focus:outline-none"
                   />
                 </span>
