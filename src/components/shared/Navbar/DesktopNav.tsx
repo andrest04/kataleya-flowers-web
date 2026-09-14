@@ -66,15 +66,20 @@ export default function DesktopNav({
             <span className={UNDERLINE} />
           </Link>
         ) : (
-          <button
+          <a
             key={link.href}
-            type="button"
-            onClick={() => handleNavigate(link.href)}
-            className={`cursor-pointer ${LINK_BASE}`}
+            href={`/${link.href}`}
+            onClick={(event) => {
+              if (document.getElementById(link.href.slice(1))) {
+                event.preventDefault();
+                handleNavigate(link.href);
+              }
+            }}
+            className={LINK_BASE}
           >
             {link.label}
             <span className={UNDERLINE} />
-          </button>
+          </a>
         ),
       )}
     </nav>
