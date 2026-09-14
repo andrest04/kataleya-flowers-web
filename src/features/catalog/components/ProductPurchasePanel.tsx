@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useMemo, useState, useSyncExternalStore } from 'react';
 
 import Image from '@/components/ui/AppwriteImage';
 import Button from '@/components/ui/Button';
@@ -17,6 +17,21 @@ interface ProductPurchasePanelProps {
 
 const VARIANT_PARAM = 'variante';
 
+function subscribeToNothing() {
+  // The variant param is only read once per navigation; nothing to unsubscribe from.
+  return () => {
+    return undefined;
+  };
+}
+
+function getVariantParamSnapshot(): string | null {
+  return new URLSearchParams(window.location.search).get(VARIANT_PARAM);
+}
+
+function getServerVariantParamSnapshot(): string | null {
+  return null;
+}
+
 export function ProductPurchasePanel({
   phone,
   product,
@@ -24,19 +39,24 @@ export function ProductPurchasePanel({
 }: ProductPurchasePanelProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const variants = product.priceTable ?? [];
-  const [selectedLabel, setSelectedLabel] = useState(() => variants[0]?.label);
+  const variants = useMemo(() => product.priceTable ?? [], [product.priceTable]);
 
-  useEffect(() => {
-    const paramLabel = new URLSearchParams(window.location.search).get(VARIANT_PARAM);
-    if (paramLabel && variants.some((v) => v.label === paramLabel)) {
-      setSelectedLabel(paramLabel);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // Reads the ?variante= param without branching render on `window`: the
+  // server snapshot always matches the SSR default, so hydration can't
+  // mismatch, and no effect/setState is needed to sync it in afterwards.
+  const variantParam = useSyncExternalStore(
+    subscribeToNothing,
+    getVariantParamSnapshot,
+    getServerVariantParamSnapshot,
+  );
+  const [userSelectedLabel, setUserSelectedLabel] = useState<string | undefined>(undefined);
+
+  const paramLabel =
+    variantParam && variants.some((v) => v.label === variantParam) ? variantParam : undefined;
+  const selectedLabel = userSelectedLabel ?? paramLabel ?? variants[0]?.label;
 
   const handleSelectVariant = (label: string) => {
-    setSelectedLabel(label);
+    setUserSelectedLabel(label);
     const params = new URLSearchParams(window.location.search);
     params.set(VARIANT_PARAM, label);
     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
