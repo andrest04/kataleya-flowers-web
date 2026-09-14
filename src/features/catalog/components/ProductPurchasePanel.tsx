@@ -1,11 +1,13 @@
 'use client';
 
+import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import Image from '@/components/ui/AppwriteImage';
 import Button from '@/components/ui/Button';
 import type { Product } from '@/features/catalog/types';
 import { interpolateProductMessage, whatsappWithMessage } from '@/lib/contactLinks';
+import { cn } from '@/lib/utils';
 
 interface ProductPurchasePanelProps {
   phone: string;
@@ -13,13 +15,33 @@ interface ProductPurchasePanelProps {
   whatsappProductTemplate: string;
 }
 
+const VARIANT_PARAM = 'variante';
+
 export function ProductPurchasePanel({
   phone,
   product,
   whatsappProductTemplate,
 }: ProductPurchasePanelProps) {
+  const router = useRouter();
+  const pathname = usePathname();
   const variants = product.priceTable ?? [];
-  const [selectedLabel, setSelectedLabel] = useState(variants[0]?.label);
+  const [selectedLabel, setSelectedLabel] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const paramLabel = new URLSearchParams(window.location.search).get(VARIANT_PARAM);
+      if (paramLabel && variants.some((v) => v.label === paramLabel)) {
+        return paramLabel;
+      }
+    }
+    return variants[0]?.label;
+  });
+
+  const handleSelectVariant = (label: string) => {
+    setSelectedLabel(label);
+    const params = new URLSearchParams(window.location.search);
+    params.set(VARIANT_PARAM, label);
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  };
+
   const selectedVariant = variants.find((v) => v.label === selectedLabel);
   const displayPrice = selectedVariant?.price ?? product.price;
 
@@ -32,7 +54,7 @@ export function ProductPurchasePanel({
   return (
     <div className="flex flex-col">
       <p className="font-body text-primary font-semibold text-xl mb-2">
-        {variants.length > 0 ? 'Desde ' : ''}S/{' '}
+        {variants.length > 0 ? 'Desde ' : ''}S/{' '}
         {displayPrice.toLocaleString('es-PE', {
           minimumFractionDigits: displayPrice % 1 === 0 ? 0 : 2,
           maximumFractionDigits: 2,
@@ -49,13 +71,17 @@ export function ProductPurchasePanel({
                 <button
                   key={variant.label}
                   type="button"
-                  onClick={() => setSelectedLabel(variant.label)}
+                  onClick={() => handleSelectVariant(variant.label)}
                   aria-pressed={isSelected}
-                  className="flex flex-col items-center text-center rounded px-4 pt-[17px] pb-[13px] w-[110px] transition-colors"
+                  className={cn(
+                    'flex flex-col items-center text-center rounded px-4 pt-[17px] pb-[13px] w-[110px] transition-colors',
+                    isSelected
+                      ? 'border-(--color-primary)'
+                      : 'border-(--color-border) hover:border-(--color-primary)',
+                  )}
                   style={{
                     borderWidth: '1px',
                     borderStyle: 'solid',
-                    borderColor: isSelected ? 'var(--color-primary)' : 'var(--color-border)',
                     backgroundColor: isSelected
                       ? 'color-mix(in srgb, var(--color-primary) 8%, transparent)'
                       : 'var(--color-white)',
@@ -72,7 +98,8 @@ export function ProductPurchasePanel({
                   </span>
                   <span className="font-body text-dark text-base">{variant.label}</span>
                   <span className="font-body text-dark/70 text-xs mt-0.5">
-                    S/ {variant.price.toLocaleString('es-PE', { maximumFractionDigits: 2 })}
+                    S/{' '}
+                    {variant.price.toLocaleString('es-PE', { maximumFractionDigits: 2 })}
                   </span>
                 </button>
               );

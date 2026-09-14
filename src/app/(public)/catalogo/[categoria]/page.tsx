@@ -126,6 +126,7 @@ export default async function CategoriaPage({
     colors: firstParam(resolvedSearchParams.color),
     flowerTypes: firstParam(resolvedSearchParams.tipo),
     sort: firstParam(resolvedSearchParams.orden),
+    density: firstParam(resolvedSearchParams.densidad),
   };
 
   const breadcrumbLd = {

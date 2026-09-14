@@ -14,13 +14,13 @@ export default function SearchEmptyResults({ query }: SearchEmptyResultsProps) {
       <p className="mt-6 flex flex-wrap gap-x-6 gap-y-3 font-body text-sm">
         <Link
           href="/buscar"
-          className="underline underline-offset-4 text-(--color-dark) transition-colors hover:text-(--color-primary) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary)"
+          className="py-1.5 underline underline-offset-4 text-(--color-dark) transition-colors hover:text-(--color-primary) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary)"
         >
           Limpiar búsqueda
         </Link>
         <Link
           href="/catalogo"
-          className="underline underline-offset-4 text-(--color-dark) transition-colors hover:text-(--color-primary) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary)"
+          className="py-1.5 underline underline-offset-4 text-(--color-dark) transition-colors hover:text-(--color-primary) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary)"
         >
           Ver catálogo
         </Link>
