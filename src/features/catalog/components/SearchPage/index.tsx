@@ -26,6 +26,7 @@ interface SearchPageProps {
     colors: string;
     flowerTypes: string;
     sort: string;
+    density: string;
   };
 }
 
@@ -44,10 +45,10 @@ export default function SearchPage({
   return (
     <main
       id="main-content"
-      className="min-h-screen overflow-x-clip bg-(--color-cream) px-2 pb-28 pt-6 lg:px-4"
+      className="min-h-screen overflow-x-clip bg-(--color-cream) px-8 pb-28 pt-6 sm:px-12 lg:px-16"
     >
       <header className="mx-auto max-w-8xl">
-        <h1 className="text-center font-heading text-[40px] leading-[1.25] text-(--color-dark)">
+        <h1 className="text-center font-heading text-[28px] leading-[1.25] text-balance break-words text-(--color-dark) sm:text-[32px] lg:text-[40px]">
           {hasQuery ? `Resultados para “${query}”` : 'Busca en la tienda'}
         </h1>
         <SearchStoreForm query={query} />
@@ -81,7 +82,7 @@ export default function SearchPage({
               <div className="pt-16 sm:pt-20">
                 <h2
                   id="buscar-sugeridos"
-                  className="px-8 font-heading text-[40px] leading-[1.25] text-(--color-dark) sm:px-12 lg:px-16"
+                  className="px-8 font-heading text-[28px] leading-[1.25] text-(--color-dark) sm:px-12 sm:text-[32px] lg:px-16 lg:text-[40px]"
                 >
                   También te puede gustar
                 </h2>

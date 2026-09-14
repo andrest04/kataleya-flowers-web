@@ -26,10 +26,10 @@ export default function SearchStoreForm({ query }: SearchStoreFormProps) {
           name="q"
           type="search"
           defaultValue={query}
-          placeholder="Buscar"
+          placeholder="Buscar ramos, rosas, cumpleaños…"
           autoComplete="off"
           enterKeyHint="search"
-          className="h-12 w-full rounded-md border border-(--color-border) bg-(--color-white) pr-4 pl-[39px] font-body text-base text-(--color-dark) outline-none placeholder:text-(--color-muted) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary) [&::-webkit-search-cancel-button]:appearance-none"
+          className="h-12 w-full rounded-md border border-(--color-border) bg-(--color-white) pr-4 pl-[39px] font-body text-base text-(--color-dark) outline-none placeholder:text-(--color-muted) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary)"
         />
       </div>
     </form>

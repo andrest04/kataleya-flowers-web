@@ -52,6 +52,8 @@ export default function MobileDrawer({
       <SheetContent
         side="left"
         className="z-[95] flex w-72 max-w-[85vw] flex-col overflow-y-auto p-0"
+        overlayClassName="z-[92]"
+        closeButtonClassName="size-11 md:size-7"
         aria-label="Menú de navegación"
       >
         <div className="flex items-center justify-between border-b border-border px-6 py-5">
@@ -79,10 +81,14 @@ export default function MobileDrawer({
               type="search"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Buscar flores..."
-              className="flex-1 bg-transparent text-sm font-body text-dark outline-none"
+              name="q"
+              autoComplete="off"
+              placeholder="Buscar flores…"
+              className="flex-1 bg-transparent text-sm font-body text-dark outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary)"
               aria-label="Buscar productos"
+              role="combobox"
               aria-autocomplete="list"
+              aria-expanded={searchResults.length > 0}
               aria-controls="mobile-search-listbox"
             />
           </form>
@@ -158,39 +164,54 @@ export default function MobileDrawer({
                   {link.label}
                 </Link>
               ) : (
-                <button
+                <a
                   key={link.href}
-                  type="button"
-                  onClick={() => handleNavigate(link.href)}
-                  className="cursor-pointer py-3 text-left font-heading text-2xl text-primary transition-colors duration-200 hover:text-accent"
+                  href={`/${link.href}`}
+                  onClick={(event) => {
+                    if (document.getElementById(link.href.slice(1))) {
+                      event.preventDefault();
+                      handleNavigate(link.href);
+                    }
+                  }}
+                  className="py-3 text-left font-heading text-2xl text-primary transition-colors duration-200 hover:text-accent"
                 >
                   {link.label}
-                </button>
+                </a>
               ),
             )}
             <div className="my-2 border-t border-border" />
           </div>
 
           {secondaryLinks.map((link) => (
-            <button
+            <a
               key={link.href}
-              type="button"
-              onClick={() => handleNavigate(link.href)}
-              className="cursor-pointer py-3 text-left font-heading text-2xl text-primary transition-colors duration-200 hover:text-accent"
+              href={`/${link.href}`}
+              onClick={(event) => {
+                if (document.getElementById(link.href.slice(1))) {
+                  event.preventDefault();
+                  handleNavigate(link.href);
+                }
+              }}
+              className="py-3 text-left font-heading text-2xl text-primary transition-colors duration-200 hover:text-accent"
             >
               {link.label}
-            </button>
+            </a>
           ))}
         </nav>
 
         <div className="px-6 pb-8">
-          <button
-            type="button"
-            onClick={() => handleNavigate("#contacto")}
-            className="w-full cursor-pointer rounded-full bg-primary px-6 py-3 font-body text-[0.8rem] font-semibold tracking-[0.08em] text-cream uppercase shadow-sm transition-opacity duration-300 hover:opacity-90"
+          <Link
+            href="/#contacto"
+            onClick={(event) => {
+              if (document.getElementById("contacto")) {
+                event.preventDefault();
+                handleNavigate("#contacto");
+              }
+            }}
+            className="block w-full rounded-full bg-primary px-6 py-3 text-center font-body text-[0.8rem] font-semibold tracking-[0.08em] text-cream uppercase shadow-sm transition-opacity duration-300 hover:opacity-90"
           >
             Hacer pedido
-          </button>
+          </Link>
         </div>
       </SheetContent>
     </Sheet>

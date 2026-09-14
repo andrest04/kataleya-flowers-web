@@ -142,11 +142,7 @@ function LightboxInner({
                   <DialogPrimitive.Close asChild>
                     <button
                       type="button"
-                      className="fixed top-4 right-4 md:top-6 md:right-6 flex items-center justify-center w-10 h-10 rounded-full transition-colors outline-none focus-visible:ring-2"
-                      style={{
-                        backgroundColor: 'color-mix(in srgb, var(--color-dark) 50%, transparent)',
-                        color: 'var(--color-white)',
-                      }}
+                      className="fixed top-4 right-4 md:top-6 md:right-6 flex items-center justify-center w-11 h-11 rounded-full bg-(--color-dark)/50 text-(--color-white) transition-colors hover:bg-(--color-dark)/70 outline-none focus-visible:ring-2 motion-reduce:transition-none"
                       aria-label="Cerrar"
                     >
                       <X className="w-5 h-5" aria-hidden="true" />
@@ -158,11 +154,7 @@ function LightboxInner({
                       <button
                         type="button"
                         onClick={goPrev}
-                        className="fixed left-2 md:left-6 top-1/2 -translate-y-1/2 flex items-center justify-center w-10 h-10 rounded-full transition-colors outline-none focus-visible:ring-2"
-                        style={{
-                          backgroundColor: 'color-mix(in srgb, var(--color-dark) 50%, transparent)',
-                          color: 'var(--color-white)',
-                        }}
+                        className="fixed left-2 md:left-6 top-1/2 -translate-y-1/2 flex items-center justify-center w-11 h-11 rounded-full bg-(--color-dark)/50 text-(--color-white) transition-colors hover:bg-(--color-dark)/70 outline-none focus-visible:ring-2 motion-reduce:transition-none"
                         aria-label="Imagen anterior"
                       >
                         <ChevronLeft className="w-5 h-5" aria-hidden="true" />
@@ -170,11 +162,7 @@ function LightboxInner({
                       <button
                         type="button"
                         onClick={goNext}
-                        className="fixed right-2 md:right-6 top-1/2 -translate-y-1/2 flex items-center justify-center w-10 h-10 rounded-full transition-colors outline-none focus-visible:ring-2"
-                        style={{
-                          backgroundColor: 'color-mix(in srgb, var(--color-dark) 50%, transparent)',
-                          color: 'var(--color-white)',
-                        }}
+                        className="fixed right-2 md:right-6 top-1/2 -translate-y-1/2 flex items-center justify-center w-11 h-11 rounded-full bg-(--color-dark)/50 text-(--color-white) transition-colors hover:bg-(--color-dark)/70 outline-none focus-visible:ring-2 motion-reduce:transition-none"
                         aria-label="Imagen siguiente"
                       >
                         <ChevronRight className="w-5 h-5" aria-hidden="true" />

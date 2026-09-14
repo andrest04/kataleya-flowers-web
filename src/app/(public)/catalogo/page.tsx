@@ -106,6 +106,7 @@ export default async function CatalogoPage({
     colors: firstParam(params.color),
     flowerTypes: firstParam(params.tipo),
     sort: firstParam(params.orden),
+    density: firstParam(params.densidad),
   };
   const itemListLd = {
     '@context': 'https://schema.org',
