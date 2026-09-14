@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import Image from '@/components/ui/AppwriteImage';
 import Button from '@/components/ui/Button';
@@ -25,15 +25,15 @@ export function ProductPurchasePanel({
   const router = useRouter();
   const pathname = usePathname();
   const variants = product.priceTable ?? [];
-  const [selectedLabel, setSelectedLabel] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const paramLabel = new URLSearchParams(window.location.search).get(VARIANT_PARAM);
-      if (paramLabel && variants.some((v) => v.label === paramLabel)) {
-        return paramLabel;
-      }
+  const [selectedLabel, setSelectedLabel] = useState(() => variants[0]?.label);
+
+  useEffect(() => {
+    const paramLabel = new URLSearchParams(window.location.search).get(VARIANT_PARAM);
+    if (paramLabel && variants.some((v) => v.label === paramLabel)) {
+      setSelectedLabel(paramLabel);
     }
-    return variants[0]?.label;
-  });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSelectVariant = (label: string) => {
     setSelectedLabel(label);
