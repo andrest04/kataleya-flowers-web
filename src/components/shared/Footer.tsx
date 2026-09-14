@@ -49,12 +49,12 @@ export default async function Footer({ settings }: FooterProps) {
               <p className="font-body text-xs font-semibold tracking-[0.15em] uppercase opacity-70">
                 Catálogo
               </p>
-              <ul className="space-y-2 font-body text-sm">
+              <ul className="space-y-0 font-body text-sm">
                 {categories.map((category) => (
                   <li key={category.id}>
                     <Link
                       href={`/catalogo/${category.slug}`}
-                      className="transition-colors hover:text-(--color-primary) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-secondary)"
+                      className="block py-1.5 transition-colors hover:text-(--color-primary) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-secondary)"
                     >
                       {category.name}
                     </Link>
@@ -63,7 +63,7 @@ export default async function Footer({ settings }: FooterProps) {
                 <li>
                   <Link
                     href="/catalogo"
-                    className="transition-colors hover:text-(--color-primary) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-secondary)"
+                    className="block py-1.5 transition-colors hover:text-(--color-primary) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-secondary)"
                   >
                     Ver todo
                   </Link>
@@ -75,13 +75,13 @@ export default async function Footer({ settings }: FooterProps) {
               <p className="font-body text-xs font-semibold tracking-[0.15em] uppercase opacity-70">
                 Navegación
               </p>
-              <ul className="space-y-2 font-body text-sm">
+              <ul className="space-y-0 font-body text-sm">
                 {allNavLinks.map((link) =>
                   link.isRoute ? (
                     <li key={link.href}>
                       <Link
                         href={link.href}
-                        className="transition-colors hover:text-(--color-primary) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-secondary)"
+                        className="block py-1.5 transition-colors hover:text-(--color-primary) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-secondary)"
                       >
                         {link.label}
                       </Link>
@@ -90,7 +90,7 @@ export default async function Footer({ settings }: FooterProps) {
                     <li key={link.href}>
                       <FooterAnchorLink
                         href={link.href}
-                        className="transition-colors hover:text-(--color-primary) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-secondary)"
+                        className="block py-1.5 transition-colors hover:text-(--color-primary) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-secondary)"
                       >
                         {link.label}
                       </FooterAnchorLink>
@@ -104,11 +104,11 @@ export default async function Footer({ settings }: FooterProps) {
               <p className="font-body text-xs font-semibold tracking-[0.15em] uppercase opacity-70">
                 Ayuda
               </p>
-              <ul className="space-y-2 font-body text-sm">
+              <ul className="space-y-0 font-body text-sm">
                 <li>
                   <Link
                     href="/libro-de-reclamaciones"
-                    className="transition-colors hover:text-(--color-primary) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-secondary)"
+                    className="block py-1.5 transition-colors hover:text-(--color-primary) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-secondary)"
                   >
                     Libro de Reclamaciones
                   </Link>

@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import DesktopSearch from "./DesktopSearch";
 
 interface DesktopActionsProps {
@@ -15,14 +17,19 @@ export default function DesktopActions({
 }: DesktopActionsProps) {
   return (
     <div className="hidden items-center justify-end gap-6 md:flex">
-      <button
-        type="button"
-        onClick={() => handleNavigate("#contacto")}
-        className="cursor-pointer font-body text-[0.9rem] text-(--color-dark) transition-colors duration-200 hover:text-(--color-primary)"
+      <Link
+        href="/#contacto"
+        onClick={(event) => {
+          if (document.getElementById("contacto")) {
+            event.preventDefault();
+            handleNavigate("#contacto");
+          }
+        }}
+        className="font-body text-[0.9rem] text-(--color-dark) transition-colors duration-200 hover:text-(--color-primary)"
         aria-label={`Hacer pedido por WhatsApp a ${brandName}`}
       >
         Hacer pedido
-      </button>
+      </Link>
 
       <DesktopSearch onOpen={openSearch} />
     </div>

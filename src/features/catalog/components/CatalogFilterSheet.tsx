@@ -2,7 +2,7 @@
 
 import { Minus, Plus, SlidersHorizontal, X } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { forwardRef, useRef } from 'react';
+import { forwardRef, useEffect, useRef, useState } from 'react';
 
 import {
   Sheet,
@@ -67,6 +67,15 @@ function parsePriceInput(raw: string): number | undefined {
   return next;
 }
 
+function formatPeruvianSoles(value: number): string {
+  return value.toLocaleString('es-PE', {
+    minimumFractionDigits: value % 1 === 0 ? 0 : 2,
+    maximumFractionDigits: 2,
+  });
+}
+
+const PRICE_FILTER_DEBOUNCE_MS = 350;
+
 const AccordionSection = forwardRef<
   HTMLDetailsElement,
   {
@@ -121,6 +130,259 @@ function OptionTile({
   );
 }
 
+function AppliedChipsList({
+  chips,
+}: {
+  chips: { key: string; label: string; onRemove: () => void }[];
+}) {
+  if (chips.length === 0) return null;
+  return (
+    <div className="border-b border-(--color-border) pb-4">
+      <p className="mb-3 font-body text-sm font-semibold text-(--color-dark)">
+        Filtros aplicados
+      </p>
+      <div className="flex flex-wrap gap-2">
+        {chips.map((chip) => (
+          <button
+            key={chip.key}
+            type="button"
+            onClick={chip.onRemove}
+            className="flex min-h-11 cursor-pointer items-center gap-1.5 rounded-full border border-(--color-border) bg-(--color-surface) px-3 py-1.5 font-body text-xs font-semibold text-(--color-dark) transition-colors hover:bg-(--color-dark)/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary)"
+          >
+            {chip.label}
+            <X className="size-3" aria-hidden="true" />
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function SortAccordion({
+  sortOption,
+  onSelect,
+  sectionRef,
+}: {
+  sortOption: CatalogSortOption;
+  onSelect: (option: CatalogSortOption) => void;
+  sectionRef: React.Ref<HTMLDetailsElement>;
+}) {
+  return (
+    <AccordionSection ref={sectionRef} title="Ordenar por:" subtitle={SORT_LABELS[sortOption]}>
+      <div className="grid grid-cols-3 gap-2">
+        {(Object.keys(SORT_LABELS) as CatalogSortOption[]).map((option) => {
+          const selected = sortOption === option;
+          return (
+            <OptionTile key={option} selected={selected}>
+              <input
+                type="radio"
+                name="orden"
+                value={option}
+                checked={selected}
+                onChange={() => onSelect(option)}
+                className="sr-only"
+              />
+              <span>{SORT_LABELS[option]}</span>
+            </OptionTile>
+          );
+        })}
+      </div>
+    </AccordionSection>
+  );
+}
+
+function CategoryAccordion({
+  categories,
+  selectedSlugs,
+  availableCategorySlugs,
+  onToggle,
+}: {
+  categories: Category[];
+  selectedSlugs: Set<string>;
+  availableCategorySlugs: Set<string>;
+  onToggle: (slug: string) => void;
+}) {
+  if (categories.length === 0) return null;
+  return (
+    <AccordionSection title="Categoría">
+      <div className="grid grid-cols-3 gap-2">
+        {categories.map((category) => {
+          const selected = selectedSlugs.has(category.slug);
+          const disabled = !selected && !availableCategorySlugs.has(category.slug);
+          return (
+            <OptionTile key={category.slug} selected={selected} disabled={disabled}>
+              <input
+                type="checkbox"
+                name="categoria"
+                value={category.slug}
+                checked={selected}
+                disabled={disabled}
+                onChange={() => onToggle(category.slug)}
+                className="sr-only"
+              />
+              <span>{category.name}</span>
+            </OptionTile>
+          );
+        })}
+      </div>
+    </AccordionSection>
+  );
+}
+
+function PriceAccordion({
+  maximumPrice,
+  priceMinDraft,
+  priceMaxDraft,
+  onPriceMinDraftChange,
+  onPriceMaxDraftChange,
+  onReset,
+}: {
+  maximumPrice: number;
+  priceMinDraft: string;
+  priceMaxDraft: string;
+  onPriceMinDraftChange: (value: string) => void;
+  onPriceMaxDraftChange: (value: string) => void;
+  onReset: () => void;
+}) {
+  return (
+    <AccordionSection title="Precio" defaultOpen>
+      <p className="mb-3 font-body text-sm text-(--color-dark)">
+        El precio más alto es S/ {formatPeruvianSoles(maximumPrice)}{' '}
+        <button
+          type="button"
+          onClick={onReset}
+          className="inline-block px-2 py-2 font-semibold text-(--color-muted) underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary)"
+        >
+          Restablecer
+        </button>
+      </p>
+      <div className="grid grid-cols-2 gap-3">
+        <label className="block rounded-lg border border-(--color-border) bg-(--color-cream) px-3 py-2 font-body text-sm focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-(--color-primary)">
+          <span className="block text-[10px] font-semibold uppercase tracking-wide text-(--color-muted)">
+            Desde
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="text-(--color-muted)">S/</span>
+            <input
+              type="number"
+              inputMode="decimal"
+              name="priceMin"
+              autoComplete="off"
+              min={0}
+              max={maximumPrice}
+              value={priceMinDraft}
+              onChange={(event) => onPriceMinDraftChange(event.target.value)}
+              className="w-full bg-transparent text-base focus:outline-none"
+            />
+          </span>
+        </label>
+        <label className="block rounded-lg border border-(--color-border) bg-(--color-cream) px-3 py-2 font-body text-sm focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-(--color-primary)">
+          <span className="block text-[10px] font-semibold uppercase tracking-wide text-(--color-muted)">
+            Hasta
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="text-(--color-muted)">S/</span>
+            <input
+              type="number"
+              inputMode="decimal"
+              name="priceMax"
+              autoComplete="off"
+              min={0}
+              max={maximumPrice}
+              value={priceMaxDraft}
+              onChange={(event) => onPriceMaxDraftChange(event.target.value)}
+              className="w-full bg-transparent text-base focus:outline-none"
+            />
+          </span>
+        </label>
+      </div>
+    </AccordionSection>
+  );
+}
+
+function ColorAccordion({
+  colors,
+  selectedNames,
+  availableColors,
+  onToggle,
+}: {
+  colors: CatalogColorFacet[];
+  selectedNames: Set<string>;
+  availableColors: Set<string>;
+  onToggle: (name: string) => void;
+}) {
+  if (colors.length === 0) return null;
+  return (
+    <AccordionSection title="Color">
+      <div className="grid grid-cols-3 gap-2">
+        {colors.map((color) => {
+          const selected = selectedNames.has(color.name);
+          const disabled = !selected && !availableColors.has(color.name);
+          return (
+            <OptionTile key={color.name} selected={selected} disabled={disabled}>
+              <input
+                type="checkbox"
+                name="color"
+                value={color.name}
+                checked={selected}
+                disabled={disabled}
+                onChange={() => onToggle(color.name)}
+                className="sr-only"
+              />
+              {color.hex && (
+                <span
+                  aria-hidden="true"
+                  className="size-4 rounded-full border border-(--color-border)"
+                  style={{ backgroundColor: color.hex }}
+                />
+              )}
+              <span>{color.label}</span>
+            </OptionTile>
+          );
+        })}
+      </div>
+    </AccordionSection>
+  );
+}
+
+function FlowerTypeAccordion({
+  flowerTypes,
+  selectedTypes,
+  availableFlowerTypes,
+  onToggle,
+}: {
+  flowerTypes: string[];
+  selectedTypes: Set<string>;
+  availableFlowerTypes: Set<string>;
+  onToggle: (flowerType: string) => void;
+}) {
+  if (flowerTypes.length === 0) return null;
+  return (
+    <AccordionSection title="Tipo de flor">
+      <div className="grid grid-cols-3 gap-2">
+        {flowerTypes.map((flowerType) => {
+          const selected = selectedTypes.has(flowerType);
+          const disabled = !selected && !availableFlowerTypes.has(flowerType);
+          return (
+            <OptionTile key={flowerType} selected={selected} disabled={disabled}>
+              <input
+                type="checkbox"
+                name="tipo"
+                value={flowerType}
+                checked={selected}
+                disabled={disabled}
+                onChange={() => onToggle(flowerType)}
+                className="sr-only"
+              />
+              <span>{flowerType}</span>
+            </OptionTile>
+          );
+        })}
+      </div>
+    </AccordionSection>
+  );
+}
+
 export default function CatalogFilterSheet({
   open,
   onOpenChange,
@@ -140,6 +402,46 @@ export default function CatalogFilterSheet({
     key: Key,
     value: CatalogFilters[Key],
   ) => onFiltersChange({ ...filters, [key]: value });
+
+  const latestRef = useRef({ filters, onFiltersChange });
+  useEffect(() => {
+    latestRef.current = { filters, onFiltersChange };
+  });
+
+  const [priceMinDraft, setPriceMinDraft] = useState(() => String(filters.priceMin));
+  const [priceMaxDraft, setPriceMaxDraft] = useState(() => String(filters.priceMax));
+  const [syncedPriceMin, setSyncedPriceMin] = useState(filters.priceMin);
+  const [syncedPriceMax, setSyncedPriceMax] = useState(filters.priceMax);
+
+  if (filters.priceMin !== syncedPriceMin) {
+    setSyncedPriceMin(filters.priceMin);
+    setPriceMinDraft(String(filters.priceMin));
+  }
+
+  if (filters.priceMax !== syncedPriceMax) {
+    setSyncedPriceMax(filters.priceMax);
+    setPriceMaxDraft(String(filters.priceMax));
+  }
+
+  useEffect(() => {
+    const next = parsePriceInput(priceMinDraft);
+    if (next === undefined || next === latestRef.current.filters.priceMin) return;
+    const timer = setTimeout(() => {
+      const { filters: currentFilters, onFiltersChange: currentOnFiltersChange } = latestRef.current;
+      currentOnFiltersChange({ ...currentFilters, priceMin: next });
+    }, PRICE_FILTER_DEBOUNCE_MS);
+    return () => clearTimeout(timer);
+  }, [priceMinDraft]);
+
+  useEffect(() => {
+    const next = parsePriceInput(priceMaxDraft);
+    if (next === undefined || next === latestRef.current.filters.priceMax) return;
+    const timer = setTimeout(() => {
+      const { filters: currentFilters, onFiltersChange: currentOnFiltersChange } = latestRef.current;
+      currentOnFiltersChange({ ...currentFilters, priceMax: next });
+    }, PRICE_FILTER_DEBOUNCE_MS);
+    return () => clearTimeout(timer);
+  }, [priceMaxDraft]);
 
   const sortSectionRef = useRef<HTMLDetailsElement>(null);
   const selectSort = (option: CatalogSortOption) => {
@@ -191,7 +493,7 @@ export default function CatalogFilterSheet({
             <button
               type="button"
               aria-label="Cerrar"
-              className="flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full border border-(--color-border) transition-colors hover:bg-(--color-dark)/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary)"
+              className="flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-full border border-(--color-border) transition-colors hover:bg-(--color-dark)/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary)"
             >
               <X className="size-4" aria-hidden="true" />
             </button>
@@ -199,195 +501,42 @@ export default function CatalogFilterSheet({
         </SheetHeader>
 
         <div className="flex-1 overflow-y-auto overscroll-contain px-7 pt-1 pb-5">
-          {appliedChips.length > 0 && (
-            <div className="border-b border-(--color-border) pb-4">
-              <p className="mb-3 font-body text-sm font-semibold text-(--color-dark)">
-                Filtros aplicados
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {appliedChips.map((chip) => (
-                  <button
-                    key={chip.key}
-                    type="button"
-                    onClick={chip.onRemove}
-                    className="flex cursor-pointer items-center gap-1.5 rounded-full border border-(--color-border) bg-(--color-surface) px-3 py-1.5 font-body text-xs font-semibold text-(--color-dark) transition-colors hover:bg-(--color-dark)/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary)"
-                  >
-                    {chip.label}
-                    <X className="size-3" aria-hidden="true" />
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
+          <AppliedChipsList chips={appliedChips} />
 
-          <AccordionSection
-            ref={sortSectionRef}
-            title="Ordenar por:"
-            subtitle={SORT_LABELS[sortOption]}
-          >
-            <div className="grid grid-cols-3 gap-2">
-              {(Object.keys(SORT_LABELS) as CatalogSortOption[]).map((option) => {
-                const selected = sortOption === option;
-                return (
-                  <OptionTile key={option} selected={selected}>
-                    <input
-                      type="radio"
-                      name="orden"
-                      value={option}
-                      checked={selected}
-                      onChange={() => selectSort(option)}
-                      className="sr-only"
-                    />
-                    <span>{SORT_LABELS[option]}</span>
-                  </OptionTile>
-                );
-              })}
-            </div>
-          </AccordionSection>
+          <SortAccordion sortOption={sortOption} onSelect={selectSort} sectionRef={sortSectionRef} />
 
-          {categories.length > 0 && (
-            <AccordionSection title="Categoría">
-              <div className="grid grid-cols-3 gap-2">
-                {categories.map((category) => {
-                  const selected = filters.category.includes(category.slug);
-                  const disabled = !selected && !availableCategorySlugs.has(category.slug);
-                  return (
-                    <OptionTile key={category.slug} selected={selected} disabled={disabled}>
-                      <input
-                        type="checkbox"
-                        name="categoria"
-                        value={category.slug}
-                        checked={selected}
-                        disabled={disabled}
-                        onChange={() => update('category', toggle(filters.category, category.slug))}
-                        className="sr-only"
-                      />
-                      <span>{category.name}</span>
-                    </OptionTile>
-                  );
-                })}
-              </div>
-            </AccordionSection>
-          )}
+          <CategoryAccordion
+            categories={categories}
+            selectedSlugs={new Set(filters.category)}
+            availableCategorySlugs={availableCategorySlugs}
+            onToggle={(slug) => update('category', toggle(filters.category, slug))}
+          />
 
-          <AccordionSection title="Precio" defaultOpen>
-            <p className="mb-3 font-body text-sm text-(--color-dark)">
-              El precio más alto es S/ {maximumPrice.toFixed(2)}{' '}
-              <button
-                type="button"
-                onClick={() => {
-                  update('priceMin', 0);
-                  update('priceMax', maximumPrice);
-                }}
-                className="font-semibold text-(--color-muted) underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary)"
-              >
-                Restablecer
-              </button>
-            </p>
-            <div className="grid grid-cols-2 gap-3">
-              <label className="block rounded-lg border border-(--color-border) bg-(--color-cream) px-3 py-2 font-body text-sm focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-(--color-primary)">
-                <span className="block text-[10px] font-semibold uppercase tracking-wide text-(--color-muted)">
-                  Desde
-                </span>
-                <span className="flex items-center gap-1">
-                  <span className="text-(--color-muted)">S/</span>
-                  <input
-                    type="number"
-                    inputMode="decimal"
-                    min={0}
-                    max={maximumPrice}
-                    value={filters.priceMin}
-                                    onChange={(event) => {
-                                      const next = parsePriceInput(event.target.value);
-                                      if (next === undefined) return;
-                                      update('priceMin', next);
-                                    }}
-                    className="w-full bg-transparent text-base focus:outline-none"
-                  />
-                </span>
-              </label>
-              <label className="block rounded-lg border border-(--color-border) bg-(--color-cream) px-3 py-2 font-body text-sm focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-(--color-primary)">
-                <span className="block text-[10px] font-semibold uppercase tracking-wide text-(--color-muted)">
-                  Hasta
-                </span>
-                <span className="flex items-center gap-1">
-                  <span className="text-(--color-muted)">S/</span>
-                  <input
-                    type="number"
-                    inputMode="decimal"
-                    min={0}
-                    max={maximumPrice}
-                    value={filters.priceMax}
-                                    onChange={(event) => {
-                                      const next = parsePriceInput(event.target.value);
-                                      if (next === undefined) return;
-                                      update('priceMax', next);
-                                    }}
-                    className="w-full bg-transparent text-base focus:outline-none"
-                  />
-                </span>
-              </label>
-            </div>
-          </AccordionSection>
+          <PriceAccordion
+            maximumPrice={maximumPrice}
+            priceMinDraft={priceMinDraft}
+            priceMaxDraft={priceMaxDraft}
+            onPriceMinDraftChange={setPriceMinDraft}
+            onPriceMaxDraftChange={setPriceMaxDraft}
+            onReset={() => {
+              update('priceMin', 0);
+              update('priceMax', maximumPrice);
+            }}
+          />
 
-          {colors.length > 0 && (
-            <AccordionSection title="Color">
-              <div className="grid grid-cols-3 gap-2">
-                {colors.map((color) => {
-                  const selected = filters.colors.includes(color.name);
-                  const disabled = !selected && !availableColors.has(color.name);
-                  return (
-                    <OptionTile key={color.name} selected={selected} disabled={disabled}>
-                      <input
-                        type="checkbox"
-                        name="color"
-                        value={color.name}
-                        checked={selected}
-                        disabled={disabled}
-                        onChange={() => update('colors', toggle(filters.colors, color.name))}
-                        className="sr-only"
-                      />
-                      {color.hex && (
-                        <span
-                          aria-hidden="true"
-                          className="size-4 rounded-full border border-(--color-border)"
-                          style={{ backgroundColor: color.hex }}
-                        />
-                      )}
-                      <span>{color.label}</span>
-                    </OptionTile>
-                  );
-                })}
-              </div>
-            </AccordionSection>
-          )}
+          <ColorAccordion
+            colors={colors}
+            selectedNames={new Set(filters.colors)}
+            availableColors={availableColors}
+            onToggle={(name) => update('colors', toggle(filters.colors, name))}
+          />
 
-          {flowerTypes.length > 0 && (
-            <AccordionSection title="Tipo de flor">
-              <div className="grid grid-cols-3 gap-2">
-                {flowerTypes.map((flowerType) => {
-                  const selected = filters.flowerTypes.includes(flowerType);
-                  const disabled = !selected && !availableFlowerTypes.has(flowerType);
-                  return (
-                    <OptionTile key={flowerType} selected={selected} disabled={disabled}>
-                      <input
-                        type="checkbox"
-                        name="tipo"
-                        value={flowerType}
-                        checked={selected}
-                        disabled={disabled}
-                        onChange={() =>
-                          update('flowerTypes', toggle(filters.flowerTypes, flowerType))
-                        }
-                        className="sr-only"
-                      />
-                      <span>{flowerType}</span>
-                    </OptionTile>
-                  );
-                })}
-              </div>
-            </AccordionSection>
-          )}
+          <FlowerTypeAccordion
+            flowerTypes={flowerTypes}
+            selectedTypes={new Set(filters.flowerTypes)}
+            availableFlowerTypes={availableFlowerTypes}
+            onToggle={(flowerType) => update('flowerTypes', toggle(filters.flowerTypes, flowerType))}
+          />
 
           {colors.length === 0 && flowerTypes.length === 0 && (
             <p className="py-4 font-body text-sm text-(--color-muted)">
