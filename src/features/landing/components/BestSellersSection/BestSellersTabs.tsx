@@ -2,12 +2,15 @@
 
 import { AnimatePresence, domAnimation, LazyMotion, m } from 'framer-motion';
 import Link from 'next/link';
-import { useMemo,useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import { useEffect, useMemo, useState } from 'react';
 
 import type { Category, Product } from '@/features/catalog/types';
 import { pickBestSellers } from '@/features/catalog/utils/pickBestSellers';
 
 import BestSellerProductCard from './BestSellerProductCard';
+
+const CATEGORY_QUERY_PARAM = 'bestsellers';
 
 interface BestSellersTabsProps {
   products: Product[];
@@ -20,7 +23,34 @@ export default function BestSellersTabs({
   categoryById,
   tabCategories,
 }: BestSellersTabsProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+
   const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const slug = new URLSearchParams(window.location.search).get(CATEGORY_QUERY_PARAM);
+    if (!slug) return;
+    const matched = tabCategories.find((category) => category.slug === slug)?.id ?? null;
+    if (matched) setActiveCategoryId(matched);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const selectCategory = (categoryId: string | null) => {
+    setActiveCategoryId(categoryId);
+    const slug = categoryId
+      ? tabCategories.find((category) => category.id === categoryId)?.slug
+      : null;
+    const params = new URLSearchParams(window.location.search);
+    if (slug) {
+      params.set(CATEGORY_QUERY_PARAM, slug);
+    } else {
+      params.delete(CATEGORY_QUERY_PARAM);
+    }
+    const query = params.toString();
+    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+  };
 
   const visibleProducts = useMemo(() => {
     const scoped = activeCategoryId
@@ -39,9 +69,9 @@ export default function BestSellersTabs({
           >
             <button
               type="button"
-              onClick={() => setActiveCategoryId(null)}
+              onClick={() => selectCategory(null)}
               aria-current={activeCategoryId === null ? 'true' : undefined}
-              className="shrink-0 transition-colors hover:text-(--color-primary) focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-(--color-secondary) aria-[current=true]:text-(--color-dark)"
+              className="shrink-0 px-2 py-2.5 transition-colors hover:text-(--color-primary) focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-(--color-secondary) aria-[current=true]:text-(--color-dark)"
             >
               Todos
             </button>
@@ -49,9 +79,9 @@ export default function BestSellersTabs({
               <button
                 key={category.id}
                 type="button"
-                onClick={() => setActiveCategoryId(category.id)}
+                onClick={() => selectCategory(category.id)}
                 aria-current={activeCategoryId === category.id ? 'true' : undefined}
-                className="shrink-0 transition-colors hover:text-(--color-primary) focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-(--color-secondary) aria-[current=true]:text-(--color-dark)"
+                className="shrink-0 px-2 py-2.5 transition-colors hover:text-(--color-primary) focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-(--color-secondary) aria-[current=true]:text-(--color-dark)"
               >
                 {category.name}
               </button>
@@ -64,7 +94,7 @@ export default function BestSellersTabs({
         </div>
         <Link
           href="/catalogo"
-          className="shrink-0 border-b border-(--color-primary) pb-1 font-body text-xs font-semibold uppercase tracking-[0.14em] text-(--color-primary) transition-colors hover:border-(--color-accent) hover:text-(--color-accent) focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-(--color-secondary) sm:text-sm"
+          className="shrink-0 border-b border-(--color-primary) px-2 py-2.5 font-body text-xs font-semibold uppercase tracking-[0.14em] text-(--color-primary) transition-colors hover:border-(--color-accent) hover:text-(--color-accent) focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-(--color-secondary) sm:text-sm"
         >
           Ver todo
         </Link>

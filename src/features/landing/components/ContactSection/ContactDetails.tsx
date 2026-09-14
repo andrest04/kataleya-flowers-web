@@ -65,7 +65,7 @@ export default function ContactDetails({ settings }: ContactDetailsProps) {
           href={settings.instagram}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-(--color-primary) transition-opacity hover:opacity-70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary)"
+          className="inline-flex items-center gap-2 rounded-full px-4 py-3 text-sm font-semibold text-(--color-primary) transition-opacity hover:opacity-70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary)"
           style={{ border: '1px solid var(--color-primary)' }}
         >
           <FaInstagram className="size-4" aria-hidden="true" />

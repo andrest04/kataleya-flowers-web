@@ -39,7 +39,7 @@ export default function TestimonialsGallery({ testimonials }: TestimonialsGaller
       </div>
 
       {testimonials.length < 2 ? null : (
-        <div className="mt-10 flex items-center justify-center gap-4 md:hidden" aria-label="Navegación de testimonios">
+        <div className="mt-10 flex items-center justify-center gap-4 md:hidden" role="group" aria-label="Navegación de testimonios">
           <button
             type="button"
             aria-controls="testimonios-galeria"
