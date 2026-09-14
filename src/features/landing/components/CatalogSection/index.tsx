@@ -3,6 +3,13 @@ import type { Category } from '@/features/catalog/types';
 
 import CategoryTile from './CategoryTile';
 
+// Matches the heading's `mx-auto max-w-[110rem] px-4 sm:px-6 lg:px-8` inset so the
+// first card lines up with the title even once the container starts centering above 110rem.
+const HEADING_ALIGNED_LEFT_INSET =
+  'pl-[max(1rem,calc((100vw_-_110rem)/2_+_1rem))] scroll-pl-[max(1rem,calc((100vw_-_110rem)/2_+_1rem))] ' +
+  'sm:pl-[max(1.5rem,calc((100vw_-_110rem)/2_+_1.5rem))] sm:scroll-pl-[max(1.5rem,calc((100vw_-_110rem)/2_+_1.5rem))] ' +
+  'lg:pl-[max(2rem,calc((100vw_-_110rem)/2_+_2rem))] lg:scroll-pl-[max(2rem,calc((100vw_-_110rem)/2_+_2rem))]';
+
 interface CatalogSectionProps {
   categories: Category[];
   title: string;
@@ -25,7 +32,11 @@ export default function CatalogSection({ categories, title }: CatalogSectionProp
         </h2>
       </div>
 
-      <Carousel ariaLabel="Catálogos de flores por ocasión">
+      <Carousel
+        ariaLabel="Catálogos de flores por ocasión"
+        leftInsetClassName={HEADING_ALIGNED_LEFT_INSET}
+        fullBleed={false}
+      >
         {tiles.map((category) => (
           <CategoryTile
             key={category.id}

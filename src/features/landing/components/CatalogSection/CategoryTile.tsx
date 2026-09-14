@@ -21,14 +21,14 @@ export default function CategoryTile({ category, layoutClasses }: CategoryTilePr
         {category.imageUrl ? (
           <Image
             src={category.imageUrl}
-            alt={category.name}
+            alt=""
             fill
             sizes={SIZES}
             className="object-cover motion-safe:transition-transform motion-safe:duration-700 motion-safe:ease-out motion-safe:group-hover:scale-[1.03]"
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
-            <Flower2 className="h-12 w-12 text-(--color-secondary) opacity-50" />
+            <Flower2 className="h-12 w-12 text-(--color-secondary) opacity-50" aria-hidden="true" />
           </div>
         )}
       </div>
