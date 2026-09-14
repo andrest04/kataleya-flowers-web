@@ -65,7 +65,7 @@ export function ProductGallery({ imageUrl, images, name }: ProductGalleryProps) 
         >
           {allImages.map((src, i) => (
             <button
-              key={`${src}-${i}`}
+              key={src}
               type="button"
               onClick={() => setLightboxOpen(true)}
               className="relative h-full w-full flex-none snap-start cursor-zoom-in outline-none focus-visible:ring-2"
