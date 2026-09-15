@@ -18,7 +18,7 @@ export default async function NuevoPromoBannerPage() {
     getPublishedPromoBanners(),
     getSiteSettings(),
   ]);
-  const allowHide = banners.some((banner) => banner.is_active);
+  const allowHide = banners.some((banner) => banner.isActive);
   const fallbacks = fallbackPromoBanners(settings);
   const first = draftFromFallback(liveBanners[0] ?? fallbacks[0]);
   const second = draftFromFallback(liveBanners[1] ?? fallbacks[1]);

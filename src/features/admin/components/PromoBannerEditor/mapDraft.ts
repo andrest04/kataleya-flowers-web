@@ -1,5 +1,5 @@
 import type { PromoBannerView } from '@/features/landing/queries/getPublishedPromoBanners';
-import type { PromoBannerRow } from '@/lib/db/rows';
+import type { PromoBanner } from '@/lib/database/repositories/promoBanners';
 
 import type { PromoBannerCtaType, PromoBannerDraft } from './types';
 
@@ -63,19 +63,19 @@ export function draftFromFallback(banner: PromoBannerView): PromoBannerDraft {
   };
 }
 
-export function draftFromBanner(banner: PromoBannerRow): PromoBannerDraft {
-  const ctaType = ctaTypeFromHref(banner.cta_href);
+export function draftFromBanner(banner: PromoBanner): PromoBannerDraft {
+  const ctaType = ctaTypeFromHref(banner.ctaHref);
   return {
-    contentPosition: banner.content_position,
-    ctaLabel: banner.cta_label,
+    contentPosition: banner.contentPosition,
+    ctaLabel: banner.ctaLabel,
     ctaType,
-    ctaValue: ctaType === 'url' ? banner.cta_href : '',
+    ctaValue: ctaType === 'url' ? banner.ctaHref : '',
     description: banner.description,
-    endsAt: toDatetimeLocalValue(banner.ends_at),
-    imageUrl: banner.image_url,
-    isActive: banner.is_active,
+    endsAt: toDatetimeLocalValue(banner.endsAt),
+    imageUrl: banner.imageUrl,
+    isActive: banner.isActive,
     name: banner.name ?? '',
-    startsAt: toDatetimeLocalValue(banner.starts_at),
+    startsAt: toDatetimeLocalValue(banner.startsAt),
     title: banner.title,
   };
 }

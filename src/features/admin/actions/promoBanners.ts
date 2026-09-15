@@ -18,16 +18,11 @@ import { getSiteSettings } from '@/features/settings/queries/getSiteSettings';
 import {
   activatePromoPresetExclusive,
   countActivePromoPresets,
-  createPromoBannerDocument,
   deletePromoPresetDocuments,
-  findPromoBannerById,
-  getNextPromoBannerOrder,
-  listPromoBanners,
   listPromoBannersByPreset,
-  reorderPromoBannersAppwrite,
+  promoBannerRepository,
   setPromoPresetActive,
-  updatePromoBannerDocument,
-} from '@/lib/appwrite/repositories/promoBanners';
+} from '@/lib/database/repositories/promoBanners';
 import { imageStorage } from '@/lib/imageStorage';
 import { promoPresetKey } from '@/lib/promoPresetKey';
 import { defaultWhatsappHref } from '@/lib/siteSettings';
@@ -146,9 +141,9 @@ export async function createPromoBanner(data: unknown): Promise<PromoBannerActio
     const parsed = await parsePromoBannerInput(data);
     if (!parsed.ok) return parsed.failure;
     const hasOtherActive = (await countActivePromoPresets()) > 0;
-    const displayOrder = await getNextPromoBannerOrder();
+    const displayOrder = await promoBannerRepository.getNextOrder();
     const isActive = hasOtherActive ? parsed.value.isActive : true;
-    await createPromoBannerDocument(await toWritePayload({ ...parsed.value, isActive }, displayOrder));
+    await promoBannerRepository.create(await toWritePayload({ ...parsed.value, isActive }, displayOrder));
     if (isActive && hasOtherActive) {
       await activatePromoPresetExclusive(parsed.value.name);
     }
@@ -171,11 +166,11 @@ export async function createPromoBannerPair(data: unknown): Promise<PromoBannerA
     ];
     if (!parsed[0].ok || !parsed[1].ok) return pairParseFailure(parsed[0], parsed[1]);
     const hasOtherActive = (await countActivePromoPresets()) > 0;
-    const displayOrder = await getNextPromoBannerOrder();
+    const displayOrder = await promoBannerRepository.getNextOrder();
     const isActive = hasOtherActive ? parsed[0].value.isActive : true;
     const name = parsed[0].value.name;
-    await createPromoBannerDocument(await toWritePayload({ ...parsed[0].value, isActive, name }, displayOrder));
-    await createPromoBannerDocument(await toWritePayload({ ...parsed[1].value, isActive, name }, displayOrder + 1));
+    await promoBannerRepository.create(await toWritePayload({ ...parsed[0].value, isActive, name }, displayOrder));
+    await promoBannerRepository.create(await toWritePayload({ ...parsed[1].value, isActive, name }, displayOrder + 1));
     if (isActive && hasOtherActive) {
       await activatePromoPresetExclusive(name);
     }
@@ -195,17 +190,17 @@ export async function updatePromoBanner(id: string, data: unknown): Promise<Prom
     }
     const parsed = await parsePromoBannerInput(data);
     if (!parsed.ok) return parsed.failure;
-    const existing = await findPromoBannerById(idParsed.data);
+    const existing = await promoBannerRepository.findById(idParsed.data);
     if (!existing) {
       return { success: false, error: 'No encontramos ese banner.', code: 'INTERNAL' };
     }
-    if (existing.is_active && !parsed.value.isActive) {
+    if (existing.isActive && !parsed.value.isActive) {
       const otherActive = await countActivePromoPresets(promoPresetKey(existing));
       if (otherActive === 0) {
         return { success: false, error: LAST_ACTIVE_ERROR, code: 'VALIDATION' };
       }
     }
-    await updatePromoBannerDocument(idParsed.data, await toWritePayload(parsed.value, existing.display_order));
+    await promoBannerRepository.update(idParsed.data, await toWritePayload(parsed.value, existing.displayOrder));
     if (parsed.value.isActive) {
       await activatePromoPresetExclusive(parsed.value.name);
     }
@@ -232,21 +227,21 @@ export async function updatePromoBannerPair(ids: unknown, data: unknown): Promis
       await parsePromoBannerInput(data[1]),
     ];
     if (!parsed[0].ok || !parsed[1].ok) return pairParseFailure(parsed[0], parsed[1]);
-    const existingA = await findPromoBannerById(idA.data);
-    const existingB = await findPromoBannerById(idB.data);
+    const existingA = await promoBannerRepository.findById(idA.data);
+    const existingB = await promoBannerRepository.findById(idB.data);
     if (!existingA || !existingB) {
       return { success: false, error: 'No encontramos esos banners.', code: 'INTERNAL' };
     }
     const name = parsed[0].value.name;
     const isActive = parsed[0].value.isActive;
-    if (existingA.is_active && !isActive) {
+    if (existingA.isActive && !isActive) {
       const otherActive = await countActivePromoPresets(promoPresetKey(existingA));
       if (otherActive === 0) {
         return { success: false, error: LAST_ACTIVE_ERROR, code: 'VALIDATION' };
       }
     }
-    await updatePromoBannerDocument(idA.data, await toWritePayload({ ...parsed[0].value, name, isActive }, existingA.display_order));
-    await updatePromoBannerDocument(idB.data, await toWritePayload({ ...parsed[1].value, name, isActive }, existingB.display_order));
+    await promoBannerRepository.update(idA.data, await toWritePayload({ ...parsed[0].value, name, isActive }, existingA.displayOrder));
+    await promoBannerRepository.update(idB.data, await toWritePayload({ ...parsed[1].value, name, isActive }, existingB.displayOrder));
     if (isActive) {
       await activatePromoPresetExclusive(name);
     }
@@ -292,14 +287,14 @@ export async function reorderPromoPresets(keys: string[]): Promise<PromoBannerAc
     if (!Array.isArray(keys) || keys.length === 0 || keys.some((key) => typeof key !== 'string' || key.trim() === '')) {
       return { success: false, error: 'Lista inválida.', code: 'VALIDATION' };
     }
-    const banners = await listPromoBanners();
+    const banners = await promoBannerRepository.list();
     const orderedIds = keys.flatMap((key) =>
       banners.filter((banner) => promoPresetKey(banner) === key).map((banner) => banner.id),
     );
     if (orderedIds.length === 0) {
       return { success: false, error: 'Lista inválida.', code: 'VALIDATION' };
     }
-    await reorderPromoBannersAppwrite(orderedIds);
+    await promoBannerRepository.reorder(orderedIds);
     revalidateHomeContent();
     return { success: true };
   } catch (err) {
@@ -317,14 +312,14 @@ export async function deletePromoPreset(key: string): Promise<PromoBannerActionR
     if (members.length === 0) {
       return { success: false, error: 'No encontramos esos banners.', code: 'INTERNAL' };
     }
-    const remaining = await listPromoBanners();
+    const remaining = await promoBannerRepository.list();
     const otherKeys = new Set(
       remaining.filter((banner) => promoPresetKey(banner) !== key).map((banner) => promoPresetKey(banner)),
     );
     if (otherKeys.size === 0) {
       return { success: false, error: LAST_ACTIVE_ERROR, code: 'VALIDATION' };
     }
-    if (members.some((banner) => banner.is_active)) {
+    if (members.some((banner) => banner.isActive)) {
       const otherActive = await countActivePromoPresets(key);
       if (otherActive === 0) {
         return { success: false, error: LAST_ACTIVE_ERROR, code: 'VALIDATION' };
