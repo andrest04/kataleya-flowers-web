@@ -4,7 +4,7 @@ import path from 'node:path';
 import { NextResponse } from 'next/server';
 
 import { AdminAuthError, requireAdmin } from '@/features/admin/utils/auth';
-import { isAppwriteStorageUrl } from '@/lib/imageStorage/urlValidation';
+import { imageStorage } from '@/lib/imageStorage';
 
 const LOCAL_IMAGE = /^\/images\/[a-z0-9/_-]+\.(jpg|jpeg|png|webp|avif)$/i;
 
@@ -38,7 +38,7 @@ export async function GET(request: Request) {
     }
   }
 
-  if (!isAppwriteStorageUrl(url)) {
+  if (!imageStorage.isOwnedUrl(url)) {
     return NextResponse.json({ error: 'invalid_url' }, { status: 400 });
   }
 

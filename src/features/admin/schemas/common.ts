@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { isAppwriteStorageUrl } from '@/lib/imageStorage/urlValidation';
+import { isOwnedStorageUrl } from '@/lib/imageStorage/ownership';
 
 export const nonEmptyString = z
   .string()
@@ -36,7 +36,7 @@ export const storedImageUrl = z
   .url('URL inválida')
   .max(2048, 'URL demasiado larga')
   .refine(
-    (value) => isAppwriteStorageUrl(value),
+    (value) => isOwnedStorageUrl(value),
     'La imagen debe servirse desde el storage propio del proyecto',
   );
 

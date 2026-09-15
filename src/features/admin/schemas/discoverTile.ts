@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 import { isDiscoverIconName } from '@/lib/discoverIcons';
-import { isAppwriteStorageUrl } from '@/lib/imageStorage/urlValidation';
+import { isOwnedStorageUrl } from '@/lib/imageStorage/ownership';
 
 import { nonEmptyString } from './common';
 
@@ -10,7 +10,7 @@ export function isPublicSiteImagePath(value: string): boolean {
 }
 
 export function isDiscoverTileImageUrl(value: string): boolean {
-  return isAppwriteStorageUrl(value) || isPublicSiteImagePath(value);
+  return isOwnedStorageUrl(value) || isPublicSiteImagePath(value);
 }
 
 const discoverTileImageUrl = z

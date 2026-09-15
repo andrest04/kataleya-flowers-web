@@ -56,7 +56,7 @@ const SECURITY_HEADERS = [
  *     a un servicio externo (Sentry, report-uri.com)
  *
  * Dominios permitidos:
- *   - nyc.cloud.appwrite.io -> Appwrite Storage (imágenes de productos/categorías)
+ *   - APPWRITE_ENDPOINT origin (fallback nyc.cloud.appwrite.io) -> storage de imágenes
  *   - www.google.com        -> iframe de Google Maps en la sección de contacto
  *   - va.vercel-scripts.com -> @vercel/analytics y @vercel/speed-insights
  *
@@ -64,11 +64,23 @@ const SECURITY_HEADERS = [
  * se sirve al browser (URLs de imagen en `<Image>`), de ahí la entrada en
  * img-src.
  */
+const FALLBACK_IMAGE_STORAGE_ORIGIN = "https://nyc.cloud.appwrite.io";
+
+function imageStorageOrigin(): string {
+  const endpoint = process.env.APPWRITE_ENDPOINT;
+  if (!endpoint) return FALLBACK_IMAGE_STORAGE_ORIGIN;
+  try {
+    return new URL(endpoint).origin;
+  } catch {
+    return FALLBACK_IMAGE_STORAGE_ORIGIN;
+  }
+}
+
 const CSP_REPORT_ONLY = [
   "default-src 'self'",
   "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com",
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https://nyc.cloud.appwrite.io",
+  `img-src 'self' data: blob: ${imageStorageOrigin()}`,
   "font-src 'self' data:",
   "connect-src 'self'",
   "frame-src 'self' https://www.google.com",

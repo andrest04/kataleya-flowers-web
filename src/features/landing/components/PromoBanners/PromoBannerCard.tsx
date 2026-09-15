@@ -1,5 +1,5 @@
-import Image from '@/components/ui/AppwriteImage';
 import Button from '@/components/ui/Button';
+import Image from '@/components/ui/StoredImage';
 
 interface PromoBannerCardProps {
   readonly imageSrc: string;

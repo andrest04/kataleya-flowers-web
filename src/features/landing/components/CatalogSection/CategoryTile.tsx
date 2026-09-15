@@ -1,7 +1,7 @@
 import { Flower2 } from 'lucide-react';
 import Link from 'next/link';
 
-import Image from '@/components/ui/AppwriteImage';
+import Image from '@/components/ui/StoredImage';
 import type { Category } from '@/features/catalog/types';
 
 interface CategoryTileProps {

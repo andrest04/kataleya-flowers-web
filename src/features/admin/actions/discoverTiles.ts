@@ -18,7 +18,6 @@ import {
   fallbackDiscoverTiles,
 } from '@/features/landing/queries/getPublishedDiscoverTiles';
 import { getSiteSettings } from '@/features/settings/queries/getSiteSettings';
-import { APPWRITE_BUCKETS } from '@/lib/appwrite/config';
 import {
   discoverTileRepository,
   type DiscoverTileWritePayload,
@@ -28,7 +27,6 @@ import {
   HOME_DISCOVER_TILE_LIMIT_COPY,
 } from '@/lib/discoverTileLimit';
 import { imageStorage } from '@/lib/imageStorage';
-import { parseAppwriteStorageUrl } from '@/lib/imageStorage/urlValidation';
 
 type DiscoverTileActionResult = { success: true } | AdminActionFailure;
 
@@ -36,10 +34,6 @@ function revalidateHomeContent(): void {
   revalidatePath('/');
   revalidatePath('/admin/inicio');
   updateTag('home-content');
-}
-
-function isContentImage(url: string): boolean {
-  return parseAppwriteStorageUrl(url)?.bucketId === APPWRITE_BUCKETS.content;
 }
 
 function ensureDiscoverTileImage(url: string): string | AdminActionFailure {
@@ -291,7 +285,7 @@ export async function deleteDiscoverTile(id: string): Promise<DiscoverTileAction
       return { success: false, error: 'No encontramos esa tarjeta.', code: 'INTERNAL' };
     }
     const imageUrl = await discoverTileRepository.delete(idParsed.data);
-    if (imageUrl && isContentImage(imageUrl)) void imageStorage.delete(imageUrl);
+    if (imageUrl && imageStorage.isOwnedUrlInFolder(imageUrl, 'contenido')) void imageStorage.delete(imageUrl);
     revalidateHomeContent();
     return { success: true };
   } catch (err) {
