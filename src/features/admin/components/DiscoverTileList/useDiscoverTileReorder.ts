@@ -4,10 +4,10 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 
 import { reorderDiscoverTiles } from '@/features/admin/actions/discoverTiles';
-import type { DiscoverTileRow } from '@/lib/db/rows';
+import type { DiscoverTile } from '@/lib/database/repositories/discoverTiles';
 
 export function useDiscoverTileReorder(
-  items: DiscoverTileRow[],
+  items: DiscoverTile[],
   applyOrder: (ids: string[]) => void,
 ) {
   const [isSaving, setIsSaving] = useState(false);

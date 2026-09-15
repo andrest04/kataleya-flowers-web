@@ -23,8 +23,8 @@ export default async function EditarTarjetaPage({ params }: EditarTarjetaPagePro
     getAdminDiscoverTiles(),
   ]);
   if (!tile) notFound();
-  const activeCount = tiles.filter((item) => item.is_active).length;
-  const allowActivate = tile.is_active || activeCount < HOME_DISCOVER_TILE_LIMIT;
+  const activeCount = tiles.filter((item) => item.isActive).length;
+  const allowActivate = tile.isActive || activeCount < HOME_DISCOVER_TILE_LIMIT;
 
   return (
     <div className="space-y-6">

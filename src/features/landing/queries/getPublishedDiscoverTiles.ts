@@ -1,10 +1,14 @@
 import { unstable_cache } from 'next/cache';
 
 import { getSiteSettings } from '@/features/settings/queries/getSiteSettings';
-import { listDiscoverTiles } from '@/lib/appwrite/repositories/discoverTiles';
+import { type DiscoverTile, discoverTileRepository } from '@/lib/database/repositories/discoverTiles';
 import { HOME_DISCOVER_TILE_LIMIT } from '@/lib/discoverTileLimit';
 import { isPublished } from '@/lib/publishing';
 import { defaultWhatsappHref, type SiteSettings } from '@/lib/siteSettings';
+
+function isTilePublished(tile: DiscoverTile, now: Date): boolean {
+  return isPublished({ ends_at: tile.endsAt, is_active: tile.isActive, starts_at: tile.startsAt }, now);
+}
 
 export interface DiscoverTileView {
   description: string;
@@ -55,19 +59,19 @@ type CachedDiscoverTileState =
 
 const getCachedDiscoverTileState = unstable_cache(
   async (): Promise<CachedDiscoverTileState> => {
-    const tiles = await listDiscoverTiles();
+    const tiles = await discoverTileRepository.list();
     const now = new Date();
-    const published = tiles.filter((tile) => isPublished(tile, now));
+    const published = tiles.filter((tile) => isTilePublished(tile, now));
     if (published.length > 0) {
       return {
         status: 'published',
         tiles: published.slice(0, HOME_DISCOVER_TILE_LIMIT).map((tile) => ({
           description: tile.description,
-          external: tile.is_external,
+          external: tile.isExternal,
           href: tile.href,
           icon: tile.icon,
           id: tile.id,
-          imageSrc: tile.image_url,
+          imageSrc: tile.imageUrl,
           title: tile.title,
         })),
       };
