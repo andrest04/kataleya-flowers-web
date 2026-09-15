@@ -3,15 +3,14 @@ import path from 'node:path';
 
 import { NextResponse } from 'next/server';
 
-import { AdminAuthError } from '@/features/admin/utils/auth';
-import { requireAdminAppwrite } from '@/features/admin/utils/auth.appwrite';
+import { AdminAuthError, requireAdmin } from '@/features/admin/utils/auth';
 import { isAppwriteStorageUrl } from '@/lib/imageStorage/urlValidation';
 
 const LOCAL_IMAGE = /^\/images\/[a-z0-9/_-]+\.(jpg|jpeg|png|webp|avif)$/i;
 
 export async function GET(request: Request) {
   try {
-    await requireAdminAppwrite();
+    await requireAdmin();
   } catch (err) {
     if (err instanceof AdminAuthError) {
       return NextResponse.json(
