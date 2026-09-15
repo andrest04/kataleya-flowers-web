@@ -1,5 +1,7 @@
 'use server';
 
+import { checkBotId } from 'botid/server';
+
 import { complaintsRepository } from '@/lib/database/repositories/complaints';
 
 import { sendComplaintEmails } from '../email/sendComplaintEmails';
@@ -8,11 +10,18 @@ import type { ComplaintSubmitResult } from '../types';
 import { formatComplaintNumber } from '../utils/format';
 import { checkComplaintRateLimit, getClientIp } from '../utils/rateLimit';
 
-// Libro de Reclamaciones: legally public, rate-limited instead of gated
-// react-doctor-disable-next-line react-doctor/server-auth-actions
 export async function submitComplaint(
   input: unknown,
 ): Promise<ComplaintSubmitResult> {
+  const { isBot } = await checkBotId();
+  if (isBot) {
+    return {
+      success: false,
+      error: 'No se pudo registrar tu reclamación. Intenta de nuevo en unos minutos.',
+      code: 'INTERNAL',
+    };
+  }
+
   const ip = await getClientIp();
   if (!checkComplaintRateLimit(ip)) {
     return {
