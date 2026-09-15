@@ -1,9 +1,10 @@
 import type { Models } from 'node-appwrite';
-import { ID, Query } from 'node-appwrite';
+import { AppwriteException, ID, Query } from 'node-appwrite';
 
 import { createAdminClient } from '@/lib/appwrite/admin';
 import { getAppwriteConfig } from '@/lib/appwrite/config';
 
+import { ConflictError } from './errors';
 import type {
   BulkDeleteOperation,
   BulkUpdateOperation,
@@ -14,6 +15,13 @@ import type {
 } from './types';
 
 const APPWRITE_PAGE_SIZE = 100;
+
+function throwMappedWriteError(error: unknown): never {
+  if (error instanceof AppwriteException && error.code === 409) {
+    throw new ConflictError();
+  }
+  throw error;
+}
 
 function getContext(): {
   databases: ReturnType<typeof createAdminClient>['databases'];
@@ -116,13 +124,17 @@ class AppwriteDocumentStore implements DocumentStore {
     data: Record<string, unknown>,
   ): Promise<T> {
     const { databases, databaseId } = getContext();
-    const doc = await databases.createDocument({
-      databaseId,
-      collectionId,
-      documentId: ID.custom(id),
-      data,
-    });
-    return toRecord<T>(doc);
+    try {
+      const doc = await databases.createDocument({
+        databaseId,
+        collectionId,
+        documentId: ID.custom(id),
+        data,
+      });
+      return toRecord<T>(doc);
+    } catch (error) {
+      throwMappedWriteError(error);
+    }
   }
 
   async update<T extends DocumentRecord>(
@@ -131,8 +143,12 @@ class AppwriteDocumentStore implements DocumentStore {
     data: Record<string, unknown>,
   ): Promise<T> {
     const { databases, databaseId } = getContext();
-    const doc = await databases.updateDocument({ databaseId, collectionId, documentId: id, data });
-    return toRecord<T>(doc);
+    try {
+      const doc = await databases.updateDocument({ databaseId, collectionId, documentId: id, data });
+      return toRecord<T>(doc);
+    } catch (error) {
+      throwMappedWriteError(error);
+    }
   }
 
   async delete(collectionId: string, id: string): Promise<void> {
@@ -150,28 +166,36 @@ class AppwriteDocumentStore implements DocumentStore {
         id: string,
         data: Record<string, unknown>,
       ): Promise<T> => {
-        const doc = await databases.createDocument({
-          databaseId,
-          collectionId,
-          documentId: ID.custom(id),
-          transactionId: transaction.$id,
-          data,
-        });
-        return toRecord<T>(doc);
+        try {
+          const doc = await databases.createDocument({
+            databaseId,
+            collectionId,
+            documentId: ID.custom(id),
+            transactionId: transaction.$id,
+            data,
+          });
+          return toRecord<T>(doc);
+        } catch (error) {
+          throwMappedWriteError(error);
+        }
       },
       update: async <T extends DocumentRecord>(
         collectionId: string,
         id: string,
         data: Record<string, unknown>,
       ): Promise<T> => {
-        const doc = await databases.updateDocument({
-          databaseId,
-          collectionId,
-          documentId: id,
-          transactionId: transaction.$id,
-          data,
-        });
-        return toRecord<T>(doc);
+        try {
+          const doc = await databases.updateDocument({
+            databaseId,
+            collectionId,
+            documentId: id,
+            transactionId: transaction.$id,
+            data,
+          });
+          return toRecord<T>(doc);
+        } catch (error) {
+          throwMappedWriteError(error);
+        }
       },
       delete: async (collectionId: string, id: string) => {
         await databases.deleteDocument({

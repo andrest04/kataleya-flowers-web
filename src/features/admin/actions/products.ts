@@ -2,7 +2,6 @@
 
 import { revalidatePath, updateTag } from 'next/cache';
 import { after } from 'next/server';
-import { AppwriteException } from 'node-appwrite';
 
 import { uuid } from '@/features/admin/schemas/common';
 import { productCreateSchema, productUpdateSchema } from '@/features/admin/schemas/product';
@@ -14,6 +13,7 @@ import {
   requireAdmin,
 } from '@/features/admin/utils/auth';
 import { slugify } from '@/features/admin/utils/slugify';
+import { isConflictError } from '@/lib/database';
 import { productsRepository } from '@/lib/database/repositories/products';
 import { taxonomyRepository } from '@/lib/database/repositories/taxonomy';
 import { imageStorage } from '@/lib/imageStorage';
@@ -123,7 +123,7 @@ export async function createProduct(data: ProductFormData): Promise<ProductActio
         imageAlts: formData.imageAlts,
       });
     } catch (writeErr) {
-      if (writeErr instanceof AppwriteException && writeErr.code === 409) {
+      if (isConflictError(writeErr)) {
         return { success: false, error: 'Ya existe un registro con esos datos.', code: 'INTERNAL' };
       }
       throw writeErr;
@@ -203,7 +203,7 @@ export async function updateProduct(
         imageAlts: formData.imageAlts,
       });
     } catch (writeErr) {
-      if (writeErr instanceof AppwriteException && writeErr.code === 409) {
+      if (isConflictError(writeErr)) {
         return { success: false, error: 'Ya existe un registro con esos datos.', code: 'INTERNAL' };
       }
       throw writeErr;

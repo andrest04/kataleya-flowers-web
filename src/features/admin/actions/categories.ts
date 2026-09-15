@@ -2,7 +2,6 @@
 
 import { revalidatePath, updateTag } from 'next/cache';
 import { after } from 'next/server';
-import { AppwriteException } from 'node-appwrite';
 
 import {
   categoryCreateSchema,
@@ -17,6 +16,7 @@ import {
   requireAdmin,
 } from '@/features/admin/utils/auth';
 import { slugify } from '@/features/admin/utils/slugify';
+import { isConflictError } from '@/lib/database';
 import { categoryRepository } from '@/lib/database/repositories/categories';
 import { imageStorage } from '@/lib/imageStorage';
 import { BASE_REVALIDATE_PATHS } from '@/lib/revalidation';
@@ -83,7 +83,7 @@ export async function createCategory(
         isFeatured: (parsed.data as CategoryFormData).isFeatured,
       });
     } catch (writeErr) {
-      if (writeErr instanceof AppwriteException && writeErr.code === 409) {
+      if (isConflictError(writeErr)) {
         return { success: false, error: 'Ya existe un registro con esos datos.', code: 'INTERNAL' };
       }
       throw writeErr;
@@ -152,7 +152,7 @@ export async function updateCategory(
         isFeatured: (parsed.data as CategoryFormData).isFeatured,
       });
     } catch (writeErr) {
-      if (writeErr instanceof AppwriteException && writeErr.code === 409) {
+      if (isConflictError(writeErr)) {
         return { success: false, error: 'Ya existe un registro con esos datos.', code: 'INTERNAL' };
       }
       throw writeErr;
