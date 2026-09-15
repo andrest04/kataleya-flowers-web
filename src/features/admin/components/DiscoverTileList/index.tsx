@@ -37,6 +37,15 @@ function isTilePublished(item: DiscoverTile, now: Date): boolean {
   return isPublished({ ends_at: item.endsAt, is_active: item.isActive, starts_at: item.startsAt }, now);
 }
 
+function TileText({ title, description }: { title: string; description: string }) {
+  return (
+    <div className="min-w-0 flex-1">
+      <p className="truncate font-medium text-(--color-dark)">{title}</p>
+      <p className="truncate text-xs text-(--color-muted)">{description}</p>
+    </div>
+  );
+}
+
 interface DiscoverTileListProps {
   items: DiscoverTile[];
   liveItems: LiveDiscoverTileItem[];
@@ -131,10 +140,7 @@ export default function DiscoverTileList({
             className="flex items-center gap-3 rounded-xl border border-(--color-border) bg-(--color-white) p-3"
           >
             <span className="size-8 shrink-0" aria-hidden="true" />
-            <div className="min-w-0 flex-1">
-              <p className="truncate font-medium text-(--color-dark)">{item.title}</p>
-              <p className="truncate text-xs text-(--color-muted)">{item.description}</p>
-            </div>
+            <TileText title={item.title} description={item.description} />
             <ToggleSwitch
               checked
               disabled={togglingId !== null}
@@ -194,10 +200,7 @@ export default function DiscoverTileList({
                       }`}
                     >
                       <DragHandle handleProps={dragHandleProps} label={item.title} />
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate font-medium text-(--color-dark)">{item.title}</p>
-                        <p className="truncate text-xs text-(--color-muted)">{item.description}</p>
-                      </div>
+                      <TileText title={item.title} description={item.description} />
                       {limited ? (
                         <Tooltip>
                           <TooltipTrigger asChild>

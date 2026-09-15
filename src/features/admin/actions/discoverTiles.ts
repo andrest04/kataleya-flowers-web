@@ -134,16 +134,20 @@ async function seedFallbackDocuments(
   replacement?: DiscoverTileWritePayload,
 ): Promise<AdminActionFailure | null> {
   const fallbacks = fallbackDiscoverTiles(await getSiteSettings());
+  const payloads: DiscoverTileWritePayload[] = [];
+
   for (const [index, item] of fallbacks.entries()) {
     const displayOrder = index + 1;
     if (exceptId && item.id === exceptId && replacement) {
-      await discoverTileRepository.create({ ...replacement, displayOrder });
+      payloads.push({ ...replacement, displayOrder });
       continue;
     }
     const storedUrl = ensureDiscoverTileImage(item.imageSrc);
     if (typeof storedUrl !== 'string') return storedUrl;
-    await discoverTileRepository.create(payloadFromFallback(item, displayOrder, storedUrl));
+    payloads.push(payloadFromFallback(item, displayOrder, storedUrl));
   }
+
+  await Promise.all(payloads.map((payload) => discoverTileRepository.create(payload)));
   return null;
 }
 
