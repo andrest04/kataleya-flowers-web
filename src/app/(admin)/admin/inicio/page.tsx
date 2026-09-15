@@ -140,8 +140,8 @@ export default async function AdminInicioPage() {
               {
                 description: item.description,
                 href: item.href,
-                isAnchor: item.is_anchor,
-                isExternal: item.is_external,
+                isAnchor: item.isAnchor,
+                isExternal: item.isExternal,
                 title: item.title,
               },
               settings,
@@ -150,8 +150,8 @@ export default async function AdminInicioPage() {
               ...item,
               description: bound.description,
               href: bound.href,
-              is_anchor: bound.isAnchor,
-              is_external: bound.isExternal,
+              isAnchor: bound.isAnchor,
+              isExternal: bound.isExternal,
               title: bound.title,
             };
           })}
