@@ -7,7 +7,7 @@ import EmptyState from '@/components/ui/EmptyState';
 import { Table, TableBody } from '@/components/ui/primitives/table';
 import SortableList from '@/components/ui/SortableList';
 import SortableItem from '@/components/ui/SortableList/SortableItem';
-import type { CategoryRow } from '@/lib/db/rows';
+import type { Category } from '@/lib/database/repositories/categories';
 
 import CategoryListHeader from './CategoryListHeader';
 import CategoryRowItem from './CategoryRow';
@@ -19,7 +19,7 @@ import { useCategoryDelete } from './useCategoryDelete';
 import { useCategoryReorder } from './useCategoryReorder';
 
 interface CategoryListProps {
-  categories: CategoryRow[];
+  categories: Category[];
   emptyMessage?: string;
   clearFilterHref?: string;
   productCounts: Record<string, number>;
@@ -31,7 +31,7 @@ export default function CategoryList({
   clearFilterHref,
   productCounts,
 }: CategoryListProps) {
-  const [items, setItems] = useState<CategoryRow[]>(initialCategories);
+  const [items, setItems] = useState<Category[]>(initialCategories);
   const deletion = useCategoryDelete({
     onDeleted: (id) => setItems((current) => current.filter((category) => category.id !== id)),
   });
@@ -39,13 +39,13 @@ export default function CategoryList({
 
   function applyToggleStatus(id: string, isActive: boolean) {
     setItems((current) => current.map((category) => (
-      category.id === id ? { ...category, is_active: isActive } : category
+      category.id === id ? { ...category, isActive } : category
     )));
   }
 
   function applyToggleFeatured(id: string, isFeatured: boolean) {
     setItems((current) => current.map((category) => (
-      category.id === id ? { ...category, is_featured: isFeatured } : category
+      category.id === id ? { ...category, isFeatured } : category
     )));
   }
 
@@ -54,7 +54,7 @@ export default function CategoryList({
       const byId = new Map(current.map((category) => [category.id, category]));
       const reordered = orderedIds
         .map((id) => byId.get(id))
-        .filter((category): category is CategoryRow => category !== undefined);
+        .filter((category): category is Category => category !== undefined);
       return reordered.length === current.length ? reordered : current;
     });
   }
@@ -134,13 +134,13 @@ export default function CategoryList({
               <CategoryToggleStatus
                 id={category.id}
                 name={category.name}
-                isActive={category.is_active}
+                isActive={category.isActive}
                 onLocalChange={applyToggleStatus}
               />
               <CategoryToggleFeatured
                 id={category.id}
                 name={category.name}
-                isFeatured={category.is_featured}
+                isFeatured={category.isFeatured}
                 onLocalChange={applyToggleFeatured}
               />
             </div>

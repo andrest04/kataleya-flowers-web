@@ -1,10 +1,11 @@
-import { findDiscoverTileById, listDiscoverTiles } from '@/lib/appwrite/repositories/discoverTiles';
-import type { DiscoverTileRow } from '@/lib/db/rows';
+import { type DiscoverTile, discoverTileRepository } from '@/lib/database/repositories/discoverTiles';
 
-export async function getAdminDiscoverTiles(): Promise<DiscoverTileRow[]> {
-  return listDiscoverTiles();
+export type { DiscoverTile };
+
+export async function getAdminDiscoverTiles(): Promise<DiscoverTile[]> {
+  return discoverTileRepository.list();
 }
 
-export async function getAdminDiscoverTileById(id: string): Promise<DiscoverTileRow | null> {
-  return findDiscoverTileById(id);
+export async function getAdminDiscoverTileById(id: string): Promise<DiscoverTile | null> {
+  return discoverTileRepository.findById(id);
 }

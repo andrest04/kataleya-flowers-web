@@ -17,19 +17,7 @@ import {
   requireAdmin,
 } from '@/features/admin/utils/auth';
 import { slugify } from '@/features/admin/utils/slugify';
-import {
-  countProductsInCategory,
-  createCategoryDocument,
-  deleteCategoryCascadeAppwrite,
-  deleteCategoryReassignAppwrite,
-  findCategoryById,
-  getNextCategoryOrder,
-  listAllCategorySlugs,
-  reorderCategoriesAppwrite,
-  setCategoryActive,
-  setCategoryFeatured,
-  updateCategoryDocument,
-} from '@/lib/appwrite/repositories/categories';
+import { categoryRepository } from '@/lib/database/repositories/categories';
 import { imageStorage } from '@/lib/imageStorage';
 import { BASE_REVALIDATE_PATHS } from '@/lib/revalidation';
 interface SuccessResult {
@@ -49,7 +37,7 @@ async function revalidateAllCategoryPaths(
   updateTag('catalog-categories');
   updateTag('catalog-products');
 
-  const slugs = affectedSlugs ?? (await listAllCategorySlugs());
+  const slugs = affectedSlugs ?? (await categoryRepository.listAllSlugs());
   for (const slug of slugs) {
     if (slug) revalidatePath(`/catalogo/${slug}`);
   }
@@ -82,9 +70,9 @@ export async function createCategory(
 
     const slug = parsed.data.slug?.trim() || slugify(parsed.data.name);
 
-    const nextOrder = parsed.data.displayOrder || (await getNextCategoryOrder());
+    const nextOrder = parsed.data.displayOrder || (await categoryRepository.getNextOrder());
     try {
-      await createCategoryDocument({
+      await categoryRepository.create({
         name: parsed.data.name,
         slug,
         description: parsed.data.description,
@@ -144,7 +132,7 @@ export async function updateCategory(
       };
     }
 
-    const current = await findCategoryById(idParsed.data);
+    const current = await categoryRepository.findById(idParsed.data);
 
     const incomingSlug = parsed.data.slug?.trim() ?? '';
     const slug =
@@ -153,7 +141,7 @@ export async function updateCategory(
         : (current?.slug ?? slugify(parsed.data.name));
 
     try {
-      await updateCategoryDocument(idParsed.data, {
+      await categoryRepository.update(idParsed.data, {
         name: parsed.data.name,
         slug,
         description: parsed.data.description,
@@ -170,8 +158,8 @@ export async function updateCategory(
       throw writeErr;
     }
 
-    if (current?.image_url && current.image_url !== parsed.data.imageUrl) {
-      void imageStorage.delete(current.image_url);
+    if (current?.imageUrl && current.imageUrl !== parsed.data.imageUrl) {
+      void imageStorage.delete(current.imageUrl);
     }
 
     const affected = [current?.slug, slug].filter(
@@ -201,7 +189,7 @@ export async function getCategoryProductCount(
       };
     }
 
-    const count = await countProductsInCategory(idParsed.data);
+    const count = await categoryRepository.countProducts(idParsed.data);
     return { count };
   } catch (err) {
     const failure = failureFromUnknown(err);
@@ -235,7 +223,7 @@ export async function deleteCategory(
     }
 
     if (mode === 'cascade') {
-      const imageUrls = await deleteCategoryCascadeAppwrite(idParsed.data);
+      const imageUrls = await categoryRepository.deleteCascade(idParsed.data);
       if (imageUrls.length > 0) void imageStorage.deleteMany(imageUrls);
     } else {
       const reassignParsed = uuid.safeParse(reassignTo);
@@ -246,7 +234,7 @@ export async function deleteCategory(
           code: 'VALIDATION',
         };
       }
-      const imageUrl = await deleteCategoryReassignAppwrite(idParsed.data, reassignParsed.data);
+      const imageUrl = await categoryRepository.deleteReassign(idParsed.data, reassignParsed.data);
       if (imageUrl) void imageStorage.delete(imageUrl);
     }
 
@@ -281,8 +269,8 @@ export async function toggleCategoryStatus(
       };
     }
 
-    const current = await findCategoryById(idParsed.data);
-    await setCategoryActive(idParsed.data, isActive);
+    const current = await categoryRepository.findById(idParsed.data);
+    await categoryRepository.setActive(idParsed.data, isActive);
     await revalidateAllCategoryPaths(current?.slug ? [current.slug] : undefined);
     return { success: true };
   } catch (err) {
@@ -297,7 +285,7 @@ export async function reorderCategories(ids: string[]): Promise<CategoryActionRe
     if (!parsed.success) {
       return { success: false, error: 'Lista de categorías inválida.', code: 'VALIDATION' };
     }
-    await reorderCategoriesAppwrite(parsed.data.ids);
+    await categoryRepository.reorder(parsed.data.ids);
     await revalidateAllCategoryPaths();
     return { success: true };
   } catch (err) {
@@ -329,8 +317,8 @@ export async function toggleCategoryFeatured(
       };
     }
 
-    const current = await findCategoryById(idParsed.data);
-    await setCategoryFeatured(idParsed.data, isFeatured);
+    const current = await categoryRepository.findById(idParsed.data);
+    await categoryRepository.setFeatured(idParsed.data, isFeatured);
     await revalidateAllCategoryPaths(current?.slug ? [current.slug] : undefined);
     return { success: true };
   } catch (err) {

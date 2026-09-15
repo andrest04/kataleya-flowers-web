@@ -1,4 +1,4 @@
-import { listSitemapProducts } from "@/lib/appwrite/repositories/products";
+import { productsRepository } from '@/lib/database/repositories/products';
 
 export interface SitemapProduct {
   slug: string;
@@ -7,5 +7,5 @@ export interface SitemapProduct {
 }
 
 export async function getSitemapProducts(): Promise<SitemapProduct[]> {
-  return listSitemapProducts();
+  return productsRepository.listSitemap();
 }

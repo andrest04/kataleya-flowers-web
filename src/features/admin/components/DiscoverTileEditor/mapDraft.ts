@@ -1,5 +1,5 @@
 import type { DiscoverTileView } from '@/features/landing/queries/getPublishedDiscoverTiles';
-import type { DiscoverTileRow } from '@/lib/db/rows';
+import type { DiscoverTile } from '@/lib/database/repositories/discoverTiles';
 
 import type { DiscoverTileDraft } from './types';
 
@@ -25,16 +25,16 @@ export function draftFromFallback(tile: DiscoverTileView): DiscoverTileDraft {
   };
 }
 
-export function draftFromDiscoverTile(tile: DiscoverTileRow): DiscoverTileDraft {
+export function draftFromDiscoverTile(tile: DiscoverTile): DiscoverTileDraft {
   return {
     description: tile.description,
-    endsAt: toDatetimeLocalValue(tile.ends_at),
+    endsAt: toDatetimeLocalValue(tile.endsAt),
     href: tile.href,
     icon: tile.icon,
-    imageUrl: tile.image_url,
-    isActive: tile.is_active,
-    isExternal: tile.is_external,
-    startsAt: toDatetimeLocalValue(tile.starts_at),
+    imageUrl: tile.imageUrl,
+    isActive: tile.isActive,
+    isExternal: tile.isExternal,
+    startsAt: toDatetimeLocalValue(tile.startsAt),
     title: tile.title,
   };
 }

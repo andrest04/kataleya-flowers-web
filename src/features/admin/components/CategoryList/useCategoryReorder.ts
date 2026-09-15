@@ -4,10 +4,10 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 
 import { reorderCategories } from '@/features/admin/actions/categories';
-import type { CategoryRow } from '@/lib/db/rows';
+import type { Category } from '@/lib/database/repositories/categories';
 
 export function useCategoryReorder(
-  items: CategoryRow[],
+  items: Category[],
   applyOrder: (ids: string[]) => void,
 ) {
   const [isSaving, setIsSaving] = useState(false);

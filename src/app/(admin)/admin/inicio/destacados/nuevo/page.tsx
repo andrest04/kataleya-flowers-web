@@ -33,7 +33,7 @@ export default async function NuevoDestacadoPage({ searchParams }: NuevoDestacad
   };
   const activeCount = items.length === 0
     ? fallbacks.length
-    : items.filter((item) => item.is_active).length;
+    : items.filter((item) => item.isActive).length;
   const allowActivate = initial.isActive || activeCount < HOME_VALUE_PROP_LIMIT;
 
   return (

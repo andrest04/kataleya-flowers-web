@@ -1,9 +1,13 @@
 import { unstable_cache } from 'next/cache';
 
 import { getSiteSettings } from '@/features/settings/queries/getSiteSettings';
-import { listValueProps } from '@/lib/appwrite/repositories/valueProps';
+import { type ValueProp, valuePropRepository } from '@/lib/database/repositories/valueProps';
 import { isPublished } from '@/lib/publishing';
 import type { SiteSettings } from '@/lib/siteSettings';
+
+function isValuePropPublished(row: ValueProp, now: Date): boolean {
+  return isPublished({ ends_at: row.endsAt, is_active: row.isActive, starts_at: row.startsAt }, now);
+}
 import {
   bindValuePropIdentity,
   VALUE_PROP_IDENTITY_TOKEN,
@@ -64,9 +68,9 @@ type CachedValuePropState =
 
 const getCachedValuePropState = unstable_cache(
   async (): Promise<CachedValuePropState> => {
-    const rows = await listValueProps();
+    const rows = await valuePropRepository.list();
     const now = new Date();
-    const published = rows.filter((row) => isPublished(row, now));
+    const published = rows.filter((row) => isValuePropPublished(row, now));
     if (published.length > 0) {
       return {
         status: 'published',
@@ -75,9 +79,9 @@ const getCachedValuePropState = unstable_cache(
           href: row.href,
           icon: row.icon,
           id: row.id,
-          isAnchor: row.is_anchor,
-          isExternal: row.is_external,
-          linkLabel: row.link_label,
+          isAnchor: row.isAnchor,
+          isExternal: row.isExternal,
+          linkLabel: row.linkLabel,
           title: row.title,
         })),
       };

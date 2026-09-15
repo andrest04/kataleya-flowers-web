@@ -1,37 +1,34 @@
 'use server';
 
 import type { SearchResult } from '@/components/shared/Navbar/constants';
-import { deriveProductImages } from '@/features/catalog/queries/mappers';
-import { listActiveCategories } from '@/lib/appwrite/repositories/categories';
-import { listActiveJoinedProducts } from '@/lib/appwrite/repositories/products';
+import { categoryRepository } from '@/lib/database/repositories/categories';
+import { productsRepository } from '@/lib/database/repositories/products';
 
 export async function searchProducts(query: string): Promise<SearchResult[]> {
   const q = query.trim();
   if (!q) return [];
 
   const needle = q.toLowerCase();
-  const [rows, categories] = await Promise.all([
-    listActiveJoinedProducts(),
-    listActiveCategories(),
+  const [products, categories] = await Promise.all([
+    productsRepository.listActiveJoined(),
+    categoryRepository.listActive(),
   ]);
   const categoryById = new Map(categories.map((c) => [c.id, c]));
 
-  return rows
-    .filter((row) => row.name.toLowerCase().includes(needle))
-    .sort((a, b) => a.display_order - b.display_order)
+  return products
+    .filter((product) => product.name.toLowerCase().includes(needle))
+    .sort((a, b) => a.displayOrder - b.displayOrder)
     .slice(0, 12)
-    .map((row) => {
-      const category = categoryById.get(row.category_id);
-      const { imageUrl } = deriveProductImages(row.product_images);
+    .map((product) => {
+      const category = categoryById.get(product.categoryId);
       return {
-        name: row.name,
-        slug: row.slug,
+        name: product.name,
+        slug: product.slug,
         categorySlug: category?.slug ?? '',
         categoryName: category?.name ?? '',
-        price: Number(row.price),
-        hasVariants:
-          Array.isArray(row.price_variants) && row.price_variants.length > 0,
-        imageUrl,
+        price: product.price,
+        hasVariants: (product.priceVariants?.length ?? 0) > 0,
+        imageUrl: product.imageUrl,
       };
     });
 }
