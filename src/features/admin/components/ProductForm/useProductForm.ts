@@ -4,15 +4,13 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useState, useTransition } from 'react';
 
 import { createProduct, updateProduct } from '@/features/admin/actions/products';
-import type { AdminProductRow } from '@/features/admin/queries/products';
 import type { ProductFormData } from '@/features/admin/types';
 import { slugify } from '@/features/admin/utils/slugify';
-import type { PriceVariantRow } from '@/features/catalog/types';
-import type { ProductRow } from '@/lib/db/rows';
+import type { Product } from '@/lib/database/repositories/products';
 
 import { buildFieldErrors, type FieldErrors } from './validation';
 
-type ProductInput = ProductRow | AdminProductRow;
+type ProductInput = Product;
 
 export interface ProductFormState {
   form: ProductFormData;
@@ -75,55 +73,30 @@ function buildInitialState(product?: ProductInput, initialCategoryId?: string): 
     };
   }
 
-  const relational = product as AdminProductRow;
-
-  const colors: string[] = relational.product_color_assignments
-    ? relational.product_color_assignments
-        .map((a) => a.product_colors?.name)
-        .filter((n): n is string => !!n)
-    : (product.colors ?? []);
-
-  const flowerTypes: string[] = relational.product_flower_type_assignments
-    ? relational.product_flower_type_assignments
-        .map((a) => a.flower_types?.name)
-        .filter((n): n is string => !!n)
-    : (product.flower_types ?? []);
-
-  const sortedImages = relational.product_images
-    ? [...relational.product_images].sort((a, b) => a.display_order - b.display_order)
-    : null;
-
-  const primaryImg = sortedImages?.find((i) => i.is_primary) ?? sortedImages?.[0];
-  const imageUrl = primaryImg?.url ?? product.image_url ?? '';
-  const galleryImages = sortedImages
-    ? sortedImages.map((i) => i.url)
-    : (product.images ?? []);
-  const imageAlts = sortedImages
-    ? Object.fromEntries(
-        sortedImages
-          .filter((image) => image.alt_text && image.alt_text !== product.name)
-          .map((image) => [image.url, image.alt_text as string]),
-      )
-    : {};
+  const imageAlts = Object.fromEntries(
+    product.productImages
+      .filter((image) => image.altText && image.altText !== product.name)
+      .map((image) => [image.url, image.altText as string]),
+  );
 
   return {
     name: product.name,
     slug: product.slug,
     description: product.description,
-    price: Number(product.price),
-    categoryId: product.category_id,
-    imageUrl,
-    images: galleryImages,
+    price: product.price,
+    categoryId: product.categoryId,
+    imageUrl: product.imageUrl,
+    images: product.images,
     imageAlts,
-    colors,
-    flowerTypes,
-    includes: (product.includes as unknown as string[]) ?? [],
-    priceVariants: (product.price_variants as unknown as PriceVariantRow[] | null) ?? null,
+    colors: product.colors,
+    flowerTypes: product.flowerTypes,
+    includes: product.includes,
+    priceVariants: product.priceVariants,
     occasion: product.occasion ?? '',
     note: product.note ?? '',
-    isActive: product.is_active,
-    isFeatured: product.is_featured,
-    displayOrder: product.display_order,
+    isActive: product.isActive,
+    isFeatured: product.isFeatured,
+    displayOrder: product.displayOrder,
   };
 }
 
@@ -142,11 +115,9 @@ export function useProductForm({
 
   const [form, setForm] = useState<ProductFormData>(() => buildInitialState(product, initialCategoryId));
   const [autoSlug, setAutoSlug] = useState(!isEditing);
-  const [includeKeys, setIncludeKeys] = useState<string[]>(() =>
-    makeKeys((product?.includes as unknown as string[] | null | undefined)?.length ?? 0),
-  );
+  const [includeKeys, setIncludeKeys] = useState<string[]>(() => makeKeys(product?.includes.length ?? 0));
   const [variantKeys, setVariantKeys] = useState<string[]>(() =>
-    makeKeys((product?.price_variants as unknown as unknown[] | null | undefined)?.length ?? 0),
+    makeKeys(product?.priceVariants?.length ?? 0),
   );
 
   const [pendingNewTypes, setPendingNewTypes] = useState<string[]>([]);
