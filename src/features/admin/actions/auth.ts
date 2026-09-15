@@ -3,12 +3,7 @@
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
 
-import {
-  deleteSessionCookie,
-  getSessionCookie,
-  setSessionCookie,
-} from '@/lib/appwrite/cookies';
-import { authProvider } from '@/lib/auth';
+import { auth } from '@/lib/auth';
 
 const loginInputSchema = z.object({
   email: z.string().trim().email('Email inválido'),
@@ -39,21 +34,15 @@ export async function loginAction(input: LoginInput): Promise<LoginResult> {
     };
   }
 
-  const result = await authProvider.login(parsed.data.email, parsed.data.password);
+  const result = await auth.login(parsed.data.email, parsed.data.password);
   if (!result.ok) {
     return { ok: false, code: result.code, error: result.message };
   }
 
-  await setSessionCookie(result.session.secret, result.session.expiresAt);
   return { ok: true };
 }
 
 export async function logoutAction(): Promise<void> {
-  const sessionSecret = await getSessionCookie();
-  if (sessionSecret) {
-    await authProvider.logout(sessionSecret);
-  }
-
-  await deleteSessionCookie();
+  await auth.logout();
   redirect('/login');
 }

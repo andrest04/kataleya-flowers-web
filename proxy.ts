@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
-import { APPWRITE_SESSION_COOKIE } from '@/lib/appwrite/cookies';
+import { SESSION_COOKIE_NAME } from '@/lib/auth/sessionCookie';
 
 // Proxy (Next.js 16 middleware) guards /admin and /login with a cookie-presence
 // check only. Full session validation (getUser + isAdminUserAppwrite) runs in
@@ -10,7 +10,7 @@ import { APPWRITE_SESSION_COOKIE } from '@/lib/appwrite/cookies';
 
 export function proxy(request: NextRequest): NextResponse {
   const { pathname } = request.nextUrl;
-  const hasSession = request.cookies.has(APPWRITE_SESSION_COOKIE);
+  const hasSession = request.cookies.has(SESSION_COOKIE_NAME);
 
   if (pathname.startsWith('/admin')) {
     if (!hasSession) {

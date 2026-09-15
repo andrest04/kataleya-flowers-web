@@ -1,9 +1,10 @@
 import { redirect } from 'next/navigation';
 import type { ZodIssue, ZodSchema } from 'zod';
 
-import { getSessionCookie } from '@/lib/appwrite/cookies';
 import type { AuthUser } from '@/lib/auth';
-import { authProvider } from '@/lib/auth';
+import { auth, AuthError } from '@/lib/auth';
+
+export { AuthError as AdminAuthError };
 
 export interface AdminActionContext {
   user: AuthUser;
@@ -25,30 +26,8 @@ export type AdminActionResult<T = undefined> =
   | AdminActionSuccess<T>
   | AdminActionFailure;
 
-export class AdminAuthError extends Error {
-  public readonly code: 'UNAUTHENTICATED' | 'FORBIDDEN';
-  constructor(code: 'UNAUTHENTICATED' | 'FORBIDDEN', message: string) {
-    super(message);
-    this.code = code;
-    this.name = 'AdminAuthError';
-  }
-}
-
 export async function requireAdmin(): Promise<AdminActionContext> {
-  const sessionSecret = await getSessionCookie();
-  if (!sessionSecret) {
-    throw new AdminAuthError('UNAUTHENTICATED', 'Sesión inválida o expirada');
-  }
-
-  const user = await authProvider.getCurrentUser(sessionSecret);
-  if (!user) {
-    throw new AdminAuthError('UNAUTHENTICATED', 'Sesión inválida o expirada');
-  }
-
-  if (!(await authProvider.isAdmin(user.id))) {
-    throw new AdminAuthError('FORBIDDEN', 'No tienes permisos de administrador');
-  }
-
+  const user = await auth.requireAdmin();
   return { user };
 }
 
@@ -56,7 +35,7 @@ export async function requireAdminOrRedirect(): Promise<AdminActionContext> {
   try {
     return await requireAdmin();
   } catch (err) {
-    if (err instanceof AdminAuthError) {
+    if (err instanceof AuthError) {
       redirect(err.code === 'FORBIDDEN' ? '/login?error=forbidden' : '/login');
     }
     throw err;
@@ -64,7 +43,7 @@ export async function requireAdminOrRedirect(): Promise<AdminActionContext> {
 }
 
 export function failureFromUnknown(err: unknown): AdminActionFailure {
-  if (err instanceof AdminAuthError) {
+  if (err instanceof AuthError) {
     return {
       success: false,
       error:
