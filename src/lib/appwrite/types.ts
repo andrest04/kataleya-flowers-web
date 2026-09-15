@@ -68,32 +68,6 @@ export interface FlowerTypeAssignmentDoc extends Models.Document {
   flower_type_id: string;
 }
 
-export interface ComplaintDoc extends Models.Document {
-  correlativo: number;
-  complaint_type: string;
-  consumer_name: string;
-  consumer_doc_type: string;
-  consumer_doc_number: string;
-  consumer_email: string;
-  consumer_phone: string | null;
-  consumer_address: string;
-  is_minor: boolean;
-  guardian_name: string | null;
-  item_type: string;
-  item_description: string;
-  claimed_amount: number | null;
-  detail: string;
-  consumer_request: string;
-  provider_response: string | null;
-  status: string;
-  responded_at: string | null;
-  email_sent: boolean;
-}
-
-export interface CounterDoc extends Models.Document {
-  value: number;
-}
-
 export type HeroCtaType = 'whatsapp' | 'catalogo' | 'url';
 
 export interface HeroSlideDoc extends Models.Document {

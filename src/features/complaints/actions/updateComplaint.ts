@@ -7,7 +7,7 @@ import {
   failureFromUnknown,
   requireAdmin,
 } from '@/features/admin/utils/auth';
-import { updateComplaintDocument } from '@/lib/appwrite/repositories/complaints';
+import { complaintsRepository } from '@/lib/database/repositories/complaints';
 
 import { complaintStatusUpdateSchema } from '../schemas/complaint';
 
@@ -35,10 +35,10 @@ export async function updateComplaint(
     const { id, status, providerResponse } = parsed.data;
     const respondedAt = status === 'RESPONDIDO' ? new Date().toISOString() : null;
 
-    await updateComplaintDocument(id, {
+    await complaintsRepository.updateStatus(id, {
       status,
-      provider_response: providerResponse?.trim() || null,
-      responded_at: respondedAt,
+      providerResponse: providerResponse?.trim() || null,
+      respondedAt,
     });
 
     revalidatePath('/admin/reclamos');
