@@ -1,9 +1,6 @@
 'use server';
 
-import {
-  allocateCorrelativo,
-  insertComplaint,
-} from '@/lib/appwrite/repositories/complaints';
+import { complaintsRepository } from '@/lib/database/repositories/complaints';
 
 import { sendComplaintEmails } from '../email/sendComplaintEmails';
 import { complaintSubmitSchema } from '../schemas/complaint';
@@ -37,37 +34,37 @@ export async function submitComplaint(
 
   try {
     const year = new Date().getFullYear();
-    const correlativo = await allocateCorrelativo(year);
+    const correlativo = await complaintsRepository.allocateCorrelativo(year);
 
-    const created = await insertComplaint({
+    const created = await complaintsRepository.insert({
       correlativo,
-      complaint_type: data.complaintType,
-      consumer_name: data.consumerName,
-      consumer_doc_type: data.consumerDocType,
-      consumer_doc_number: data.consumerDocNumber,
-      consumer_email: data.consumerEmail,
-      consumer_phone: data.consumerPhone || null,
-      consumer_address: data.consumerAddress,
-      is_minor: data.isMinor,
-      guardian_name: data.isMinor ? data.guardianName || null : null,
-      item_type: data.itemType,
-      item_description: data.itemDescription,
-      claimed_amount: data.claimedAmount ?? null,
+      complaintType: data.complaintType,
+      consumerName: data.consumerName,
+      consumerDocType: data.consumerDocType,
+      consumerDocNumber: data.consumerDocNumber,
+      consumerEmail: data.consumerEmail,
+      consumerPhone: data.consumerPhone || null,
+      consumerAddress: data.consumerAddress,
+      isMinor: data.isMinor,
+      guardianName: data.isMinor ? data.guardianName || null : null,
+      itemType: data.itemType,
+      itemDescription: data.itemDescription,
+      claimedAmount: data.claimedAmount ?? null,
       detail: data.detail,
-      consumer_request: data.consumerRequest,
+      consumerRequest: data.consumerRequest,
     });
 
-    const complaintNumber = formatComplaintNumber(created.correlativo, created.created_at);
+    const complaintNumber = formatComplaintNumber(created.correlativo, created.createdAt);
 
     const emailSent = await sendComplaintEmails(
-      { ...data, complaintNumber, createdAt: created.created_at },
+      { ...data, complaintNumber, createdAt: created.createdAt },
       created.id,
     );
 
     return {
       success: true,
       complaintNumber,
-      createdAt: created.created_at,
+      createdAt: created.createdAt,
       emailSent,
     };
   } catch (err) {

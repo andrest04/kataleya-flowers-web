@@ -47,7 +47,7 @@ export default async function AdminReclamoDetailPage({
           <ComplaintStatusForm
             id={complaint.id}
             status={complaint.status}
-            providerResponse={complaint.provider_response}
+            providerResponse={complaint.providerResponse}
           />
         </section>
       </div>

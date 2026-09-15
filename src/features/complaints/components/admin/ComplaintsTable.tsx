@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/primitives/table';
 
-import type { ComplaintRow } from '../../types';
+import type { Complaint } from '../../types';
 import {
   formatComplaintNumber,
   isResponseOverdue,
@@ -19,7 +19,7 @@ function formatDate(value: string): string {
   });
 }
 
-export default function ComplaintsTable({ complaints }: { complaints: ComplaintRow[] }) {
+export default function ComplaintsTable({ complaints }: { complaints: Complaint[] }) {
   return (
     <div className="space-y-3">
       <div
@@ -39,7 +39,7 @@ export default function ComplaintsTable({ complaints }: { complaints: ComplaintR
           </TableHeader>
           <TableBody>
             {complaints.map((c) => {
-              const overdue = isResponseOverdue(c.created_at, c.responded_at);
+              const overdue = isResponseOverdue(c.createdAt, c.respondedAt);
               return (
                 <TableRow
                   key={c.id}
@@ -52,23 +52,23 @@ export default function ComplaintsTable({ complaints }: { complaints: ComplaintR
                       className="font-medium underline-offset-2 hover:underline"
                       style={{ color: 'var(--color-primary)' }}
                     >
-                      {formatComplaintNumber(c.correlativo, c.created_at)}
+                      {formatComplaintNumber(c.correlativo, c.createdAt)}
                     </Link>
                   </TableCell>
                   <TableCell style={{ color: 'var(--color-dark)' }}>
-                    {formatDate(c.created_at)}
+                    {formatDate(c.createdAt)}
                   </TableCell>
                   <TableCell style={{ color: 'var(--color-dark)' }}>
-                    {c.consumer_name}
+                    {c.consumerName}
                   </TableCell>
                   <TableCell>
-                    <ComplaintTypeBadge type={c.complaint_type} />
+                    <ComplaintTypeBadge type={c.complaintType} />
                   </TableCell>
                   <TableCell>
                     <StatusPill status={c.status} />
                   </TableCell>
                   <TableCell style={{ color: overdue ? 'var(--color-primary)' : 'var(--color-muted)' }}>
-                    {overdue ? 'Vencido' : formatDate(responseDeadline(c.created_at).toISOString())}
+                    {overdue ? 'Vencido' : formatDate(responseDeadline(c.createdAt).toISOString())}
                   </TableCell>
                 </TableRow>
               );
@@ -78,7 +78,7 @@ export default function ComplaintsTable({ complaints }: { complaints: ComplaintR
       </div>
       <div className="space-y-3 md:hidden">
         {complaints.map((c) => {
-          const overdue = isResponseOverdue(c.created_at, c.responded_at);
+          const overdue = isResponseOverdue(c.createdAt, c.respondedAt);
           return (
             <article
               key={c.id}
@@ -90,23 +90,23 @@ export default function ComplaintsTable({ complaints }: { complaints: ComplaintR
                 className="flex min-h-10 items-center font-medium underline-offset-2 hover:underline"
                 style={{ color: 'var(--color-primary)' }}
               >
-                {formatComplaintNumber(c.correlativo, c.created_at)}
+                {formatComplaintNumber(c.correlativo, c.createdAt)}
               </Link>
               <p className="mt-1 text-sm" style={{ color: 'var(--color-dark)' }}>
-                {c.consumer_name}
+                {c.consumerName}
               </p>
               <p className="text-xs" style={{ color: 'var(--color-muted)' }}>
-                {formatDate(c.created_at)}
+                {formatDate(c.createdAt)}
               </p>
               <div className="mt-3 flex flex-wrap items-center gap-2">
-                <ComplaintTypeBadge type={c.complaint_type} />
+                <ComplaintTypeBadge type={c.complaintType} />
                 <StatusPill status={c.status} />
               </div>
               <p
                 className="mt-2 text-xs"
                 style={{ color: overdue ? 'var(--color-primary)' : 'var(--color-muted)' }}
               >
-                {overdue ? 'Vencido' : `Plazo: ${formatDate(responseDeadline(c.created_at).toISOString())}`}
+                {overdue ? 'Vencido' : `Plazo: ${formatDate(responseDeadline(c.createdAt).toISOString())}`}
               </p>
             </article>
           );
