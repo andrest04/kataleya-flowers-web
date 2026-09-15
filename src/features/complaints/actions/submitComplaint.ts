@@ -8,6 +8,11 @@ import type { ComplaintSubmitResult } from '../types';
 import { formatComplaintNumber } from '../utils/format';
 import { checkComplaintRateLimit, getClientIp } from '../utils/rateLimit';
 
+// Public by design: this is Peru's legally mandated Libro de Reclamaciones
+// (libro-de-reclamaciones), consumers must be able to file a complaint
+// without an account. Protected by rate limiting (checkComplaintRateLimit)
+// and strict zod validation instead of auth.
+// react-doctor-disable-next-line react-doctor/server-auth-actions
 export async function submitComplaint(
   input: unknown,
 ): Promise<ComplaintSubmitResult> {
