@@ -1,5 +1,5 @@
 import type { ValuePropView } from '@/features/landing/queries/getPublishedValueProps';
-import type { ValuePropRow } from '@/lib/db/rows';
+import type { ValueProp } from '@/lib/database/repositories/valueProps';
 
 import type { ValuePropDraft } from './types';
 
@@ -26,17 +26,17 @@ export function draftFromFallback(item: ValuePropView): ValuePropDraft {
   };
 }
 
-export function draftFromValueProp(item: ValuePropRow): ValuePropDraft {
+export function draftFromValueProp(item: ValueProp): ValuePropDraft {
   return {
     description: item.description,
-    endsAt: toDatetimeLocalValue(item.ends_at),
+    endsAt: toDatetimeLocalValue(item.endsAt),
     href: item.href,
     icon: item.icon,
-    isActive: item.is_active,
-    isAnchor: item.is_anchor,
-    isExternal: item.is_external,
-    linkLabel: item.link_label,
-    startsAt: toDatetimeLocalValue(item.starts_at),
+    isActive: item.isActive,
+    isAnchor: item.isAnchor,
+    isExternal: item.isExternal,
+    linkLabel: item.linkLabel,
+    startsAt: toDatetimeLocalValue(item.startsAt),
     title: item.title,
   };
 }

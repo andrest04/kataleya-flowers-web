@@ -1,10 +1,11 @@
-import { findValuePropById, listValueProps } from '@/lib/appwrite/repositories/valueProps';
-import type { ValuePropRow } from '@/lib/db/rows';
+import { type ValueProp, valuePropRepository } from '@/lib/database/repositories/valueProps';
 
-export async function getAdminValueProps(): Promise<ValuePropRow[]> {
-  return listValueProps();
+export type { ValueProp };
+
+export async function getAdminValueProps(): Promise<ValueProp[]> {
+  return valuePropRepository.list();
 }
 
-export async function getAdminValuePropById(id: string): Promise<ValuePropRow | null> {
-  return findValuePropById(id);
+export async function getAdminValuePropById(id: string): Promise<ValueProp | null> {
+  return valuePropRepository.findById(id);
 }

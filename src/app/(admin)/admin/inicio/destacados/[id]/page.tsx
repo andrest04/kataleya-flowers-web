@@ -23,8 +23,8 @@ export default async function EditarDestacadoPage({ params }: EditarDestacadoPag
     getAdminValueProps(),
   ]);
   if (!item) notFound();
-  const activeCount = items.filter((row) => row.is_active).length;
-  const allowActivate = item.is_active || activeCount < HOME_VALUE_PROP_LIMIT;
+  const activeCount = items.filter((row) => row.isActive).length;
+  const allowActivate = item.isActive || activeCount < HOME_VALUE_PROP_LIMIT;
 
   return (
     <div className="space-y-6">
