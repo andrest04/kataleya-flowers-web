@@ -16,15 +16,9 @@ import {
 import {
   activateHeroSlideExclusive,
   countActiveHeroSlides,
-  createHeroSlideDocument,
-  deleteHeroSlideDocument,
-  findHeroSlideById,
   getFrontHeroSlideOrder,
-  listHeroSlides,
-  reorderHeroSlidesAppwrite,
-  setHeroSlideActive,
-  updateHeroSlideDocument,
-} from '@/lib/appwrite/repositories/heroSlides';
+  heroSlideRepository,
+} from '@/lib/database/repositories/heroSlides';
 import { imageStorage } from '@/lib/imageStorage';
 
 const LAST_ACTIVE_ERROR = 'Tiene que quedar al menos un slide activo.';
@@ -91,7 +85,7 @@ export async function createHeroSlide(data: unknown): Promise<HeroSlideActionRes
     const hasOtherActive = (await countActiveHeroSlides()) > 0;
     const displayOrder = await getFrontHeroSlideOrder();
     const isActive = hasOtherActive ? parsed.value.isActive : true;
-    const id = await createHeroSlideDocument({
+    const id = await heroSlideRepository.create({
       ...parsed.value,
       displayOrder,
       isActive,
@@ -115,19 +109,19 @@ export async function updateHeroSlide(id: string, data: unknown): Promise<HeroSl
     }
     const parsed = await parseHeroSlideInput(data);
     if (!parsed.ok) return parsed.failure;
-    const existing = await findHeroSlideById(idParsed.data);
+    const existing = await heroSlideRepository.findById(idParsed.data);
     if (!existing) {
       return { success: false, error: 'No encontramos ese slide.', code: 'INTERNAL' };
     }
-    if (existing.is_active && !parsed.value.isActive) {
+    if (existing.isActive && !parsed.value.isActive) {
       const otherActive = await countActiveHeroSlides(existing.id);
       if (otherActive === 0) {
         return { success: false, error: LAST_ACTIVE_ERROR, code: 'VALIDATION' };
       }
     }
-    await updateHeroSlideDocument(idParsed.data, {
+    await heroSlideRepository.update(idParsed.data, {
       ...parsed.value,
-      displayOrder: existing.display_order,
+      displayOrder: existing.displayOrder,
     });
     if (parsed.value.isActive) {
       await activateHeroSlideExclusive(idParsed.data);
@@ -154,7 +148,7 @@ export async function toggleHeroSlideStatus(id: string, isActive: boolean): Prom
       if (otherActive === 0) {
         return { success: false, error: LAST_ACTIVE_ERROR, code: 'VALIDATION' };
       }
-      await setHeroSlideActive(idParsed.data, false);
+      await heroSlideRepository.setActive(idParsed.data, false);
     } else {
       await activateHeroSlideExclusive(idParsed.data);
     }
@@ -172,7 +166,7 @@ export async function reorderHeroSlides(ids: string[]): Promise<HeroSlideActionR
     if (!parsed.success) {
       return { success: false, error: 'Lista de slides inválida.', code: 'VALIDATION' };
     }
-    await reorderHeroSlidesAppwrite(parsed.data.ids);
+    await heroSlideRepository.reorder(parsed.data.ids);
     revalidateHomeContent();
     return { success: true };
   } catch (err) {
@@ -187,21 +181,21 @@ export async function deleteHeroSlide(id: string): Promise<HeroSlideActionResult
     if (!idParsed.success) {
       return { success: false, error: 'Identificador inválido.', code: 'VALIDATION', issues: idParsed.error.issues };
     }
-    const existing = await findHeroSlideById(idParsed.data);
+    const existing = await heroSlideRepository.findById(idParsed.data);
     if (!existing) {
       return { success: false, error: 'No encontramos ese slide.', code: 'INTERNAL' };
     }
-    const remaining = await listHeroSlides();
+    const remaining = await heroSlideRepository.list();
     if (remaining.length <= 1) {
       return { success: false, error: LAST_ACTIVE_ERROR, code: 'VALIDATION' };
     }
-    if (existing.is_active) {
-      const otherActive = remaining.filter((slide) => slide.is_active && slide.id !== existing.id).length;
+    if (existing.isActive) {
+      const otherActive = remaining.filter((slide) => slide.isActive && slide.id !== existing.id).length;
       if (otherActive === 0) {
         return { success: false, error: LAST_ACTIVE_ERROR, code: 'VALIDATION' };
       }
     }
-    const imageUrl = await deleteHeroSlideDocument(idParsed.data);
+    const imageUrl = await heroSlideRepository.delete(idParsed.data);
     if (imageUrl) void imageStorage.delete(imageUrl);
     revalidateHomeContent();
     return { success: true };

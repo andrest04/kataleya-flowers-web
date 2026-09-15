@@ -171,28 +171,3 @@ export interface SiteSettingsRow {
   whatsapp_float: string;
   whatsapp_product: string;
 }
-
-export interface ComplaintRow {
-  claimed_amount: number | null;
-  complaint_type: string;
-  consumer_address: string;
-  consumer_doc_number: string;
-  consumer_doc_type: string;
-  consumer_email: string;
-  consumer_name: string;
-  consumer_phone: string | null;
-  consumer_request: string;
-  correlativo: number;
-  created_at: string;
-  detail: string;
-  email_sent: boolean;
-  guardian_name: string | null;
-  id: string;
-  is_minor: boolean;
-  item_description: string;
-  item_type: string;
-  provider_response: string | null;
-  responded_at: string | null;
-  status: string;
-  updated_at: string;
-}

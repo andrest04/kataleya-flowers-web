@@ -1,6 +1,6 @@
 import type { ZodIssue } from 'zod';
 
-import type { ComplaintRow } from '@/lib/db/rows';
+import type { Complaint } from '@/lib/database/repositories/complaints';
 
 import type {
   COMPLAINT_STATUSES,
@@ -9,7 +9,7 @@ import type {
   ITEM_TYPES,
 } from './schemas/complaint';
 
-export type { ComplaintRow };
+export type { Complaint };
 
 export type ComplaintType = (typeof COMPLAINT_TYPES)[number];
 export type ComplaintStatus = (typeof COMPLAINT_STATUSES)[number];

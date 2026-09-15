@@ -1,35 +1,32 @@
 import { unstable_cache } from 'next/cache';
 
 import type { Category } from '@/features/catalog/types';
-import type { CategoryRepoRow } from '@/lib/appwrite/repositories/categories';
-import {
-  listActiveCategories,
-  listCategoryPriceFrom,
-} from '@/lib/appwrite/repositories/categories';
+import type { Category as CategoryEntity } from '@/lib/database/repositories/categories';
+import { categoryRepository } from '@/lib/database/repositories/categories';
 
-function mapCategoryRow(
-  row: CategoryRepoRow,
+function mapCategoryEntity(
+  entity: CategoryEntity,
   priceFrom: number | undefined
 ): Category {
   return {
-    id: row.id,
-    name: row.name,
-    slug: row.slug,
-    description: row.description,
-    occasion: row.occasion ?? undefined,
-    imageUrl: row.image_url ?? undefined,
+    id: entity.id,
+    name: entity.name,
+    slug: entity.slug,
+    description: entity.description,
+    occasion: entity.occasion ?? undefined,
+    imageUrl: entity.imageUrl ?? undefined,
     priceFrom,
-    isFeatured: row.is_featured,
+    isFeatured: entity.isFeatured,
   };
 }
 
 const getCachedCategories = unstable_cache(
   async (): Promise<Category[]> => {
-    const [rows, priceFromMap] = await Promise.all([
-      listActiveCategories(),
-      listCategoryPriceFrom(),
+    const [entities, priceFromMap] = await Promise.all([
+      categoryRepository.listActive(),
+      categoryRepository.listPriceFrom(),
     ]);
-    return rows.map((row) => mapCategoryRow(row, priceFromMap.get(row.id)));
+    return entities.map((entity) => mapCategoryEntity(entity, priceFromMap.get(entity.id)));
   },
   ['catalog-active-categories'],
   { tags: ['catalog-categories'], revalidate: 3600 },

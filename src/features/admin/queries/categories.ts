@@ -1,18 +1,12 @@
-import {
-  type CategoryRepoRow,
-  findCategoryById,
-  listAllCategories,
-} from '@/lib/appwrite/repositories/categories';
-import type { CategoryRow } from '@/lib/db/rows';
+import type { Category } from '@/lib/database/repositories/categories';
+import { categoryRepository } from '@/lib/database/repositories/categories';
 
-export type { CategoryRow };
-export type { CategoryRepoRow };
+export type { Category };
 
-export async function getAdminCategories(): Promise<CategoryRow[]> {
-  return listAllCategories() as unknown as CategoryRow[];
+export async function getAdminCategories(): Promise<Category[]> {
+  return categoryRepository.listAll();
 }
 
-export async function getAdminCategoryById(id: string): Promise<CategoryRow | null> {
-  const row = await findCategoryById(id);
-  return row as unknown as CategoryRow | null;
+export async function getAdminCategoryById(id: string): Promise<Category | null> {
+  return categoryRepository.findById(id);
 }

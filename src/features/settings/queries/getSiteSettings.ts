@@ -1,7 +1,6 @@
 import { unstable_cache } from 'next/cache';
 
-import { getSiteSettingsDocument } from '@/lib/appwrite/repositories/siteSettings';
-import type { SiteSettingsRow } from '@/lib/db/rows';
+import { type SiteSettingsRecord, siteSettingsRepository } from '@/lib/database/repositories/siteSettings';
 import {
   defaultSiteSettings,
   derivedContact,
@@ -9,7 +8,7 @@ import {
   type SiteSettings,
 } from '@/lib/siteSettings';
 
-function fromRow(row: SiteSettingsRow): SiteSettings {
+function fromRow(row: SiteSettingsRecord): SiteSettings {
   const defaults = defaultSiteSettings();
   const phone = row.phone || defaults.phone;
   const contact = derivedContact(phone, row.instagram_handle || defaults.instagramHandle);
@@ -61,7 +60,7 @@ function fromRow(row: SiteSettingsRow): SiteSettings {
 const getCachedSiteSettings = unstable_cache(
   async (): Promise<SiteSettings> => {
     try {
-      const row = await getSiteSettingsDocument();
+      const row = await siteSettingsRepository.get();
       if (!row) return defaultSiteSettings();
       return fromRow(row);
     } catch {

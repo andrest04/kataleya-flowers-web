@@ -18,7 +18,7 @@ import DragHandle from '@/components/ui/SortableList/DragHandle';
 import SortableItem from '@/components/ui/SortableList/SortableItem';
 import ToggleSwitch from '@/components/ui/ToggleSwitch';
 import { deleteValueProp, toggleValuePropStatus } from '@/features/admin/actions/valueProps';
-import type { ValuePropRow } from '@/lib/db/rows';
+import type { ValueProp } from '@/lib/database/repositories/valueProps';
 import { isPublished } from '@/lib/publishing';
 import {
   HOME_VALUE_PROP_LIMIT,
@@ -33,8 +33,12 @@ interface LiveValuePropItem {
   title: string;
 }
 
+function isValuePropPublished(item: ValueProp, now: Date): boolean {
+  return isPublished({ ends_at: item.endsAt, is_active: item.isActive, starts_at: item.startsAt }, now);
+}
+
 interface ValuePropListProps {
-  items: ValuePropRow[];
+  items: ValueProp[];
   liveItems: LiveValuePropItem[];
 }
 
@@ -44,7 +48,7 @@ export default function ValuePropList({
 }: ValuePropListProps) {
   const router = useRouter();
   const [items, setItems] = useState(initialItems);
-  const [pendingDelete, setPendingDelete] = useState<ValuePropRow | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<ValueProp | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [togglingId, setTogglingId] = useState<string | null>(null);
   const rows = items.length > 0 || initialItems.length === 0 ? items : initialItems;
@@ -59,7 +63,7 @@ export default function ValuePropList({
       const byId = new Map(source.map((item) => [item.id, item]));
       const reordered = orderedIds
         .map((id) => byId.get(id))
-        .filter((item): item is ValuePropRow => item !== undefined);
+        .filter((item): item is ValueProp => item !== undefined);
       return reordered.length === source.length ? reordered : source;
     });
   }
@@ -69,7 +73,7 @@ export default function ValuePropList({
   async function handleToggle(id: string, isActive: boolean) {
     const previous = rows;
     setItems(
-      rows.map((item) => (item.id === id ? { ...item, is_active: isActive } : item)),
+      rows.map((item) => (item.id === id ? { ...item, isActive } : item)),
     );
     const result = await toggleValuePropStatus(id, isActive);
     if (!result.success) {
@@ -150,8 +154,8 @@ export default function ValuePropList({
   }
 
   const now = new Date();
-  const hasVisible = rows.some((item) => isPublished(item, now));
-  const activeCount = rows.filter((item) => item.is_active).length;
+  const hasVisible = rows.some((item) => isValuePropPublished(item, now));
+  const activeCount = rows.filter((item) => item.isActive).length;
   const atLimit = activeCount >= HOME_VALUE_PROP_LIMIT;
 
   return (
@@ -171,11 +175,11 @@ export default function ValuePropList({
             {rows.map((item) => (
               <SortableItem key={item.id} id={item.id}>
                 {({ dragHandleProps, isDragging, setNodeRef, style }) => {
-                  const limited = !item.is_active && atLimit;
-                  const label = `${item.is_active ? 'Ocultar' : 'Mostrar'} ${item.title}`;
+                  const limited = !item.isActive && atLimit;
+                  const label = `${item.isActive ? 'Ocultar' : 'Mostrar'} ${item.title}`;
                   const toggle = (
                     <ToggleSwitch
-                      checked={item.is_active}
+                      checked={item.isActive}
                       disabled={isDragging || limited}
                       label={limited ? `${label}. ${HOME_VALUE_PROP_LIMIT_COPY}` : label}
                       onChange={(checked) => void handleToggle(item.id, checked)}
@@ -186,7 +190,7 @@ export default function ValuePropList({
                       ref={setNodeRef as Ref<HTMLLIElement>}
                       style={style}
                       className={`flex items-center gap-3 rounded-xl border border-(--color-border) bg-(--color-white) p-3 ${
-                        isPublished(item, now) ? '' : 'opacity-60'
+                        isValuePropPublished(item, now) ? '' : 'opacity-60'
                       }`}
                     >
                       <DragHandle handleProps={dragHandleProps} label={item.title} />

@@ -12,21 +12,21 @@ import { createCategory, updateCategory } from '@/features/admin/actions/categor
 import ImageUploader from '@/features/admin/components/ImageUploader';
 import type { CategoryFormData } from '@/features/admin/types';
 import { slugify } from '@/features/admin/utils/slugify';
-import type { CategoryRow } from '@/lib/db/rows';
+import type { Category } from '@/lib/database/repositories/categories';
 
 interface CategoryFormProps {
-  category?: CategoryRow;
+  category?: Category;
 }
 
-function rowToFormData(row: CategoryRow): Omit<CategoryFormData, 'displayOrder'> {
+function categoryToFormData(category: Category): Omit<CategoryFormData, 'displayOrder'> {
   return {
-    name: row.name,
-    slug: row.slug,
-    description: row.description,
-    occasion: row.occasion ?? '',
-    imageUrl: row.image_url ?? '',
-    isActive: row.is_active,
-    isFeatured: row.is_featured,
+    name: category.name,
+    slug: category.slug,
+    description: category.description,
+    occasion: category.occasion ?? '',
+    imageUrl: category.imageUrl ?? '',
+    isActive: category.isActive,
+    isFeatured: category.isFeatured,
   };
 }
 
@@ -39,7 +39,7 @@ export default function CategoryForm({ category }: CategoryFormProps) {
   const slugRef = useRef<HTMLInputElement>(null);
   const isEditing = Boolean(category);
   const initial = category
-    ? rowToFormData(category)
+    ? categoryToFormData(category)
     : { name: '', slug: '', description: '', occasion: '', imageUrl: '', isActive: true, isFeatured: false };
   const [imageUrl, setImageUrl] = useState(initial.imageUrl);
   const [isActive, setIsActive] = useState(initial.isActive);
@@ -54,7 +54,7 @@ export default function CategoryForm({ category }: CategoryFormProps) {
         description: formData.get('description') as string,
         occasion: formData.get('occasion') as string,
         imageUrl: formData.get('imageUrl') as string,
-        displayOrder: category?.display_order ?? 0,
+        displayOrder: category?.displayOrder ?? 0,
         isActive: formData.get('isActive') === 'on',
         isFeatured: formData.get('isFeatured') === 'on',
       };

@@ -22,7 +22,7 @@ export default async function EditarHeroSlidePage({ params }: EditarHeroSlidePag
     getAdminHeroSlides(),
   ]);
   if (!slide) notFound();
-  const allowHide = slides.some((item) => item.is_active && item.id !== slide.id);
+  const allowHide = slides.some((item) => item.isActive && item.id !== slide.id);
 
   return (
     <div className="space-y-6">

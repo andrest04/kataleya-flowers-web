@@ -1,10 +1,11 @@
-import { findHeroSlideById, listHeroSlides } from '@/lib/appwrite/repositories/heroSlides';
-import type { HeroSlideRow } from '@/lib/db/rows';
+import { type HeroSlide, heroSlideRepository } from '@/lib/database/repositories/heroSlides';
 
-export async function getAdminHeroSlides(): Promise<HeroSlideRow[]> {
-  return listHeroSlides();
+export type { HeroSlide };
+
+export async function getAdminHeroSlides(): Promise<HeroSlide[]> {
+  return heroSlideRepository.list();
 }
 
-export async function getAdminHeroSlideById(id: string): Promise<HeroSlideRow | null> {
-  return findHeroSlideById(id);
+export async function getAdminHeroSlideById(id: string): Promise<HeroSlide | null> {
+  return heroSlideRepository.findById(id);
 }

@@ -20,16 +20,9 @@ import {
 import { getSiteSettings } from '@/features/settings/queries/getSiteSettings';
 import { APPWRITE_BUCKETS } from '@/lib/appwrite/config';
 import {
-  createDiscoverTileDocument,
-  deleteDiscoverTileDocument,
+  discoverTileRepository,
   type DiscoverTileWritePayload,
-  findDiscoverTileById,
-  getNextDiscoverTileOrder,
-  listDiscoverTiles,
-  reorderDiscoverTilesAppwrite,
-  setDiscoverTileActive,
-  updateDiscoverTileDocument,
-} from '@/lib/appwrite/repositories/discoverTiles';
+} from '@/lib/database/repositories/discoverTiles';
 import {
   HOME_DISCOVER_TILE_LIMIT,
   HOME_DISCOVER_TILE_LIMIT_COPY,
@@ -109,8 +102,8 @@ function toWritePayload(
   };
 }
 
-function activeCount(rows: { is_active: boolean }[]): number {
-  return rows.filter((row) => row.is_active).length;
+function activeCount(rows: { isActive: boolean }[]): number {
+  return rows.filter((row) => row.isActive).length;
 }
 
 function limitFailure(): AdminActionFailure {
@@ -141,16 +134,20 @@ async function seedFallbackDocuments(
   replacement?: DiscoverTileWritePayload,
 ): Promise<AdminActionFailure | null> {
   const fallbacks = fallbackDiscoverTiles(await getSiteSettings());
+  const payloads: DiscoverTileWritePayload[] = [];
+
   for (const [index, item] of fallbacks.entries()) {
     const displayOrder = index + 1;
     if (exceptId && item.id === exceptId && replacement) {
-      await createDiscoverTileDocument({ ...replacement, displayOrder });
+      payloads.push({ ...replacement, displayOrder });
       continue;
     }
     const storedUrl = ensureDiscoverTileImage(item.imageSrc);
     if (typeof storedUrl !== 'string') return storedUrl;
-    await createDiscoverTileDocument(payloadFromFallback(item, displayOrder, storedUrl));
+    payloads.push(payloadFromFallback(item, displayOrder, storedUrl));
   }
+
+  await Promise.all(payloads.map((payload) => discoverTileRepository.create(payload)));
   return null;
 }
 
@@ -160,7 +157,7 @@ export async function createDiscoverTile(data: unknown): Promise<DiscoverTileAct
     const fromFallbackId = readFromFallbackId(data);
     const parsed = await parseDiscoverTileInput(data);
     if (!parsed.ok) return parsed.failure;
-    const existing = await listDiscoverTiles();
+    const existing = await discoverTileRepository.list();
     if (existing.length === 0) {
       const matchesFallback = fallbackDiscoverTiles(await getSiteSettings()).some(
         (item) => item.id === fromFallbackId,
@@ -175,8 +172,8 @@ export async function createDiscoverTile(data: unknown): Promise<DiscoverTileAct
         const seedError = await seedFallbackDocuments(undefined);
         if (seedError) return seedError;
         if (parsed.value.isActive) return limitFailure();
-        const displayOrder = await getNextDiscoverTileOrder();
-        await createDiscoverTileDocument(toWritePayload(parsed.value, displayOrder));
+        const displayOrder = await discoverTileRepository.getNextOrder();
+        await discoverTileRepository.create(toWritePayload(parsed.value, displayOrder));
       }
       revalidateHomeContent();
       return { success: true };
@@ -184,8 +181,8 @@ export async function createDiscoverTile(data: unknown): Promise<DiscoverTileAct
     if (parsed.value.isActive && activeCount(existing) >= HOME_DISCOVER_TILE_LIMIT) {
       return limitFailure();
     }
-    const displayOrder = await getNextDiscoverTileOrder();
-    await createDiscoverTileDocument(toWritePayload(parsed.value, displayOrder));
+    const displayOrder = await discoverTileRepository.getNextOrder();
+    await discoverTileRepository.create(toWritePayload(parsed.value, displayOrder));
     revalidateHomeContent();
     return { success: true };
   } catch (err) {
@@ -202,19 +199,19 @@ export async function updateDiscoverTile(id: string, data: unknown): Promise<Dis
     }
     const parsed = await parseDiscoverTileInput(data);
     if (!parsed.ok) return parsed.failure;
-    const existing = await findDiscoverTileById(idParsed.data);
+    const existing = await discoverTileRepository.findById(idParsed.data);
     if (!existing) {
       return { success: false, error: 'No encontramos esa tarjeta.', code: 'INTERNAL' };
     }
-    if (parsed.value.isActive && !existing.is_active) {
-      const others = await listDiscoverTiles();
+    if (parsed.value.isActive && !existing.isActive) {
+      const others = await discoverTileRepository.list();
       if (activeCount(others.filter((row) => row.id !== existing.id)) >= HOME_DISCOVER_TILE_LIMIT) {
         return limitFailure();
       }
     }
-    await updateDiscoverTileDocument(
+    await discoverTileRepository.update(
       idParsed.data,
-      toWritePayload(parsed.value, existing.display_order),
+      toWritePayload(parsed.value, existing.displayOrder),
     );
     revalidateHomeContent();
     return { success: true };
@@ -232,7 +229,7 @@ export async function toggleDiscoverTileStatus(
     if (typeof isActive !== 'boolean') {
       return { success: false, error: 'Estado inválido.', code: 'VALIDATION' };
     }
-    const existingRows = await listDiscoverTiles();
+    const existingRows = await discoverTileRepository.list();
     if (existingRows.length === 0) {
       const fallback = fallbackDiscoverTiles(await getSiteSettings()).find((item) => item.id === id);
       if (!fallback) {
@@ -252,14 +249,14 @@ export async function toggleDiscoverTileStatus(
     if (!idParsed.success) {
       return { success: false, error: 'Identificador inválido.', code: 'VALIDATION', issues: idParsed.error.issues };
     }
-    const existing = await findDiscoverTileById(idParsed.data);
+    const existing = await discoverTileRepository.findById(idParsed.data);
     if (!existing) {
       return { success: false, error: 'No encontramos esa tarjeta.', code: 'INTERNAL' };
     }
-    if (isActive && !existing.is_active && activeCount(existingRows) >= HOME_DISCOVER_TILE_LIMIT) {
+    if (isActive && !existing.isActive && activeCount(existingRows) >= HOME_DISCOVER_TILE_LIMIT) {
       return limitFailure();
     }
-    await setDiscoverTileActive(idParsed.data, isActive);
+    await discoverTileRepository.setActive(idParsed.data, isActive);
     revalidateHomeContent();
     return { success: true };
   } catch (err) {
@@ -274,7 +271,7 @@ export async function reorderDiscoverTiles(ids: string[]): Promise<DiscoverTileA
     if (!parsed.success) {
       return { success: false, error: 'Lista de tarjetas inválida.', code: 'VALIDATION' };
     }
-    await reorderDiscoverTilesAppwrite(parsed.data.ids);
+    await discoverTileRepository.reorder(parsed.data.ids);
     revalidateHomeContent();
     return { success: true };
   } catch (err) {
@@ -289,11 +286,11 @@ export async function deleteDiscoverTile(id: string): Promise<DiscoverTileAction
     if (!idParsed.success) {
       return { success: false, error: 'Identificador inválido.', code: 'VALIDATION', issues: idParsed.error.issues };
     }
-    const existing = await findDiscoverTileById(idParsed.data);
+    const existing = await discoverTileRepository.findById(idParsed.data);
     if (!existing) {
       return { success: false, error: 'No encontramos esa tarjeta.', code: 'INTERNAL' };
     }
-    const imageUrl = await deleteDiscoverTileDocument(idParsed.data);
+    const imageUrl = await discoverTileRepository.delete(idParsed.data);
     if (imageUrl && isContentImage(imageUrl)) void imageStorage.delete(imageUrl);
     revalidateHomeContent();
     return { success: true };

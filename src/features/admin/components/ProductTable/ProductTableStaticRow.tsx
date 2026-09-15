@@ -63,7 +63,7 @@ export default function ProductTableStaticRow({
         <p className="mt-0.5 text-xs" style={{ color: 'var(--color-muted)' }}>{product.slug}</p>
       </TableCell>
       <TableCell style={{ color: 'var(--color-dark)' }}>S/ {Number(product.price).toFixed(2)}</TableCell>
-      <TableCell><ToggleSwitch checked={product.is_active} label={`${product.is_active ? 'Desactivar' : 'Activar'} ${product.name}`} onChange={(checked) => onToggleStatus(product.id, checked)} /></TableCell>
+      <TableCell><ToggleSwitch checked={product.isActive} label={`${product.isActive ? 'Desactivar' : 'Activar'} ${product.name}`} onChange={(checked) => onToggleStatus(product.id, checked)} /></TableCell>
       <TableCell><ProductTableActions productId={product.id} productName={product.name} isDeleting={deletingId === product.id} onDelete={onDelete} /></TableCell>
     </TableRow>
   );

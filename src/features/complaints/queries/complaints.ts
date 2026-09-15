@@ -1,16 +1,11 @@
-import {
-  findComplaintById as findComplaintByIdAppwrite,
-  listComplaints as listComplaintsAppwrite,
-} from '@/lib/appwrite/repositories/complaints';
+import { complaintsRepository } from '@/lib/database/repositories/complaints';
 
-import type { ComplaintRow } from '../types';
+import type { Complaint } from '../types';
 
-export async function getComplaints(): Promise<ComplaintRow[]> {
-  const rows = await listComplaintsAppwrite();
-  return rows as unknown as ComplaintRow[];
+export async function getComplaints(): Promise<Complaint[]> {
+  return complaintsRepository.list();
 }
 
-export async function getComplaintById(id: string): Promise<ComplaintRow | null> {
-  const row = await findComplaintByIdAppwrite(id);
-  return row as unknown as ComplaintRow | null;
+export async function getComplaintById(id: string): Promise<Complaint | null> {
+  return complaintsRepository.findById(id);
 }

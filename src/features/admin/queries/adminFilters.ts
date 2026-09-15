@@ -1,6 +1,6 @@
-import { listActiveJoinedProducts } from '@/lib/appwrite/repositories/products';
+import { productsRepository } from '@/lib/database/repositories/products';
 
 export async function getCategoryIdsWithActiveProducts(): Promise<Set<string>> {
-  const rows = await listActiveJoinedProducts();
-  return new Set(rows.map((row) => row.category_id));
+  const products = await productsRepository.listActiveJoined();
+  return new Set(products.map((product) => product.categoryId));
 }

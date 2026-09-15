@@ -4,10 +4,10 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 
 import { reorderValueProps } from '@/features/admin/actions/valueProps';
-import type { ValuePropRow } from '@/lib/db/rows';
+import type { ValueProp } from '@/lib/database/repositories/valueProps';
 
 export function useValuePropReorder(
-  items: ValuePropRow[],
+  items: ValueProp[],
   applyOrder: (ids: string[]) => void,
 ) {
   const [isSaving, setIsSaving] = useState(false);

@@ -1,5 +1,5 @@
 import type { HeroSlideView } from '@/features/landing/components/HeroSection/types';
-import type { HeroCtaType, HeroSlideRow } from '@/lib/db/rows';
+import type { HeroCtaType, HeroSlide } from '@/lib/database/repositories/heroSlides';
 
 import type { HeroDraft } from './types';
 
@@ -35,19 +35,19 @@ export function draftFromLive(live: HeroSlideView): HeroDraft {
   };
 }
 
-export function draftFromSlide(slide: HeroSlideRow): HeroDraft {
+export function draftFromSlide(slide: HeroSlide): HeroDraft {
   return {
-    altText: slide.alt_text,
-    ctaLabel: slide.cta_label ?? '',
-    ctaType: slide.cta_type,
-    ctaValue: slide.cta_value ?? '',
-    endsAt: toDatetimeLocalValue(slide.ends_at),
+    altText: slide.altText,
+    ctaLabel: slide.ctaLabel ?? '',
+    ctaType: slide.ctaType,
+    ctaValue: slide.ctaValue ?? '',
+    endsAt: toDatetimeLocalValue(slide.endsAt),
     focus: slide.focus ?? '70% center',
-    imageUrl: slide.image_url,
-    isActive: slide.is_active,
+    imageUrl: slide.imageUrl,
+    isActive: slide.isActive,
     kicker: slide.kicker,
     name: slide.name ?? '',
-    startsAt: toDatetimeLocalValue(slide.starts_at),
+    startsAt: toDatetimeLocalValue(slide.startsAt),
     title: slide.title,
   };
 }

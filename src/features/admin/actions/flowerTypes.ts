@@ -11,11 +11,7 @@ import {
   failureFromUnknown,
   requireAdmin,
 } from '@/features/admin/utils/auth';
-import {
-  deleteFlowerTypeAppwrite,
-  getFlowerTypeUsage,
-  renameFlowerTypeAppwrite,
-} from '@/lib/appwrite/repositories/taxonomy';
+import { taxonomyRepository } from '@/lib/database/repositories/taxonomy';
 import { BASE_REVALIDATE_PATHS } from '@/lib/revalidation';
 
 interface SuccessResult {
@@ -37,7 +33,7 @@ export async function deleteFlowerType(name: string): Promise<FlowerTypeActionRe
       };
     }
 
-    const usage = await getFlowerTypeUsage(parsed.data.name);
+    const usage = await taxonomyRepository.getFlowerTypeUsage(parsed.data.name);
     if (usage.length > 0) {
       return {
         success: false,
@@ -46,7 +42,7 @@ export async function deleteFlowerType(name: string): Promise<FlowerTypeActionRe
       };
     }
 
-    await deleteFlowerTypeAppwrite(parsed.data.name);
+    await taxonomyRepository.deleteFlowerType(parsed.data.name);
 
     BASE_REVALIDATE_PATHS.forEach((path) => revalidatePath(path));
     updateTag('catalog-flower-types');
@@ -73,7 +69,7 @@ export async function renameFlowerType(
       };
     }
 
-    const result = await renameFlowerTypeAppwrite(parsed.data.oldName, parsed.data.newName);
+    const result = await taxonomyRepository.renameFlowerType(parsed.data.oldName, parsed.data.newName);
     if (result === 'duplicate') {
       return {
         success: false,

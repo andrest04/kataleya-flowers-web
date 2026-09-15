@@ -10,7 +10,7 @@ interface ProductTableImageProps {
 }
 
 export default function ProductTableImage({ product, sizeClass, sizes }: ProductTableImageProps) {
-  const primaryUrl = product.image_url || null;
+  const primaryUrl = product.imageUrl || null;
 
   return (
     <div

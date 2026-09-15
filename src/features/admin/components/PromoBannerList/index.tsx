@@ -10,21 +10,25 @@ import DragHandle from '@/components/ui/SortableList/DragHandle';
 import SortableItem from '@/components/ui/SortableList/SortableItem';
 import ToggleSwitch from '@/components/ui/ToggleSwitch';
 import { deletePromoPreset, togglePromoPresetStatus } from '@/features/admin/actions/promoBanners';
-import type { PromoBannerRow } from '@/lib/db/rows';
+import type { PromoBanner } from '@/lib/database/repositories/promoBanners';
 import { promoPresetKey } from '@/lib/promoPresetKey';
 import { isPublished } from '@/lib/publishing';
 
 import { usePromoBannerReorder } from './usePromoBannerReorder';
 
 interface PromoBannerPreset {
-  banners: PromoBannerRow[];
+  banners: PromoBanner[];
   isActive: boolean;
   key: string;
   name: string;
 }
 
-function groupPresets(banners: PromoBannerRow[]): PromoBannerPreset[] {
-  const groups = new Map<string, PromoBannerRow[]>();
+function isBannerPublished(banner: PromoBanner, now: Date): boolean {
+  return isPublished({ ends_at: banner.endsAt, is_active: banner.isActive, starts_at: banner.startsAt }, now);
+}
+
+function groupPresets(banners: PromoBanner[]): PromoBannerPreset[] {
+  const groups = new Map<string, PromoBanner[]>();
   for (const banner of banners) {
     const key = promoPresetKey(banner);
     const members = groups.get(key) ?? [];
@@ -33,14 +37,14 @@ function groupPresets(banners: PromoBannerRow[]): PromoBannerPreset[] {
   }
   return [...groups.entries()].map(([key, members]) => ({
     banners: members,
-    isActive: members.some((banner) => banner.is_active),
+    isActive: members.some((banner) => banner.isActive),
     key,
     name: members[0]?.name || members[0]?.title || 'Preset',
   }));
 }
 
 interface PromoBannerListProps {
-  banners: PromoBannerRow[];
+  banners: PromoBanner[];
   liveTitles: string[];
 }
 
@@ -67,8 +71,8 @@ export default function PromoBannerList({
     const previous = items;
     setItems((current) => current.map((banner) => (
       isActive
-        ? { ...banner, is_active: promoPresetKey(banner) === key }
-        : promoPresetKey(banner) === key ? { ...banner, is_active: false } : banner
+        ? { ...banner, isActive: promoPresetKey(banner) === key }
+        : promoPresetKey(banner) === key ? { ...banner, isActive: false } : banner
     )));
     const result = await togglePromoPresetStatus(key, isActive);
     if (!result.success) {
@@ -123,7 +127,7 @@ export default function PromoBannerList({
   }
 
   const now = new Date();
-  const hasVisiblePreset = items.some((banner) => isPublished(banner, now));
+  const hasVisiblePreset = items.some((banner) => isBannerPublished(banner, now));
   const activeCount = presets.filter((preset) => preset.isActive).length;
   const isLastPreset = presets.length <= 1;
 
@@ -141,7 +145,7 @@ export default function PromoBannerList({
       >
         <ul className="space-y-3">
           {presets.map((preset) => {
-            const visible = preset.banners.some((banner) => isPublished(banner, now));
+            const visible = preset.banners.some((banner) => isBannerPublished(banner, now));
             return (
               <SortableItem key={preset.key} id={preset.key}>
                 {({ dragHandleProps, isDragging, setNodeRef, style }) => (

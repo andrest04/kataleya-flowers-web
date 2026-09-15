@@ -154,8 +154,8 @@ export default function ProductTable({
               </p>
             </div>
             <ToggleSwitch
-              checked={product.is_active}
-              label={`${product.is_active ? 'Desactivar' : 'Activar'} ${product.name}`}
+              checked={product.isActive}
+              label={`${product.isActive ? 'Desactivar' : 'Activar'} ${product.name}`}
               onChange={(checked) => void table.handleToggleStatus(product.id, checked)}
             />
             <div className="flex flex-col gap-1.5">

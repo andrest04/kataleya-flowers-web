@@ -11,18 +11,22 @@ import DragHandle from '@/components/ui/SortableList/DragHandle';
 import SortableItem from '@/components/ui/SortableList/SortableItem';
 import ToggleSwitch from '@/components/ui/ToggleSwitch';
 import { deleteHeroSlide, toggleHeroSlideStatus } from '@/features/admin/actions/heroSlides';
-import type { HeroSlideRow } from '@/lib/db/rows';
+import type { HeroSlide } from '@/lib/database/repositories/heroSlides';
 import { isPublished } from '@/lib/publishing';
 
 import { useHeroSlideReorder } from './useHeroSlideReorder';
 
 interface HeroSlideListProps {
-  slides: HeroSlideRow[];
+  slides: HeroSlide[];
+}
+
+function isSlidePublished(slide: HeroSlide, now: Date): boolean {
+  return isPublished({ ends_at: slide.endsAt, is_active: slide.isActive, starts_at: slide.startsAt }, now);
 }
 
 export default function HeroSlideList({ slides: initialSlides }: HeroSlideListProps) {
   const [items, setItems] = useState(initialSlides);
-  const [pendingDelete, setPendingDelete] = useState<HeroSlideRow | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<HeroSlide | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const reorder = useHeroSlideReorder(items, applyOrder);
 
@@ -31,7 +35,7 @@ export default function HeroSlideList({ slides: initialSlides }: HeroSlideListPr
       const byId = new Map(current.map((slide) => [slide.id, slide]));
       const reordered = orderedIds
         .map((id) => byId.get(id))
-        .filter((slide): slide is HeroSlideRow => slide !== undefined);
+        .filter((slide): slide is HeroSlide => slide !== undefined);
       return reordered.length === current.length ? reordered : current;
     });
   }
@@ -40,8 +44,8 @@ export default function HeroSlideList({ slides: initialSlides }: HeroSlideListPr
     const previous = items;
     setItems((current) => current.map((slide) => (
       isActive
-        ? { ...slide, is_active: slide.id === id }
-        : slide.id === id ? { ...slide, is_active: false } : slide
+        ? { ...slide, isActive: slide.id === id }
+        : slide.id === id ? { ...slide, isActive: false } : slide
     )));
     const result = await toggleHeroSlideStatus(id, isActive);
     if (!result.success) {
@@ -78,8 +82,8 @@ export default function HeroSlideList({ slides: initialSlides }: HeroSlideListPr
   }
 
   const now = new Date();
-  const hasVisibleSlide = items.some((slide) => isPublished(slide, now));
-  const activeCount = items.filter((slide) => slide.is_active).length;
+  const hasVisibleSlide = items.some((slide) => isSlidePublished(slide, now));
+  const activeCount = items.filter((slide) => slide.isActive).length;
   const isLastSlide = items.length <= 1;
 
   return (
@@ -105,7 +109,7 @@ export default function HeroSlideList({ slides: initialSlides }: HeroSlideListPr
                   ref={setNodeRef as Ref<HTMLLIElement>}
                   style={style}
                   className={`flex items-center gap-3 rounded-xl border border-(--color-border) bg-(--color-white) p-3 ${
-                    isPublished(slide, now) ? '' : 'opacity-60'
+                    isSlidePublished(slide, now) ? '' : 'opacity-60'
                   }`}
                 >
                   <DragHandle handleProps={dragHandleProps} label={slide.name || slide.title} />
@@ -114,9 +118,9 @@ export default function HeroSlideList({ slides: initialSlides }: HeroSlideListPr
                     <p className="truncate text-xs text-(--color-muted)">{slide.title}</p>
                   </div>
                   <ToggleSwitch
-                    checked={slide.is_active}
-                    disabled={isDragging || (slide.is_active && activeCount <= 1)}
-                    label={`${slide.is_active ? 'Ocultar' : 'Mostrar'} ${slide.name || slide.title}`}
+                    checked={slide.isActive}
+                    disabled={isDragging || (slide.isActive && activeCount <= 1)}
+                    label={`${slide.isActive ? 'Ocultar' : 'Mostrar'} ${slide.name || slide.title}`}
                     onChange={(checked) => void handleToggle(slide.id, checked)}
                   />
                   <Button href={`/admin/inicio/hero/${slide.id}`} variant="ghost" size="sm">Editar</Button>
@@ -124,7 +128,7 @@ export default function HeroSlideList({ slides: initialSlides }: HeroSlideListPr
                     type="button"
                     variant="ghost"
                     size="sm"
-                    disabled={isLastSlide || (slide.is_active && activeCount <= 1)}
+                    disabled={isLastSlide || (slide.isActive && activeCount <= 1)}
                     onClick={() => setPendingDelete(slide)}
                   >
                     Eliminar
