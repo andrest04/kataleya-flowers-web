@@ -1,13 +1,12 @@
 import { NextResponse } from 'next/server';
 
-import { AdminAuthError } from '@/features/admin/utils/auth';
-import { requireAdminAppwrite } from '@/features/admin/utils/auth.appwrite';
+import { AdminAuthError, requireAdmin } from '@/features/admin/utils/auth';
 import { imageStorage, isAllowedImageFolder } from '@/lib/imageStorage';
 import { MAX_IMAGE_FILE_SIZE, validateImageBytes } from '@/lib/imageStorage/validateImageBytes';
 
 export async function POST(request: Request) {
   try {
-    await requireAdminAppwrite();
+    await requireAdmin();
   } catch (err) {
     if (err instanceof AdminAuthError) {
       return NextResponse.json(
