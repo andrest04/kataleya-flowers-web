@@ -1,39 +1,39 @@
 import { unstable_cache } from 'next/cache';
 
 import { getSiteSettings } from '@/features/settings/queries/getSiteSettings';
-import { listHeroSlides } from '@/lib/appwrite/repositories/heroSlides';
+import { type HeroSlide, heroSlideRepository } from '@/lib/database/repositories/heroSlides';
 import { isPublished } from '@/lib/publishing';
 import type { SiteSettings } from '@/lib/siteSettings';
 
 import { CAMPAIGN_MODE, HERO_IMAGE } from '../components/HeroSection/constants';
 import type { HeroSlideView } from '../components/HeroSection/types';
 
+function isSlidePublished(slide: HeroSlide, now: Date): boolean {
+  return isPublished({ ends_at: slide.endsAt, is_active: slide.isActive, starts_at: slide.startsAt }, now);
+}
+
 function resolveCta(
-  slide: {
-    cta_label: string | null;
-    cta_type: 'whatsapp' | 'catalogo' | 'url';
-    cta_value: string | null;
-  },
+  slide: Pick<HeroSlide, 'ctaLabel' | 'ctaType' | 'ctaValue'>,
   whatsappHref: string,
 ): Pick<HeroSlideView, 'ctaExternal' | 'ctaHref' | 'ctaLabel'> {
-  if (slide.cta_type === 'catalogo') {
+  if (slide.ctaType === 'catalogo') {
     return {
       ctaExternal: false,
       ctaHref: '/catalogo',
-      ctaLabel: slide.cta_label || 'Ver catálogo',
+      ctaLabel: slide.ctaLabel || 'Ver catálogo',
     };
   }
-  if (slide.cta_type === 'url' && slide.cta_value) {
+  if (slide.ctaType === 'url' && slide.ctaValue) {
     return {
       ctaExternal: true,
-      ctaHref: slide.cta_value,
-      ctaLabel: slide.cta_label || 'Ver más',
+      ctaHref: slide.ctaValue,
+      ctaLabel: slide.ctaLabel || 'Ver más',
     };
   }
   return {
     ctaExternal: true,
     ctaHref: whatsappHref,
-    ctaLabel: slide.cta_label || 'Pedir por WhatsApp',
+    ctaLabel: slide.ctaLabel || 'Pedir por WhatsApp',
   };
 }
 
@@ -57,17 +57,17 @@ type CachedHeroState =
 
 const getCachedHeroState = unstable_cache(
   async (): Promise<CachedHeroState> => {
-    const [slides, settings] = await Promise.all([listHeroSlides(), getSiteSettings()]);
+    const [slides, settings] = await Promise.all([heroSlideRepository.list(), getSiteSettings()]);
     const now = new Date();
-    const published = slides.filter((slide) => isPublished(slide, now))[0];
+    const published = slides.filter((slide) => isSlidePublished(slide, now))[0];
     if (published) {
       return {
         status: 'published',
         slide: {
           ...resolveCta(published, settings.whatsapp),
           focus: published.focus || HERO_IMAGE.focus,
-          imageAlt: published.alt_text,
-          imageSrc: published.image_url,
+          imageAlt: published.altText,
+          imageSrc: published.imageUrl,
           kicker: published.kicker,
           title: published.title,
         },
