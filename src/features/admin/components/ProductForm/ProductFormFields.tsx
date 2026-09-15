@@ -3,14 +3,14 @@
 import { FormField } from '@/components/ui/FormField';
 import { Input, Select,Textarea } from '@/components/ui/Input';
 import type { ProductFormData } from '@/features/admin/types';
-import type { CategoryRow } from '@/lib/db/rows';
+import type { Category } from '@/lib/database/repositories/categories';
 
 import { FieldError } from './FieldError';
 import type { FieldErrors } from './validation';
 
 interface Props {
   form: ProductFormData;
-  categories: CategoryRow[];
+  categories: Category[];
   fieldErrors: FieldErrors;
   setField: <K extends keyof ProductFormData>(key: K, value: ProductFormData[K]) => void;
   setName: (name: string) => void;

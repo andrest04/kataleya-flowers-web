@@ -6,14 +6,14 @@ import Button from '@/components/ui/Button';
 import { TableCell, TableRow } from '@/components/ui/primitives/table';
 import DragHandle from '@/components/ui/SortableList/DragHandle';
 import type { SortableItemRenderProps } from '@/components/ui/SortableList/SortableItem';
-import type { CategoryRow } from '@/lib/db/rows';
+import type { Category } from '@/lib/database/repositories/categories';
 
 import CategoryRowImage from './CategoryRowImage';
 import CategoryToggleFeatured from './CategoryToggleFeatured';
 import CategoryToggleStatus from './CategoryToggleStatus';
 
 interface CategoryRowProps {
-  category: CategoryRow;
+  category: Category;
   index: number;
   deletingId: string | null;
   onDelete: (id: string, name: string) => void;
@@ -70,11 +70,11 @@ export default function CategoryRow({
       </TableCell>
 
       <TableCell className="text-center">
-        <CategoryToggleStatus id={category.id} name={category.name} isActive={category.is_active} onLocalChange={onLocalToggleStatus} />
+        <CategoryToggleStatus id={category.id} name={category.name} isActive={category.isActive} onLocalChange={onLocalToggleStatus} />
       </TableCell>
 
       <TableCell className="text-center">
-        <CategoryToggleFeatured id={category.id} name={category.name} isFeatured={category.is_featured} onLocalChange={onLocalToggleFeatured} />
+        <CategoryToggleFeatured id={category.id} name={category.name} isFeatured={category.isFeatured} onLocalChange={onLocalToggleFeatured} />
       </TableCell>
 
       <TableCell>
