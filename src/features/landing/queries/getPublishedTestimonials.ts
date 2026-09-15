@@ -1,8 +1,15 @@
 import { unstable_cache } from 'next/cache';
 
-import { listTestimonials } from '@/lib/appwrite/repositories/testimonials';
+import { type Testimonial, testimonialRepository } from '@/lib/database/repositories/testimonials';
 import { isPublished } from '@/lib/publishing';
 import { HOME_TESTIMONIAL_LIMIT } from '@/lib/testimonialLimit';
+
+function isTestimonialPublished(testimonial: Testimonial, now: Date): boolean {
+  return isPublished(
+    { ends_at: testimonial.endsAt, is_active: testimonial.isActive, starts_at: testimonial.startsAt },
+    now,
+  );
+}
 
 export interface TestimonialView {
   id: string;
@@ -64,9 +71,9 @@ type CachedTestimonialState =
 
 const getCachedTestimonialState = unstable_cache(
   async (): Promise<CachedTestimonialState> => {
-    const testimonials = await listTestimonials();
+    const testimonials = await testimonialRepository.list();
     const now = new Date();
-    const published = testimonials.filter((testimonial) => isPublished(testimonial, now));
+    const published = testimonials.filter((testimonial) => isTestimonialPublished(testimonial, now));
     if (published.length > 0) {
       return {
         status: 'published',
@@ -74,8 +81,8 @@ const getCachedTestimonialState = unstable_cache(
           id: testimonial.id,
           name: testimonial.name,
           occasion: testimonial.occasion,
-          photoAlt: testimonial.photo_alt,
-          photoSrc: testimonial.photo_url,
+          photoAlt: testimonial.photoAlt,
+          photoSrc: testimonial.photoUrl,
           quote: testimonial.quote,
           stars: testimonial.stars,
         })),

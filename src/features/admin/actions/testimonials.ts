@@ -16,16 +16,9 @@ import {
 } from '@/features/landing/queries/getPublishedTestimonials';
 import { APPWRITE_BUCKETS } from '@/lib/appwrite/config';
 import {
-  createTestimonialDocument,
-  deleteTestimonialDocument,
-  findTestimonialById,
-  getNextTestimonialOrder,
-  listTestimonials,
-  reorderTestimonialsAppwrite,
-  setTestimonialActive,
+  testimonialRepository,
   type TestimonialWritePayload,
-  updateTestimonialDocument,
-} from '@/lib/appwrite/repositories/testimonials';
+} from '@/lib/database/repositories/testimonials';
 import { imageStorage } from '@/lib/imageStorage';
 import { parseAppwriteStorageUrl } from '@/lib/imageStorage/urlValidation';
 import {
@@ -105,8 +98,8 @@ function toWritePayload(
   };
 }
 
-function activeCount(rows: { is_active: boolean }[]): number {
-  return rows.filter((row) => row.is_active).length;
+function activeCount(rows: { isActive: boolean }[]): number {
+  return rows.filter((row) => row.isActive).length;
 }
 
 function limitFailure(): AdminActionFailure {
@@ -139,12 +132,12 @@ async function seedFallbackDocuments(
   for (const [index, item] of FALLBACK_TESTIMONIALS.entries()) {
     const displayOrder = index + 1;
     if (exceptId && item.id === exceptId && replacement) {
-      await createTestimonialDocument({ ...replacement, displayOrder });
+      await testimonialRepository.create({ ...replacement, displayOrder });
       continue;
     }
     const storedUrl = await ensureStoredTestimonialImage(item.photoSrc);
     if (typeof storedUrl !== 'string') return storedUrl;
-    await createTestimonialDocument(payloadFromFallback(item, displayOrder, storedUrl));
+    await testimonialRepository.create(payloadFromFallback(item, displayOrder, storedUrl));
   }
   return null;
 }
@@ -155,7 +148,7 @@ export async function createTestimonial(data: unknown): Promise<TestimonialActio
     const fromFallbackId = readFromFallbackId(data);
     const parsed = await parseTestimonialInput(data);
     if (!parsed.ok) return parsed.failure;
-    const existing = await listTestimonials();
+    const existing = await testimonialRepository.list();
     if (existing.length === 0) {
       const matchesFallback = FALLBACK_TESTIMONIALS.some((item) => item.id === fromFallbackId);
       if (matchesFallback) {
@@ -168,8 +161,8 @@ export async function createTestimonial(data: unknown): Promise<TestimonialActio
         const seedError = await seedFallbackDocuments(undefined);
         if (seedError) return seedError;
         if (parsed.value.isActive) return limitFailure();
-        const displayOrder = await getNextTestimonialOrder();
-        await createTestimonialDocument(toWritePayload(parsed.value, displayOrder));
+        const displayOrder = await testimonialRepository.getNextOrder();
+        await testimonialRepository.create(toWritePayload(parsed.value, displayOrder));
       }
       revalidateHomeContent();
       return { success: true };
@@ -177,8 +170,8 @@ export async function createTestimonial(data: unknown): Promise<TestimonialActio
     if (parsed.value.isActive && activeCount(existing) >= HOME_TESTIMONIAL_LIMIT) {
       return limitFailure();
     }
-    const displayOrder = await getNextTestimonialOrder();
-    await createTestimonialDocument(toWritePayload(parsed.value, displayOrder));
+    const displayOrder = await testimonialRepository.getNextOrder();
+    await testimonialRepository.create(toWritePayload(parsed.value, displayOrder));
     revalidateHomeContent();
     return { success: true };
   } catch (err) {
@@ -195,19 +188,19 @@ export async function updateTestimonial(id: string, data: unknown): Promise<Test
     }
     const parsed = await parseTestimonialInput(data);
     if (!parsed.ok) return parsed.failure;
-    const existing = await findTestimonialById(idParsed.data);
+    const existing = await testimonialRepository.findById(idParsed.data);
     if (!existing) {
       return { success: false, error: 'No encontramos ese testimonio.', code: 'INTERNAL' };
     }
-    if (parsed.value.isActive && !existing.is_active) {
-      const others = await listTestimonials();
+    if (parsed.value.isActive && !existing.isActive) {
+      const others = await testimonialRepository.list();
       if (activeCount(others.filter((row) => row.id !== existing.id)) >= HOME_TESTIMONIAL_LIMIT) {
         return limitFailure();
       }
     }
-    await updateTestimonialDocument(
+    await testimonialRepository.update(
       idParsed.data,
-      toWritePayload(parsed.value, existing.display_order),
+      toWritePayload(parsed.value, existing.displayOrder),
     );
     revalidateHomeContent();
     return { success: true };
@@ -225,7 +218,7 @@ export async function toggleTestimonialStatus(
     if (typeof isActive !== 'boolean') {
       return { success: false, error: 'Estado inválido.', code: 'VALIDATION' };
     }
-    const existingRows = await listTestimonials();
+    const existingRows = await testimonialRepository.list();
     if (existingRows.length === 0) {
       const fallback = FALLBACK_TESTIMONIALS.find((item) => item.id === id);
       if (!fallback) {
@@ -245,14 +238,14 @@ export async function toggleTestimonialStatus(
     if (!idParsed.success) {
       return { success: false, error: 'Identificador inválido.', code: 'VALIDATION', issues: idParsed.error.issues };
     }
-    const existing = await findTestimonialById(idParsed.data);
+    const existing = await testimonialRepository.findById(idParsed.data);
     if (!existing) {
       return { success: false, error: 'No encontramos ese testimonio.', code: 'INTERNAL' };
     }
-    if (isActive && !existing.is_active && activeCount(existingRows) >= HOME_TESTIMONIAL_LIMIT) {
+    if (isActive && !existing.isActive && activeCount(existingRows) >= HOME_TESTIMONIAL_LIMIT) {
       return limitFailure();
     }
-    await setTestimonialActive(idParsed.data, isActive);
+    await testimonialRepository.setActive(idParsed.data, isActive);
     revalidateHomeContent();
     return { success: true };
   } catch (err) {
@@ -267,7 +260,7 @@ export async function reorderTestimonials(ids: string[]): Promise<TestimonialAct
     if (!parsed.success) {
       return { success: false, error: 'Lista de testimonios inválida.', code: 'VALIDATION' };
     }
-    await reorderTestimonialsAppwrite(parsed.data.ids);
+    await testimonialRepository.reorder(parsed.data.ids);
     revalidateHomeContent();
     return { success: true };
   } catch (err) {
@@ -282,11 +275,11 @@ export async function deleteTestimonial(id: string): Promise<TestimonialActionRe
     if (!idParsed.success) {
       return { success: false, error: 'Identificador inválido.', code: 'VALIDATION', issues: idParsed.error.issues };
     }
-    const existing = await findTestimonialById(idParsed.data);
+    const existing = await testimonialRepository.findById(idParsed.data);
     if (!existing) {
       return { success: false, error: 'No encontramos ese testimonio.', code: 'INTERNAL' };
     }
-    const imageUrl = await deleteTestimonialDocument(idParsed.data);
+    const imageUrl = await testimonialRepository.delete(idParsed.data);
     if (imageUrl && isContentImage(imageUrl)) void imageStorage.delete(imageUrl);
     revalidateHomeContent();
     return { success: true };

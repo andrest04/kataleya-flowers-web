@@ -4,10 +4,10 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 
 import { reorderTestimonials } from '@/features/admin/actions/testimonials';
-import type { TestimonialRow } from '@/lib/db/rows';
+import type { Testimonial } from '@/lib/database/repositories/testimonials';
 
 export function useTestimonialReorder(
-  items: TestimonialRow[],
+  items: Testimonial[],
   applyOrder: (ids: string[]) => void,
 ) {
   const [isSaving, setIsSaving] = useState(false);

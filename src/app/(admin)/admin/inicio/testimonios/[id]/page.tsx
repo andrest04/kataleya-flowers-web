@@ -23,8 +23,8 @@ export default async function EditarTestimonioPage({ params }: EditarTestimonioP
     getAdminTestimonials(),
   ]);
   if (!testimonial) notFound();
-  const activeCount = testimonials.filter((item) => item.is_active).length;
-  const allowActivate = testimonial.is_active || activeCount < HOME_TESTIMONIAL_LIMIT;
+  const activeCount = testimonials.filter((item) => item.isActive).length;
+  const allowActivate = testimonial.isActive || activeCount < HOME_TESTIMONIAL_LIMIT;
 
   return (
     <div className="space-y-6">
