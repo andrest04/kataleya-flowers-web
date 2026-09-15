@@ -10,6 +10,8 @@ import type { ComplaintSubmitResult } from '../types';
 import { formatComplaintNumber } from '../utils/format';
 import { checkComplaintRateLimit, getClientIp } from '../utils/rateLimit';
 
+// Libro de Reclamaciones: legally public, protected by rate limiting + BotID
+// react-doctor-disable-next-line react-doctor/server-auth-actions
 export async function submitComplaint(
   input: unknown,
 ): Promise<ComplaintSubmitResult> {
