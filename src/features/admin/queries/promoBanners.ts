@@ -1,21 +1,22 @@
 import {
-  findPromoBannerById,
-  listPromoBanners,
   listPromoBannersByPreset,
-} from '@/lib/appwrite/repositories/promoBanners';
-import type { PromoBannerRow } from '@/lib/db/rows';
+  type PromoBanner,
+  promoBannerRepository,
+} from '@/lib/database/repositories/promoBanners';
 import { promoPresetKey } from '@/lib/promoPresetKey';
 
-export async function getAdminPromoBanners(): Promise<PromoBannerRow[]> {
-  return listPromoBanners();
+export type { PromoBanner };
+
+export async function getAdminPromoBanners(): Promise<PromoBanner[]> {
+  return promoBannerRepository.list();
 }
 
-export async function getAdminPromoBannerById(id: string): Promise<PromoBannerRow | null> {
-  return findPromoBannerById(id);
+export async function getAdminPromoBannerById(id: string): Promise<PromoBanner | null> {
+  return promoBannerRepository.findById(id);
 }
 
-export async function getAdminPromoPresetByBannerId(id: string): Promise<PromoBannerRow[]> {
-  const banner = await findPromoBannerById(id);
+export async function getAdminPromoPresetByBannerId(id: string): Promise<PromoBanner[]> {
+  const banner = await promoBannerRepository.findById(id);
   if (!banner) return [];
   return listPromoBannersByPreset(promoPresetKey(banner));
 }
