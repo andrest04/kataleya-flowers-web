@@ -4,10 +4,10 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 
 import { reorderHeroSlides } from '@/features/admin/actions/heroSlides';
-import type { HeroSlideRow } from '@/lib/db/rows';
+import type { HeroSlide } from '@/lib/database/repositories/heroSlides';
 
 export function useHeroSlideReorder(
-  items: HeroSlideRow[],
+  items: HeroSlide[],
   applyOrder: (ids: string[]) => void,
 ) {
   const [isSaving, setIsSaving] = useState(false);

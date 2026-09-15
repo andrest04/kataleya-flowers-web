@@ -1,4 +1,4 @@
-import type { ComplaintRow } from '../../types';
+import type { Complaint } from '../../types';
 import {
   formatComplaintNumber,
   isResponseOverdue,
@@ -28,41 +28,41 @@ function formatDate(value: string): string {
   });
 }
 
-export default function ComplaintDetail({ complaint: c }: { complaint: ComplaintRow }) {
-  const overdue = isResponseOverdue(c.created_at, c.responded_at);
-  const amount = c.claimed_amount != null ? `S/ ${c.claimed_amount.toFixed(2)}` : null;
+export default function ComplaintDetail({ complaint: c }: { complaint: Complaint }) {
+  const overdue = isResponseOverdue(c.createdAt, c.respondedAt);
+  const amount = c.claimedAmount != null ? `S/ ${c.claimedAmount.toFixed(2)}` : null;
 
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center gap-3">
         <span className="font-heading text-2xl" style={{ color: 'var(--color-primary)' }}>
-          {formatComplaintNumber(c.correlativo, c.created_at)}
+          {formatComplaintNumber(c.correlativo, c.createdAt)}
         </span>
-        <ComplaintTypeBadge type={c.complaint_type} />
+        <ComplaintTypeBadge type={c.complaintType} />
         <span className="text-sm" style={{ color: 'var(--color-muted)' }}>
-          {formatDate(c.created_at)}
+          {formatDate(c.createdAt)}
         </span>
       </div>
 
       <p className="text-sm" style={{ color: overdue ? 'var(--color-primary)' : 'var(--color-accent)' }}>
-        {c.responded_at
-          ? `Respondido el ${formatDate(c.responded_at)}`
+        {c.respondedAt
+          ? `Respondido el ${formatDate(c.respondedAt)}`
           : overdue
             ? 'Plazo de respuesta VENCIDO'
-            : `Vence el ${formatDate(responseDeadline(c.created_at).toISOString())}`}
+            : `Vence el ${formatDate(responseDeadline(c.createdAt).toISOString())}`}
       </p>
 
       <dl className="divide-y" style={{ borderColor: 'var(--color-border)' }}>
-        <Row label="Consumidor" value={c.consumer_name} />
-        <Row label="Documento" value={`${c.consumer_doc_type} ${c.consumer_doc_number}`} />
-        <Row label="Domicilio" value={c.consumer_address} />
-        <Row label="Email" value={c.consumer_email} />
-        <Row label="Teléfono" value={c.consumer_phone} />
-        <Row label="Apoderado" value={c.is_minor ? c.guardian_name : null} />
-        <Row label="Bien contratado" value={`${c.item_type} — ${c.item_description}`} />
+        <Row label="Consumidor" value={c.consumerName} />
+        <Row label="Documento" value={`${c.consumerDocType} ${c.consumerDocNumber}`} />
+        <Row label="Domicilio" value={c.consumerAddress} />
+        <Row label="Email" value={c.consumerEmail} />
+        <Row label="Teléfono" value={c.consumerPhone} />
+        <Row label="Apoderado" value={c.isMinor ? c.guardianName : null} />
+        <Row label="Bien contratado" value={`${c.itemType} — ${c.itemDescription}`} />
         <Row label="Monto reclamado" value={amount} />
         <Row label="Detalle" value={c.detail} />
-        <Row label="Pedido del consumidor" value={c.consumer_request} />
+        <Row label="Pedido del consumidor" value={c.consumerRequest} />
       </dl>
     </div>
   );

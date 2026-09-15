@@ -1,5 +1,5 @@
 import type { TestimonialView } from '@/features/landing/queries/getPublishedTestimonials';
-import type { TestimonialRow } from '@/lib/db/rows';
+import type { Testimonial } from '@/lib/database/repositories/testimonials';
 
 import type { TestimonialDraft } from './types';
 
@@ -25,16 +25,16 @@ export function draftFromFallback(testimonial: TestimonialView): TestimonialDraf
   };
 }
 
-export function draftFromTestimonial(testimonial: TestimonialRow): TestimonialDraft {
+export function draftFromTestimonial(testimonial: Testimonial): TestimonialDraft {
   return {
-    endsAt: toDatetimeLocalValue(testimonial.ends_at),
-    isActive: testimonial.is_active,
+    endsAt: toDatetimeLocalValue(testimonial.endsAt),
+    isActive: testimonial.isActive,
     name: testimonial.name,
     occasion: testimonial.occasion,
-    photoAlt: testimonial.photo_alt,
-    photoUrl: testimonial.photo_url,
+    photoAlt: testimonial.photoAlt,
+    photoUrl: testimonial.photoUrl,
     quote: testimonial.quote,
     stars: testimonial.stars,
-    startsAt: toDatetimeLocalValue(testimonial.starts_at),
+    startsAt: toDatetimeLocalValue(testimonial.startsAt),
   };
 }

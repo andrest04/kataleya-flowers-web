@@ -33,7 +33,7 @@ export default async function NuevaTarjetaPage({ searchParams }: NuevaTarjetaPag
   };
   const activeCount = tiles.length === 0
     ? fallbacks.length
-    : tiles.filter((item) => item.is_active).length;
+    : tiles.filter((item) => item.isActive).length;
   const allowActivate = initial.isActive || activeCount < HOME_DISCOVER_TILE_LIMIT;
 
   return (

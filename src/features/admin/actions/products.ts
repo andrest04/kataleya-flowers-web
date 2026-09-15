@@ -14,24 +14,8 @@ import {
   requireAdmin,
 } from '@/features/admin/utils/auth';
 import { slugify } from '@/features/admin/utils/slugify';
-import { APPWRITE_COLLECTIONS } from '@/lib/appwrite/config';
-import {
-  bulkDeleteProductsWithRelations,
-  bulkSetProductActive,
-  createProductWithTaxonomy,
-  getCategorySlugById,
-  getNextProductOrder,
-  getProductCategorySlug,
-  getProductImageUrls,
-  reorderProductsAppwrite,
-  setProductActive,
-  updateProductWithTaxonomy,
-} from '@/lib/appwrite/repositories/products';
-import { getRepositoryContext } from '@/lib/appwrite/repositories/shared';
-import {
-  ensureColorsAppwrite,
-  ensureFlowerTypesAppwrite,
-} from '@/lib/appwrite/repositories/taxonomy';
+import { productsRepository } from '@/lib/database/repositories/products';
+import { taxonomyRepository } from '@/lib/database/repositories/taxonomy';
 import { imageStorage } from '@/lib/imageStorage';
 import { BASE_REVALIDATE_PATHS } from '@/lib/revalidation';
 interface SuccessResult {
@@ -62,7 +46,7 @@ async function revalidateProductPaths(
   updateTag('catalog-categories');
 
   const categorySlug = knownCategorySlug ?? (categoryId
-    ? await getCategorySlugById(categoryId)
+    ? await productsRepository.getCategorySlugById(categoryId)
     : null);
   if (categorySlug) {
     revalidatePath(`/catalogo/${categorySlug}`);
@@ -85,17 +69,7 @@ async function cleanUpDeletedProductImages(imageUrls: string[]): Promise<string 
 }
 
 async function getAppwriteProductSlug(productId: string): Promise<string | null> {
-  try {
-    const { databases, databaseId } = getRepositoryContext();
-    const doc = await databases.getDocument({
-      databaseId,
-      collectionId: APPWRITE_COLLECTIONS.products,
-      documentId: productId,
-    });
-    return (doc as unknown as { slug: string }).slug;
-  } catch {
-    return null;
-  }
+  return productsRepository.getSlugById(productId);
 }
 
 export async function createProduct(data: ProductFormData): Promise<ProductActionResult> {
@@ -117,16 +91,16 @@ export async function createProduct(data: ProductFormData): Promise<ProductActio
     const [, nextOrder] = await Promise.all([
       Promise.all([
         formData.newFlowerTypes?.length
-          ? ensureFlowerTypesAppwrite(formData.newFlowerTypes)
+          ? taxonomyRepository.ensureFlowerTypes(formData.newFlowerTypes)
           : Promise.resolve(),
         formData.newColors?.length
-          ? ensureColorsAppwrite(formData.newColors)
+          ? taxonomyRepository.ensureColors(formData.newColors)
           : Promise.resolve(),
       ]),
-      formData.displayOrder ? Promise.resolve(formData.displayOrder) : getNextProductOrder(),
+      formData.displayOrder ? Promise.resolve(formData.displayOrder) : productsRepository.getNextOrder(),
     ]);
     try {
-      await createProductWithTaxonomy({
+      await productsRepository.createProductWithTaxonomy({
         name: formData.name,
         slug,
         description: formData.description,
@@ -188,15 +162,15 @@ export async function updateProduct(
     const [, meta, currentSlug, currentImageUrls] = await Promise.all([
       Promise.all([
         formData.newFlowerTypes?.length
-          ? ensureFlowerTypesAppwrite(formData.newFlowerTypes)
+          ? taxonomyRepository.ensureFlowerTypes(formData.newFlowerTypes)
           : Promise.resolve(),
         formData.newColors?.length
-          ? ensureColorsAppwrite(formData.newColors)
+          ? taxonomyRepository.ensureColors(formData.newColors)
           : Promise.resolve(),
       ]),
-      getProductCategorySlug(idParsed.data),
+      productsRepository.getCategorySlug(idParsed.data),
       getAppwriteProductSlug(idParsed.data),
-      getProductImageUrls(idParsed.data),
+      productsRepository.getImageUrls(idParsed.data),
     ]);
 
     const incomingSlug = formData.slug?.trim() ?? '';
@@ -206,7 +180,7 @@ export async function updateProduct(
         : (currentSlug ?? slugify(formData.name));
 
     try {
-      await updateProductWithTaxonomy(idParsed.data, {
+      await productsRepository.updateProductWithTaxonomy(idParsed.data, {
         name: formData.name,
         slug,
         description: formData.description,
@@ -264,7 +238,7 @@ export async function deleteProduct(id: string): Promise<ProductActionResult> {
       return { success: false, error: 'Identificador inválido.', code: 'VALIDATION', issues: idParsed.error.issues };
     }
 
-    const [deletedProduct] = await bulkDeleteProductsWithRelations([idParsed.data]);
+    const [deletedProduct] = await productsRepository.bulkDeleteProductsWithRelations([idParsed.data]);
     if (!deletedProduct) {
       return { success: false, error: 'El producto ya no existe.', code: 'VALIDATION' };
     }
@@ -291,7 +265,7 @@ export async function bulkSetProductStatus(
     if (!parsed.success || typeof isActive !== 'boolean') {
       return { success: false, error: 'Productos o estado inválidos.', code: 'VALIDATION' };
     }
-    await bulkSetProductActive(parsed.data.ids, isActive);
+    await productsRepository.bulkSetProductActive(parsed.data.ids, isActive);
     BASE_REVALIDATE_PATHS.forEach((path) => revalidatePath(path));
     updateTag('catalog-products');
     updateTag('catalog-categories');
@@ -308,7 +282,7 @@ export async function bulkDeleteProducts(ids: string[]): Promise<ProductActionRe
     if (!parsed.success) {
       return { success: false, error: 'Lista de productos inválida.', code: 'VALIDATION' };
     }
-    const deletedProducts = await bulkDeleteProductsWithRelations(parsed.data.ids);
+    const deletedProducts = await productsRepository.bulkDeleteProductsWithRelations(parsed.data.ids);
     const cleanupWarning = await cleanUpDeletedProductImages(
       [...new Set(deletedProducts.flatMap((product) => product.imageUrls))],
     );
@@ -328,7 +302,7 @@ export async function reorderProducts(ids: string[]): Promise<ProductActionResul
     if (!parsed.success) {
       return { success: false, error: 'Lista de productos inválida.', code: 'VALIDATION' };
     }
-    await reorderProductsAppwrite(parsed.data.ids);
+    await productsRepository.reorderProductsAppwrite(parsed.data.ids);
     BASE_REVALIDATE_PATHS.forEach((path) => revalidatePath(path));
     updateTag('catalog-products');
     updateTag('catalog-categories');
@@ -353,8 +327,8 @@ export async function toggleProductStatus(
       return { success: false, error: 'Estado inválido.', code: 'VALIDATION' };
     }
 
-    const meta = await getProductCategorySlug(idParsed.data);
-    await setProductActive(idParsed.data, isActive);
+    const meta = await productsRepository.getCategorySlug(idParsed.data);
+    await productsRepository.setProductActive(idParsed.data, isActive);
     const slug = await getAppwriteProductSlug(idParsed.data);
     await revalidateProductPaths(slug ?? undefined, meta?.categoryId);
     return { success: true };

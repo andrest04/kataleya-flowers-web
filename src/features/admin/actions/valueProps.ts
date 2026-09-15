@@ -16,16 +16,9 @@ import {
 } from '@/features/landing/queries/getPublishedValueProps';
 import { getSiteSettings } from '@/features/settings/queries/getSiteSettings';
 import {
-  createValuePropDocument,
-  deleteValuePropDocument,
-  findValuePropById,
-  getNextValuePropOrder,
-  listValueProps,
-  reorderValuePropsAppwrite,
-  setValuePropActive,
-  updateValuePropDocument,
+  valuePropRepository,
   type ValuePropWritePayload,
-} from '@/lib/appwrite/repositories/valueProps';
+} from '@/lib/database/repositories/valueProps';
 import { tokenizeValuePropIdentity } from '@/lib/valuePropIdentity';
 import {
   HOME_VALUE_PROP_LIMIT,
@@ -96,8 +89,8 @@ async function toWritePayload(
   };
 }
 
-function activeCount(rows: { is_active: boolean }[]): number {
-  return rows.filter((row) => row.is_active).length;
+function activeCount(rows: { isActive: boolean }[]): number {
+  return rows.filter((row) => row.isActive).length;
 }
 
 function limitFailure(): AdminActionFailure {
@@ -130,14 +123,15 @@ async function seedFallbackDocuments(
   replacement?: ValuePropWritePayload,
 ): Promise<void> {
   const fallbacks = fallbackValueProps(await getSiteSettings());
-  for (const [index, item] of fallbacks.entries()) {
-    const displayOrder = index + 1;
-    if (exceptId && item.id === exceptId && replacement) {
-      await createValuePropDocument({ ...replacement, displayOrder });
-      continue;
-    }
-    await createValuePropDocument(await payloadFromFallback(item, displayOrder));
-  }
+  await Promise.all(
+    fallbacks.map(async (item, index) => {
+      const displayOrder = index + 1;
+      if (exceptId && item.id === exceptId && replacement) {
+        return valuePropRepository.create({ ...replacement, displayOrder });
+      }
+      return valuePropRepository.create(await payloadFromFallback(item, displayOrder));
+    }),
+  );
 }
 
 export async function createValueProp(data: unknown): Promise<ValuePropActionResult> {
@@ -146,7 +140,7 @@ export async function createValueProp(data: unknown): Promise<ValuePropActionRes
     const fromFallbackId = readFromFallbackId(data);
     const parsed = parseValuePropInput(data);
     if (!parsed.ok) return parsed.failure;
-    const existing = await listValueProps();
+    const existing = await valuePropRepository.list();
     if (existing.length === 0) {
       const matchesFallback = fallbackValueProps(await getSiteSettings()).some(
         (item) => item.id === fromFallbackId,
@@ -156,8 +150,8 @@ export async function createValueProp(data: unknown): Promise<ValuePropActionRes
       } else {
         await seedFallbackDocuments(undefined);
         if (parsed.value.isActive) return limitFailure();
-        const displayOrder = await getNextValuePropOrder();
-        await createValuePropDocument(await toWritePayload(parsed.value, displayOrder));
+        const displayOrder = await valuePropRepository.getNextOrder();
+        await valuePropRepository.create(await toWritePayload(parsed.value, displayOrder));
       }
       revalidateValueProps();
       return { success: true };
@@ -165,8 +159,8 @@ export async function createValueProp(data: unknown): Promise<ValuePropActionRes
     if (parsed.value.isActive && activeCount(existing) >= HOME_VALUE_PROP_LIMIT) {
       return limitFailure();
     }
-    const displayOrder = await getNextValuePropOrder();
-    await createValuePropDocument(await toWritePayload(parsed.value, displayOrder));
+    const displayOrder = await valuePropRepository.getNextOrder();
+    await valuePropRepository.create(await toWritePayload(parsed.value, displayOrder));
     revalidateValueProps();
     return { success: true };
   } catch (err) {
@@ -183,19 +177,19 @@ export async function updateValueProp(id: string, data: unknown): Promise<ValueP
     }
     const parsed = parseValuePropInput(data);
     if (!parsed.ok) return parsed.failure;
-    const existing = await findValuePropById(idParsed.data);
+    const existing = await valuePropRepository.findById(idParsed.data);
     if (!existing) {
       return { success: false, error: 'No encontramos ese destacado.', code: 'INTERNAL' };
     }
-    if (parsed.value.isActive && !existing.is_active) {
-      const others = await listValueProps();
+    if (parsed.value.isActive && !existing.isActive) {
+      const others = await valuePropRepository.list();
       if (activeCount(others.filter((row) => row.id !== existing.id)) >= HOME_VALUE_PROP_LIMIT) {
         return limitFailure();
       }
     }
-    await updateValuePropDocument(
+    await valuePropRepository.update(
       idParsed.data,
-      await toWritePayload(parsed.value, existing.display_order),
+      await toWritePayload(parsed.value, existing.displayOrder),
     );
     revalidateValueProps();
     return { success: true };
@@ -213,7 +207,7 @@ export async function toggleValuePropStatus(
     if (typeof isActive !== 'boolean') {
       return { success: false, error: 'Estado inválido.', code: 'VALIDATION' };
     }
-    const existingRows = await listValueProps();
+    const existingRows = await valuePropRepository.list();
     if (existingRows.length === 0) {
       const fallback = fallbackValueProps(await getSiteSettings()).find((item) => item.id === id);
       if (!fallback) {
@@ -230,14 +224,14 @@ export async function toggleValuePropStatus(
     if (!idParsed.success) {
       return { success: false, error: 'Identificador inválido.', code: 'VALIDATION', issues: idParsed.error.issues };
     }
-    const existing = await findValuePropById(idParsed.data);
+    const existing = await valuePropRepository.findById(idParsed.data);
     if (!existing) {
       return { success: false, error: 'No encontramos ese destacado.', code: 'INTERNAL' };
     }
-    if (isActive && !existing.is_active && activeCount(existingRows) >= HOME_VALUE_PROP_LIMIT) {
+    if (isActive && !existing.isActive && activeCount(existingRows) >= HOME_VALUE_PROP_LIMIT) {
       return limitFailure();
     }
-    await setValuePropActive(idParsed.data, isActive);
+    await valuePropRepository.setActive(idParsed.data, isActive);
     revalidateValueProps();
     return { success: true };
   } catch (err) {
@@ -252,7 +246,7 @@ export async function reorderValueProps(ids: string[]): Promise<ValuePropActionR
     if (!parsed.success) {
       return { success: false, error: 'Lista de destacados inválida.', code: 'VALIDATION' };
     }
-    await reorderValuePropsAppwrite(parsed.data.ids);
+    await valuePropRepository.reorder(parsed.data.ids);
     revalidateValueProps();
     return { success: true };
   } catch (err) {
@@ -267,11 +261,11 @@ export async function deleteValueProp(id: string): Promise<ValuePropActionResult
     if (!idParsed.success) {
       return { success: false, error: 'Identificador inválido.', code: 'VALIDATION', issues: idParsed.error.issues };
     }
-    const existing = await findValuePropById(idParsed.data);
+    const existing = await valuePropRepository.findById(idParsed.data);
     if (!existing) {
       return { success: false, error: 'No encontramos ese destacado.', code: 'INTERNAL' };
     }
-    await deleteValuePropDocument(idParsed.data);
+    await valuePropRepository.delete(idParsed.data);
     revalidateValueProps();
     return { success: true };
   } catch (err) {
