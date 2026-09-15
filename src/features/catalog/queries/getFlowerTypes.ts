@@ -1,10 +1,10 @@
 import { unstable_cache } from 'next/cache';
 
-import { listFlowerTypes } from '@/lib/appwrite/repositories/taxonomy';
+import { taxonomyRepository } from '@/lib/database/repositories/taxonomy';
 
 const getCachedFlowerTypes = unstable_cache(
   async () => {
-    const rows = await listFlowerTypes();
+    const rows = await taxonomyRepository.listFlowerTypes();
     return rows.map(({ name }) => ({ name }));
   },
   ['catalog-flower-types'],

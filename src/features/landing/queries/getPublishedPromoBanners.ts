@@ -1,9 +1,13 @@
 import { unstable_cache } from 'next/cache';
 
 import { getSiteSettings } from '@/features/settings/queries/getSiteSettings';
-import { listPromoBanners } from '@/lib/appwrite/repositories/promoBanners';
+import { type PromoBanner, promoBannerRepository } from '@/lib/database/repositories/promoBanners';
 import { isPublished } from '@/lib/publishing';
 import { defaultWhatsappHref, type SiteSettings } from '@/lib/siteSettings';
+
+function isBannerPublished(banner: PromoBanner, now: Date): boolean {
+  return isPublished({ ends_at: banner.endsAt, is_active: banner.isActive, starts_at: banner.startsAt }, now);
+}
 
 export interface PromoBannerView {
   contentPosition: 'top' | 'bottom';
@@ -19,16 +23,12 @@ export interface PromoBannerView {
   imageSrc: string;
 }
 
-function resolvePromoCta(banner: {
-  cta_external: boolean;
-  cta_href: string;
-  cta_label: string;
-}): PromoBannerView['cta'] {
+function resolvePromoCta(banner: Pick<PromoBanner, 'ctaExternal' | 'ctaHref' | 'ctaLabel'>): PromoBannerView['cta'] {
   return {
-    external: banner.cta_external,
-    href: banner.cta_href,
-    label: banner.cta_label,
-    variant: banner.cta_href.includes('wa.me') ? 'whatsapp' : 'primary',
+    external: banner.ctaExternal,
+    href: banner.ctaHref,
+    label: banner.ctaLabel,
+    variant: banner.ctaHref.includes('wa.me') ? 'whatsapp' : 'primary',
   };
 }
 
@@ -73,18 +73,18 @@ type CachedPromoState =
 
 const getCachedPromoState = unstable_cache(
   async (): Promise<CachedPromoState> => {
-    const banners = await listPromoBanners();
+    const banners = await promoBannerRepository.list();
     const now = new Date();
-    const published = banners.filter((banner) => isPublished(banner, now));
+    const published = banners.filter((banner) => isBannerPublished(banner, now));
     if (published.length > 0) {
       return {
         banners: published.map((banner) => ({
-          contentPosition: banner.content_position,
+          contentPosition: banner.contentPosition,
           cta: resolvePromoCta(banner),
           description: banner.description,
           heading: banner.title,
           id: banner.id,
-          imageSrc: banner.image_url,
+          imageSrc: banner.imageUrl,
         })),
         status: 'published',
       };

@@ -30,7 +30,7 @@ export default async function NuevoTestimonioPage({ searchParams }: NuevoTestimo
   };
   const activeCount = testimonials.length === 0
     ? FALLBACK_TESTIMONIALS.length
-    : testimonials.filter((item) => item.is_active).length;
+    : testimonials.filter((item) => item.isActive).length;
   const allowActivate = initial.isActive || activeCount < HOME_TESTIMONIAL_LIMIT;
 
   return (

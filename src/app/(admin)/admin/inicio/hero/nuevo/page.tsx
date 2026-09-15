@@ -17,7 +17,7 @@ export default async function NuevoHeroSlidePage() {
     getPublishedHeroSlide(),
     getSiteSettings(),
   ]);
-  const allowHide = slides.some((slide) => slide.is_active);
+  const allowHide = slides.some((slide) => slide.isActive);
   const initial = {
     ...draftFromLive(liveHero ?? fallbackHeroSlide(settings)),
     isActive: slides.length === 0,

@@ -34,7 +34,7 @@ export default async function EditarPromoBannerPage({ params }: EditarPromoBanne
   const banner = members.find((item) => item.id === id) ?? members[0];
   if (!banner) notFound();
   const allowHide = banners.some((item) => (
-    item.is_active && promoPresetKey(item) !== promoPresetKey(banner)
+    item.isActive && promoPresetKey(item) !== promoPresetKey(banner)
   ));
   const sibling = members.find((item) => item.id !== banner.id);
 

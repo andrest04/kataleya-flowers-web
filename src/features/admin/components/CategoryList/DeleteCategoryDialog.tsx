@@ -3,7 +3,7 @@
 import type React from 'react';
 
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
-import type { CategoryRow } from '@/lib/db/rows';
+import type { Category } from '@/lib/database/repositories/categories';
 
 import DeleteModeOption from './DeleteModeOption';
 import type { DeleteMode, DeleteTarget } from './useCategoryDelete';
@@ -14,7 +14,7 @@ interface DeleteCategoryDialogProps {
   reassignTo: string;
   showCascadeConfirm: boolean;
   isDeleting: boolean;
-  candidates: CategoryRow[];
+  candidates: Category[];
   onSelectMode: (mode: DeleteMode) => void;
   onSelectReassignTarget: (id: string) => void;
   onConfirm: () => void;

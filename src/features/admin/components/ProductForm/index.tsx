@@ -2,8 +2,8 @@
 
 import Button from '@/components/ui/Button';
 import { FormError } from '@/components/ui/FormField';
-import type { AdminProductRow } from '@/features/admin/queries/products';
-import type { CategoryRow } from '@/lib/db/rows';
+import type { Category } from '@/lib/database/repositories/categories';
+import type { Product } from '@/lib/database/repositories/products';
 
 import ColorManager, { type ColorOption } from './ColorManager';
 import FlowerTypeManager from './FlowerTypeManager';
@@ -20,8 +20,8 @@ interface FlowerTypeOption {
 }
 
 interface ProductFormProps {
-  product?: AdminProductRow;
-  categories: CategoryRow[];
+  product?: Product;
+  categories: Category[];
   flowerTypes: FlowerTypeOption[];
   productColors: ColorOption[];
   onSuccess?: () => void;

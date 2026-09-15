@@ -10,9 +10,9 @@ import {
   requireAdmin,
 } from '@/features/admin/utils/auth';
 import {
+  siteSettingsRepository,
   type SiteSettingsWritePayload,
-  upsertSiteSettingsDocument,
-} from '@/lib/appwrite/repositories/siteSettings';
+} from '@/lib/database/repositories/siteSettings';
 import {
   extractMapsCandidate,
   isAllowedMapsHost,
@@ -156,7 +156,7 @@ export async function saveSiteSettings(data: unknown): Promise<SiteSettingsActio
       if (!embedUrl) return mapsLinkFailure();
       value.mapsEmbedUrl = embedUrl;
     }
-    await upsertSiteSettingsDocument(toWritePayload(value));
+    await siteSettingsRepository.upsert(toWritePayload(value));
     revalidateSiteSettings();
     return { success: true, mapsEmbedUrl: value.mapsEmbedUrl };
   } catch (err) {

@@ -18,7 +18,7 @@ import DragHandle from '@/components/ui/SortableList/DragHandle';
 import SortableItem from '@/components/ui/SortableList/SortableItem';
 import ToggleSwitch from '@/components/ui/ToggleSwitch';
 import { deleteDiscoverTile, toggleDiscoverTileStatus } from '@/features/admin/actions/discoverTiles';
-import type { DiscoverTileRow } from '@/lib/db/rows';
+import type { DiscoverTile } from '@/lib/database/repositories/discoverTiles';
 import {
   HOME_DISCOVER_TILE_LIMIT,
   HOME_DISCOVER_TILE_LIMIT_COPY,
@@ -33,8 +33,21 @@ interface LiveDiscoverTileItem {
   title: string;
 }
 
+function isTilePublished(item: DiscoverTile, now: Date): boolean {
+  return isPublished({ ends_at: item.endsAt, is_active: item.isActive, starts_at: item.startsAt }, now);
+}
+
+function TileText({ title, description }: { title: string; description: string }) {
+  return (
+    <div className="min-w-0 flex-1">
+      <p className="truncate font-medium text-(--color-dark)">{title}</p>
+      <p className="truncate text-xs text-(--color-muted)">{description}</p>
+    </div>
+  );
+}
+
 interface DiscoverTileListProps {
-  items: DiscoverTileRow[];
+  items: DiscoverTile[];
   liveItems: LiveDiscoverTileItem[];
 }
 
@@ -44,7 +57,7 @@ export default function DiscoverTileList({
 }: DiscoverTileListProps) {
   const router = useRouter();
   const [items, setItems] = useState(initialItems);
-  const [pendingDelete, setPendingDelete] = useState<DiscoverTileRow | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<DiscoverTile | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [togglingId, setTogglingId] = useState<string | null>(null);
   const rows = items.length > 0 || initialItems.length === 0 ? items : initialItems;
@@ -59,7 +72,7 @@ export default function DiscoverTileList({
       const byId = new Map(source.map((item) => [item.id, item]));
       const reordered = orderedIds
         .map((id) => byId.get(id))
-        .filter((item): item is DiscoverTileRow => item !== undefined);
+        .filter((item): item is DiscoverTile => item !== undefined);
       return reordered.length === source.length ? reordered : source;
     });
   }
@@ -69,7 +82,7 @@ export default function DiscoverTileList({
   async function handleToggle(id: string, isActive: boolean) {
     const previous = rows;
     setItems(
-      rows.map((item) => (item.id === id ? { ...item, is_active: isActive } : item)),
+      rows.map((item) => (item.id === id ? { ...item, isActive } : item)),
     );
     const result = await toggleDiscoverTileStatus(id, isActive);
     if (!result.success) {
@@ -127,10 +140,7 @@ export default function DiscoverTileList({
             className="flex items-center gap-3 rounded-xl border border-(--color-border) bg-(--color-white) p-3"
           >
             <span className="size-8 shrink-0" aria-hidden="true" />
-            <div className="min-w-0 flex-1">
-              <p className="truncate font-medium text-(--color-dark)">{item.title}</p>
-              <p className="truncate text-xs text-(--color-muted)">{item.description}</p>
-            </div>
+            <TileText title={item.title} description={item.description} />
             <ToggleSwitch
               checked
               disabled={togglingId !== null}
@@ -150,8 +160,8 @@ export default function DiscoverTileList({
   }
 
   const now = new Date();
-  const hasVisible = rows.some((item) => isPublished(item, now));
-  const activeCount = rows.filter((item) => item.is_active).length;
+  const hasVisible = rows.some((item) => isTilePublished(item, now));
+  const activeCount = rows.filter((item) => item.isActive).length;
   const atLimit = activeCount >= HOME_DISCOVER_TILE_LIMIT;
 
   return (
@@ -171,11 +181,11 @@ export default function DiscoverTileList({
             {rows.map((item) => (
               <SortableItem key={item.id} id={item.id}>
                 {({ dragHandleProps, isDragging, setNodeRef, style }) => {
-                  const limited = !item.is_active && atLimit;
-                  const label = `${item.is_active ? 'Ocultar' : 'Mostrar'} ${item.title}`;
+                  const limited = !item.isActive && atLimit;
+                  const label = `${item.isActive ? 'Ocultar' : 'Mostrar'} ${item.title}`;
                   const toggle = (
                     <ToggleSwitch
-                      checked={item.is_active}
+                      checked={item.isActive}
                       disabled={isDragging || limited}
                       label={limited ? `${label}. ${HOME_DISCOVER_TILE_LIMIT_COPY}` : label}
                       onChange={(checked) => void handleToggle(item.id, checked)}
@@ -186,14 +196,11 @@ export default function DiscoverTileList({
                       ref={setNodeRef as Ref<HTMLLIElement>}
                       style={style}
                       className={`flex items-center gap-3 rounded-xl border border-(--color-border) bg-(--color-white) p-3 ${
-                        isPublished(item, now) ? '' : 'opacity-60'
+                        isTilePublished(item, now) ? '' : 'opacity-60'
                       }`}
                     >
                       <DragHandle handleProps={dragHandleProps} label={item.title} />
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate font-medium text-(--color-dark)">{item.title}</p>
-                        <p className="truncate text-xs text-(--color-muted)">{item.description}</p>
-                      </div>
+                      <TileText title={item.title} description={item.description} />
                       {limited ? (
                         <Tooltip>
                           <TooltipTrigger asChild>

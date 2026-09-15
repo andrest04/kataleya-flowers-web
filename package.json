@@ -10,6 +10,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "lint:strict": "eslint . --max-warnings 0",
+    "test": "vitest run",
     "test:e2e": "npx playwright test",
     "doctor": "npx react-doctor@latest"
   },
@@ -20,6 +21,7 @@
     "@dnd-kit/utilities": "^3.2.2",
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
+    "botid": "^1.5.11",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "framer-motion": "^12.36.0",
@@ -58,6 +60,8 @@
     "shadcn": "^4.1.2",
     "tailwindcss": "^4",
     "typescript": "^5",
-    "typescript-eslint": "^8.57.1"
+    "typescript-eslint": "^8.57.1",
+    "vite-tsconfig-paths": "^6.1.1",
+    "vitest": "^4.1.11"
   }
 }
