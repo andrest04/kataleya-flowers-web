@@ -70,10 +70,6 @@ export async function deletePromoPresetDocuments(
   key: string,
 ): Promise<string[]> {
   const members = await listPromoBannersByPreset(repository, key);
-  const imageUrls: string[] = [];
-  for (const banner of members) {
-    const imageUrl = await repository.delete(banner.id);
-    if (imageUrl) imageUrls.push(imageUrl);
-  }
-  return imageUrls;
+  const imageUrls = await Promise.all(members.map((banner) => repository.delete(banner.id)));
+  return imageUrls.filter((imageUrl): imageUrl is string => imageUrl !== null);
 }

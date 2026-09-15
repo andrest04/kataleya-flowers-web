@@ -123,14 +123,15 @@ async function seedFallbackDocuments(
   replacement?: ValuePropWritePayload,
 ): Promise<void> {
   const fallbacks = fallbackValueProps(await getSiteSettings());
-  for (const [index, item] of fallbacks.entries()) {
-    const displayOrder = index + 1;
-    if (exceptId && item.id === exceptId && replacement) {
-      await valuePropRepository.create({ ...replacement, displayOrder });
-      continue;
-    }
-    await valuePropRepository.create(await payloadFromFallback(item, displayOrder));
-  }
+  await Promise.all(
+    fallbacks.map(async (item, index) => {
+      const displayOrder = index + 1;
+      if (exceptId && item.id === exceptId && replacement) {
+        return valuePropRepository.create({ ...replacement, displayOrder });
+      }
+      return valuePropRepository.create(await payloadFromFallback(item, displayOrder));
+    }),
+  );
 }
 
 export async function createValueProp(data: unknown): Promise<ValuePropActionResult> {
