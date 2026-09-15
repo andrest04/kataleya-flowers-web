@@ -1,6 +1,6 @@
 'use client';
 
-import Image from '@/components/ui/AppwriteImage';
+import Image from '@/components/ui/StoredImage';
 import type { Category } from '@/lib/database/repositories/categories';
 
 interface CategoryRowImageProps {

@@ -13,6 +13,8 @@ export interface ImageStorageProvider {
   deleteMany(urls: string[]): Promise<void>;
 
   isOwnedUrl(url: string): boolean;
+
+  isOwnedUrlInFolder(url: string, folder: AllowedImageFolder): boolean;
 }
 
 export const ALLOWED_IMAGE_FOLDERS: readonly AllowedImageFolder[] = ['productos', 'categorias', 'contenido'];

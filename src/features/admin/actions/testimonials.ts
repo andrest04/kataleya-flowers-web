@@ -14,13 +14,11 @@ import {
   FALLBACK_TESTIMONIALS,
   type TestimonialView,
 } from '@/features/landing/queries/getPublishedTestimonials';
-import { APPWRITE_BUCKETS } from '@/lib/appwrite/config';
 import {
   testimonialRepository,
   type TestimonialWritePayload,
 } from '@/lib/database/repositories/testimonials';
 import { imageStorage } from '@/lib/imageStorage';
-import { parseAppwriteStorageUrl } from '@/lib/imageStorage/urlValidation';
 import {
   HOME_TESTIMONIAL_LIMIT,
   HOME_TESTIMONIAL_LIMIT_COPY,
@@ -32,10 +30,6 @@ function revalidateHomeContent(): void {
   revalidatePath('/');
   revalidatePath('/admin/inicio');
   updateTag('home-content');
-}
-
-function isContentImage(url: string): boolean {
-  return parseAppwriteStorageUrl(url)?.bucketId === APPWRITE_BUCKETS.content;
 }
 
 async function ensureStoredTestimonialImage(url: string): Promise<string | AdminActionFailure> {
@@ -280,7 +274,7 @@ export async function deleteTestimonial(id: string): Promise<TestimonialActionRe
       return { success: false, error: 'No encontramos ese testimonio.', code: 'INTERNAL' };
     }
     const imageUrl = await testimonialRepository.delete(idParsed.data);
-    if (imageUrl && isContentImage(imageUrl)) void imageStorage.delete(imageUrl);
+    if (imageUrl && imageStorage.isOwnedUrlInFolder(imageUrl, 'contenido')) void imageStorage.delete(imageUrl);
     revalidateHomeContent();
     return { success: true };
   } catch (err) {

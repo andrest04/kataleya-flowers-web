@@ -5,7 +5,7 @@ import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { Dialog as DialogPrimitive } from 'radix-ui';
 import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react';
 
-import Image from '@/components/ui/AppwriteImage';
+import Image from '@/components/ui/StoredImage';
 
 interface LightboxDialogProps {
   open: boolean;

@@ -4,8 +4,9 @@ import { InputFile } from 'node-appwrite/file';
 import { createAdminClient } from '@/lib/appwrite/admin';
 import { APPWRITE_BUCKETS, getAppwriteConfig } from '@/lib/appwrite/config';
 
+import { isOwnedStorageUrl, isOwnedStorageUrlInFolder } from './ownership';
 import type { AllowedImageFolder, ImageStorageProvider } from './types';
-import { isAppwriteStorageUrl, parseAppwriteStorageUrl } from './urlValidation';
+import { parseAppwriteStorageUrl } from './urlValidation';
 
 const FOLDER_BUCKETS: Record<AllowedImageFolder, string> = {
   categorias: APPWRITE_BUCKETS.categories,
@@ -54,7 +55,11 @@ class AppwriteImageStorageProvider implements ImageStorageProvider {
   }
 
   isOwnedUrl(url: string): boolean {
-    return isAppwriteStorageUrl(url);
+    return isOwnedStorageUrl(url);
+  }
+
+  isOwnedUrlInFolder(url: string, folder: AllowedImageFolder): boolean {
+    return isOwnedStorageUrlInFolder(url, folder);
   }
 }
 

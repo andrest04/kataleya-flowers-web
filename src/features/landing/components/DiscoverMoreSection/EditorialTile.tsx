@@ -2,7 +2,7 @@ import type { LucideIcon } from 'lucide-react';
 import Link from 'next/link';
 import { type ReactNode } from 'react';
 
-import Image from '@/components/ui/AppwriteImage';
+import Image from '@/components/ui/StoredImage';
 
 interface EditorialTileProps {
   readonly cover?: ReactNode;

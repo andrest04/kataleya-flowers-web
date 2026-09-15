@@ -1,6 +1,6 @@
 'use client';
 
-import Image from '@/components/ui/AppwriteImage';
+import Image from '@/components/ui/StoredImage';
 import type { AdminProductListRow } from '@/features/admin/queries/products';
 
 interface ProductTableImageProps {
