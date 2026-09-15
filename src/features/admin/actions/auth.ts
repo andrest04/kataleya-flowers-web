@@ -1,16 +1,14 @@
 'use server';
 
 import { redirect } from 'next/navigation';
-import { AppwriteException } from 'node-appwrite';
 import { z } from 'zod';
 
-import { createAdminClient } from '@/lib/appwrite/admin';
 import {
   deleteSessionCookie,
   getSessionCookie,
   setSessionCookie,
 } from '@/lib/appwrite/cookies';
-import { createSessionClient } from '@/lib/appwrite/session';
+import { authProvider } from '@/lib/auth';
 
 const loginInputSchema = z.object({
   email: z.string().trim().email('Email inválido'),
@@ -41,42 +39,19 @@ export async function loginAction(input: LoginInput): Promise<LoginResult> {
     };
   }
 
-  try {
-    const { account } = createAdminClient();
-    const session = await account.createEmailPasswordSession({
-      email: parsed.data.email,
-      password: parsed.data.password,
-    });
-    await setSessionCookie(session.secret, session.expire);
-    return { ok: true };
-  } catch (err) {
-    if (err instanceof AppwriteException) {
-      if (err.code === 401) {
-        return {
-          ok: false,
-          code: 'INVALID_CREDENTIALS',
-          error: 'Credenciales incorrectas. Intenta de nuevo.',
-        };
-      }
-    }
-    console.error('[auth/login] appwrite error:', err);
-    return {
-      ok: false,
-      code: 'INTERNAL',
-      error: 'No se pudo iniciar sesión. Intenta de nuevo.',
-    };
+  const result = await authProvider.login(parsed.data.email, parsed.data.password);
+  if (!result.ok) {
+    return { ok: false, code: result.code, error: result.message };
   }
+
+  await setSessionCookie(result.session.secret, result.session.expiresAt);
+  return { ok: true };
 }
 
 export async function logoutAction(): Promise<void> {
   const sessionSecret = await getSessionCookie();
   if (sessionSecret) {
-    try {
-      const { account } = createSessionClient(sessionSecret);
-      await account.deleteSession({ sessionId: 'current' });
-    } catch (err) {
-      console.error('[auth/logout] appwrite session delete error:', err);
-    }
+    await authProvider.logout(sessionSecret);
   }
 
   await deleteSessionCookie();
