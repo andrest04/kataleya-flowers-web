@@ -11,11 +11,7 @@ import {
   failureFromUnknown,
   requireAdmin,
 } from '@/features/admin/utils/auth';
-import {
-  deleteColorAppwrite,
-  getColorUsage,
-  renameColorAppwrite,
-} from '@/lib/appwrite/repositories/taxonomy';
+import { taxonomyRepository } from '@/lib/database/repositories/taxonomy';
 import { BASE_REVALIDATE_PATHS } from '@/lib/revalidation';
 
 interface SuccessResult {
@@ -37,7 +33,7 @@ export async function deleteProductColor(name: string): Promise<ColorActionResul
       };
     }
 
-    const usage = await getColorUsage(parsed.data.name);
+    const usage = await taxonomyRepository.getColorUsage(parsed.data.name);
     if (usage.length > 0) {
       return {
         success: false,
@@ -46,7 +42,7 @@ export async function deleteProductColor(name: string): Promise<ColorActionResul
       };
     }
 
-    await deleteColorAppwrite(parsed.data.name);
+    await taxonomyRepository.deleteColor(parsed.data.name);
 
     BASE_REVALIDATE_PATHS.forEach((path) => revalidatePath(path));
     updateTag('catalog-colors');
@@ -73,7 +69,7 @@ export async function renameProductColor(
       };
     }
 
-    const result = await renameColorAppwrite(parsed.data.oldName, parsed.data.newName);
+    const result = await taxonomyRepository.renameColor(parsed.data.oldName, parsed.data.newName);
     if (result === 'duplicate') {
       return {
         success: false,
