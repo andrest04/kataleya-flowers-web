@@ -1,5 +1,6 @@
 import "./globals.css";
 
+import { GoogleAnalytics } from "@next/third-parties/google";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata, Viewport } from "next";
@@ -18,6 +19,8 @@ const crimsonText = Crimson_Text({
   display: "swap",
   variable: "--font-heading",
 });
+
+const GA_MEASUREMENT_ID = "G-YDFWMY50NN";
 
 const mulish = Mulish({
   subsets: ["latin"],
@@ -115,6 +118,7 @@ export default async function RootLayout({
         <Analytics />
         <SpeedInsights />
       </body>
+      <GoogleAnalytics gaId={GA_MEASUREMENT_ID} />
     </html>
   );
 }
