@@ -1,7 +1,7 @@
 import { Star } from 'lucide-react';
 import { type ReactNode } from 'react';
 
-import Image from '@/components/ui/AppwriteImage';
+import Image from '@/components/ui/StoredImage';
 import type { TestimonialView } from '@/features/landing/queries/getPublishedTestimonials';
 
 interface TestimonialPhoto {

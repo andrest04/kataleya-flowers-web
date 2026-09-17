@@ -3,8 +3,8 @@
 import { usePathname, useRouter } from 'next/navigation';
 import { useMemo, useState, useSyncExternalStore } from 'react';
 
-import Image from '@/components/ui/AppwriteImage';
 import Button from '@/components/ui/Button';
+import Image from '@/components/ui/StoredImage';
 import type { Product } from '@/features/catalog/types';
 import { interpolateProductMessage, whatsappWithMessage } from '@/lib/contactLinks';
 import { cn } from '@/lib/utils';

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { FaInstagram, FaWhatsapp } from "react-icons/fa";
 
 import FooterAnchorLink from "@/components/shared/FooterAnchorLink";
-import Image from '@/components/ui/AppwriteImage';
+import Image from '@/components/ui/StoredImage';
 import { getCategories } from "@/features/catalog/queries/getCategories";
 import { whatsappWithMessage } from "@/lib/contactLinks";
 import { allNavLinks } from "@/lib/navigation";

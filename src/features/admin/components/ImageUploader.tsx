@@ -2,7 +2,7 @@
 
 import { useCallback, useRef, useState } from 'react';
 
-import Image from '@/components/ui/AppwriteImage';
+import Image from '@/components/ui/StoredImage';
 import { useImageUpload } from '@/features/admin/hooks/useImageUpload';
 
 interface BaseProps {
