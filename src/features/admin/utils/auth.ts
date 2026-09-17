@@ -1,9 +1,14 @@
+import { redirect } from 'next/navigation';
 import type { ZodIssue, ZodSchema } from 'zod';
 
-import type { AppwriteAdminActionContext } from './auth.appwrite';
-import { requireAdminAppwrite } from './auth.appwrite';
+import type { AuthUser } from '@/lib/auth';
+import { auth, AuthError } from '@/lib/auth';
 
-export type { AppwriteAdminActionContext };
+export { AuthError as AdminAuthError };
+
+export interface AdminActionContext {
+  user: AuthUser;
+}
 
 export interface AdminActionFailure {
   success: false;
@@ -21,21 +26,24 @@ export type AdminActionResult<T = undefined> =
   | AdminActionSuccess<T>
   | AdminActionFailure;
 
-export class AdminAuthError extends Error {
-  public readonly code: 'UNAUTHENTICATED' | 'FORBIDDEN';
-  constructor(code: 'UNAUTHENTICATED' | 'FORBIDDEN', message: string) {
-    super(message);
-    this.code = code;
-    this.name = 'AdminAuthError';
+export async function requireAdmin(): Promise<AdminActionContext> {
+  const user = await auth.requireAdmin();
+  return { user };
+}
+
+export async function requireAdminOrRedirect(): Promise<AdminActionContext> {
+  try {
+    return await requireAdmin();
+  } catch (err) {
+    if (err instanceof AuthError) {
+      redirect(err.code === 'FORBIDDEN' ? '/login?error=forbidden' : '/login');
+    }
+    throw err;
   }
 }
 
-export async function requireAdmin(): Promise<AppwriteAdminActionContext> {
-  return requireAdminAppwrite();
-}
-
 export function failureFromUnknown(err: unknown): AdminActionFailure {
-  if (err instanceof AdminAuthError) {
+  if (err instanceof AuthError) {
     return {
       success: false,
       error:
@@ -57,10 +65,10 @@ export function withAdminAuth<TInput, TOutput extends { success: boolean }>(
   schema: ZodSchema<TInput> | null,
 ) {
   return function bind(
-    fn: (input: TInput, ctx: AppwriteAdminActionContext) => Promise<TOutput>,
+    fn: (input: TInput, ctx: AdminActionContext) => Promise<TOutput>,
   ): (input: unknown) => Promise<TOutput | AdminActionFailure> {
     return async (rawInput: unknown) => {
-      let ctx: AppwriteAdminActionContext;
+      let ctx: AdminActionContext;
       try {
         ctx = await requireAdmin();
       } catch (err) {

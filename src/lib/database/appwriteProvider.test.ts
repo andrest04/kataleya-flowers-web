@@ -18,7 +18,17 @@ const mocks = vi.hoisted(() => ({
   createOperations: vi.fn(),
 }));
 
+class MockAppwriteException extends Error {
+  code: number;
+
+  constructor(message: string, code: number) {
+    super(message);
+    this.code = code;
+  }
+}
+
 vi.mock('node-appwrite', () => ({
+  AppwriteException: MockAppwriteException,
   ID: { custom: mocks.idCustom },
   Query: {
     equal: mocks.queryEqual,
@@ -49,6 +59,7 @@ vi.mock('@/lib/appwrite/config', () => ({
   getAppwriteConfig: () => ({ databaseId: 'test-db' }),
 }));
 
+const { ConflictError } = await import('./errors');
 const { appwriteDocumentStore } = await import('./appwriteProvider');
 
 function appwriteDoc(overrides: Record<string, unknown>) {
@@ -212,6 +223,21 @@ describe('appwriteDocumentStore.create', () => {
     });
     expect(result).toMatchObject({ id: 'new-id', name: 'Rose' });
   });
+
+  it('maps Appwrite 409 to ConflictError', async () => {
+    mocks.createDocument.mockRejectedValueOnce(new MockAppwriteException('conflict', 409));
+
+    await expect(appwriteDocumentStore.create('widgets', 'new-id', { name: 'Rose' })).rejects.toBeInstanceOf(
+      ConflictError,
+    );
+  });
+
+  it('rethrows non-409 Appwrite errors unchanged', async () => {
+    const failure = new MockAppwriteException('server error', 500);
+    mocks.createDocument.mockRejectedValueOnce(failure);
+
+    await expect(appwriteDocumentStore.create('widgets', 'new-id', { name: 'Rose' })).rejects.toBe(failure);
+  });
 });
 
 describe('appwriteDocumentStore.update', () => {
@@ -227,6 +253,14 @@ describe('appwriteDocumentStore.update', () => {
       data: { name: 'Updated' },
     });
     expect(result).toMatchObject({ id: 'doc-1', name: 'Updated' });
+  });
+
+  it('maps Appwrite 409 to ConflictError', async () => {
+    mocks.updateDocument.mockRejectedValueOnce(new MockAppwriteException('conflict', 409));
+
+    await expect(appwriteDocumentStore.update('widgets', 'doc-1', { name: 'Updated' })).rejects.toBeInstanceOf(
+      ConflictError,
+    );
   });
 });
 
@@ -321,6 +355,28 @@ describe('appwriteDocumentStore.runInTransaction', () => {
       data: { name: 'Rose' },
     });
     expect(created).toMatchObject({ id: 'new-id', name: 'Rose' });
+  });
+
+  it('maps transaction create 409 to ConflictError and rolls back', async () => {
+    mocks.createTransaction.mockResolvedValueOnce({ $id: 'tx-1' });
+    mocks.createDocument.mockRejectedValueOnce(new MockAppwriteException('conflict', 409));
+
+    await expect(
+      appwriteDocumentStore.runInTransaction((tx) => tx.create('widgets', 'new-id', { name: 'Rose' })),
+    ).rejects.toBeInstanceOf(ConflictError);
+
+    expect(mocks.updateTransaction).toHaveBeenCalledWith({ transactionId: 'tx-1', rollback: true });
+  });
+
+  it('maps transaction update 409 to ConflictError and rolls back', async () => {
+    mocks.createTransaction.mockResolvedValueOnce({ $id: 'tx-1' });
+    mocks.updateDocument.mockRejectedValueOnce(new MockAppwriteException('conflict', 409));
+
+    await expect(
+      appwriteDocumentStore.runInTransaction((tx) => tx.update('widgets', 'doc-1', { name: 'Updated' })),
+    ).rejects.toBeInstanceOf(ConflictError);
+
+    expect(mocks.updateTransaction).toHaveBeenCalledWith({ transactionId: 'tx-1', rollback: true });
   });
 
   it('exposes an update handle scoped to the transaction', async () => {

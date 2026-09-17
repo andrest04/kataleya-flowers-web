@@ -1,29 +1,12 @@
-import { redirect } from 'next/navigation';
-
 import AdminSidebar from '@/features/admin/components/AdminSidebar';
-import { isAdminUserAppwrite } from '@/features/admin/utils/adminMembership.appwrite';
-import { getUser } from '@/lib/appwrite/account';
-import { getSessionCookie } from '@/lib/appwrite/cookies';
+import { requireAdminOrRedirect } from '@/features/admin/utils/auth';
 
 export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const sessionSecret = await getSessionCookie();
-  if (!sessionSecret) {
-    redirect('/login');
-  }
-
-  const user = await getUser(sessionSecret);
-  if (!user) {
-    redirect('/login');
-  }
-
-  const isAdmin = await isAdminUserAppwrite(user.$id);
-  if (!isAdmin) {
-    redirect('/login?error=forbidden');
-  }
+  await requireAdminOrRedirect();
 
   return (
     <div className="flex min-h-screen" style={{ background: 'var(--color-cream)' }}>

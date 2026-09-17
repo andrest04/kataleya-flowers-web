@@ -4,7 +4,7 @@ import { Camera, Pencil, X } from 'lucide-react';
 import { Dialog as DialogPrimitive } from 'radix-ui';
 import { type ChangeEvent, useRef, useState } from 'react';
 
-import Image from '@/components/ui/AppwriteImage';
+import Image from '@/components/ui/StoredImage';
 
 import { sourceUrlForCrop } from './crop';
 import CropStage from './CropStage';

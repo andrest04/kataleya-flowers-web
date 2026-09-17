@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react';
 import { preconnect } from 'react-dom';
 
-import Image from '@/components/ui/AppwriteImage';
+import Image from '@/components/ui/StoredImage';
 
 import { HERO_IMAGE_CLASS, HERO_SCRIM } from './frame';
 

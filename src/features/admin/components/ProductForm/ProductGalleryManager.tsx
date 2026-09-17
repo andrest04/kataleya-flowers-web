@@ -3,10 +3,10 @@
 import { Star, Trash2 } from 'lucide-react';
 import { useId } from 'react';
 
-import AppwriteImage from '@/components/ui/AppwriteImage';
 import SortableList from '@/components/ui/SortableList';
 import DragHandle from '@/components/ui/SortableList/DragHandle';
 import SortableItem from '@/components/ui/SortableList/SortableItem';
+import StoredImage from '@/components/ui/StoredImage';
 
 interface ProductGalleryManagerProps {
   altTexts: Record<string, string>;
@@ -58,7 +58,7 @@ export default function ProductGalleryManager({
                     label={`la foto ${index + 1}`}
                   />
                   <div className="relative size-16 shrink-0 overflow-hidden rounded-lg">
-                    <AppwriteImage src={url} alt="" fill sizes="64px" className="object-cover" />
+                    <StoredImage src={url} alt="" fill sizes="64px" className="object-cover" />
                     {index === 0 ? (
                       <span
                         className="absolute inset-x-0 bottom-0 py-0.5 text-center text-[10px] font-semibold uppercase"

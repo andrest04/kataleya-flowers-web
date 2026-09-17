@@ -3,8 +3,8 @@
 import { ChevronLeft, ChevronRight, ZoomIn } from 'lucide-react';
 import { useCallback, useRef, useState } from 'react';
 
-import Image from '@/components/ui/AppwriteImage';
 import LightboxDialog from '@/components/ui/LightboxDialog';
+import Image from '@/components/ui/StoredImage';
 
 interface ProductGalleryProps {
   imageUrl: string;
