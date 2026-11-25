@@ -28,7 +28,10 @@ export function useAnchorNavigation({
 
       if (!isLandingPage) {
         closeDrawer?.();
-        window.location.href = `/#${targetId}`;
+        window.location.href = new URL(
+          `/#${targetId}`,
+          window.location.origin,
+        ).href;
         return;
       }
 
