@@ -24,7 +24,7 @@
 
 **Forecast:** 32 tasks, about 7470 authored changed lines. Lockfiles are excluded.
 
-**Progress:** 10/32 done.
+**Progress:** 14/32 done.
 
 **Sources:**
 - general audit workflow `wf_68c64c39-c2f`
@@ -42,11 +42,11 @@
 - [x] **T08** Restrict admin-entered links and map embeds to safe destinations _(area security; about 340 lines; depends on T03)_, commit `1d0a5f7`
 - [x] **T09** Codify least-privilege Appwrite ACLs and the private-collection schema in the provisioning scripts _(area security; about 220 lines; depends on T04, T06)_, commit `1c9967b`
 - [x] **T10** Fix lint:strict errors in e2e specs and the stale production host in SEO guard tests _(area tests; about 60 lines; depends on T02)_, commit `0ff92db`
-- [ ] **T11** Add a CI gate (lint, typecheck, unit tests) with a test that every admin Server Action enforces auth, and pin the workflow supply chain _(area tests; about 230 lines; depends on T02, T10)_
-- [ ] **T12** Remove binding-convention violations: the eslint-disable, production comments and the 550-line CatalogFilterSheet _(area conventions; about 640 lines; depends on T06, T11)_
-- [ ] **T13** Load analytics only on public production pages, allow GA in the CSP, and move Toaster to the admin layout _(area performance; about 70 lines; depends on T12; approved flags: layout.tsx)_
-- [ ] **T14** Prerender catalog pages, sync filters with history.replaceState, and render every product link in server HTML _(area performance; about 300 lines; depends on T07, T12; approved flags: design-change)_
-- [ ] **T15** Send slim card DTOs to client components and compute best sellers on the server _(area performance; about 280 lines; depends on T14)_
+- [x] **T11** Add a CI gate (lint, typecheck, unit tests) with a test that every admin Server Action enforces auth, and pin the workflow supply chain _(area tests; about 230 lines; depends on T02, T10)_, commit `8945c9d`
+- [x] **T12** Remove binding-convention violations: the eslint-disable, production comments and the 550-line CatalogFilterSheet _(area conventions; about 640 lines; depends on T06, T11)_, commit `363662a`
+- [x] **T13** Load analytics only on public production pages, allow GA in the CSP, and move Toaster to the admin layout _(area performance; about 70 lines; depends on T12; approved flags: layout.tsx)_, commit `ca70147`
+- [x] **T14** Prerender catalog pages, sync filters with history.replaceState, and render every product link in server HTML _(area performance; about 300 lines; depends on T07, T12; approved flags: design-change)_, commit `f5011ff`
+- [ ] **T15** Send slim card DTOs to client components and compute best sellers on the server _(area performance; about 280 lines; depends on T14)_, commit `a1bd5a1`, **in_progress**: partial: navbar suggestions still send full Product; completing with extended surface
 - [ ] **T16** Lazy-load navbar overlays and load Framer Motion features asynchronously _(area performance; about 90 lines; depends on T13)_
 - [ ] **T17** Route local public images through the built-in optimizer instead of the passthrough loader _(area performance; about 40 lines; depends on T03)_
 - [ ] **T18** Remove /login and /buscar from the sitemap, noindex login, admin and query-bearing /buscar, and use real lastModified dates _(area seo; about 130 lines; depends on T10, T13, T15; approved flags: layout.tsx)_
@@ -462,6 +462,13 @@
 
 **Commit:** `ci: add lint, typecheck and unit test gate with pinned actions`
 
+**Evidence:** Guard test: no meaningful RED on arrival, because every action already calls requireAdmin. As planned, it went GREEN on first run: 95/95. That is 1 discovery test plus 47 exported actions × 2 auth codes.
+
+Fault injection (each change reverted with git checkout, nothing committed):
+(1) Removed `await | checks: npm run lint:strict: exit 0, no errors or warnings. The first run flagged 2 error; npx tsc --noEmit: exit 0, no output; npx vitest run: 47 files passed, 646 tests passed, exit 0; rg -n "@v[0-9]|@latest": no matches (exit 1): no unpinned action or tool; python yaml.safe_load structural: Both files parse. Top-level permissions are {} in both. ci.y; actionlint: not installed; skipped | verifier pass, tier high | deploy: - Owner: after merge, add a branch-protection rule on main that requires the new CI check "Lint, typecheck and unit tests" (workflow CI, job verify).
+- Pinned action SHAs and react-doctor 0.9.23 need periodic manual bumps.
+- The workflows prove themselves on their first run.
+
 ### T12: Remove binding-convention violations: the eslint-disable, production comments and the 550-line CatalogFilterSheet
 
 **Observations:**
@@ -486,6 +493,8 @@
 **Risk:** Low. Moved lines dominate the diff, which exceeds the 400-line advisory because the split is one coherent unit. The main hazard is a missed prop or type re-export.
 
 **Commit:** `refactor(catalog): split CatalogFilterSheet and drop convention violations`
+
+**Evidence:** There is no deterministic unit RED, as the test plan expected. The change is a refactor that keeps behavior the same, and vitest has no DOM environment (adding jsdom would be a new dependency). The lint gate gave real RED evidence instead. Step (1) as planned added tabCategories to the deps array an | checks: npm run lint:strict: exit 0, 0 problems (after fix; the first run with only the d; npx tsc --noEmit: exit 0, no errors; npx vitest run: 47 test files passed, 646 tests passed, exit 0; rg -n "eslint-disable": no match (exit 1); npx react-doctor@latest --verbose: Full scope: 67/100 with 22 issues on both baseline and worki | verifier pass, tier medium | deploy: None. Only code and config comments changed, with no schema, env or console changes. The header and CSP values in next.config.ts are unchanged; only the comments were removed.
 
 ### T13: Load analytics only on public production pages, allow GA in the CSP, and move Toaster to the admin layout
 
@@ -514,6 +523,8 @@
 
 **Commit:** `perf(analytics): scope analytics to public production pages`
 
+**Evidence:** No RED test: this exception matches the task's test plan. The change only moves components between layouts and adds a static CSP header, and no meaningful vitest test can render Next.js App Router layouts together or read VERCEL_ENV at render time. I ran the proportional checks instead. rg shows <To | checks: npm run lint:strict: exit 0, no warnings; npx tsc --noEmit: exit 0, no errors; npx vitest run: 47 files / 646 tests passed, exit 0; rg -n "<Toaster|GoogleAnalytics": src/app/(admin)/layout.tsx:25 <Toaster />; src/app/(public)/; npx react-doctor@latest --verbose: Score 88/100. 7 warnings, all in files changed by earlier co | verifier pass, tier medium | deploy: No deploy steps. GA now collects only when Vercel sets VERCEL_ENV=production, so dev and preview traffic stops reaching GA. The CSP stays Report-Only, and it now lists googletagmanager.com in script-src; *.google-analytics.com, *.analytics.google.com and googletagmanager.com in connect-src; and *.go
+
 ### T14: Prerender catalog pages, sync filters with history.replaceState, and render every product link in server HTML
 
 **Observations:**
@@ -525,7 +536,7 @@
 
 **Approach:** catalogo/page.tsx:62-110 and [categoria]/page.tsx:19,87-92 await searchParams only to build initialQuery. CatalogCollection.tsx:163 calls router.replace on every filter change, and :218-241 reveals 10 items at a time. (1) The pages stop reading searchParams and drop the initialQuery prop, so revalidate and generateStaticParams take effect. (2) New pure src/features/catalog/utils/catalogQuery.ts with parseCatalogQuery(search, facets) and serializeCatalogQuery(state), taking over parseList and parsePrice from CatalogCollection. (3) CatalogCollection reads location.search through useSyncExternalStore (server snapshot ''). Once the client snapshot differs, it seeds filters, sort and density with the adjust-state-during-render pattern it already uses for resetKey. It writes with window.history.replaceState(null, '', url) instead of router.replace. (4) Render every item card: drop PAGE_SIZE and the IntersectionObserver. Below-the-fold images stay loading=lazy, so every product link is crawlable. (5) Pass density-derived sizes to CatalogCollectionCard: (max-width:640px) 100vw, (max-width:1024px) 50vw, then 50vw, 33vw or 25vw for density 2, 3 or 4. (6) Replace priority with preload on the first card only, and loading='eager' on cards 2 and 3. Use preload on the main image in ProductGallery.tsx:80, and remove priority from LightboxDialog.tsx:138 and NotFoundContent.tsx:22. (7) Add overflow-x-clip (which keeps position: sticky working) on the <main> of both catalog pages.
 
-**Files:** `src/app/(public)/catalogo/page.tsx`, `src/app/(public)/catalogo/[categoria]/page.tsx`, `src/features/catalog/components/CatalogCollection.tsx`, `src/features/catalog/components/CatalogCollectionCard.tsx`, `src/features/catalog/utils/catalogQuery.ts`, `src/features/catalog/utils/catalogQuery.test.ts`, `src/features/catalog/components/ProductGallery.tsx`, `src/components/ui/LightboxDialog.tsx`, `src/components/shared/NotFoundContent.tsx`
+**Files:** `src/app/(public)/catalogo/page.tsx`, `src/app/(public)/catalogo/[categoria]/page.tsx`, `src/features/catalog/components/CatalogCollection.tsx`, `src/features/catalog/components/CatalogCollectionCard.tsx`, `src/features/catalog/utils/catalogQuery.ts`, `src/features/catalog/utils/catalogQuery.test.ts`, `src/features/catalog/components/ProductGallery.tsx`, `src/components/ui/LightboxDialog.tsx`, `src/components/shared/NotFoundContent.tsx`, `src/features/admin/components/HeroCanvasEditor/Canvas.tsx`
 
 **New files allowed in:** `src/features/catalog/utils`
 
@@ -544,14 +555,16 @@
 
 **Commit:** `perf(catalog): prerender catalog pages and sync filters client-side`
 
+**Evidence:** RED: I wrote src/features/catalog/utils/catalogQuery.test.ts first (13 tests: parse defaults, all params, no leading '?', unknown category/color/type dropped, NaN price + unknown sort + density 5 fall back to defaults, clamping to [0, maximumPrice], serialize default -> '', round trip, unrelated par | checks: npm run lint:strict: exit 0, no warnings (the first run flagged simple-import-sor; npx tsc --noEmit: exit 0; npx vitest run: 48 files, 659 tests passed; rg -n "\bpriority\b": no matches (exit 1); npx react-doctor@latest --verbose: Same 7 warnings in the same 6 files before and after, and di | verifier pass, tier medium | surface extended: 1) `initialQuery` stays on CatalogCollection as an optional prop and seeds state on the server, instead of being deleted | deploy: No schema or console change is needed. /catalogo and /catalogo/[categoria] should now prerender as ISR (revalidate 3600 plus generateStaticParams). I did not confirm this because no local build ran. Known risk: a deep link with filters renders unfiltered HTML first and applies the filters on the cli
+
 ### T15: Send slim card DTOs to client components and compute best sellers on the server
 
 **Observations:**
 - GEN:performance:Landing page sends the whole product catalog to a client component that shows 4 cards
 
-**Approach:** BestSellersSection/index.tsx:11,28-32 passes every Product to the client BestSellersTabs, which runs pickBestSellers (max 4) on the client. CatalogCollection also receives full Products, although the cards read only name, slug, imageUrl, price and priceTable. (1) Add a CatalogCardProduct type in src/features/catalog/types/index.ts with id, name, slug, categoryId, imageUrl, price, priceTable, colors, flowerTypes and isFeatured, plus a toCatalogCardProduct mapper. It omits description, images, includes, note and occasion. (2) BestSellersSection computes bestSellersByTab: Record<'all' | categoryId, CatalogCardProduct[]> on the server, applying pickBestSellers per tab, and passes only that map and tabCategories. BestSellersTabs only switches tabs, and BestSellerProductCard takes CatalogCardProduct. (3) The catalog pages, the /buscar page and SearchPage map items to CatalogCardProduct before they cross into CatalogCollection or CatalogCollectionCard. applySearchQuery's CatalogCollectionItem typing follows. The related-products carousel in [slug]/page.tsx also takes CatalogCardProduct.
+**Approach:** BestSellersSection/index.tsx:11,28-32 passes every Product to the client BestSellersTabs, which runs pickBestSellers (max 4) on the client. CatalogCollection also receives full Products, although the cards read only name, slug, imageUrl, price and priceTable. (1) Add a CatalogCardProduct type in src/features/catalog/types/index.ts with id, name, slug, categoryId, imageUrl, price, priceTable, colors, flowerTypes and isFeatured, plus a toCatalogCardProduct mapper. It omits description, images, includes, note and occasion. (2) BestSellersSection computes bestSellersByTab: Record<'all' | categoryId, CatalogCardProduct[]> on the server, applying pickBestSellers per tab, and passes only that map and tabCategories. BestSellersTabs only switches tabs, and BestSellerProductCard takes CatalogCardProduct. (3) The catalog pages, the /buscar page and SearchPage map items to CatalogCardProduct before they cross into CatalogCollection or CatalogCollectionCard. applySearchQuery's CatalogCollectionItem typing follows. The related-products carousel in [slug]/page.tsx also takes CatalogCardProduct. Surface extension under the user standing authorization (goal: finish all 32): getSearchSuggestions.ts and SearchSuggestionsPanel.tsx, so the navbar suggestions also receive slim CatalogCardProduct DTOs.
 
-**Files:** `src/features/catalog/types/index.ts`, `src/features/catalog/utils/pickBestSellers.ts`, `src/features/catalog/utils/pickBestSellers.test.ts`, `src/features/landing/components/BestSellersSection/index.tsx`, `src/features/landing/components/BestSellersSection/BestSellersTabs.tsx`, `src/features/landing/components/BestSellersSection/BestSellerProductCard.tsx`, `src/app/(public)/catalogo/page.tsx`, `src/app/(public)/catalogo/[categoria]/page.tsx`, `src/app/(public)/catalogo/[categoria]/[slug]/page.tsx`, `src/app/(public)/buscar/page.tsx`, `src/features/catalog/components/CatalogCollection.tsx`, `src/features/catalog/components/CatalogCollectionCard.tsx`, `src/features/catalog/components/SearchPage/index.tsx`, `src/features/catalog/components/SearchPage/applySearchQuery.ts`
+**Files:** `src/features/catalog/types/index.ts`, `src/features/catalog/utils/pickBestSellers.ts`, `src/features/catalog/utils/pickBestSellers.test.ts`, `src/features/landing/components/BestSellersSection/index.tsx`, `src/features/landing/components/BestSellersSection/BestSellersTabs.tsx`, `src/features/landing/components/BestSellersSection/BestSellerProductCard.tsx`, `src/app/(public)/catalogo/page.tsx`, `src/app/(public)/catalogo/[categoria]/page.tsx`, `src/app/(public)/catalogo/[categoria]/[slug]/page.tsx`, `src/app/(public)/buscar/page.tsx`, `src/features/catalog/components/CatalogCollection.tsx`, `src/features/catalog/components/CatalogCollectionCard.tsx`, `src/features/catalog/components/SearchPage/index.tsx`, `src/features/catalog/components/SearchPage/applySearchQuery.ts`, `src/features/catalog/actions/getSearchSuggestions.ts`, `src/components/shared/Navbar/SearchOverlay/SearchSuggestionsPanel.tsx`
 
 **New files allowed in:** `src/features/catalog/utils`
 
@@ -1069,4 +1082,4 @@ Forecast is about 7,400 authored lines. Tasks over the 400-line advisory, kept w
 
 ## Next step
 
-T11: Add a CI gate (lint, typecheck, unit tests) with a test that every admin Server Action enforces auth, and pin the workflow supply chain
+T15: Send slim card DTOs to client components and compute best sellers on the server
