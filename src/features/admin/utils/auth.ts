@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation';
+import { cache } from 'react';
 import type { ZodIssue, ZodSchema } from 'zod';
 
 import type { AuthUser } from '@/lib/auth';
@@ -26,10 +27,10 @@ export type AdminActionResult<T = undefined> =
   | AdminActionSuccess<T>
   | AdminActionFailure;
 
-export async function requireAdmin(): Promise<AdminActionContext> {
+export const requireAdmin = cache(async (): Promise<AdminActionContext> => {
   const user = await auth.requireAdmin();
   return { user };
-}
+});
 
 export async function requireAdminOrRedirect(): Promise<AdminActionContext> {
   try {

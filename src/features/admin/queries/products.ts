@@ -1,3 +1,4 @@
+import { requireAdmin } from '@/features/admin/utils/auth';
 import {
   type AdminProductListPage,
   type AdminProductListRow,
@@ -21,6 +22,7 @@ export async function getAdminProductCategoryCounts(
   categoryIds: string[],
   gallery?: 'at-most-one-image',
 ): Promise<Record<string, number>> {
+  await requireAdmin();
   return productsRepository.listAdminCategoryCounts(categoryIds, gallery);
 }
 
@@ -31,6 +33,7 @@ export async function getAdminProductList({
   status,
   gallery,
 }: AdminProductListParams): Promise<AdminProductListPage> {
+  await requireAdmin();
   return productsRepository.listAdminPage({
     page,
     pageSize: ADMIN_PRODUCT_PAGE_SIZE,
@@ -42,5 +45,6 @@ export async function getAdminProductList({
 }
 
 export async function getAdminProductById(id: string): Promise<Product | null> {
+  await requireAdmin();
   return productsRepository.findAdminById(id);
 }
