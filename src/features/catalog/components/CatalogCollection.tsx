@@ -19,7 +19,11 @@ import {
   parseCatalogQuery,
   serializeCatalogQuery,
 } from '@/features/catalog/utils/catalogQuery';
-import { getEffectivePrice } from '@/features/catalog/utils/filterProducts';
+import {
+  filterProducts,
+  getEffectivePrice,
+  type ProductFilters,
+} from '@/features/catalog/utils/filterProducts';
 import { cn } from '@/lib/utils';
 
 const DENSITY_GRID_CLASSES: Record<CatalogDensity, string> = {
@@ -80,41 +84,8 @@ function getServerLocationSearch() {
   return '';
 }
 
-type FilterFacet = 'category' | 'price' | 'colors' | 'flowerTypes';
-
-function filterItems(
-  items: CatalogCollectionItem[],
-  filters: CatalogFilters,
-  except?: FilterFacet,
-) {
-  return items.filter(({ product, categorySlug }) => {
-    if (
-      except !== 'category' &&
-      filters.category.length > 0 &&
-      !filters.category.includes(categorySlug)
-    ) {
-      return false;
-    }
-    const price = getEffectivePrice(product);
-    if (except !== 'price' && (price < filters.priceMin || price > filters.priceMax)) {
-      return false;
-    }
-    if (
-      except !== 'colors' &&
-      filters.colors.length > 0 &&
-      !filters.colors.some((color) => product.colors?.includes(color))
-    ) {
-      return false;
-    }
-    if (
-      except !== 'flowerTypes' &&
-      filters.flowerTypes.length > 0 &&
-      !filters.flowerTypes.some((flowerType) => product.flowerTypes?.includes(flowerType))
-    ) {
-      return false;
-    }
-    return true;
-  });
+function toProductFilters({ category, ...rest }: CatalogFilters): ProductFilters {
+  return { ...rest, categorySlugs: category };
 }
 
 export default function CatalogCollection({
@@ -166,26 +137,33 @@ export default function CatalogCollection({
     setSeededSearch(window.location.search);
   };
 
-  const filteredItems = useMemo(() => filterItems(items, filters), [filters, items]);
+  const productFilters = useMemo(() => toProductFilters(filters), [filters]);
+  const filteredItems = useMemo(
+    () => filterProducts(items, productFilters),
+    [items, productFilters],
+  );
   const availableCategorySlugs = useMemo(
-    () => new Set(filterItems(items, filters, 'category').map((item) => item.categorySlug)),
-    [items, filters],
+    () =>
+      new Set(filterProducts(items, productFilters, 'category').map((item) => item.categorySlug)),
+    [items, productFilters],
   );
   const availableColors = useMemo(
     () =>
       new Set(
-        filterItems(items, filters, 'colors').flatMap(({ product }) => product.colors ?? []),
+        filterProducts(items, productFilters, 'colors').flatMap(
+          ({ product }) => product.colors ?? [],
+        ),
       ),
-    [items, filters],
+    [items, productFilters],
   );
   const availableFlowerTypes = useMemo(
     () =>
       new Set(
-        filterItems(items, filters, 'flowerTypes').flatMap(
+        filterProducts(items, productFilters, 'flowerTypes').flatMap(
           ({ product }) => product.flowerTypes ?? [],
         ),
       ),
-    [items, filters],
+    [items, productFilters],
   );
   const sortedItems = useMemo(() => {
     const copy = [...filteredItems];
