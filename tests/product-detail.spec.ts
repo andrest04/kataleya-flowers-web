@@ -26,7 +26,7 @@ async function navigateToFirstProduct(page: Page): Promise<{
       { s: slug },
       { timeout: 10_000 },
     )
-    .catch(() => {});
+    .catch(() => null);
 
   const count = await productCards.count();
   if (count === 0) {
@@ -79,7 +79,7 @@ test.describe("Phase 4B — Product detail", () => {
         undefined,
         { timeout: 5_000 },
       )
-      .catch(() => {});
+      .catch(() => null);
 
     const thumbCount = await thumbnails.count();
     expect(

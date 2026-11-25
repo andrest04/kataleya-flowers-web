@@ -59,7 +59,7 @@ async function navigateToFirstProduct(page: Page): Promise<{
       { s: slug },
       { timeout: 10_000 },
     )
-    .catch(() => {});
+    .catch(() => null);
 
   const count = await productCards.count();
   if (count === 0) {
@@ -151,7 +151,7 @@ test.describe("Taxonomy baseline — Group 1: catalog grid", () => {
         { s: slug },
         { timeout: 10_000 },
       )
-      .catch(() => {});
+      .catch(() => null);
 
     const productCards = page.locator(`a[href^="/catalogo/${slug}/"]`);
     await expect(
@@ -206,7 +206,7 @@ test.describe("Taxonomy baseline — Group 2: product detail", () => {
         undefined,
         { timeout: 5_000 },
       )
-      .catch(() => {});
+      .catch(() => null);
 
     const thumbCount = await thumbnails.count();
     expect(

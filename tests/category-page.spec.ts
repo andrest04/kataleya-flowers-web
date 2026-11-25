@@ -55,7 +55,7 @@ test.describe("Phase 4B — Category page", () => {
         { s: slug },
         { timeout: 5_000 },
       )
-      .catch(() => {});
+      .catch(() => null);
 
     const productCards = page.locator(
       `a[href^="/catalogo/${slug}/"]`,
@@ -108,7 +108,7 @@ test.describe("Phase 4B — Category page", () => {
         { s: slug },
         { timeout: 5_000 },
       )
-      .catch(() => {});
+      .catch(() => null);
 
     const initialCount = await cards.count();
     expect(

@@ -2,6 +2,19 @@ import { expect, type Page,test } from "@playwright/test";
 
 const SCREENSHOT_DIR = "QA/screenshots/phase1";
 
+const SITE_HOST = new URL(
+  process.env.E2E_SITE_URL ?? "https://www.kataleyaflowers.com",
+).host;
+
+async function readCanonical(page: Page): Promise<URL> {
+  const href = await page
+    .locator('link[rel="canonical"]')
+    .first()
+    .getAttribute("href");
+  expect(href, "link rel=canonical debe tener href").toBeTruthy();
+  return new URL(href ?? "");
+}
+
 const IGNORED_CONSOLE_PATTERNS: RegExp[] = [
   /upgrade-insecure-requests.*ignored.*report-only/i,
 ];
@@ -64,7 +77,7 @@ test.describe("Phase 1 — A) Root metadata + fonts", () => {
       .locator('meta[property="og:url"]')
       .getAttribute("content");
     expect(ogUrl).toBeTruthy();
-    expect(ogUrl).toContain("kataleya-flawers.appwrite.network");
+    expect(new URL(ogUrl ?? "").host).toBe(SITE_HOST);
 
     await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute(
       "content",
@@ -72,16 +85,50 @@ test.describe("Phase 1 — A) Root metadata + fonts", () => {
     );
   });
 
-  test("metadataBase resuelve a https://kataleya-flawers.appwrite.network via og:url y canonical", async ({
+  test("metadataBase resuelve al host de producción via canonical", async ({
     page,
   }) => {
     await page.goto("/");
 
-    const canonical = await page
-      .locator('link[rel="canonical"]')
-      .getAttribute("href");
-    expect(canonical).toBeTruthy();
-    expect(canonical).toContain("kataleya-flawers.appwrite.network");
+    const canonical = await readCanonical(page);
+    expect(canonical.protocol).toBe("https:");
+    expect(canonical.host).toBe(SITE_HOST);
+  });
+
+  test("canonical de / apunta a la raíz del host de producción", async ({
+    page,
+  }) => {
+    await page.goto("/");
+
+    const canonical = await readCanonical(page);
+    expect(canonical.host).toBe(SITE_HOST);
+    expect(canonical.pathname).toBe("/");
+  });
+
+  test("canonical de /catalogo apunta a /catalogo", async ({ page }) => {
+    await page.goto("/catalogo");
+
+    const canonical = await readCanonical(page);
+    expect(canonical.host).toBe(SITE_HOST);
+    expect(canonical.pathname).toBe("/catalogo");
+  });
+
+  test("canonical de /catalogo/{categoria} apunta a su propia ruta", async ({
+    page,
+  }) => {
+    await page.goto("/catalogo");
+    const firstCategoryLink = page
+      .locator('a[href^="/catalogo/"]:not([href="/catalogo"])')
+      .first();
+    await expect(firstCategoryLink).toBeVisible();
+    const href = await firstCategoryLink.getAttribute("href");
+    expect(href, "/catalogo debe enlazar al menos una categoría").toBeTruthy();
+    const categoryPath = new URL(href ?? "", "http://placeholder").pathname;
+    await page.goto(categoryPath);
+
+    const canonical = await readCanonical(page);
+    expect(canonical.host).toBe(SITE_HOST);
+    expect(canonical.pathname).toBe(categoryPath);
   });
 
   test("link rel=canonical presente en /", async ({ page }) => {
@@ -141,8 +188,8 @@ test.describe("Phase 1 — B) File-Based Metadata API", () => {
 
     const body = await response.text();
 
-    expect(body).toContain("kataleya-flawers.appwrite.network/</loc>");
-    expect(body).toContain("kataleya-flawers.appwrite.network/catalogo</loc>");
+    expect(body).toContain(`<loc>https://${SITE_HOST}/</loc>`);
+    expect(body).toContain(`<loc>https://${SITE_HOST}/catalogo</loc>`);
 
     const categoryMatches = body.match(
       /<loc>https?:\/\/[^<]+\/catalogo\/[^/<]+<\/loc>/g,
