@@ -22,9 +22,9 @@
 
 **Review:** receipt-driven development is off (global), so no native review runs. Each task is self-verified by its writer, followed by an independent verifier.
 
-**Forecast:** 32 tasks, about 7470 authored changed lines. Lockfiles are excluded.
+**Forecast:** 33 tasks, about 7720 authored changed lines. Lockfiles are excluded.
 
-**Progress:** 22/32 done.
+**Progress:** 32/33 done.
 
 **Sources:**
 - general audit workflow `wf_68c64c39-c2f`
@@ -54,16 +54,17 @@
 - [x] **T20** Enrich Florist and Product JSON-LD (id, image, geo, hasMap, areaServed, sku, seller) from business constants, and drop empty images _(area seo; about 240 lines; depends on T07, T13, T15, T19; approved flags: layout.tsx)_, commit `60e0fbc`
 - [x] **T21** Add local intent to titles and H1s, trim descriptions on word boundaries, size product OG images, redirect recategorized products, and add a fallback home H1 _(area seo; about 200 lines; depends on T14, T15, T17, T20; approved flags: design-change)_, commit `937cb53`
 - [x] **T22** Carry admin-written image alt text through to the product gallery and lightbox _(area seo; about 110 lines; depends on T14, T15)_, commit `4e00407`
-- [ ] **T23** Keep complaint form values on failed submit, focus the first invalid field, and print the consumer copy from a sandboxed iframe _(area a11y-ux; about 320 lines; depends on T06, T12; approved flags: design-change)_
-- [ ] **T24** Make complaint form widgets accessible and give each field an actionable error message _(area a11y-ux; about 200 lines; depends on T03, T23; approved flags: design-change)_
-- [ ] **T25** Complete the navbar search combobox pattern with keyboard support, add mega-menu keyboard access, and stop iOS zoom in the mobile search _(area a11y-ux; about 330 lines; depends on T16; approved flags: design-change)_
-- [ ] **T26** Announce login errors, dedupe skip links, add keyboard crop panning, and fix copy leftovers _(area a11y-ux; about 180 lines; depends on T05, T13, T18, T23, T25; approved flags: layout.tsx)_
-- [ ] **T27** Replace gold text and focus rings on light backgrounds with contrast tokens, enforce it in ESLint, and show the exact price after a size is chosen _(area design; about 110 lines; depends on T12, T15; approved flags: palette-usage, design-change)_
-- [ ] **T28** Delete Supabase-era dead code and the unused withAdminAuth wrapper _(area architecture; about 400 lines; depends on T01, T05, T11)_
-- [ ] **T29** Extract one orderable-home-collection helper for testimonials, discover tiles and value props _(area architecture; about 300 lines; depends on T03, T11, T28)_
-- [ ] **T30** Make filterProducts the single catalog filter engine with facet exclusion _(area architecture; about 160 lines; depends on T14, T15)_
-- [ ] **T31** Untangle feature boundaries: shared zod primitives to lib/validation and landing limit/identity rules into features/landing/rules, keeping lib free of feature imports _(area architecture; about 300 lines; depends on T08, T24, T26, T29)_
-- [ ] **T32** Bring AGENTS.md in line with the code after the remediation _(area docs; about 90 lines; depends on T04, T05, T06, T11, T13, T23, T25, T28, T29, T31)_
+- [x] **T23** Keep complaint form values on failed submit, focus the first invalid field, and print the consumer copy from a sandboxed iframe _(area a11y-ux; about 320 lines; depends on T06, T12; approved flags: design-change)_, commit `50b535e`
+- [x] **T24** Make complaint form widgets accessible and give each field an actionable error message _(area a11y-ux; about 200 lines; depends on T03, T23; approved flags: design-change)_, commit `a6a31ec`
+- [x] **T25** Complete the navbar search combobox pattern with keyboard support, add mega-menu keyboard access, and stop iOS zoom in the mobile search _(area a11y-ux; about 330 lines; depends on T16; approved flags: design-change)_, commit `de8746b`
+- [x] **T26** Announce login errors, dedupe skip links, add keyboard crop panning, and fix copy leftovers _(area a11y-ux; about 180 lines; depends on T05, T13, T18, T23, T25; approved flags: layout.tsx)_, commit `1a3ed8e`
+- [x] **T27** Replace gold text and focus rings on light backgrounds with contrast tokens, enforce it in ESLint, and show the exact price after a size is chosen _(area design; about 110 lines; depends on T12, T15; approved flags: palette-usage, design-change)_, commit `eb96ee8`
+- [x] **T28** Delete Supabase-era dead code and the unused withAdminAuth wrapper _(area architecture; about 400 lines; depends on T01, T05, T11)_, commit `f2378dc`
+- [x] **T29** Extract one orderable-home-collection helper for testimonials, discover tiles and value props _(area architecture; about 300 lines; depends on T03, T11, T28)_, commit `204e677`
+- [x] **T30** Make filterProducts the single catalog filter engine with facet exclusion _(area architecture; about 160 lines; depends on T14, T15)_, commit `521f6dc`
+- [x] **T31** Untangle feature boundaries: shared zod primitives to lib/validation and landing limit/identity rules into features/landing/rules, keeping lib free of feature imports _(area architecture; about 300 lines; depends on T08, T24, T26, T29)_, commit `87df9de`
+- [x] **T32** Bring AGENTS.md in line with the code after the remediation _(area docs; about 90 lines; depends on T04, T05, T06, T11, T13, T23, T25, T28, T29, T31)_, commit `519fecf`
+- [ ] **T33** Follow-up: clear react-doctor errors and warnings left after the remediation _(area conventions; about 250 lines; depends on T32)_
 
 ## Task details
 
@@ -802,6 +803,8 @@ Fault injection (each change reverted with git checkout, nothing committed):
 
 **Commit:** `fix(complaints): retain form values, focus errors and sandbox print`
 
+**Evidence:** RED: I wrote formData.test.ts and printDocument.test.ts first. `npx vitest run src/features/complaints/components/ComplaintForm` then failed with 2 failed files and no tests run: "Error: Cannot find module './printDocument' imported from .../printDocument.test.ts", and the same error for './formData | checks: npm run lint:strict: exit 0, no warnings; npx tsc --noEmit: exit 0; npx vitest run: 56 files passed, 751 tests passed; rg -n "document.write|window.open": no match (exit 1); npx react-doctor@latest --verbose: score 87/100, 7 warnings, all in files this task did not tou | verifier pass, tier medium | deploy: No schema, console or environment changes. Printing depends on browser support for print() from a sandboxed srcdoc iframe (sandbox='allow-modals allow-same-origin', no allow-scripts). Check it on a preview in Chrome, Safari and Firefox before production. Removing role=alert from FieldError changes h
+
 ### T24: Make complaint form widgets accessible and give each field an actionable error message
 
 **Observations:**
@@ -827,6 +830,8 @@ Fault injection (each change reverted with git checkout, nothing committed):
 **Risk:** Low-medium. The restyled radios must keep the 44px targets and the current look.
 
 **Commit:** `fix(complaints): make form widgets accessible with actionable errors`
+
+**Evidence:** RED: I wrote src/features/complaints/schemas/complaint.test.ts first. Running `npx vitest run src/features/complaints/schemas/complaint.test.ts` gave "Tests 10 failed | 2 passed (12)". Observed failures: consumerRequest Expected "Indica qué solicitas (cambio, devolución, etc.)" Received "La descripc | checks: npm run lint:strict: exit 0, no warnings; npx tsc --noEmit: exit 0, no errors; npx vitest run: 57 files passed, 763 tests passed; npx react-doctor@latest --verbose: score 87; 7 warnings, all in files this task did not touch ( | verifier pass, tier medium | deploy: None. Client and schema changes only. No Appwrite, env or console changes.
 
 ### T25: Complete the navbar search combobox pattern with keyboard support, add mega-menu keyboard access, and stop iOS zoom in the mobile search
 
@@ -856,6 +861,8 @@ Fault injection (each change reverted with git checkout, nothing committed):
 
 **Commit:** `fix(navbar): complete search combobox and mega-menu keyboard support`
 
+**Evidence:** I wrote src/components/shared/Navbar/comboboxNavigation.test.ts first, with 8 cases: ArrowDown from -1 goes to 0, ArrowUp from -1 goes to the last option, it steps through options, it wraps at both ends, Home and End work, count 0 always gives -1, unhandled keys keep the index, and a stale index is  | checks: npm run lint:strict: pass (eslint . --max-warnings 0, no output); npx tsc --noEmit: pass (no errors); npx vitest run: pass: 58 test files, 771 tests passed; npx react-doctor@latest --verbose: no regression: score 87/100 with the same 7 warnings before  | verifier pass, tier medium | deploy: No deploy steps or schema changes. Still to do by hand (no DOM runner in this repo): in npm run dev, Tab to Buscar, press Enter, type, use ArrowDown and Enter, then Escape (focus should return to Buscar). Tab to the 'Ver categorías' chevron, press Enter, Tab through the category links, then Escape (
+
 ### T26: Announce login errors, dedupe skip links, add keyboard crop panning, and fix copy leftovers
 
 **Observations:**
@@ -884,6 +891,8 @@ Fault injection (each change reverted with git checkout, nothing committed):
 
 **Commit:** `fix(a11y): announce login errors, dedupe skip links and fix copy`
 
+**Evidence:** RED: I wrote src/features/admin/components/CoverEditor/nudgeOffset.test.ts first. `npx vitest run .../nudgeOffset.test.ts` failed because the module could not be resolved: "import { nudgeOffset } from './nudgeOffset'", 1 failed file, no tests. GREEN: after I added nudgeOffset.ts, 12 of 12 passed. I  | checks: npm run lint:strict: exit 0, no problems. The first run failed on role=applicatio; npx tsc --noEmit: exit 0, no errors; npx vitest run: 59 test files passed, 786 of 786 tests passed; rg -n "Mencioná|Cerrar: no match (exit 1); rg -c "Saltar: only src/app/layout.tsx:1, so admin pages render one skip li; npx react-doctor@latest --verbose: Score 87/100. 7 warnings, all in files this task did not tou | verifier pass, tier medium | surface extended: 1) Crop stage role: the plan said role='application', but lint:strict fails on it because jsx-a11y treats application as | deploy: There is no schema, console or env change. The owner should be told about the renamed admin terms: Hero is now 'Portada', slide is now 'imagen de portada', and Slug is now 'Dirección web'. A manual keyboard pass in dev is still pending: Tab to the crop stage, then try the arrows and Shift+arrows. Al
+
 ### T27: Replace gold text and focus rings on light backgrounds with contrast tokens, enforce it in ESLint, and show the exact price after a size is chosen
 
 **Observations:**
@@ -909,6 +918,8 @@ Fault injection (each change reverted with git checkout, nothing committed):
 
 **Commit:** `fix(design): enforce gold contrast rule and show exact variant price`
 
+**Evidence:** RED: I added the gold selector to eslint.config.mjs first, before changing any component. Running `npx eslint src --max-warnings 0` then failed with 9 no-restricted-syntax errors: CatalogFeaturedCard.tsx:43, ValuePropCard.tsx:7 (module-level const Literal), BestSellersTabs.tsx:91,101,114, CategoryTi | checks: npm run lint:strict: exit 0, no errors or warnings; npx tsc --noEmit: exit 0; npx vitest run: 59 files, 786 tests passed; rg -n "(text|outline)-\(--color-secondary\)": only src/components/shared/Footer.tsx (11 matches); eslint --stdin --stdin-filename: 5 no-restricted-syntax errors raised as expected; Footer.tsx; npx react-doctor@latest --verbose: score 87; the warnings it lists are all in files this task d | verifier pass, tier medium | surface extended: 1) I widened the selector beyond the plan's JSXAttribute className Literal. It now matches `Literal[value=...]` and `Tem | deploy: None. This is a client-side style, copy-logic and lint-config change only. There are no schema changes, environment changes or new dependencies.
+
 ### T28: Delete Supabase-era dead code and the unused withAdminAuth wrapper
 
 **Observations:**
@@ -931,6 +942,8 @@ Fault injection (each change reverted with git checkout, nothing committed):
 **Risk:** Low. Most of the changed lines are deletions.
 
 **Commit:** `refactor: delete Supabase-era dead code and withAdminAuth`
+
+**Evidence:** Exception: the task only deletes code and changes no behavior, so no test can fail first (no meaningful RED). Before deleting, rg showed no importers of src/lib/appwrite/types.ts and no callers of withAdminAuth. It also showed that FlowerTypeRow and ProductColorRow were used only by their own re-exp | checks: npm run lint:strict: exit 0, no warnings (eslint . --max-warnings 0); npx tsc --noEmit: exit 0, no errors; npx vitest run: 59 test files passed, 786 tests passed, exit 0; rg -n "lib/db/rows|appwrite/types|withAdminAuth": no matches (exit 1); npx react-doctor@latest --score: 87 with the change and 87 at baseline. No regression, and no | verifier pass, tier high | deploy: None. This is a type-only and dead-code deletion with no runtime, schema or console change.
 
 ### T29: Extract one orderable-home-collection helper for testimonials, discover tiles and value props
 
@@ -956,6 +969,8 @@ Fault injection (each change reverted with git checkout, nothing committed):
 
 **Commit:** `refactor(admin): share one orderable home collection helper`
 
+**Evidence:** RED: I wrote src/features/admin/utils/orderableHomeCollection.test.ts first. `npx vitest run src/features/admin/utils/orderableHomeCollection.test.ts` failed with "Test Files 1 failed, Tests no tests" because ./orderableHomeCollection could not be resolved. GREEN: after I implemented the helper, the | checks: npm run lint:strict: exit 0, no warnings (the first run flagged 4 non-null assert; npx tsc --noEmit: exit 0, no errors; npx vitest run: 60 files passed, 801 tests passed, exit 0; rg -n "function: no match (rg exit 1), as expected; npx vitest run: 95 passed. 30 cases cover testimonials.ts, discoverTiles.ts  | verifier pass, tier medium | deploy: No schema or console change. Fallback seeding now uses the Appwrite transactions API (createTransaction and transactionId on createDocument). The existing appwriteProvider runInTransaction already uses that API for reorder and hero slides, so nothing new is needed in production.
+
 ### T30: Make filterProducts the single catalog filter engine with facet exclusion
 
 **Observations:**
@@ -980,14 +995,16 @@ Fault injection (each change reverted with git checkout, nothing committed):
 
 **Commit:** `refactor(catalog): make filterProducts the single filter engine`
 
+**Evidence:** RED: I wrote filterProducts.test.ts first (12 cases: no filter, multi-category, exact single category, price bounds on the priceTable minimum, q match on name/description/includes/occasion, omitted q, color and flower-type matching, and exclusion for category/price/colors/flowerTypes). `npx vitest r | checks: npm run lint:strict: pass (exit 0, 0 warnings). An earlier run flagged an unused ; npx tsc --noEmit: pass (exit 0); npx vitest run: pass: 61 files, 813 tests passed; rg -n "function: no match (exit 1), as expected; npx react-doctor@latest --verbose: Score 88/100, 8 issues. All 8 are in files this task did not | verifier pass, tier medium | deploy: None. This is a pure client/server refactor with no schema or console dependency.
+
 ### T31: Untangle feature boundaries: shared zod primitives to lib/validation and landing limit/identity rules into features/landing/rules, keeping lib free of feature imports
 
 **Observations:**
 - GEN:architecture-security:Feature boundaries are blurred: shared schemas live in admin, domain rules live in lib
 
-**Approach:** complaints/schemas/complaint.ts imports primitives from features/admin/schemas/common.ts, and lib/ holds feature rules. (1) Move the generic primitives (nonEmptyString, optionalTrimmedString, longTextField, uuid, email, peruPhone, docNumber, priceVariant, nonNegativeInt, hexColor) to src/lib/validation/primitives.ts. admin/schemas/common.ts keeps slug, storedImageUrl and taxonomyName, and re-exports the moved primitives, so the admin schema files and actions that import './common' or 'schemas/common' do not change. complaint.ts imports from '@/lib/validation/primitives'. (2) Move testimonialLimit, valuePropLimit, discoverTileLimit and valuePropIdentity from src/lib to src/features/landing/rules/. Verified by rg: none of them is imported from src/lib, so no lib-to-features inversion appears. (3) promoPresetKey stays at src/lib/promoPresetKey.ts. It is imported by src/lib/database/repositories/promoBanners/presetOperations.ts, so moving it into features would invert the layering. It cannot move into the promoBanners repository index either, because the client PromoBannerList imports it at runtime, and that index pulls the server-only Appwrite client. (4) Keep the two Product types: the repository type is the persistence-facing domain, and the features/catalog Product is the public DTO. T32 records this in AGENTS.md. The importers to rewrite, from rg, are the files in this task's files list.
+**Approach:** complaints/schemas/complaint.ts imports primitives from features/admin/schemas/common.ts, and lib/ holds feature rules. (1) Move the generic primitives (nonEmptyString, optionalTrimmedString, longTextField, uuid, email, peruPhone, docNumber, priceVariant, nonNegativeInt, hexColor) to src/lib/validation/primitives.ts. admin/schemas/common.ts keeps slug, storedImageUrl and taxonomyName, and re-exports the moved primitives, so the admin schema files and actions that import './common' or 'schemas/common' do not change. complaint.ts imports from '@/lib/validation/primitives'. (2) Move testimonialLimit, valuePropLimit, discoverTileLimit and valuePropIdentity from src/lib to src/features/landing/rules/. Verified by rg: none of them is imported from src/lib, so no lib-to-features inversion appears. (3) promoPresetKey stays at src/lib/promoPresetKey.ts. It is imported by src/lib/database/repositories/promoBanners/presetOperations.ts, so moving it into features would invert the layering. It cannot move into the promoBanners repository index either, because the client PromoBannerList imports it at runtime, and that index pulls the server-only Appwrite client. (4) Keep the two Product types: the repository type is the persistence-facing domain, and the features/catalog Product is the public DTO. T32 records this in AGENTS.md. The importers to rewrite, from rg, are the files in this task's files list. Surface extended under the user standing authorization: src/lib/valuePropIdentity.test.ts, src/features/complaints/schemas/complaint.test.ts, src/features/complaints/components/ComplaintForm/ConsumerFields.tsx, src/features/complaints/components/ComplaintForm/DetailFields.tsx, src/features/complaints/components/ComplaintForm/ItemFields.tsx, src/features/complaints/actions/updateComplaint.ts, src/features/complaints/queries/complaints.ts, src/features/admin/components/ProductForm/FieldError.tsx, src/components/ui/FieldError.tsx, src/lib/auth/admin.ts, src/features/admin/utils/auth.ts. FieldError moves to src/components/ui/FieldError.tsx and the admin guard to src/lib/auth/admin.ts; the old modules stay as thin re-exports so other importers are unchanged.
 
-**Files:** `src/lib/validation/primitives.ts`, `src/features/admin/schemas/common.ts`, `src/features/complaints/schemas/complaint.ts`, `src/lib/testimonialLimit.ts`, `src/lib/valuePropLimit.ts`, `src/lib/discoverTileLimit.ts`, `src/lib/valuePropIdentity.ts`, `src/features/landing/rules/testimonialLimit.ts`, `src/features/landing/rules/valuePropLimit.ts`, `src/features/landing/rules/discoverTileLimit.ts`, `src/features/landing/rules/valuePropIdentity.ts`, `src/app/(admin)/admin/inicio/page.tsx`, `src/app/(admin)/admin/inicio/descubrir/[id]/page.tsx`, `src/app/(admin)/admin/inicio/descubrir/nuevo/page.tsx`, `src/app/(admin)/admin/inicio/destacados/[id]/page.tsx`, `src/app/(admin)/admin/inicio/destacados/nuevo/page.tsx`, `src/app/(admin)/admin/inicio/testimonios/[id]/page.tsx`, `src/app/(admin)/admin/inicio/testimonios/nuevo/page.tsx`, `src/features/admin/actions/discoverTiles.ts`, `src/features/admin/actions/testimonials.ts`, `src/features/admin/actions/valueProps.ts`, `src/features/admin/components/DiscoverTileEditor/Fields.tsx`, `src/features/admin/components/DiscoverTileList/index.tsx`, `src/features/admin/components/TestimonialEditor/Fields.tsx`, `src/features/admin/components/TestimonialList/index.tsx`, `src/features/admin/components/ValuePropEditor/Fields.tsx`, `src/features/admin/components/ValuePropList/index.tsx`, `src/features/admin/schemas/valueProp.ts`, `src/features/landing/queries/getPublishedDiscoverTiles.ts`, `src/features/landing/queries/getPublishedTestimonials.ts`, `src/features/landing/queries/getPublishedValueProps.ts`
+**Files:** `src/lib/validation/primitives.ts`, `src/features/admin/schemas/common.ts`, `src/features/complaints/schemas/complaint.ts`, `src/lib/testimonialLimit.ts`, `src/lib/valuePropLimit.ts`, `src/lib/discoverTileLimit.ts`, `src/lib/valuePropIdentity.ts`, `src/features/landing/rules/testimonialLimit.ts`, `src/features/landing/rules/valuePropLimit.ts`, `src/features/landing/rules/discoverTileLimit.ts`, `src/features/landing/rules/valuePropIdentity.ts`, `src/app/(admin)/admin/inicio/page.tsx`, `src/app/(admin)/admin/inicio/descubrir/[id]/page.tsx`, `src/app/(admin)/admin/inicio/descubrir/nuevo/page.tsx`, `src/app/(admin)/admin/inicio/destacados/[id]/page.tsx`, `src/app/(admin)/admin/inicio/destacados/nuevo/page.tsx`, `src/app/(admin)/admin/inicio/testimonios/[id]/page.tsx`, `src/app/(admin)/admin/inicio/testimonios/nuevo/page.tsx`, `src/features/admin/actions/discoverTiles.ts`, `src/features/admin/actions/testimonials.ts`, `src/features/admin/actions/valueProps.ts`, `src/features/admin/components/DiscoverTileEditor/Fields.tsx`, `src/features/admin/components/DiscoverTileList/index.tsx`, `src/features/admin/components/TestimonialEditor/Fields.tsx`, `src/features/admin/components/TestimonialList/index.tsx`, `src/features/admin/components/ValuePropEditor/Fields.tsx`, `src/features/admin/components/ValuePropList/index.tsx`, `src/features/admin/schemas/valueProp.ts`, `src/features/landing/queries/getPublishedDiscoverTiles.ts`, `src/features/landing/queries/getPublishedTestimonials.ts`, `src/features/landing/queries/getPublishedValueProps.ts`, `src/lib/valuePropIdentity.test.ts`, `src/features/complaints/schemas/complaint.test.ts`, `src/features/complaints/components/ComplaintForm/ConsumerFields.tsx`, `src/features/complaints/components/ComplaintForm/DetailFields.tsx`, `src/features/complaints/components/ComplaintForm/ItemFields.tsx`, `src/features/complaints/actions/updateComplaint.ts`, `src/features/complaints/queries/complaints.ts`, `src/features/admin/components/ProductForm/FieldError.tsx`, `src/components/ui/FieldError.tsx`, `src/lib/auth/admin.ts`, `src/features/admin/utils/auth.ts`
 
 **New files allowed in:** `src/lib/validation`, `src/features/landing/rules`
 
@@ -1004,6 +1021,8 @@ Fault injection (each change reverted with git checkout, nothing committed):
 **Risk:** Low-medium. Wide import churn, so it lands late.
 
 **Commit:** `refactor: move shared primitives to lib and landing rules to features`
+
+**Evidence:** No behavioral RED applies, because this is a move-only refactor that changes no behavior (the test_plan says the same). The proof comes from tsc (the import rewiring compiles), the existing vitest suite staying GREEN (61 files, 813 tests, including complaint.test.ts and valuePropIdentity.test.ts at  | checks: npm run lint:strict: exit 0, no warnings; npx tsc --noEmit: exit 0, no errors; npx vitest run: 61 test files passed, 813 tests passed; rg -n "features/admin": no match (rc=1); rg -n "@/features": no match (rc=1); npx react-doctor@latest --verbose: score 86. The 8 warnings it lists are all in files this task | verifier pass, tier high | deploy: None. This is a code-only refactor, with no schema, environment or console changes.
 
 ### T32: Bring AGENTS.md in line with the code after the remediation
 
@@ -1027,6 +1046,46 @@ Fault injection (each change reverted with git checkout, nothing committed):
 **Risk:** Low.
 
 **Commit:** `docs: align AGENTS.md with the remediated architecture`
+
+**Evidence:** No unit test applies because this change only touches passive documentation (AGENTS.md), so there is no meaningful RED. The proportional check was a structural readback. The stale-term rg returned no matches (exit 1). A loop checked every path cited in backticks (src/, scripts/, tests/, docs/, .gith | checks: npm run lint:strict: exit 0, no warnings; npx tsc --noEmit: exit 0; npx vitest run: 61 test files, 813 tests passed, exit 0; rg -n "withAdminAuth|db/rows|react-doctor@latest|proxy.ts": no matches (exit 1), no stale references | verifier pass, tier medium | deploy: None. This is a documentation-only change.
+
+### T33: Follow-up: clear react-doctor errors and warnings left after the remediation
+
+**Observations:**
+- Post-remediation npm run doctor reported 2 errors: effect-needs-cleanup at HorizontalScrollBar.tsx:39 and useScrollBehavior.ts:8. It also reported 20 warnings: await in a loop, sequential independent awaits, an effect that re-subscribes, high complexity, duplicated JSX, whole-props deps, transition-all, preventDefault, an array lookup in a loop, an empty default prop, and 4 accordion controls with no accessible label.
+- T32 verifier: AGENTS.md (around line 89) still has the pre-existing voseo 'corregí la causa raíz'.
+
+**Approach:** Fix each react-doctor finding at its root cause, without changing behavior.
+- Add effect cleanups.
+- Where an effect re-subscribes, use stable callbacks or refs.
+- Run independent awaits in parallel with Promise.all where order does not matter. Where order or rate limits matter, keep them sequential and restructure instead.
+- Hoist array lookups into a Map.
+- Replace transition-all with explicit properties.
+- Replace empty default props with module constants.
+- Read individual props in deps instead of the whole props object.
+- Give each filter accordion control an accessible name.
+- Reduce DeleteCategoryDialog complexity by extracting pure helpers.
+- Dedupe the IconPicker JSX with a map.
+Change preventDefault on a form only when behavior stays the same; otherwise justify it in the commit body.
+Change the AGENTS.md voseo to tuteo ('corrige la causa raíz').
+
+**Files:** `scripts/lib/appwrite-provisioning.mjs`, `src/features/admin/utils/orderableHomeCollection.ts`, `src/app/(admin)/admin/inicio/testimonios/nuevo/page.tsx`, `src/features/landing/queries/getPublishedValueProps.ts`, `src/components/shared/Navbar/SearchOverlay/HorizontalScrollBar.tsx`, `src/components/shared/Navbar/useScrollBehavior.ts`, `src/features/admin/components/CategoryList/DeleteCategoryDialog.tsx`, `src/features/admin/components/DiscoverTileEditor/IconPicker.tsx`, `src/features/admin/components/ImageUploader.tsx`, `src/features/catalog/components/CatalogFilterSheet/index.tsx`, `src/features/admin/components/ProductForm/index.tsx`, `src/features/admin/components/SiteSettingsForm/index.tsx`, `src/features/admin/components/ProductTable/useProductSelection.ts`, `src/features/admin/components/PromoBannerEditor/Fields.tsx`, `src/features/catalog/components/CatalogFilterSheet/CategoryAccordion.tsx`, `src/features/catalog/components/CatalogFilterSheet/ColorAccordion.tsx`, `src/features/catalog/components/CatalogFilterSheet/FlowerTypeAccordion.tsx`, `src/features/catalog/components/CatalogFilterSheet/SortAccordion.tsx`, `AGENTS.md`
+
+**New files allowed in:** `src/features/admin/components/CategoryList`, `src/features/admin/components/DiscoverTileEditor`
+
+**Test plan:** Proportional checks: npm run doctor must report 0 errors. Aim for 0 warnings, and justify any warning that remains. Any pure helper you extract gets a unit test (RED, then GREEN).
+
+**Acceptance:**
+- npm run doctor reports 0 errors
+- Every remaining react-doctor warning is justified in the commit body
+- lint:strict, tsc and vitest stay green
+- Behavior is unchanged, and AGENTS.md uses tuteo
+
+**Checks:** `npm run lint:strict`, `npx tsc --noEmit`, `npx vitest run`, `npm run doctor -- --verbose`
+
+**Risk:** Low: the React fixes are mechanical. Changing preventDefault can alter how a form submits, so do it carefully.
+
+**Commit:** `refactor: clear react-doctor findings after audit remediation`
 
 ## Owner console checklist (not done by the agent)
 
@@ -1099,4 +1158,4 @@ Forecast is about 7,400 authored lines. Tasks over the 400-line advisory, kept w
 
 ## Next step
 
-T23: Keep complaint form values on failed submit, focus the first invalid field, and print the consumer copy from a sandboxed iframe
+T33: Follow-up: clear react-doctor errors and warnings left after the remediation
