@@ -14,7 +14,7 @@ function ProductSkeleton() {
 
 export default function Loading() {
   return (
-    <main className="min-h-screen bg-cream px-4 pb-16 pt-10 sm:px-6 lg:px-8">
+    <main id="main-content" tabIndex={-1} className="min-h-screen bg-cream px-4 pb-16 pt-10 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-8xl">
         <div className="mx-auto mb-10 max-w-3xl space-y-4 text-center sm:mb-12">
           <Skeleton className="mx-auto h-12 w-4/5 max-w-xl" />

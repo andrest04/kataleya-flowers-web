@@ -1,6 +1,7 @@
 import type {
   BulkDeleteOperation,
   BulkUpdateOperation,
+  CreateOptions,
   DocumentRecord,
   DocumentStore,
   QuerySpec,
@@ -12,6 +13,7 @@ type StoredDocument = DocumentRecord & Record<string, unknown>;
 export interface FakeDocumentStore extends DocumentStore {
   reset(): void;
   seed<T extends DocumentRecord>(collectionId: string, doc: T): void;
+  permissionsOf(collectionId: string, id: string): string[] | undefined;
 }
 
 function matchesEqual(doc: StoredDocument, equal: QuerySpec['equal']): boolean {
@@ -48,6 +50,24 @@ function project<T extends DocumentRecord>(doc: StoredDocument, select?: string[
 
 class InMemoryDocumentStore implements FakeDocumentStore {
   private readonly collections = new Map<string, Map<string, StoredDocument>>();
+  private readonly permissions = new Map<string, string[]>();
+
+  private permissionKey(collectionId: string, id: string): string {
+    return `${collectionId}/${id}`;
+  }
+
+  private insert(collectionId: string, id: string, data: Record<string, unknown>, options?: CreateOptions): StoredDocument {
+    const now = new Date().toISOString();
+    const doc: StoredDocument = { ...data, id, createdAt: now, updatedAt: now };
+    this.collection(collectionId).set(id, doc);
+    const key = this.permissionKey(collectionId, id);
+    if (options?.permissions) {
+      this.permissions.set(key, [...options.permissions]);
+    } else {
+      this.permissions.delete(key);
+    }
+    return doc;
+  }
 
   private collection(collectionId: string): Map<string, StoredDocument> {
     const existing = this.collections.get(collectionId);
@@ -100,11 +120,9 @@ class InMemoryDocumentStore implements FakeDocumentStore {
     collectionId: string,
     id: string,
     data: Record<string, unknown>,
+    options?: CreateOptions,
   ): Promise<T> {
-    const now = new Date().toISOString();
-    const doc: StoredDocument = { ...data, id, createdAt: now, updatedAt: now };
-    this.collection(collectionId).set(id, doc);
-    return project<T>(doc);
+    return project<T>(this.insert(collectionId, id, data, options));
   }
 
   async update<T extends DocumentRecord>(
@@ -124,6 +142,43 @@ class InMemoryDocumentStore implements FakeDocumentStore {
 
   async delete(collectionId: string, id: string): Promise<void> {
     this.collection(collectionId).delete(id);
+    this.permissions.delete(this.permissionKey(collectionId, id));
+  }
+
+  async increment(
+    collectionId: string,
+    id: string,
+    attribute: string,
+    by: number,
+    createData: Record<string, unknown>,
+  ): Promise<number> {
+    const existing = this.collection(collectionId).get(id);
+    if (!existing) {
+      this.insert(collectionId, id, { ...createData, [attribute]: by }, { permissions: [] });
+      return by;
+    }
+
+    const current = existing[attribute];
+    const next = (typeof current === 'number' ? current : 0) + by;
+    this.collection(collectionId).set(id, {
+      ...existing,
+      [attribute]: next,
+      updatedAt: new Date().toISOString(),
+    });
+    return next;
+  }
+
+  async deleteExpired(collectionId: string, field: string, before: string, limit: number): Promise<void> {
+    const expired = Array.from(this.collection(collectionId).values())
+      .filter((doc) => {
+        const value = doc[field];
+        return typeof value === 'string' && value < before;
+      })
+      .slice(0, limit);
+
+    for (const doc of expired) {
+      await this.delete(collectionId, doc.id);
+    }
   }
 
   async runInTransaction<T>(work: (tx: TransactionHandle) => Promise<T>): Promise<T> {
@@ -148,10 +203,16 @@ class InMemoryDocumentStore implements FakeDocumentStore {
 
   reset(): void {
     this.collections.clear();
+    this.permissions.clear();
   }
 
   seed<T extends DocumentRecord>(collectionId: string, doc: T): void {
     this.collection(collectionId).set(doc.id, { ...doc } as StoredDocument);
+  }
+
+  permissionsOf(collectionId: string, id: string): string[] | undefined {
+    const recorded = this.permissions.get(this.permissionKey(collectionId, id));
+    return recorded ? [...recorded] : undefined;
   }
 }
 

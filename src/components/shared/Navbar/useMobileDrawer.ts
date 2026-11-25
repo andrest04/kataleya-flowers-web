@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 interface UseMobileDrawerResult {
   isOpen: boolean;
+  hasOpened: boolean;
   open: () => void;
   close: () => void;
   setOpen: (open: boolean) => void;
@@ -13,15 +14,21 @@ interface UseMobileDrawerResult {
 
 export function useMobileDrawer(): UseMobileDrawerResult {
   const [isOpen, setIsOpen] = useState(false);
+  const [hasOpened, setHasOpened] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  const open = useCallback(() => {
-    setIsOpen(true);
+  const setOpen = useCallback((next: boolean) => {
+    setIsOpen(next);
+    if (next) setHasOpened(true);
   }, []);
 
+  const open = useCallback(() => {
+    setOpen(true);
+  }, [setOpen]);
+
   const close = useCallback(() => {
-    setIsOpen(false);
-  }, []);
+    setOpen(false);
+  }, [setOpen]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -33,24 +40,12 @@ export function useMobileDrawer(): UseMobileDrawerResult {
     };
   }, [isOpen]);
 
-  useEffect(() => {
-    if (!isOpen) return;
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [isOpen]);
-
   return {
     isOpen,
+    hasOpened,
     open,
     close,
-    setOpen: setIsOpen,
+    setOpen,
     searchInputRef,
   };
 }

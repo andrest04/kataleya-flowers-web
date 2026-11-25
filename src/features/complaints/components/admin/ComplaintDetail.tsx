@@ -36,7 +36,7 @@ export default function ComplaintDetail({ complaint: c }: { complaint: Complaint
     <div className="space-y-6">
       <div className="flex flex-wrap items-center gap-3">
         <span className="font-heading text-2xl" style={{ color: 'var(--color-primary)' }}>
-          {formatComplaintNumber(c.correlativo, c.createdAt)}
+          {formatComplaintNumber(c.correlativo, { year: c.correlativoYear, createdAt: c.createdAt })}
         </span>
         <ComplaintTypeBadge type={c.complaintType} />
         <span className="text-sm" style={{ color: 'var(--color-muted)' }}>

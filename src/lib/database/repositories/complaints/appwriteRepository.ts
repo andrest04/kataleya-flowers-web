@@ -1,11 +1,7 @@
 import { randomUUID } from 'node:crypto';
 
-import type { Models } from 'node-appwrite';
-import { AppwriteException } from 'node-appwrite';
-
-import { createAdminClient } from '@/lib/appwrite/admin';
-import { getAppwriteConfig } from '@/lib/appwrite/config';
-import type { DocumentRecord, DocumentStore } from '@/lib/database/types';
+import { APPWRITE_COLLECTIONS } from '@/lib/appwrite/ids';
+import type { CreateOptions, DocumentRecord, DocumentStore } from '@/lib/database/types';
 
 import type {
   Complaint,
@@ -15,12 +11,14 @@ import type {
   ComplaintStatusUpdate,
 } from './types';
 
-const COLLECTION_ID = 'complaints';
-const COUNTERS_COLLECTION_ID = 'counters';
+const COLLECTION_ID = APPWRITE_COLLECTIONS.complaints;
+const COUNTERS_COLLECTION_ID = APPWRITE_COLLECTIONS.counters;
 const COUNTER_ATTRIBUTE = 'value';
+const PRIVATE_DOCUMENT: CreateOptions = { permissions: [] };
 
 interface ComplaintDocument extends DocumentRecord {
   correlativo: number;
+  correlativo_year?: number | null;
   complaint_type: string;
   consumer_name: string;
   consumer_doc_type: string;
@@ -41,14 +39,11 @@ interface ComplaintDocument extends DocumentRecord {
   email_sent: boolean;
 }
 
-interface CounterDocument extends Models.Document {
-  value: number;
-}
-
 function toComplaint(doc: ComplaintDocument): Complaint {
   return {
     id: doc.id,
     correlativo: doc.correlativo,
+    correlativoYear: doc.correlativo_year ?? null,
     complaintType: doc.complaint_type,
     consumerName: doc.consumer_name,
     consumerDocType: doc.consumer_doc_type,
@@ -75,6 +70,7 @@ function toComplaint(doc: ComplaintDocument): Complaint {
 function toDocumentData(input: ComplaintInsert): Record<string, unknown> {
   return {
     correlativo: input.correlativo,
+    correlativo_year: input.correlativoYear,
     complaint_type: input.complaintType,
     consumer_name: input.consumerName,
     consumer_doc_type: input.consumerDocType,
@@ -100,10 +96,6 @@ function counterDocId(year: number): string {
   return `complaints-${year}`;
 }
 
-function isAppwriteErrorWithCode(error: unknown, code: number): boolean {
-  return error instanceof AppwriteException && error.code === code;
-}
-
 export function createComplaintsRepository(store: DocumentStore): ComplaintsRepository {
   return {
     async list(): Promise<Complaint[]> {
@@ -117,49 +109,23 @@ export function createComplaintsRepository(store: DocumentStore): ComplaintsRepo
     },
 
     async allocateCorrelativo(year: number): Promise<number> {
-      const { databases } = createAdminClient();
-      const { databaseId } = getAppwriteConfig();
-      const documentId = counterDocId(year);
-
-      try {
-        const updated = await databases.incrementDocumentAttribute<CounterDocument>({
-          databaseId,
-          collectionId: COUNTERS_COLLECTION_ID,
-          documentId,
-          attribute: COUNTER_ATTRIBUTE,
-          value: 1,
-        });
-        return updated.value;
-      } catch (error) {
-        if (!isAppwriteErrorWithCode(error, 404)) throw error;
-
-        try {
-          const created = await databases.createDocument<CounterDocument>({
-            databaseId,
-            collectionId: COUNTERS_COLLECTION_ID,
-            documentId,
-            data: { value: 1 },
-          });
-          return created.value;
-        } catch (createError) {
-          if (!isAppwriteErrorWithCode(createError, 409)) throw createError;
-
-          const retried = await databases.incrementDocumentAttribute<CounterDocument>({
-            databaseId,
-            collectionId: COUNTERS_COLLECTION_ID,
-            documentId,
-            attribute: COUNTER_ATTRIBUTE,
-            value: 1,
-          });
-          return retried.value;
-        }
-      }
+      return store.increment(COUNTERS_COLLECTION_ID, counterDocId(year), COUNTER_ATTRIBUTE, 1, {});
     },
 
     async insert(input: ComplaintInsert): Promise<ComplaintCreated> {
       const id = randomUUID();
-      const doc = await store.create<ComplaintDocument>(COLLECTION_ID, id, toDocumentData(input));
-      return { id: doc.id, correlativo: doc.correlativo, createdAt: doc.createdAt };
+      const doc = await store.create<ComplaintDocument>(
+        COLLECTION_ID,
+        id,
+        toDocumentData(input),
+        PRIVATE_DOCUMENT,
+      );
+      return {
+        id: doc.id,
+        correlativo: doc.correlativo,
+        correlativoYear: doc.correlativo_year ?? null,
+        createdAt: doc.createdAt,
+      };
     },
 
     async updateStatus(id: string, data: ComplaintStatusUpdate): Promise<void> {
@@ -168,6 +134,10 @@ export function createComplaintsRepository(store: DocumentStore): ComplaintsRepo
         provider_response: data.providerResponse,
         responded_at: data.respondedAt,
       });
+    },
+
+    async markEmailSent(id: string): Promise<void> {
+      await store.update<ComplaintDocument>(COLLECTION_ID, id, { email_sent: true });
     },
   };
 }

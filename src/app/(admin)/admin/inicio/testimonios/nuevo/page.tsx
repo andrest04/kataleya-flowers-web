@@ -7,7 +7,7 @@ import {
   FALLBACK_TESTIMONIALS,
   getPublishedTestimonials,
 } from '@/features/landing/queries/getPublishedTestimonials';
-import { HOME_TESTIMONIAL_LIMIT } from '@/lib/testimonialLimit';
+import { HOME_TESTIMONIAL_LIMIT } from '@/features/landing/rules/testimonialLimit';
 
 export const metadata = { title: 'Nuevo testimonio' };
 
@@ -16,8 +16,8 @@ interface NuevoTestimonioPageProps {
 }
 
 export default async function NuevoTestimonioPage({ searchParams }: NuevoTestimonioPageProps) {
-  const { from } = await searchParams;
-  const [testimonials, liveTestimonials] = await Promise.all([
+  const [{ from }, testimonials, liveTestimonials] = await Promise.all([
+    searchParams,
     getAdminTestimonials(),
     getPublishedTestimonials(),
   ]);

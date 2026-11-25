@@ -18,6 +18,15 @@ export const BUSINESS = {
   razonSocial: "Ortiz Ruiz Bienvenido Henry",
   ruc: "10104853370",
   address: "Teodosio Parreño 115 (ex cortijo), Lima, Perú",
+  postalAddress: {
+    locality: "Lima",
+    region: "Lima",
+    country: "PE",
+    areaServed: "Lima",
+    district: null as string | null,
+    postalCode: null as string | null,
+    googleBusinessProfileUrl: null as string | null,
+  },
   email: "floritel_hor@hotmail.com",
   experience: "32",
   monthlyOrders: "500+",
@@ -30,3 +39,5 @@ export const BUSINESS = {
       `Hola, me interesa el producto: ${productName}`,
   },
 } as const;
+
+export const GA_MEASUREMENT_ID = "G-YDFWMY50NN";

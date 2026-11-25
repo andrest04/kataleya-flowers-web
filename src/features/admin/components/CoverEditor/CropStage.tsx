@@ -1,9 +1,10 @@
 'use client';
 
 import { RotateCcw, RotateCw } from 'lucide-react';
-import { type PointerEvent, useEffect, useRef, useState } from 'react';
+import { type KeyboardEvent, type PointerEvent, useEffect, useRef, useState } from 'react';
 
 import { clampPan, coverScale, renderCoverCrop, rotatedSize } from './crop';
+import { nudgeOffset, panPercent } from './nudgeOffset';
 import type { CoverCropProfile } from './profile';
 
 interface CropStageProps {
@@ -59,6 +60,8 @@ export default function CropStage({ busy, profile, src, onCancel, onSave }: Crop
     : 1;
   const clampedX = clampPan(panX, viewWidth, size.width * drawnScale);
   const clampedY = clampPan(panY, viewHeight, size.height * drawnScale);
+  const panPercentX = panPercent(clampedX, viewWidth, size.width * drawnScale);
+  const panPercentY = panPercent(clampedY, viewHeight, size.height * drawnScale);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -92,6 +95,19 @@ export default function CropStage({ busy, profile, src, onCancel, onSave }: Crop
     dragRef.current = null;
   }
 
+  function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    const next = nudgeOffset({ x: clampedX, y: clampedY }, event.key, event.shiftKey, {
+      drawnHeight: size.height * drawnScale,
+      drawnWidth: size.width * drawnScale,
+      viewHeight,
+      viewWidth,
+    });
+    if (!next) return;
+    event.preventDefault();
+    setPanX(next.x);
+    setPanY(next.y);
+  }
+
   async function handleSave() {
     if (!image || viewWidth === 0) return;
     const blob = await renderCoverCrop({
@@ -111,7 +127,14 @@ export default function CropStage({ busy, profile, src, onCancel, onSave }: Crop
     <div className="space-y-4">
       <div
         ref={viewRef}
-        className="relative mx-auto max-h-[min(50dvh,24rem)] cursor-grab overflow-hidden bg-(--color-surface) active:cursor-grabbing"
+        tabIndex={0}
+        role="slider"
+        aria-label="Encuadre: usa las flechas para mover la imagen"
+        aria-valuemin={-100}
+        aria-valuemax={100}
+        aria-valuenow={panPercentX}
+        aria-valuetext={`Horizontal ${panPercentX} %, vertical ${panPercentY} %`}
+        className="relative mx-auto max-h-[min(50dvh,24rem)] cursor-grab overflow-hidden bg-(--color-surface) active:cursor-grabbing focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary)"
         style={{
           aspectRatio: String(aspect),
           width: `min(100%, calc(min(50dvh, 24rem) * ${aspect}))`,
@@ -120,6 +143,7 @@ export default function CropStage({ busy, profile, src, onCancel, onSave }: Crop
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerUp}
+        onKeyDown={handleKeyDown}
       >
         <canvas ref={canvasRef} className="h-full w-full touch-none" />
       </div>

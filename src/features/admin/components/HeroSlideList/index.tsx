@@ -66,7 +66,7 @@ export default function HeroSlideList({ slides: initialSlides }: HeroSlideListPr
       }
       setItems((current) => current.filter((slide) => slide.id !== pendingDelete.id));
       setPendingDelete(null);
-      toast.success('Slide eliminado.');
+      toast.success('Imagen de portada eliminada.');
     } finally {
       setIsDeleting(false);
     }
@@ -75,8 +75,8 @@ export default function HeroSlideList({ slides: initialSlides }: HeroSlideListPr
   if (items.length === 0) {
     return (
       <EmptyState
-        message="Todavía no hay slides. El sitio sigue mostrando el hero actual hasta que publiques uno."
-        action={<Button href="/admin/inicio/hero/nuevo" size="sm">Agregar slide</Button>}
+        message="Todavía no hay imágenes de portada. El sitio sigue mostrando la portada actual hasta que publiques una."
+        action={<Button href="/admin/inicio/hero/nuevo" size="sm">Agregar imagen de portada</Button>}
       />
     );
   }
@@ -90,14 +90,14 @@ export default function HeroSlideList({ slides: initialSlides }: HeroSlideListPr
     <div className="space-y-3">
       {hasVisibleSlide ? null : (
         <p className="rounded-xl border border-(--color-border) bg-(--color-surface) px-4 py-3 text-sm text-(--color-dark)">
-          Ningún slide está visible. Activa uno para que la portada muestre hero.
+          Ninguna imagen de portada está visible. Activa una para que aparezca en el sitio.
         </p>
       )}
       <SortableList
         ids={items.map((slide) => slide.id)}
         getItemLabel={(id) => {
           const slide = items.find((item) => item.id === id);
-          return slide?.name || slide?.title || 'el slide';
+          return slide?.name || slide?.title || 'la imagen de portada';
         }}
         onReorder={(ids) => void reorder.handleReorder(ids)}
       >
@@ -141,7 +141,7 @@ export default function HeroSlideList({ slides: initialSlides }: HeroSlideListPr
       </SortableList>
       <ConfirmDialog
         open={pendingDelete !== null}
-        title="Eliminar slide"
+        title="Eliminar imagen de portada"
         description={pendingDelete ? `¿Eliminar “${pendingDelete.title}”? Esta acción no se puede deshacer.` : ''}
         loading={isDeleting}
         variant="destructive"

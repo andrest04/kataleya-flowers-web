@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 import { whatsappWithMessage } from '@/lib/contactLinks';
+import { isExternalHttpsHref } from '@/lib/safeHref';
 import type { VisibleAnnouncement } from '@/lib/siteSettings';
 
 interface AnnouncementBarProps {
@@ -37,7 +38,7 @@ export default function AnnouncementBar({
   }
 
   const ctaClassName = 'cursor-pointer font-semibold underline underline-offset-2';
-  const isExternal = announcement.ctaHref.startsWith('http');
+  const isExternal = isExternalHttpsHref(announcement.ctaHref);
 
   return (
     <div className="flex h-10 items-center justify-center bg-(--color-primary) px-4 text-center">

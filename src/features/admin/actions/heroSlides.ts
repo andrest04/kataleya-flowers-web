@@ -24,7 +24,8 @@ import { imageStorage } from '@/lib/imageStorage';
 const LAST_ACTIVE_ERROR = 'Tiene que quedar al menos un slide activo.';
 const FALLBACK_HERO_IMAGE = '/images/hero/rosas.jpg';
 
-async function ensureStoredHeroImage(url: string): Promise<string | AdminActionFailure> {
+async function ensureStoredHeroImage(rawUrl: string): Promise<string | AdminActionFailure> {
+  const url = rawUrl.trim();
   if (imageStorage.isOwnedUrl(url)) return url;
   if (url !== FALLBACK_HERO_IMAGE) {
     return {

@@ -6,7 +6,7 @@ import {
   type AdminActionFailure,
   failureFromUnknown,
   requireAdmin,
-} from '@/features/admin/utils/auth';
+} from '@/lib/auth/admin';
 import { complaintsRepository } from '@/lib/database/repositories/complaints';
 
 import { complaintStatusUpdateSchema } from '../schemas/complaint';

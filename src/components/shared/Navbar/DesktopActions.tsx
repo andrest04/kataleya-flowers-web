@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import type { RefObject } from "react";
 
 import DesktopSearch from "./DesktopSearch";
 
@@ -8,12 +9,14 @@ interface DesktopActionsProps {
   brandName: string;
   handleNavigate: (href: string) => void;
   openSearch: () => void;
+  searchTriggerRef: RefObject<HTMLButtonElement | null>;
 }
 
 export default function DesktopActions({
   brandName,
   handleNavigate,
   openSearch,
+  searchTriggerRef,
 }: DesktopActionsProps) {
   return (
     <div className="hidden items-center justify-end gap-6 md:flex">
@@ -31,7 +34,7 @@ export default function DesktopActions({
         Hacer pedido
       </Link>
 
-      <DesktopSearch onOpen={openSearch} />
+      <DesktopSearch onOpen={openSearch} triggerRef={searchTriggerRef} />
     </div>
   );
 }

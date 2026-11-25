@@ -14,6 +14,7 @@ import {
 
 import type { SearchResult } from "./constants";
 import { primaryLinks, secondaryLinks } from "./constants";
+import { useComboboxNavigation } from "./useComboboxNavigation";
 
 interface MobileDrawerProps {
   brandName: string;
@@ -42,6 +43,13 @@ export default function MobileDrawer({
   searchInputRef,
   clearSearch,
 }: MobileDrawerProps) {
+  const { activeDescendant, onKeyDown, getOptionProps } = useComboboxNavigation({
+    idPrefix: "mobile-search",
+    items: searchResults,
+    inputValue: searchQuery,
+    onSelect: (result) => handleResultClick(result.categorySlug, result.slug),
+  });
+
   return (
     <Sheet
       open={isDrawerOpen}
@@ -55,6 +63,12 @@ export default function MobileDrawer({
         overlayClassName="z-[92]"
         closeButtonClassName="size-11 md:size-7"
         aria-label="Menú de navegación"
+        onEscapeKeyDown={(event) => {
+          if (event.target === searchInputRef.current && searchQuery) {
+            event.preventDefault();
+            clearSearch();
+          }
+        }}
       >
         <div className="flex items-center justify-between border-b border-border px-6 py-5">
           <SheetTitle className="text-lg text-primary font-heading">
@@ -81,15 +95,17 @@ export default function MobileDrawer({
               type="search"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={onKeyDown}
               name="q"
               autoComplete="off"
               placeholder="Buscar flores…"
-              className="flex-1 bg-transparent text-sm font-body text-dark outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary)"
+              className="flex-1 bg-transparent text-base md:text-sm font-body text-dark outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary)"
               aria-label="Buscar productos"
               role="combobox"
               aria-autocomplete="list"
               aria-expanded={searchResults.length > 0}
               aria-controls="mobile-search-listbox"
+              aria-activedescendant={activeDescendant}
             />
           </form>
 
@@ -104,47 +120,46 @@ export default function MobileDrawer({
           </p>
 
           {searchResults.length > 0 && (
-            <ul
-              id="mobile-search-listbox"
-              role="listbox"
-              aria-label="Resultados de búsqueda"
-              className="mt-2 overflow-hidden rounded-2xl border border-border bg-white"
-            >
-              {searchResults.map((result) => (
-                <li
-                  key={`${result.categorySlug}/${result.slug}`}
-                  role="option"
-                  aria-selected={false}
-                >
-                  <SearchResultItem
-                    imageUrl={result.imageUrl}
-                    name={result.name}
-                    subtitle={result.categoryName}
-                    price={`${result.hasVariants ? "Desde " : ""}S/${result.price}`}
-                    onClick={() =>
-                      handleResultClick(result.categorySlug, result.slug)
-                    }
-                  />
-                </li>
-              ))}
-              <li>
-                <Link
-                  href={`/buscar?q=${encodeURIComponent(searchQuery)}`}
-                  onClick={() => {
-                    clearSearch();
-                    onClose();
-                  }}
-                  className="flex w-full items-center justify-center gap-1.5 px-4 py-3 font-body text-xs tracking-[0.06em] text-primary uppercase transition-colors duration-150 hover:bg-surface"
-                >
-                  Ver todos los resultados
-                  <ChevronRight
-                    className="h-3 w-3"
-                    aria-hidden="true"
-                    strokeWidth={2}
-                  />
-                </Link>
-              </li>
-            </ul>
+            <div className="mt-2 overflow-hidden rounded-2xl border border-border bg-white">
+              <ul
+                id="mobile-search-listbox"
+                role="listbox"
+                aria-label="Resultados de búsqueda"
+              >
+                {searchResults.map((result, index) => (
+                  <li
+                    key={`${result.categorySlug}/${result.slug}`}
+                    {...getOptionProps(index)}
+                    className="aria-selected:bg-surface"
+                  >
+                    <SearchResultItem
+                      imageUrl={result.imageUrl}
+                      name={result.name}
+                      subtitle={result.categoryName}
+                      price={`${result.hasVariants ? "Desde " : ""}S/${result.price}`}
+                      onClick={() =>
+                        handleResultClick(result.categorySlug, result.slug)
+                      }
+                    />
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href={`/buscar?q=${encodeURIComponent(searchQuery)}`}
+                onClick={() => {
+                  clearSearch();
+                  onClose();
+                }}
+                className="flex w-full items-center justify-center gap-1.5 px-4 py-3 font-body text-xs tracking-[0.06em] text-primary uppercase transition-colors duration-150 hover:bg-surface"
+              >
+                Ver todos los resultados
+                <ChevronRight
+                  className="h-3 w-3"
+                  aria-hidden="true"
+                  strokeWidth={2}
+                />
+              </Link>
+            </div>
           )}
         </div>
 

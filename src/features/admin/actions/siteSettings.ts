@@ -13,12 +13,8 @@ import {
   siteSettingsRepository,
   type SiteSettingsWritePayload,
 } from '@/lib/database/repositories/siteSettings';
-import {
-  extractMapsCandidate,
-  isAllowedMapsHost,
-  isMapsShortLinkHost,
-  toMapsEmbedUrl,
-} from '@/lib/mapsEmbed';
+import { extractMapsCandidate, isMapsShortLinkHost, toMapsEmbedUrl } from '@/lib/mapsEmbed';
+import { followMapsShortLink } from '@/lib/mapsShortLink';
 import {
   ANNOUNCEMENT_WHATSAPP_CTA,
   FALLBACK_TITLES,
@@ -47,24 +43,6 @@ function mapsLinkFailure(): AdminActionFailure {
   };
 }
 
-async function fetchMapsShortLink(url: URL): Promise<string | null> {
-  const href =
-    url.protocol === 'http:'
-      ? `https://${url.host}${url.pathname}${url.search}${url.hash}`
-      : url.href;
-  if (!href.startsWith('https://')) return null;
-  try {
-    const response = await fetch(href, {
-      cache: 'no-store',
-      redirect: 'follow',
-      signal: AbortSignal.timeout(5000),
-    });
-    return response.url || null;
-  } catch {
-    return null;
-  }
-}
-
 async function resolveMapsPaste(mapsLink: string): Promise<string | null> {
   const direct = toMapsEmbedUrl(mapsLink);
   if (direct) return direct;
@@ -77,21 +55,10 @@ async function resolveMapsPaste(mapsLink: string): Promise<string | null> {
     return null;
   }
   if (!isMapsShortLinkHost(parsed.hostname)) return null;
+  if (parsed.protocol === 'http:') parsed.protocol = 'https:';
 
-  const resolved = await fetchMapsShortLink(parsed);
-  if (!resolved) return null;
-
-  let finalUrl: URL;
-  try {
-    finalUrl = new URL(resolved);
-  } catch {
-    return null;
-  }
-  if (finalUrl.protocol === 'http:') finalUrl.protocol = 'https:';
-  if (finalUrl.protocol !== 'https:') return null;
-  if (!isAllowedMapsHost(finalUrl.hostname)) return null;
-
-  return toMapsEmbedUrl(finalUrl.href);
+  const resolved = await followMapsShortLink(parsed);
+  return resolved ? toMapsEmbedUrl(resolved) : null;
 }
 
 function revalidateSiteSettings(): void {

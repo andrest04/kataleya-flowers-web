@@ -1,7 +1,7 @@
 "use client";
 
 import type { RefObject } from "react";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 interface HorizontalScrollBarProps {
   scrollRef: RefObject<HTMLDivElement | null>;
@@ -24,21 +24,20 @@ export default function HorizontalScrollBar({
 }: HorizontalScrollBarProps) {
   const [progress, setProgress] = useState<Progress>(HIDDEN_PROGRESS);
 
-  const updateProgress = useCallback(() => {
-    const el = scrollRef.current;
-    if (!el || el.scrollWidth <= el.clientWidth + 1) {
-      setProgress(HIDDEN_PROGRESS);
-      return;
-    }
-    const thumbPercent = (el.clientWidth / el.scrollWidth) * 100;
-    const maxScroll = el.scrollWidth - el.clientWidth;
-    const offsetPercent = (el.scrollLeft / maxScroll) * (100 - thumbPercent);
-    setProgress({ thumbPercent, offsetPercent, visible: true });
-  }, [scrollRef]);
-
   useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
+
+    const updateProgress = () => {
+      if (el.scrollWidth <= el.clientWidth + 1) {
+        setProgress(HIDDEN_PROGRESS);
+        return;
+      }
+      const thumbPercent = (el.clientWidth / el.scrollWidth) * 100;
+      const maxScroll = el.scrollWidth - el.clientWidth;
+      const offsetPercent = (el.scrollLeft / maxScroll) * (100 - thumbPercent);
+      setProgress({ thumbPercent, offsetPercent, visible: true });
+    };
 
     let frameId: number | undefined;
     const scheduleUpdate = () => {
@@ -49,17 +48,21 @@ export default function HorizontalScrollBar({
       });
     };
     const resizeObserver = new ResizeObserver(scheduleUpdate);
-    const observeLayout = () => {
-      resizeObserver.disconnect();
-      resizeObserver.observe(el);
-      Array.from(el.children).forEach((child) => resizeObserver.observe(child));
-    };
-    const mutationObserver = new MutationObserver(() => {
-      observeLayout();
+    const mutationObserver = new MutationObserver((records) => {
+      for (const record of records) {
+        for (const node of Array.from(record.removedNodes)) {
+          if (node instanceof Element) resizeObserver.unobserve(node);
+        }
+        for (const node of Array.from(record.addedNodes)) {
+          if (node instanceof Element) resizeObserver.observe(node);
+        }
+      }
       scheduleUpdate();
     });
 
-    observeLayout();
+    for (const target of [el, ...Array.from(el.children)]) {
+      resizeObserver.observe(target);
+    }
     scheduleUpdate();
     el.addEventListener("scroll", scheduleUpdate);
     window.addEventListener("resize", scheduleUpdate);
@@ -72,7 +75,7 @@ export default function HorizontalScrollBar({
       el.removeEventListener("scroll", scheduleUpdate);
       window.removeEventListener("resize", scheduleUpdate);
     };
-  }, [scrollRef, updateProgress]);
+  }, [scrollRef]);
 
   const handlePointerDown = (downEvent: React.PointerEvent<HTMLDivElement>) => {
     const el = scrollRef.current;

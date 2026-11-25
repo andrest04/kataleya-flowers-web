@@ -8,9 +8,9 @@ export interface ImageStorageProvider {
     mimeType: string;
   }): Promise<string>;
 
-  delete(url: string): Promise<void>;
+  delete(url: string): Promise<boolean>;
 
-  deleteMany(urls: string[]): Promise<void>;
+  deleteMany(urls: string[]): Promise<boolean>;
 
   isOwnedUrl(url: string): boolean;
 

@@ -9,7 +9,7 @@ import {
 } from '@/features/landing/queries/getPublishedHeroSlide';
 import { getSiteSettings } from '@/features/settings/queries/getSiteSettings';
 
-export const metadata = { title: 'Nuevo slide del hero' };
+export const metadata = { title: 'Nueva imagen de portada' };
 
 export default async function NuevoHeroSlidePage() {
   const [slides, liveHero, settings] = await Promise.all([
@@ -31,7 +31,7 @@ export default async function NuevoHeroSlidePage() {
       >
         ← Volver a inicio
       </Link>
-      <h1 className="font-serif text-2xl font-semibold text-(--color-dark)">Nuevo slide</h1>
+      <h1 className="font-serif text-2xl font-semibold text-(--color-dark)">Nueva imagen de portada</h1>
       <HeroCanvasEditor allowHide={allowHide} initial={initial} />
     </div>
   );

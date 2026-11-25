@@ -20,6 +20,7 @@ async function getJsonLdBlocks(page: Page): Promise<JsonLdScript[]> {
         parsed.push(json);
       }
     } catch {
+      continue;
     }
   }
   return parsed;
@@ -58,8 +59,7 @@ async function navigateToFirstProduct(page: Page): Promise<void> {
       { s: slug },
       { timeout: 10_000 },
     )
-    .catch(() => {
-    });
+    .catch(() => null);
   const count = await productCards.count();
   if (count === 0) {
     throw new Error(`Categoría ${slug} sin productos`);

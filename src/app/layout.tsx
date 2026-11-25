@@ -1,17 +1,15 @@
 import "./globals.css";
 
-import { GoogleAnalytics } from "@next/third-parties/google";
-import { Analytics } from "@vercel/analytics/next";
-import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata, Viewport } from "next";
 import { Crimson_Text, Mulish } from "next/font/google";
 import type React from "react";
 
 import { MotionProvider } from "@/components/shared/MotionProvider";
 import { JsonLd } from "@/components/ui/JsonLd";
-import { Toaster } from "@/components/ui/primitives/sonner";
 import { getSiteSettings } from "@/features/settings/queries/getSiteSettings";
-import { floristSeoDescription, schemaDayNames } from "@/lib/siteSettings";
+import { BUSINESS } from "@/lib/constants";
+import { floristSeoDescription } from "@/lib/siteSettings";
+import { buildFloristJsonLd } from "@/lib/structuredData";
 
 const crimsonText = Crimson_Text({
   subsets: ["latin"],
@@ -19,8 +17,6 @@ const crimsonText = Crimson_Text({
   display: "swap",
   variable: "--font-heading",
 });
-
-const GA_MEASUREMENT_ID = "G-YDFWMY50NN";
 
 const mulish = Mulish({
   subsets: ["latin"],
@@ -75,30 +71,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const settings = await getSiteSettings();
-  const floristJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Florist",
-    name: settings.name,
-    description: floristSeoDescription(settings),
-    url: settings.website,
-    telephone: `+${settings.phone}`,
-    address: {
-      "@type": "PostalAddress",
-      streetAddress: settings.address,
-      addressLocality: settings.location,
-      addressCountry: "PE",
-    },
-    openingHoursSpecification: [
-      {
-        "@type": "OpeningHoursSpecification",
-        dayOfWeek: schemaDayNames(settings.hours.openDays),
-        opens: settings.hours.opens,
-        closes: settings.hours.closes,
-      },
-    ],
-    sameAs: [settings.instagram],
-    priceRange: "S/30 — S/800",
-  };
+  const floristJsonLd = buildFloristJsonLd(settings, BUSINESS.postalAddress);
 
   return (
     <html lang="es-PE" className={`${crimsonText.variable} ${mulish.variable}`}>
@@ -114,11 +87,7 @@ export default async function RootLayout({
           Saltar al contenido principal
         </a>
         <MotionProvider>{children}</MotionProvider>
-        <Toaster />
-        <Analytics />
-        <SpeedInsights />
       </body>
-      <GoogleAnalytics gaId={GA_MEASUREMENT_ID} />
     </html>
   );
 }

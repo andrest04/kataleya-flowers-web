@@ -44,6 +44,40 @@ function escapeHtml(value: string): string {
     .replace(/'/g, '&#39;');
 }
 
+const SUBJECT_NAME_MAX_LENGTH = 120;
+
+function subjectName(name: string): string {
+  return [...name]
+    .filter((char) => {
+      const code = char.charCodeAt(0);
+      return code >= 0x20 && code !== 0x7f && (code < 0x80 || code > 0x9f);
+    })
+    .slice(0, SUBJECT_NAME_MAX_LENGTH)
+    .join('');
+}
+
+function adminComplaintUrl(website: string, complaintId: string): string | null {
+  try {
+    const url = new URL(website);
+    if (url.protocol !== 'https:' && url.protocol !== 'http:') return null;
+    return `${url.origin}/admin/reclamos/${encodeURIComponent(complaintId)}`;
+  } catch {
+    return null;
+  }
+}
+
+function adminLink(website: string, complaintId: string): string {
+  const url = adminComplaintUrl(website, complaintId);
+  if (!url) {
+    return `<p style="color:#1a1a1a;font-size:14px;margin:16px 0;">Revísala y respóndela desde el panel de administración.</p>`;
+  }
+  return `<p style="margin:16px 0;">
+      <a href="${escapeHtml(url)}" style="background:${BRAND};color:#fff;text-decoration:none;padding:10px 18px;border-radius:6px;font-size:14px;display:inline-block;">
+        Ver y responder en el panel
+      </a>
+    </p>`;
+}
+
 function row(label: string, value: string): string {
   return `<tr>
     <td style="padding:6px 12px 6px 0;color:#666;font-size:13px;vertical-align:top;white-space:nowrap;">${label}</td>
@@ -99,7 +133,7 @@ export function consumerCopyEmail(
       Te responderemos en un plazo máximo de ${RESPONSE_BUSINESS_DAYS} días hábiles.
     </p>`;
   return {
-    subject: `Tu hoja de reclamación N° ${data.complaintNumber} — ${provider.name}`,
+    subject: `Tu hoja de reclamación N° ${data.complaintNumber} — ${subjectName(provider.name)}`,
     html: shell('Copia de tu hoja de reclamación', inner, provider),
   };
 }
@@ -109,18 +143,13 @@ export function businessNotificationEmail(
   complaintId: string,
   provider: ComplaintProvider,
 ): EmailContent {
-  const adminUrl = `${provider.website}/admin/reclamos/${complaintId}`;
   const inner = `
     <p style="color:#1a1a1a;font-size:14px;line-height:1.6;">
       Se registró una nueva ${data.complaintType === 'QUEJA' ? 'queja' : 'reclamación'}
       en el Libro de Reclamaciones.
     </p>
     ${hojaTable(data)}
-    <p style="margin:16px 0;">
-      <a href="${adminUrl}" style="background:${BRAND};color:#fff;text-decoration:none;padding:10px 18px;border-radius:6px;font-size:14px;display:inline-block;">
-        Ver y responder en el panel
-      </a>
-    </p>
+    ${adminLink(provider.website, complaintId)}
     <p style="color:#999;font-size:12px;">
       Recuerda responder dentro de los ${RESPONSE_BUSINESS_DAYS} días hábiles.
     </p>`;

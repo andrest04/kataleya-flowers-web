@@ -1,11 +1,25 @@
 export const RESPONSE_BUSINESS_DAYS = 15;
 
+const LIMA_YEAR_FORMAT = new Intl.DateTimeFormat('en-US', {
+  timeZone: 'America/Lima',
+  year: 'numeric',
+});
+
+export function limaYear(date: string | Date): number {
+  return Number(LIMA_YEAR_FORMAT.format(new Date(date)));
+}
+
+interface ComplaintNumberSource {
+  year: number | null;
+  createdAt: string | Date;
+}
+
 export function formatComplaintNumber(
   correlativo: number,
-  createdAt: string | Date,
+  { year, createdAt }: ComplaintNumberSource,
 ): string {
-  const year = new Date(createdAt).getFullYear();
-  return `${String(correlativo).padStart(5, '0')}-${year}`;
+  const resolvedYear = year ?? new Date(createdAt).getUTCFullYear();
+  return `${String(correlativo).padStart(5, '0')}-${resolvedYear}`;
 }
 
 const FIXED_PERU_HOLIDAYS: readonly [month: number, day: number][] = [

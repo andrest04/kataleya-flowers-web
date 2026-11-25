@@ -1,4 +1,6 @@
-import { Account, Client, Databases } from 'node-appwrite';
+import 'server-only';
+
+import { Account, Client } from 'node-appwrite';
 
 import { getAppwriteConfig } from '@/lib/appwrite/config';
 
@@ -12,7 +14,6 @@ export function createSessionClient(sessionSecret: string) {
 
   return {
     account: new Account(client),
-    databases: new Databases(client),
   };
 }
 

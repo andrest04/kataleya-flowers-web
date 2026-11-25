@@ -40,7 +40,7 @@ export default function CatalogFeaturedCard({
         <p className="mt-1 line-clamp-2 font-body text-sm text-(--color-cream)/85">
           {category.description}
         </p>
-        <span className="mt-2 inline-block border-b border-(--color-cream) font-body text-xs font-semibold tracking-[0.08em] text-(--color-cream) uppercase transition-colors duration-200 group-hover:border-(--color-secondary) group-hover:text-(--color-secondary)">
+        <span className="mt-2 inline-block border-b border-(--color-cream) font-body text-xs font-semibold tracking-[0.08em] text-(--color-cream) uppercase transition-colors duration-200 group-hover:border-(--color-gold-text-dark) group-hover:text-(--color-gold-text-dark)">
           Ver más
         </span>
       </div>

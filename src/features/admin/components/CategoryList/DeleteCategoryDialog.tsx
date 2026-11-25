@@ -1,10 +1,16 @@
 'use client';
 
-import type React from 'react';
-
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import type { Category } from '@/lib/database/repositories/categories';
 
+import {
+  cascadeConfirmDescription,
+  cascadeHint,
+  deleteConfirmLabel,
+  deleteDescription,
+  isDeleteConfirmDisabled,
+  reassignCandidates,
+} from './deleteDialogCopy';
 import DeleteModeOption from './DeleteModeOption';
 import type { DeleteMode, DeleteTarget } from './useCategoryDelete';
 
@@ -37,30 +43,14 @@ export default function DeleteCategoryDialog({
   onCancel,
   onCancelCascade,
 }: DeleteCategoryDialogProps) {
-  const description = !target
-    ? ''
-    : target.productCount > 0
-      ? `La categoría "${target.name}" tiene ${target.productCount} producto${target.productCount !== 1 ? 's' : ''}.`
-      : `¿Eliminar la categoría "${target.name}"?`;
-
-  const confirmLabel =
-    !target || target.productCount === 0
-      ? 'Eliminar'
-      : deleteMode === 'reassign'
-        ? 'Mover y eliminar'
-        : 'Eliminar todo';
-
-  const confirmDisabled =
-    target !== null && target.productCount > 0 && deleteMode === 'reassign' && !reassignTo;
-
   return (
     <>
       <ConfirmDialog
         open={target !== null && !showCascadeConfirm}
         title="Eliminar categoría"
-        description={description}
-        confirmLabel={confirmLabel}
-        confirmDisabled={confirmDisabled}
+        description={deleteDescription(target)}
+        confirmLabel={deleteConfirmLabel(target, deleteMode)}
+        confirmDisabled={isDeleteConfirmDisabled(target, deleteMode, reassignTo)}
         loading={isDeleting}
         onConfirm={onConfirm}
         onCancel={onCancel}
@@ -89,16 +79,11 @@ export default function DeleteCategoryDialog({
                 }}
               >
                 <option value="">Seleccionar categoría…</option>
-                {candidates.reduce<React.ReactElement[]>((options, c) => {
-                  if (c.id !== target.id) {
-                    options.push(
-                      <option key={c.id} value={c.id}>
-                        {c.name}
-                      </option>,
-                    );
-                  }
-                  return options;
-                }, [])}
+                {reassignCandidates(candidates, target.id).map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
               </select>
             )}
 
@@ -107,7 +92,7 @@ export default function DeleteCategoryDialog({
               selected={deleteMode === 'cascade'}
               onSelect={() => onSelectMode('cascade')}
               title="Eliminar categoría y todos sus productos"
-              hint={`Se eliminarán permanentemente ${target.productCount} producto${target.productCount !== 1 ? 's' : ''}`}
+              hint={cascadeHint(target)}
               titleEmphasis
             />
           </div>
@@ -118,7 +103,7 @@ export default function DeleteCategoryDialog({
         <ConfirmDialog
           open
           title="¿Estás seguro?"
-          description={`Se eliminará la categoría "${target.name}" junto con ${target.productCount} producto${target.productCount !== 1 ? 's' : ''} de forma permanente. Esta acción no se puede deshacer.`}
+          description={cascadeConfirmDescription(target)}
           confirmLabel="Sí, eliminar todo"
           loading={isDeleting}
           onConfirm={onConfirmCascade}

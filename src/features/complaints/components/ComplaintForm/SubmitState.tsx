@@ -1,6 +1,7 @@
 'use client';
 
 import { CheckCircle2, Printer } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 
 import Button from '@/components/ui/Button';
 
@@ -10,6 +11,7 @@ import {
 } from '../../email/templates';
 import type { ComplaintFormData } from '../../schemas/complaint';
 import { RESPONSE_BUSINESS_DAYS } from '../../utils/format';
+import { printDocument } from './printDocument';
 
 interface SubmitStateProps {
   complaintNumber: string;
@@ -26,14 +28,35 @@ export default function SubmitState({
   data,
   provider,
 }: SubmitStateProps) {
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const [printJob, setPrintJob] = useState(0);
+  const [isPrinting, setIsPrinting] = useState(false);
+  const [printFailed, setPrintFailed] = useState(false);
+  const printHtml = printDocument(
+    consumerCopyEmail({ ...data, complaintNumber, createdAt }, provider).html,
+    complaintNumber,
+  );
+
+  useEffect(() => {
+    headingRef.current?.focus();
+  }, []);
+
   function handlePrint() {
-    const { html } = consumerCopyEmail({ ...data, complaintNumber, createdAt }, provider);
-    const win = window.open('', '_blank', 'width=820,height=640');
-    if (!win) return;
-    win.document.write(
-      `<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Hoja de Reclamación ${complaintNumber}</title></head><body onload="window.print()">${html}</body></html>`,
-    );
-    win.document.close();
+    setPrintFailed(false);
+    setPrintJob((job) => job + 1);
+    setIsPrinting(true);
+  }
+
+  function handlePrintFrameLoad(event: React.SyntheticEvent<HTMLIFrameElement>) {
+    const frameWindow = event.currentTarget.contentWindow;
+    try {
+      if (!frameWindow) throw new Error('Print frame unavailable');
+      frameWindow.addEventListener('afterprint', () => setIsPrinting(false), { once: true });
+      frameWindow.print();
+    } catch {
+      setIsPrinting(false);
+      setPrintFailed(true);
+    }
   }
 
   return (
@@ -45,7 +68,7 @@ export default function SubmitState({
         style={{ color: 'var(--color-accent)' }}
         aria-hidden="true"
       />
-      <h2 className="font-heading text-2xl text-primary">
+      <h2 ref={headingRef} tabIndex={-1} className="font-heading text-2xl text-primary">
         Tu reclamación fue registrada
       </h2>
       <p className="mt-2 text-sm text-(--color-dark)">Número de hoja</p>
@@ -72,6 +95,23 @@ export default function SubmitState({
           Volver al inicio
         </Button>
       </div>
+      {printFailed && (
+        <p role="alert" className="mt-4 text-sm" style={{ color: 'var(--color-primary)' }}>
+          No pudimos abrir la impresión. Anota tu número de hoja y vuelve a intentarlo.
+        </p>
+      )}
+      {isPrinting && (
+        <iframe
+          key={printJob}
+          title={`Hoja de Reclamación ${complaintNumber} para imprimir`}
+          sandbox="allow-modals allow-same-origin"
+          srcDoc={printHtml}
+          onLoad={handlePrintFrameLoad}
+          aria-hidden="true"
+          tabIndex={-1}
+          className="pointer-events-none fixed top-0 -left-[10000px] h-[640px] w-[820px] border-0"
+        />
+      )}
     </div>
   );
 }

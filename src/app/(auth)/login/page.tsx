@@ -1,10 +1,24 @@
 'use client';
 
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Suspense, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 
-import { loginAction } from '@/features/admin/actions/auth';
+import type { LoginFailure } from '@/features/admin/actions/auth';
+import { clearStaleSessionAction, loginAction } from '@/features/admin/actions/auth';
 import { BUSINESS } from '@/lib/constants';
+
+const SERVER_MESSAGE_CODES = new Set<LoginFailure['code']>(['VALIDATION', 'INVALID_CREDENTIALS', 'FORBIDDEN', 'RATE_LIMITED']);
+
+function StaleSessionCleanup() {
+  const sessionEnded = useSearchParams().get('session') === 'ended';
+
+  useEffect(() => {
+    if (sessionEnded) void clearStaleSessionAction();
+  }, [sessionEnded]);
+
+  return null;
+}
 
 function ForbiddenBanner({ error }: { error: string | null }) {
   const searchParams = useSearchParams();
@@ -17,8 +31,19 @@ function ForbiddenBanner({ error }: { error: string | null }) {
   if (!display) return null;
 
   return (
-    <p className="text-sm" style={{ color: 'var(--color-primary)' }}>
+    <p id="login-error" role="alert" className="text-sm" style={{ color: 'var(--color-primary)' }}>
       {display}
+    </p>
+  );
+}
+
+function PasswordResetNotice({ hidden }: { hidden: boolean }) {
+  const passwordReset = useSearchParams().get('reset') === 'ok';
+  if (!passwordReset || hidden) return null;
+
+  return (
+    <p role="status" className="text-sm" style={{ color: 'var(--color-dark)' }}>
+      Tu contraseña se actualizó. Inicia sesión con la nueva.
     </p>
   );
 }
@@ -39,7 +64,7 @@ export default function LoginPage() {
       const result = await loginAction({ email, password });
       if (!result.ok) {
         const safeError =
-          result.code === 'VALIDATION' || result.code === 'INVALID_CREDENTIALS'
+          result.code && SERVER_MESSAGE_CODES.has(result.code)
             ? result.error
             : 'No se pudo iniciar sesión. Intenta de nuevo.';
         setError(safeError);
@@ -54,6 +79,8 @@ export default function LoginPage() {
 
   return (
     <main
+      id="main-content"
+      tabIndex={-1}
       className="min-h-screen flex items-center justify-center px-4"
       style={{ background: 'var(--color-cream)' }}
     >
@@ -93,6 +120,8 @@ export default function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               required
               autoComplete="email"
+              aria-invalid={error ? true : undefined}
+              aria-describedby={error ? 'login-error' : undefined}
               className="w-full px-3 py-2.5 rounded-lg text-base md:text-sm outline-none transition-shadow focus:ring-2"
               style={{
                 border: '1px solid var(--color-border)',
@@ -117,6 +146,8 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
               autoComplete="current-password"
+              aria-invalid={error ? true : undefined}
+              aria-describedby={error ? 'login-error' : undefined}
               className="w-full px-3 py-2.5 rounded-lg text-base md:text-sm outline-none transition-shadow focus:ring-2"
               style={{
                 border: '1px solid var(--color-border)',
@@ -124,9 +155,20 @@ export default function LoginPage() {
                 color: 'var(--color-dark)',
               }}
             />
+            <div className="mt-2 text-right">
+              <Link
+                href="/recuperar-contrasena"
+                className="text-sm underline underline-offset-4"
+                style={{ color: 'var(--color-primary)' }}
+              >
+                ¿Olvidaste tu contraseña?
+              </Link>
+            </div>
           </div>
 
           <Suspense fallback={null}>
+            <StaleSessionCleanup />
+            <PasswordResetNotice hidden={error !== null} />
             <ForbiddenBanner error={error} />
           </Suspense>
 

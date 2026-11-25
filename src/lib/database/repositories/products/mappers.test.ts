@@ -44,7 +44,39 @@ function baseDoc(overrides: Partial<ProductDocRecord> = {}): ProductDocRecord {
 
 describe('deriveProductImages', () => {
   it('returns an empty url and gallery when there are no images', () => {
-    expect(deriveProductImages([])).toEqual({ imageUrl: '', gallery: [] });
+    expect(deriveProductImages([])).toEqual({
+      imageUrl: '',
+      imageAlt: '',
+      gallery: [],
+      galleryAlts: [],
+    });
+  });
+
+  it('returns the primary alt text and the gallery alts in display order', () => {
+    const images = [
+      image({ id: 'c', url: 'https://x/c.jpg', displayOrder: 2, altText: 'Detalle del lazo' }),
+      image({
+        id: 'primary',
+        url: 'https://x/primary.jpg',
+        displayOrder: 0,
+        isPrimary: true,
+        altText: 'Ramo de rosas rojas',
+      }),
+      image({ id: 'b', url: 'https://x/b.jpg', displayOrder: 1, altText: null }),
+    ];
+
+    expect(deriveProductImages(images)).toEqual({
+      imageUrl: 'https://x/primary.jpg',
+      imageAlt: 'Ramo de rosas rojas',
+      gallery: ['https://x/b.jpg', 'https://x/c.jpg'],
+      galleryAlts: ['', 'Detalle del lazo'],
+    });
+  });
+
+  it('trims stored alt text so blank values fall back downstream', () => {
+    const images = [image({ id: 'a', url: 'https://x/a.jpg', isPrimary: true, altText: '   ' })];
+
+    expect(deriveProductImages(images).imageAlt).toBe('');
   });
 
   it('picks the image flagged as primary regardless of order', () => {
@@ -55,7 +87,9 @@ describe('deriveProductImages', () => {
 
     expect(deriveProductImages(images)).toEqual({
       imageUrl: 'https://x/b.jpg',
+      imageAlt: '',
       gallery: ['https://x/a.jpg'],
+      galleryAlts: [''],
     });
   });
 
@@ -67,7 +101,9 @@ describe('deriveProductImages', () => {
 
     expect(deriveProductImages(images)).toEqual({
       imageUrl: 'https://x/a.jpg',
+      imageAlt: '',
       gallery: ['https://x/a.jpg', 'https://x/b.jpg'],
+      galleryAlts: ['', ''],
     });
   });
 
@@ -80,7 +116,9 @@ describe('deriveProductImages', () => {
 
     expect(deriveProductImages(images)).toEqual({
       imageUrl: 'https://x/primary.jpg',
+      imageAlt: '',
       gallery: ['https://x/b.jpg', 'https://x/c.jpg'],
+      galleryAlts: ['', ''],
     });
   });
 });
@@ -128,7 +166,9 @@ describe('toProduct', () => {
       description: 'Un ramo hermoso',
       price: 120,
       imageUrl: '',
+      imageAlt: '',
       images: [],
+      imageAlts: [],
       includes: ['tarjeta'],
       colors: [],
       flowerTypes: [],
@@ -156,14 +196,28 @@ describe('toProduct', () => {
         ['p1', [{ flowerTypeId: 'f1', flowerType: { id: 'f1', name: 'rosa' } }]],
       ]),
       imagesByProduct: new Map([
-        ['p1', [image({ id: 'i1', url: 'https://x/i1.jpg', isPrimary: true, displayOrder: 0 })]],
+        [
+          'p1',
+          [
+            image({
+              id: 'i1',
+              url: 'https://x/i1.jpg',
+              isPrimary: true,
+              displayOrder: 0,
+              altText: 'Ramo de rosas',
+            }),
+            image({ id: 'i2', url: 'https://x/i2.jpg', displayOrder: 1, altText: 'Vista lateral' }),
+          ],
+        ],
       ]),
     };
 
     const result = toProduct(doc, related);
 
     expect(result.imageUrl).toBe('https://x/i1.jpg');
-    expect(result.images).toEqual([]);
+    expect(result.imageAlt).toBe('Ramo de rosas');
+    expect(result.images).toEqual(['https://x/i2.jpg']);
+    expect(result.imageAlts).toEqual(['Vista lateral']);
     expect(result.colors).toEqual(['rojo']);
     expect(result.flowerTypes).toEqual(['rosa']);
     expect(result.priceVariants).toEqual([{ label: 'Único', price: 99 }]);

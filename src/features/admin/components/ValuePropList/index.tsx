@@ -18,12 +18,12 @@ import DragHandle from '@/components/ui/SortableList/DragHandle';
 import SortableItem from '@/components/ui/SortableList/SortableItem';
 import ToggleSwitch from '@/components/ui/ToggleSwitch';
 import { deleteValueProp, toggleValuePropStatus } from '@/features/admin/actions/valueProps';
-import type { ValueProp } from '@/lib/database/repositories/valueProps';
-import { isPublished } from '@/lib/publishing';
 import {
   HOME_VALUE_PROP_LIMIT,
   HOME_VALUE_PROP_LIMIT_COPY,
-} from '@/lib/valuePropLimit';
+} from '@/features/landing/rules/valuePropLimit';
+import type { ValueProp } from '@/lib/database/repositories/valueProps';
+import { isPublished } from '@/lib/publishing';
 
 import { useValuePropReorder } from './useValuePropReorder';
 

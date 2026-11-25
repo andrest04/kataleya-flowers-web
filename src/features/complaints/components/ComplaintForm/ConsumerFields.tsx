@@ -1,20 +1,25 @@
 'use client';
 
+import { FieldError } from '@/components/ui/FieldError';
 import { FormField } from '@/components/ui/FormField';
 import { Input, Select } from '@/components/ui/Input';
 import ToggleSwitch from '@/components/ui/ToggleSwitch';
-import { FieldError } from '@/features/admin/components/ProductForm/FieldError';
 
-import { DOC_TYPES } from '../../schemas/complaint';
+import type { ComplaintFormData } from '../../schemas/complaint';
+import { DOC_TYPES } from '../../schemas/constants';
+
+const MINOR_LABEL = 'Represento a un menor de edad';
 
 interface ConsumerFieldsProps {
   errors: Record<string, string>;
+  values?: ComplaintFormData;
   isMinor: boolean;
   onMinorChange: (value: boolean) => void;
 }
 
 export default function ConsumerFields({
   errors,
+  values,
   isMinor,
   onMinorChange,
 }: ConsumerFieldsProps) {
@@ -24,6 +29,8 @@ export default function ConsumerFields({
         <Input
           id="consumerName"
           name="consumerName"
+          defaultValue={values?.consumerName}
+          autoComplete="name"
           required
           aria-required="true"
           aria-invalid={!!errors.consumerName}
@@ -34,7 +41,11 @@ export default function ConsumerFields({
 
       <div className="grid gap-4 sm:grid-cols-2">
         <FormField label="Tipo de documento" required htmlFor="consumerDocType">
-          <Select id="consumerDocType" name="consumerDocType" defaultValue="DNI">
+          <Select
+            id="consumerDocType"
+            name="consumerDocType"
+            defaultValue={values?.consumerDocType ?? 'DNI'}
+          >
             {DOC_TYPES.map((t) => (
               <option key={t} value={t}>
                 {t}
@@ -46,6 +57,7 @@ export default function ConsumerFields({
           <Input
             id="consumerDocNumber"
             name="consumerDocNumber"
+            defaultValue={values?.consumerDocNumber}
             required
             aria-required="true"
             aria-invalid={!!errors.consumerDocNumber}
@@ -59,6 +71,8 @@ export default function ConsumerFields({
         <Input
           id="consumerAddress"
           name="consumerAddress"
+          defaultValue={values?.consumerAddress}
+          autoComplete="street-address"
           required
           aria-required="true"
           aria-invalid={!!errors.consumerAddress}
@@ -72,7 +86,9 @@ export default function ConsumerFields({
           <Input
             id="consumerPhone"
             name="consumerPhone"
+            defaultValue={values?.consumerPhone}
             type="tel"
+            autoComplete="tel"
             aria-invalid={!!errors.consumerPhone}
             aria-describedby="err-consumerPhone"
           />
@@ -82,7 +98,9 @@ export default function ConsumerFields({
           <Input
             id="consumerEmail"
             name="consumerEmail"
+            defaultValue={values?.consumerEmail}
             type="email"
+            autoComplete="email"
             required
             aria-required="true"
             aria-invalid={!!errors.consumerEmail}
@@ -92,16 +110,10 @@ export default function ConsumerFields({
         </FormField>
       </div>
 
-      <div className="flex items-center gap-3 pt-1">
-        <ToggleSwitch
-          checked={isMinor}
-          onChange={onMinorChange}
-          label="El consumidor es menor de edad"
-        />
-        <span className="text-sm text-(--color-dark)">
-          Represento a un menor de edad
-        </span>
-      </div>
+      <label className="flex min-h-11 w-fit cursor-pointer items-center gap-3 pt-1">
+        <ToggleSwitch checked={isMinor} onChange={onMinorChange} label={MINOR_LABEL} />
+        <span className="text-sm text-(--color-dark)">{MINOR_LABEL}</span>
+      </label>
 
       {isMinor && (
         <FormField
@@ -112,6 +124,7 @@ export default function ConsumerFields({
           <Input
             id="guardianName"
             name="guardianName"
+            defaultValue={values?.guardianName}
             aria-invalid={!!errors.guardianName}
             aria-describedby="err-guardianName"
           />

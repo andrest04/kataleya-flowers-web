@@ -1,17 +1,33 @@
 "use client";
 
 import { Menu, Search, X } from "lucide-react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
+import type { PointerEvent } from "react";
 
 import { type SiteSettings, visibleAnnouncement } from "@/lib/siteSettings";
 
 import AnnouncementBar from "./AnnouncementBar";
-import CatalogMenu from "./CatalogMenu";
 import DesktopActions from "./DesktopActions";
 import DesktopNav from "./DesktopNav";
-import MobileDrawer from "./MobileDrawer";
-import SearchOverlay from "./SearchOverlay";
 import { useNavbar } from "./useNavbar";
+
+const CatalogMenu = dynamic(() => import("./CatalogMenu"), { ssr: false });
+const SearchOverlay = dynamic(() => import("./SearchOverlay"), { ssr: false });
+const MobileDrawer = dynamic(() => import("./MobileDrawer"), { ssr: false });
+
+function prefetchDesktopOverlays() {
+  void import("./CatalogMenu");
+  void import("./SearchOverlay");
+}
+
+function prefetchMobileDrawer() {
+  void import("./MobileDrawer");
+}
+
+function prefetchForPointer(event: PointerEvent<HTMLElement>) {
+  if (event.pointerType === "mouse") prefetchDesktopOverlays();
+}
 
 interface NavbarProps {
   settings: SiteSettings;
@@ -20,6 +36,7 @@ interface NavbarProps {
 export default function Navbar({ settings }: NavbarProps) {
   const {
     isDrawerOpen,
+    hasDrawerOpened,
     setIsDrawerOpen,
     isHeaderHidden,
     isSearchOpen,
@@ -31,11 +48,16 @@ export default function Navbar({ settings }: NavbarProps) {
     suggestions,
     searchInputRef,
     desktopSearchRef,
+    searchTriggerRef,
     clearSearch,
     isCatalogMenuOpen,
     catalogMenuCategories,
     catalogMenuRef,
+    catalogTriggerRef,
+    shouldFocusCatalogMenu,
     openCatalogMenu,
+    toggleCatalogMenu,
+    handleCatalogMenuBlur,
     scheduleCloseCatalogMenu,
     cancelCloseCatalogMenu,
     closeCatalogMenu,
@@ -63,6 +85,8 @@ export default function Navbar({ settings }: NavbarProps) {
           />
 
           <header
+            onPointerEnter={prefetchForPointer}
+            onFocus={prefetchDesktopOverlays}
             className={`h-16 border-b border-(--color-primary) ${
               isSearchOpen ? "bg-(--color-overlay)" : "bg-(--color-cream)"
             } ${
@@ -82,9 +106,11 @@ export default function Navbar({ settings }: NavbarProps) {
                 <button
                   type="button"
                   className="flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center text-(--color-primary) transition-opacity hover:opacity-70 md:hidden"
-                  aria-label={isDrawerOpen ? "Cerrar menu" : "Abrir menu"}
+                  aria-label={isDrawerOpen ? "Cerrar menú" : "Abrir menú"}
                   aria-expanded={isDrawerOpen}
                   aria-controls="nav-drawer"
+                  onPointerEnter={prefetchMobileDrawer}
+                  onFocus={prefetchMobileDrawer}
                   onClick={() => (isDrawerOpen ? setIsDrawerOpen(false) : openDrawer())}
                 >
                   {isDrawerOpen ? (
@@ -97,7 +123,10 @@ export default function Navbar({ settings }: NavbarProps) {
                 <DesktopNav
                   handleNavigate={handleNavigate}
                   isCatalogMenuOpen={isCatalogMenuOpen}
+                  catalogTriggerRef={catalogTriggerRef}
                   openCatalogMenu={openCatalogMenu}
+                  toggleCatalogMenu={toggleCatalogMenu}
+                  handleCatalogMenuBlur={handleCatalogMenuBlur}
                   scheduleCloseCatalogMenu={scheduleCloseCatalogMenu}
                   closeCatalogMenu={closeCatalogMenu}
                 />
@@ -115,6 +144,8 @@ export default function Navbar({ settings }: NavbarProps) {
                   type="button"
                   className="flex h-11 w-11 cursor-pointer items-center justify-center text-(--color-primary) transition-opacity hover:opacity-70 md:hidden"
                   aria-label="Buscar"
+                  onPointerEnter={prefetchMobileDrawer}
+                  onFocus={prefetchMobileDrawer}
                   onClick={openDrawer}
                 >
                   <Search className="h-5 w-5" aria-hidden="true" strokeWidth={2} />
@@ -124,6 +155,7 @@ export default function Navbar({ settings }: NavbarProps) {
                   brandName={settings.name}
                   handleNavigate={handleNavigate}
                   openSearch={openSearch}
+                  searchTriggerRef={searchTriggerRef}
                 />
               </div>
             </div>
@@ -145,6 +177,8 @@ export default function Navbar({ settings }: NavbarProps) {
               <CatalogMenu
                 categories={catalogMenuCategories}
                 catalogMenuRef={catalogMenuRef}
+                shouldFocusOnOpen={shouldFocusCatalogMenu}
+                onBlur={handleCatalogMenuBlur}
                 onMouseEnter={cancelCloseCatalogMenu}
                 onMouseLeave={scheduleCloseCatalogMenu}
                 onNavigate={closeCatalogMenu}
@@ -166,19 +200,21 @@ export default function Navbar({ settings }: NavbarProps) {
         />
       )}
 
-      <MobileDrawer
-        brandName={settings.name}
-        isDrawerOpen={isDrawerOpen}
-        onClose={() => setIsDrawerOpen(false)}
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        handleSearchSubmit={handleSearchSubmit}
-        searchResults={searchResults}
-        handleResultClick={handleResultClick}
-        handleNavigate={handleNavigate}
-        searchInputRef={searchInputRef}
-        clearSearch={clearSearch}
-      />
+      {hasDrawerOpened && (
+        <MobileDrawer
+          brandName={settings.name}
+          isDrawerOpen={isDrawerOpen}
+          onClose={() => setIsDrawerOpen(false)}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          handleSearchSubmit={handleSearchSubmit}
+          searchResults={searchResults}
+          handleResultClick={handleResultClick}
+          handleNavigate={handleNavigate}
+          searchInputRef={searchInputRef}
+          clearSearch={clearSearch}
+        />
+      )}
     </>
   );
 }

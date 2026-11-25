@@ -1,5 +1,6 @@
 import { getProducts } from '@/features/catalog/queries/getProducts';
 import type { Category } from '@/features/catalog/types';
+import { buildBestSellersByTab } from '@/features/catalog/utils/pickBestSellers';
 
 import BestSellersTabs from './BestSellersTabs';
 
@@ -14,9 +15,11 @@ export default async function BestSellersSection({ categories }: BestSellersSect
     return null;
   }
 
-  const categoryById = Object.fromEntries(categories.map((category) => [category.id, category]));
   const categoryIdsWithProducts = new Set(products.map((product) => product.categoryId));
-  const tabCategories = categories.filter((category) => categoryIdsWithProducts.has(category.id));
+  const tabCategories = categories
+    .filter((category) => categoryIdsWithProducts.has(category.id))
+    .map(({ id, name, slug }) => ({ id, name, slug }));
+  const bestSellersByTab = buildBestSellersByTab(products, tabCategories);
 
   return (
     <section id="mas-vendidos" className="scroll-mt-20 py-12 sm:py-16">
@@ -25,11 +28,7 @@ export default async function BestSellersSection({ categories }: BestSellersSect
           Más vendidos
         </h2>
 
-        <BestSellersTabs
-          products={products}
-          categoryById={categoryById}
-          tabCategories={tabCategories}
-        />
+        <BestSellersTabs bestSellersByTab={bestSellersByTab} tabCategories={tabCategories} />
       </div>
     </section>
   );

@@ -52,7 +52,7 @@ export default function ComplaintsTable({ complaints }: { complaints: Complaint[
                       className="font-medium underline-offset-2 hover:underline"
                       style={{ color: 'var(--color-primary)' }}
                     >
-                      {formatComplaintNumber(c.correlativo, c.createdAt)}
+                      {formatComplaintNumber(c.correlativo, { year: c.correlativoYear, createdAt: c.createdAt })}
                     </Link>
                   </TableCell>
                   <TableCell style={{ color: 'var(--color-dark)' }}>
@@ -90,7 +90,7 @@ export default function ComplaintsTable({ complaints }: { complaints: Complaint[
                 className="flex min-h-10 items-center font-medium underline-offset-2 hover:underline"
                 style={{ color: 'var(--color-primary)' }}
               >
-                {formatComplaintNumber(c.correlativo, c.createdAt)}
+                {formatComplaintNumber(c.correlativo, { year: c.correlativoYear, createdAt: c.createdAt })}
               </Link>
               <p className="mt-1 text-sm" style={{ color: 'var(--color-dark)' }}>
                 {c.consumerName}

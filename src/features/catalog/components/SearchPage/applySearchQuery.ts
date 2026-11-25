@@ -2,6 +2,7 @@ import type { CatalogCollectionItem } from '@/features/catalog/components/Catalo
 import type { CatalogSortOption } from '@/features/catalog/components/CatalogFilterSheet';
 import type { Category, Product } from '@/features/catalog/types';
 import { filterProducts, getEffectivePrice } from '@/features/catalog/utils/filterProducts';
+import { toCatalogCardProduct } from '@/features/catalog/utils/toCatalogCardProduct';
 
 export function firstParam(value: string | string[] | undefined): string {
   return Array.isArray(value) ? (value[0] ?? '') : (value ?? '');
@@ -33,7 +34,7 @@ export function toCollectionItems(
 ): CatalogCollectionItem[] {
   return products.flatMap((product) => {
     const categorySlug = slugByCategoryId.get(product.categoryId);
-    return categorySlug ? [{ product, categorySlug }] : [];
+    return categorySlug ? [{ product: toCatalogCardProduct(product), categorySlug }] : [];
   });
 }
 
@@ -49,25 +50,19 @@ export function applySearchFilters(
     flowerTypes: string[];
   },
 ): Product[] {
-  const filtered = filterProducts(products, categories, {
+  const slugByCategoryId = new Map(categories.map((category) => [category.id, category.slug]));
+  const entries = products.map((product) => ({
+    product,
+    categorySlug: slugByCategoryId.get(product.categoryId) ?? '',
+  }));
+  return filterProducts(entries, {
     q: filters.q,
-    categoria: filters.categorySlugs.length === 1 ? filters.categorySlugs[0] : '',
-    precioMin: filters.precioMin,
-    precioMax: filters.precioMax,
+    categorySlugs: filters.categorySlugs,
+    priceMin: filters.precioMin,
+    priceMax: filters.precioMax,
     colors: filters.colors,
     flowerTypes: filters.flowerTypes,
-  });
-
-  if (filters.categorySlugs.length <= 1) return filtered;
-
-  const selectedSlugs = new Set(filters.categorySlugs);
-  const allowedIds = new Set(
-    categories.reduce<string[]>((ids, category) => {
-      if (selectedSlugs.has(category.slug)) ids.push(category.id);
-      return ids;
-    }, []),
-  );
-  return filtered.filter((product) => allowedIds.has(product.categoryId));
+  }).map(({ product }) => product);
 }
 
 export function sortProducts(products: Product[], sort: CatalogSortOption): Product[] {

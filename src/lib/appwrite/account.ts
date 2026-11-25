@@ -1,3 +1,5 @@
+import 'server-only';
+
 import type { Models } from 'node-appwrite';
 
 import { createSessionClient } from '@/lib/appwrite/session';

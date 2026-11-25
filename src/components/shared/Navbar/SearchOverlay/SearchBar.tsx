@@ -1,7 +1,7 @@
 "use client";
 
 import { Search, X } from "lucide-react";
-import type { FormEvent } from "react";
+import type { FormEvent, KeyboardEvent } from "react";
 import { useEffect, useRef } from "react";
 
 import { PANEL_CONTAINER } from "./constants";
@@ -12,6 +12,8 @@ interface SearchBarProps {
   handleSearchSubmit: (e: FormEvent) => void;
   closeSearch: () => void;
   isExpanded: boolean;
+  activeDescendant: string | undefined;
+  onKeyDown: (event: KeyboardEvent<HTMLInputElement>) => void;
 }
 
 export default function SearchBar({
@@ -20,6 +22,8 @@ export default function SearchBar({
   handleSearchSubmit,
   closeSearch,
   isExpanded,
+  activeDescendant,
+  onKeyDown,
 }: SearchBarProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -43,13 +47,15 @@ export default function SearchBar({
         type="search"
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
+        onKeyDown={onKeyDown}
         placeholder="Buscar flores..."
         className="w-full bg-transparent font-body text-base text-(--color-dark) outline-none [&::-webkit-search-cancel-button]:appearance-none"
         aria-label="Buscar productos"
         role="combobox"
         aria-autocomplete="list"
         aria-expanded={isExpanded}
-        aria-controls="search-panel"
+        aria-controls="search-listbox"
+        aria-activedescendant={activeDescendant}
       />
       <button
         type="button"

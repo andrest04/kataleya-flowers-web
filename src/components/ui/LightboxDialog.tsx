@@ -1,11 +1,14 @@
 'use client';
 
-import { AnimatePresence, domAnimation, LazyMotion, m } from 'framer-motion';
+import { AnimatePresence, LazyMotion, m } from 'framer-motion';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { Dialog as DialogPrimitive } from 'radix-ui';
 import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react';
 
 import Image from '@/components/ui/StoredImage';
+
+const loadMotionFeatures = () =>
+  import('@/components/shared/motionFeatures').then((mod) => mod.default);
 
 interface LightboxDialogProps {
   open: boolean;
@@ -13,6 +16,7 @@ interface LightboxDialogProps {
   images: string[];
   initialIndex?: number;
   alt: string;
+  alts?: string[];
 }
 
 const SWIPE_THRESHOLD = 50;
@@ -33,6 +37,7 @@ function LightboxInner({
   images,
   initialIndex = 0,
   alt,
+  alts,
 }: LightboxDialogProps) {
   const safeImages = images.length > 0 ? images : [];
   const [index, setIndex] = useState(() => clampIndex(initialIndex, safeImages.length));
@@ -93,9 +98,11 @@ function LightboxInner({
   if (total === 0) return null;
   const currentSrc = safeImages[index];
   if (!currentSrc) return null;
+  const currentAlt =
+    alts?.[index]?.trim() || (hasMultiple ? `${alt} (${index + 1} de ${total})` : alt);
 
   return (
-    <LazyMotion features={domAnimation}>
+    <LazyMotion features={loadMotionFeatures}>
       <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
         <AnimatePresence>
           {open && (
@@ -131,11 +138,10 @@ function LightboxInner({
                   <div className="relative w-full h-full max-w-5xl max-h-[85vh]">
                     <Image
                       src={currentSrc}
-                      alt={hasMultiple ? `${alt} (${index + 1} de ${total})` : alt}
+                      alt={currentAlt}
                       fill
                       sizes="(max-width: 1024px) 100vw, 80vw"
                       className="object-contain select-none"
-                      priority
                     />
                   </div>
 

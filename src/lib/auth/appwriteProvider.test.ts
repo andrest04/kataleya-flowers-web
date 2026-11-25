@@ -7,6 +7,10 @@ const mocks = vi.hoisted(() => ({
   deleteSession: vi.fn(),
   listMemberships: vi.fn(),
   getUser: vi.fn(),
+  listUsers: vi.fn(),
+  deleteSessions: vi.fn(),
+  createRecovery: vi.fn(),
+  updateRecovery: vi.fn(),
 }));
 
 class MockAppwriteException extends Error {
@@ -28,8 +32,13 @@ vi.mock('node-appwrite', () => ({
 
 vi.mock('@/lib/appwrite/admin', () => ({
   createAdminClient: () => ({
-    account: { createEmailPasswordSession: mocks.createEmailPasswordSession },
+    account: {
+      createEmailPasswordSession: mocks.createEmailPasswordSession,
+      createRecovery: mocks.createRecovery,
+      updateRecovery: mocks.updateRecovery,
+    },
     teams: { listMemberships: mocks.listMemberships },
+    users: { list: mocks.listUsers, deleteSessions: mocks.deleteSessions },
   }),
 }));
 
@@ -58,12 +67,14 @@ describe('appwriteAuthProvider.login', () => {
     mocks.createEmailPasswordSession.mockResolvedValueOnce({
       secret: 'secret-1',
       expire: '2026-01-01T00:00:00.000Z',
+      userId: 'user-1',
     });
 
     const result = await appwriteAuthProvider.login('user@example.com', 'password');
 
     expect(result).toEqual({
       ok: true,
+      userId: 'user-1',
       session: { secret: 'secret-1', expiresAt: '2026-01-01T00:00:00.000Z' },
     });
     expect(mocks.createEmailPasswordSession).toHaveBeenCalledWith({
@@ -100,17 +111,30 @@ describe('appwriteAuthProvider.login', () => {
 });
 
 describe('appwriteAuthProvider.logout', () => {
-  it('resolves even when the underlying delete session call throws', async () => {
-    mocks.deleteSession.mockRejectedValueOnce(new Error('session already gone'));
+  it('returns true when the delete session call succeeds', async () => {
+    mocks.deleteSession.mockResolvedValueOnce(undefined);
 
-    await expect(appwriteAuthProvider.logout('secret-1')).resolves.toBeUndefined();
+    await expect(appwriteAuthProvider.logout('secret-1')).resolves.toBe(true);
+    expect(mocks.deleteSession).toHaveBeenCalledTimes(1);
     expect(mocks.deleteSession).toHaveBeenCalledWith({ sessionId: 'current' });
   });
 
-  it('resolves when the delete session call succeeds', async () => {
-    mocks.deleteSession.mockResolvedValueOnce(undefined);
+  it('retries once and returns true when the retry succeeds', async () => {
+    mocks.deleteSession
+      .mockRejectedValueOnce(new Error('network blip'))
+      .mockResolvedValueOnce(undefined);
 
-    await expect(appwriteAuthProvider.logout('secret-1')).resolves.toBeUndefined();
+    await expect(appwriteAuthProvider.logout('secret-1')).resolves.toBe(true);
+    expect(mocks.deleteSession).toHaveBeenCalledTimes(2);
+  });
+
+  it('returns false instead of throwing when both attempts fail', async () => {
+    mocks.deleteSession
+      .mockRejectedValueOnce(new Error('session already gone'))
+      .mockRejectedValueOnce(new Error('session already gone'));
+
+    await expect(appwriteAuthProvider.logout('secret-1')).resolves.toBe(false);
+    expect(mocks.deleteSession).toHaveBeenCalledTimes(2);
   });
 });
 
@@ -161,5 +185,139 @@ describe('appwriteAuthProvider.isAdmin', () => {
     mocks.listMemberships.mockRejectedValueOnce(new Error('network down'));
 
     await expect(appwriteAuthProvider.isAdmin('user-1')).resolves.toBe(false);
+  });
+});
+
+describe('appwriteAuthProvider.requestPasswordRecovery', () => {
+  const redirectUrl = 'https://www.example.com/restablecer-contrasena';
+
+  it('sends the recovery email to a confirmed admin', async () => {
+    mocks.listUsers.mockResolvedValueOnce({ users: [{ $id: 'user-1', email: 'admin@example.com' }] });
+    mocks.listMemberships.mockResolvedValueOnce({ memberships: [{ userId: 'user-1', confirm: true }] });
+    mocks.createRecovery.mockResolvedValueOnce({});
+
+    await expect(
+      appwriteAuthProvider.requestPasswordRecovery('admin@example.com', redirectUrl),
+    ).resolves.toBeUndefined();
+
+    expect(mocks.listUsers).toHaveBeenCalledWith({
+      queries: ['equal(email=["admin@example.com"])', 'limit(1)'],
+    });
+    expect(mocks.createRecovery).toHaveBeenCalledWith({
+      email: 'admin@example.com',
+      url: redirectUrl,
+    });
+  });
+
+  it('resolves silently without sending when no user has that email', async () => {
+    mocks.listUsers.mockResolvedValueOnce({ users: [] });
+
+    await expect(
+      appwriteAuthProvider.requestPasswordRecovery('nobody@example.com', redirectUrl),
+    ).resolves.toBeUndefined();
+
+    expect(mocks.listMemberships).not.toHaveBeenCalled();
+    expect(mocks.createRecovery).not.toHaveBeenCalled();
+  });
+
+  it('resolves silently without sending when the user is not a confirmed admin', async () => {
+    mocks.listUsers.mockResolvedValueOnce({ users: [{ $id: 'user-2', email: 'client@example.com' }] });
+    mocks.listMemberships.mockResolvedValueOnce({ memberships: [{ userId: 'user-2', confirm: false }] });
+
+    await expect(
+      appwriteAuthProvider.requestPasswordRecovery('client@example.com', redirectUrl),
+    ).resolves.toBeUndefined();
+
+    expect(mocks.createRecovery).not.toHaveBeenCalled();
+  });
+
+  it('swallows an Appwrite error and logs it without the email', async () => {
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    mocks.listUsers.mockResolvedValueOnce({ users: [{ $id: 'user-1', email: 'admin@example.com' }] });
+    mocks.listMemberships.mockResolvedValueOnce({ memberships: [{ userId: 'user-1', confirm: true }] });
+    mocks.createRecovery.mockRejectedValueOnce(
+      new MockAppwriteException('Invalid url for admin@example.com', 400),
+    );
+
+    await expect(
+      appwriteAuthProvider.requestPasswordRecovery('admin@example.com', redirectUrl),
+    ).resolves.toBeUndefined();
+
+    expect(errorSpy).toHaveBeenCalledTimes(1);
+    expect(JSON.stringify(errorSpy.mock.calls)).not.toContain('admin@example.com');
+    errorSpy.mockRestore();
+  });
+
+  it('swallows a lookup failure without sending', async () => {
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    mocks.listUsers.mockRejectedValueOnce(new Error('network down'));
+
+    await expect(
+      appwriteAuthProvider.requestPasswordRecovery('admin@example.com', redirectUrl),
+    ).resolves.toBeUndefined();
+
+    expect(mocks.createRecovery).not.toHaveBeenCalled();
+    errorSpy.mockRestore();
+  });
+});
+
+describe('appwriteAuthProvider.completePasswordRecovery', () => {
+  it('updates the password and revokes every session of the user', async () => {
+    mocks.updateRecovery.mockResolvedValueOnce({});
+    mocks.deleteSessions.mockResolvedValueOnce({});
+
+    await expect(
+      appwriteAuthProvider.completePasswordRecovery('user-1', 'secret-1', 'a-long-new-password'),
+    ).resolves.toEqual({ ok: true });
+
+    expect(mocks.updateRecovery).toHaveBeenCalledWith({
+      userId: 'user-1',
+      secret: 'secret-1',
+      password: 'a-long-new-password',
+    });
+    expect(mocks.deleteSessions).toHaveBeenCalledWith({ userId: 'user-1' });
+    expect(mocks.updateRecovery.mock.invocationCallOrder[0]).toBeLessThan(
+      mocks.deleteSessions.mock.invocationCallOrder[0] ?? 0,
+    );
+  });
+
+  it('still reports success and logs when revoking the sessions fails', async () => {
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    mocks.updateRecovery.mockResolvedValueOnce({});
+    mocks.deleteSessions.mockRejectedValueOnce(new Error('network down'));
+
+    await expect(
+      appwriteAuthProvider.completePasswordRecovery('user-1', 'secret-1', 'a-long-new-password'),
+    ).resolves.toEqual({ ok: true });
+
+    expect(errorSpy).toHaveBeenCalledTimes(1);
+    errorSpy.mockRestore();
+  });
+
+  it.each([
+    [401, 'INVALID_LINK'],
+    [404, 'INVALID_LINK'],
+    [400, 'WEAK_PASSWORD'],
+  ])('maps an Appwrite %i to %s without revoking sessions', async (status, code) => {
+    mocks.updateRecovery.mockRejectedValueOnce(new MockAppwriteException('rejected', status));
+
+    await expect(
+      appwriteAuthProvider.completePasswordRecovery('user-1', 'secret-1', 'a-long-new-password'),
+    ).resolves.toMatchObject({ ok: false, code });
+
+    expect(mocks.deleteSessions).not.toHaveBeenCalled();
+  });
+
+  it('maps any other error to INTERNAL', async () => {
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    mocks.updateRecovery.mockRejectedValueOnce(new Error('network down'));
+
+    await expect(
+      appwriteAuthProvider.completePasswordRecovery('user-1', 'secret-1', 'a-long-new-password'),
+    ).resolves.toMatchObject({ ok: false, code: 'INTERNAL' });
+
+    expect(errorSpy).toHaveBeenCalledTimes(1);
+    expect(JSON.stringify(errorSpy.mock.calls)).not.toContain('secret-1');
+    errorSpy.mockRestore();
   });
 });

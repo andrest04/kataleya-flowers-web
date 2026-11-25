@@ -23,6 +23,10 @@ export interface BulkDeleteOperation {
   id: string;
 }
 
+export interface CreateOptions {
+  permissions?: string[];
+}
+
 export interface TransactionHandle {
   create<T extends DocumentRecord>(
     collectionId: string,
@@ -47,6 +51,7 @@ export interface DocumentStore {
     collectionId: string,
     id: string,
     data: Record<string, unknown>,
+    options?: CreateOptions,
   ): Promise<T>;
   update<T extends DocumentRecord>(
     collectionId: string,
@@ -54,6 +59,14 @@ export interface DocumentStore {
     data: Record<string, unknown>,
   ): Promise<T>;
   delete(collectionId: string, id: string): Promise<void>;
+  increment(
+    collectionId: string,
+    id: string,
+    attribute: string,
+    by: number,
+    createData: Record<string, unknown>,
+  ): Promise<number>;
+  deleteExpired(collectionId: string, field: string, before: string, limit: number): Promise<void>;
   runInTransaction<T>(work: (tx: TransactionHandle) => Promise<T>): Promise<T>;
 }
 

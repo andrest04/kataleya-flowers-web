@@ -11,19 +11,25 @@ import {
   requireAdmin,
 } from '@/features/admin/utils/auth';
 import {
+  createOrderableHomeCollection,
+  readFromFallbackId,
+} from '@/features/admin/utils/orderableHomeCollection';
+import {
   fallbackValueProps,
   type ValuePropView,
 } from '@/features/landing/queries/getPublishedValueProps';
+import { tokenizeValuePropIdentity } from '@/features/landing/rules/valuePropIdentity';
+import {
+  HOME_VALUE_PROP_LIMIT,
+  HOME_VALUE_PROP_LIMIT_COPY,
+} from '@/features/landing/rules/valuePropLimit';
 import { getSiteSettings } from '@/features/settings/queries/getSiteSettings';
+import { documentStore } from '@/lib/database';
 import {
   valuePropRepository,
   type ValuePropWritePayload,
 } from '@/lib/database/repositories/valueProps';
-import { tokenizeValuePropIdentity } from '@/lib/valuePropIdentity';
-import {
-  HOME_VALUE_PROP_LIMIT,
-  HOME_VALUE_PROP_LIMIT_COPY,
-} from '@/lib/valuePropLimit';
+import { valuePropConfig } from '@/lib/database/repositories/valueProps/config';
 
 type ValuePropActionResult = { success: true } | AdminActionFailure;
 
@@ -50,12 +56,6 @@ function parseValuePropInput(data: unknown):
     };
   }
   return { ok: true, value: parsed.data };
-}
-
-function readFromFallbackId(data: unknown): string | undefined {
-  if (!data || typeof data !== 'object' || !('fromFallbackId' in data)) return undefined;
-  const value = data.fromFallbackId;
-  return typeof value === 'string' && value.trim() !== '' ? value : undefined;
 }
 
 async function toWritePayload(
@@ -89,14 +89,6 @@ async function toWritePayload(
   };
 }
 
-function activeCount(rows: { isActive: boolean }[]): number {
-  return rows.filter((row) => row.isActive).length;
-}
-
-function limitFailure(): AdminActionFailure {
-  return { success: false, error: HOME_VALUE_PROP_LIMIT_COPY, code: 'VALIDATION' };
-}
-
 async function payloadFromFallback(
   view: ValuePropView,
   displayOrder: number,
@@ -118,49 +110,31 @@ async function payloadFromFallback(
   };
 }
 
-async function seedFallbackDocuments(
-  exceptId: string | undefined,
-  replacement?: ValuePropWritePayload,
-): Promise<void> {
-  const fallbacks = fallbackValueProps(await getSiteSettings());
-  await Promise.all(
-    fallbacks.map(async (item, index) => {
-      const displayOrder = index + 1;
-      if (exceptId && item.id === exceptId && replacement) {
-        return valuePropRepository.create({ ...replacement, displayOrder });
-      }
-      return valuePropRepository.create(await payloadFromFallback(item, displayOrder));
-    }),
-  );
-}
+const valueProps = createOrderableHomeCollection({
+  store: documentStore,
+  config: valuePropConfig,
+  repository: valuePropRepository,
+  activeLimit: HOME_VALUE_PROP_LIMIT,
+  limitCopy: HOME_VALUE_PROP_LIMIT_COPY,
+  notFoundCopy: 'No encontramos ese destacado.',
+  loadFallbacks: async () => fallbackValueProps(await getSiteSettings()),
+  payloadFromFallback: async (view, displayOrder) => ({
+    ok: true,
+    payload: await payloadFromFallback(view, displayOrder),
+  }),
+});
 
 export async function createValueProp(data: unknown): Promise<ValuePropActionResult> {
   try {
     await requireAdmin();
-    const fromFallbackId = readFromFallbackId(data);
     const parsed = parseValuePropInput(data);
     if (!parsed.ok) return parsed.failure;
-    const existing = await valuePropRepository.list();
-    if (existing.length === 0) {
-      const matchesFallback = fallbackValueProps(await getSiteSettings()).some(
-        (item) => item.id === fromFallbackId,
-      );
-      if (matchesFallback) {
-        await seedFallbackDocuments(fromFallbackId, await toWritePayload(parsed.value, 1));
-      } else {
-        await seedFallbackDocuments(undefined);
-        if (parsed.value.isActive) return limitFailure();
-        const displayOrder = await valuePropRepository.getNextOrder();
-        await valuePropRepository.create(await toWritePayload(parsed.value, displayOrder));
-      }
-      revalidateValueProps();
-      return { success: true };
-    }
-    if (parsed.value.isActive && activeCount(existing) >= HOME_VALUE_PROP_LIMIT) {
-      return limitFailure();
-    }
-    const displayOrder = await valuePropRepository.getNextOrder();
-    await valuePropRepository.create(await toWritePayload(parsed.value, displayOrder));
+    const failure = await valueProps.create({
+      fromFallbackId: readFromFallbackId(data),
+      isActive: parsed.value.isActive,
+      toPayload: (displayOrder) => toWritePayload(parsed.value, displayOrder),
+    });
+    if (failure) return failure;
     revalidateValueProps();
     return { success: true };
   } catch (err) {
@@ -181,12 +155,8 @@ export async function updateValueProp(id: string, data: unknown): Promise<ValueP
     if (!existing) {
       return { success: false, error: 'No encontramos ese destacado.', code: 'INTERNAL' };
     }
-    if (parsed.value.isActive && !existing.isActive) {
-      const others = await valuePropRepository.list();
-      if (activeCount(others.filter((row) => row.id !== existing.id)) >= HOME_VALUE_PROP_LIMIT) {
-        return limitFailure();
-      }
-    }
+    const activationFailure = await valueProps.activationFailure(existing, parsed.value.isActive);
+    if (activationFailure) return activationFailure;
     await valuePropRepository.update(
       idParsed.data,
       await toWritePayload(parsed.value, existing.displayOrder),
@@ -207,31 +177,8 @@ export async function toggleValuePropStatus(
     if (typeof isActive !== 'boolean') {
       return { success: false, error: 'Estado inválido.', code: 'VALIDATION' };
     }
-    const existingRows = await valuePropRepository.list();
-    if (existingRows.length === 0) {
-      const fallback = fallbackValueProps(await getSiteSettings()).find((item) => item.id === id);
-      if (!fallback) {
-        return { success: false, error: 'No encontramos ese destacado.', code: 'INTERNAL' };
-      }
-      await seedFallbackDocuments(id, {
-        ...(await payloadFromFallback(fallback, 1)),
-        isActive,
-      });
-      revalidateValueProps();
-      return { success: true };
-    }
-    const idParsed = uuid.safeParse(id);
-    if (!idParsed.success) {
-      return { success: false, error: 'Identificador inválido.', code: 'VALIDATION', issues: idParsed.error.issues };
-    }
-    const existing = await valuePropRepository.findById(idParsed.data);
-    if (!existing) {
-      return { success: false, error: 'No encontramos ese destacado.', code: 'INTERNAL' };
-    }
-    if (isActive && !existing.isActive && activeCount(existingRows) >= HOME_VALUE_PROP_LIMIT) {
-      return limitFailure();
-    }
-    await valuePropRepository.setActive(idParsed.data, isActive);
+    const failure = await valueProps.toggle(id, isActive);
+    if (failure) return failure;
     revalidateValueProps();
     return { success: true };
   } catch (err) {

@@ -1,11 +1,11 @@
 import Link from 'next/link';
 
 import Image from '@/components/ui/StoredImage';
-import type { Product } from '@/features/catalog/types';
+import type { CatalogCardProduct } from '@/features/catalog/types';
 import { getEffectivePrice } from '@/features/catalog/utils/filterProducts';
 
 interface BestSellerProductCardProps {
-  product: Product;
+  product: CatalogCardProduct;
   categorySlug?: string;
   className?: string;
   onClick?: () => void;

@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import DiscoverTileEditor from '@/features/admin/components/DiscoverTileEditor';
 import { draftFromDiscoverTile } from '@/features/admin/components/DiscoverTileEditor/mapDraft';
 import { getAdminDiscoverTileById, getAdminDiscoverTiles } from '@/features/admin/queries/discoverTiles';
-import { HOME_DISCOVER_TILE_LIMIT } from '@/lib/discoverTileLimit';
+import { HOME_DISCOVER_TILE_LIMIT } from '@/features/landing/rules/discoverTileLimit';
 
 interface EditarTarjetaPageProps {
   params: Promise<{ id: string }>;

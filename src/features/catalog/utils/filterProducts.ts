@@ -1,77 +1,63 @@
-import type { Category,Product } from '@/features/catalog/types';
+import type { CatalogCardProduct, Product } from '@/features/catalog/types';
 
-export const PRICE_MIN = 30;
-export const PRICE_MAX = 800;
+export type SearchableProduct = CatalogCardProduct &
+  Partial<Pick<Product, 'description' | 'includes' | 'occasion'>>;
+
+export interface FilterableEntry {
+  product: SearchableProduct;
+  categorySlug: string;
+}
 
 export interface ProductFilters {
-  q: string;
-  categoria: string;
-  precioMin: number;
-  precioMax: number;
+  q?: string;
+  categorySlugs: string[];
+  priceMin: number;
+  priceMax: number;
   colors: string[];
   flowerTypes: string[];
 }
 
-export function getEffectivePrice(product: Product): number {
+export type FilterFacet = 'category' | 'price' | 'colors' | 'flowerTypes';
+
+export function getEffectivePrice(product: Pick<Product, 'price' | 'priceTable'>): number {
   if (product.priceTable?.length) {
     return Math.min(...product.priceTable.map((v) => v.price));
   }
   return product.price;
 }
 
-export function hasActiveFilters(filters: ProductFilters): boolean {
-  return (
-    filters.q.trim().length > 0 ||
-    filters.categoria.length > 0 ||
-    filters.precioMin > PRICE_MIN ||
-    filters.precioMax < PRICE_MAX ||
-    filters.colors.length > 0 ||
-    filters.flowerTypes.length > 0
-  );
+function matchesQuery(product: SearchableProduct, q: string): boolean {
+  return [product.name, product.description ?? '', ...(product.includes ?? []), product.occasion ?? '']
+    .join(' ')
+    .toLowerCase()
+    .includes(q);
 }
 
-export function filterProducts(
-  allProducts: Product[],
-  categories: Category[],
+function matchesAny(selected: Set<string>, values: string[] | undefined): boolean {
+  return selected.size === 0 || (values ?? []).some((value) => selected.has(value));
+}
+
+export function filterProducts<T extends FilterableEntry>(
+  entries: T[],
   filters: ProductFilters,
-): Product[] {
-  const q = filters.q.trim().toLowerCase();
+  except?: FilterFacet,
+): T[] {
+  const q = filters.q?.trim().toLowerCase() ?? '';
+  const categorySlugs = new Set(filters.categorySlugs);
+  const colors = new Set(filters.colors);
+  const flowerTypes = new Set(filters.flowerTypes);
 
-  return allProducts.filter((product) => {
-    if (q) {
-      const searchable = [
-        product.name,
-        product.description,
-        ...(product.includes ?? []),
-        product.occasion ?? '',
-      ]
-        .join(' ')
-        .toLowerCase();
-      if (!searchable.includes(q)) return false;
-    }
-
-    if (filters.categoria) {
-      const category = categories.find((c) => c.slug === filters.categoria);
-      if (!category || product.categoryId !== category.id) return false;
-    }
-
-    const effectivePrice = getEffectivePrice(product);
-    if (effectivePrice < filters.precioMin || effectivePrice > filters.precioMax) {
+  return entries.filter(({ product, categorySlug }) => {
+    if (q && !matchesQuery(product, q)) return false;
+    if (except !== 'category' && categorySlugs.size > 0 && !categorySlugs.has(categorySlug)) {
       return false;
     }
-
-    if (filters.colors.length > 0) {
-      const productColorSet = new Set(product.colors ?? []);
-      const hasColor = filters.colors.some((c) => productColorSet.has(c));
-      if (!hasColor) return false;
+    const price = getEffectivePrice(product);
+    if (except !== 'price' && (price < filters.priceMin || price > filters.priceMax)) {
+      return false;
     }
-
-    if (filters.flowerTypes.length > 0) {
-      const productTypeSet = new Set(product.flowerTypes ?? []);
-      const hasType = filters.flowerTypes.some((t) => productTypeSet.has(t));
-      if (!hasType) return false;
-    }
-
+    if (except !== 'colors' && !matchesAny(colors, product.colors)) return false;
+    if (except !== 'flowerTypes' && !matchesAny(flowerTypes, product.flowerTypes)) return false;
     return true;
   });
 }

@@ -11,7 +11,7 @@ import { FieldError } from '@/features/admin/components/ProductForm/FieldError';
 import VisibilityLimitControl from '@/features/admin/components/VisibilityLimitControl';
 import { useImageUpload } from '@/features/admin/hooks/useImageUpload';
 import TestimonialCard from '@/features/landing/components/TestimonialsGallery/TestimonialCard';
-import { HOME_TESTIMONIAL_LIMIT_COPY } from '@/lib/testimonialLimit';
+import { HOME_TESTIMONIAL_LIMIT_COPY } from '@/features/landing/rules/testimonialLimit';
 
 import type { FieldErrors } from './formErrors';
 import type { TestimonialDraft } from './types';

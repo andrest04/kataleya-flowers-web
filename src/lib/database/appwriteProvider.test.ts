@@ -7,12 +7,15 @@ const mocks = vi.hoisted(() => ({
   queryLimit: vi.fn((value: number) => `limit(${value})`),
   queryCursorAfter: vi.fn((id: string) => `cursorAfter(${id})`),
   querySelect: vi.fn((fields: string[]) => `select(${fields.join(',')})`),
+  queryLessThan: vi.fn((field: string, value: unknown) => `lessThan(${field}=${JSON.stringify(value)})`),
   idCustom: vi.fn((id: string) => `custom:${id}`),
   listDocuments: vi.fn(),
   getDocument: vi.fn(),
   createDocument: vi.fn(),
   updateDocument: vi.fn(),
   deleteDocument: vi.fn(),
+  deleteDocuments: vi.fn(),
+  incrementDocumentAttribute: vi.fn(),
   createTransaction: vi.fn(),
   updateTransaction: vi.fn(),
   createOperations: vi.fn(),
@@ -37,6 +40,7 @@ vi.mock('node-appwrite', () => ({
     limit: mocks.queryLimit,
     cursorAfter: mocks.queryCursorAfter,
     select: mocks.querySelect,
+    lessThan: mocks.queryLessThan,
   },
 }));
 
@@ -48,6 +52,8 @@ vi.mock('@/lib/appwrite/admin', () => ({
       createDocument: mocks.createDocument,
       updateDocument: mocks.updateDocument,
       deleteDocument: mocks.deleteDocument,
+      deleteDocuments: mocks.deleteDocuments,
+      incrementDocumentAttribute: mocks.incrementDocumentAttribute,
       createTransaction: mocks.createTransaction,
       updateTransaction: mocks.updateTransaction,
       createOperations: mocks.createOperations,
@@ -201,10 +207,23 @@ describe('appwriteDocumentStore.getById', () => {
     });
   });
 
-  it('returns null when Appwrite throws (document not found)', async () => {
-    mocks.getDocument.mockRejectedValueOnce(new Error('not found'));
+  it('returns null when Appwrite reports the document as not found (404)', async () => {
+    mocks.getDocument.mockRejectedValueOnce(new MockAppwriteException('not found', 404));
 
     await expect(appwriteDocumentStore.getById('widgets', 'missing')).resolves.toBeNull();
+  });
+
+  it('rethrows a non-404 Appwrite error instead of hiding it as null', async () => {
+    const failure = new MockAppwriteException('unauthorized', 401);
+    mocks.getDocument.mockRejectedValueOnce(failure);
+
+    await expect(appwriteDocumentStore.getById('widgets', 'doc-1')).rejects.toBe(failure);
+  });
+
+  it('rethrows a non-Appwrite error instead of hiding it as null', async () => {
+    mocks.getDocument.mockRejectedValueOnce(new Error('network down'));
+
+    await expect(appwriteDocumentStore.getById('widgets', 'doc-1')).rejects.toThrow('network down');
   });
 });
 
@@ -222,6 +241,28 @@ describe('appwriteDocumentStore.create', () => {
       data: { name: 'Rose' },
     });
     expect(result).toMatchObject({ id: 'new-id', name: 'Rose' });
+  });
+
+  it('forwards explicit document permissions to createDocument', async () => {
+    mocks.createDocument.mockResolvedValueOnce(appwriteDoc({ $id: 'new-id', name: 'Rose' }));
+
+    await appwriteDocumentStore.create('widgets', 'new-id', { name: 'Rose' }, { permissions: [] });
+
+    expect(mocks.createDocument).toHaveBeenCalledWith({
+      databaseId: 'test-db',
+      collectionId: 'widgets',
+      documentId: 'custom:new-id',
+      data: { name: 'Rose' },
+      permissions: [],
+    });
+  });
+
+  it('omits permissions when the caller does not pass any', async () => {
+    mocks.createDocument.mockResolvedValueOnce(appwriteDoc({ $id: 'new-id' }));
+
+    await appwriteDocumentStore.create('widgets', 'new-id', { name: 'Rose' });
+
+    expect(mocks.createDocument.mock.calls[0][0]).not.toHaveProperty('permissions');
   });
 
   it('maps Appwrite 409 to ConflictError', async () => {
@@ -274,6 +315,84 @@ describe('appwriteDocumentStore.delete', () => {
       databaseId: 'test-db',
       collectionId: 'widgets',
       documentId: 'doc-1',
+    });
+  });
+});
+
+describe('appwriteDocumentStore.increment', () => {
+  it('atomically increments the attribute and returns the new value', async () => {
+    mocks.incrementDocumentAttribute.mockResolvedValueOnce(appwriteDoc({ $id: 'counter', value: 7 }));
+
+    await expect(appwriteDocumentStore.increment('counters', 'counter', 'value', 1, {})).resolves.toBe(7);
+
+    expect(mocks.incrementDocumentAttribute).toHaveBeenCalledWith({
+      databaseId: 'test-db',
+      collectionId: 'counters',
+      documentId: 'counter',
+      attribute: 'value',
+      value: 1,
+    });
+    expect(mocks.createDocument).not.toHaveBeenCalled();
+  });
+
+  it('creates the document with private permissions when it does not exist yet (404)', async () => {
+    mocks.incrementDocumentAttribute.mockRejectedValueOnce(new MockAppwriteException('missing', 404));
+    mocks.createDocument.mockResolvedValueOnce(appwriteDoc({ $id: 'window', count: 1 }));
+
+    await expect(
+      appwriteDocumentStore.increment('rate_limits', 'window', 'count', 1, {
+        expires_at: '2026-01-01T00:15:00.000Z',
+      }),
+    ).resolves.toBe(1);
+
+    expect(mocks.createDocument).toHaveBeenCalledWith({
+      databaseId: 'test-db',
+      collectionId: 'rate_limits',
+      documentId: 'custom:window',
+      data: { expires_at: '2026-01-01T00:15:00.000Z', count: 1 },
+      permissions: [],
+    });
+  });
+
+  it('retries the increment when a concurrent creation wins the race (409)', async () => {
+    mocks.incrementDocumentAttribute
+      .mockRejectedValueOnce(new MockAppwriteException('missing', 404))
+      .mockResolvedValueOnce(appwriteDoc({ $id: 'counter', value: 2 }));
+    mocks.createDocument.mockRejectedValueOnce(new MockAppwriteException('exists', 409));
+
+    await expect(appwriteDocumentStore.increment('counters', 'counter', 'value', 1, {})).resolves.toBe(2);
+    expect(mocks.incrementDocumentAttribute).toHaveBeenCalledTimes(2);
+  });
+
+  it('rethrows an unexpected error from the initial increment', async () => {
+    mocks.incrementDocumentAttribute.mockRejectedValueOnce(new MockAppwriteException('server', 500));
+
+    await expect(appwriteDocumentStore.increment('counters', 'counter', 'value', 1, {})).rejects.toMatchObject({
+      code: 500,
+    });
+    expect(mocks.createDocument).not.toHaveBeenCalled();
+  });
+
+  it('rethrows a non-409 error from the fallback create', async () => {
+    mocks.incrementDocumentAttribute.mockRejectedValueOnce(new MockAppwriteException('missing', 404));
+    mocks.createDocument.mockRejectedValueOnce(new MockAppwriteException('forbidden', 403));
+
+    await expect(appwriteDocumentStore.increment('counters', 'counter', 'value', 1, {})).rejects.toMatchObject({
+      code: 403,
+    });
+  });
+});
+
+describe('appwriteDocumentStore.deleteExpired', () => {
+  it('bulk-deletes a bounded batch of documents older than the cutoff', async () => {
+    mocks.deleteDocuments.mockResolvedValueOnce({ documents: [], total: 0 });
+
+    await appwriteDocumentStore.deleteExpired('rate_limits', 'expires_at', '2026-01-01T00:00:00.000Z', 100);
+
+    expect(mocks.deleteDocuments).toHaveBeenCalledWith({
+      databaseId: 'test-db',
+      collectionId: 'rate_limits',
+      queries: ['lessThan(expires_at="2026-01-01T00:00:00.000Z")', 'limit(100)'],
     });
   });
 });

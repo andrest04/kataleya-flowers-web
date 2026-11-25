@@ -133,30 +133,6 @@ describe('createProductsRepository', () => {
     });
   });
 
-  describe('listActiveJoinedByCategorySlug', () => {
-    it('lists active products of the active category matching the slug, ordered by displayOrder', async () => {
-      seedCategory(store, { id: 'cat-1', slug: 'rosas', is_active: true });
-      seedProduct(store, { id: 'p2', category_id: 'cat-1', display_order: 2 });
-      seedProduct(store, { id: 'p1', category_id: 'cat-1', display_order: 1 });
-      seedProduct(store, { id: 'p3', category_id: 'other-cat', display_order: 3 });
-
-      const result = await repository.listActiveJoinedByCategorySlug('rosas');
-
-      expect(result.map((p) => p.id)).toEqual(['p1', 'p2']);
-    });
-
-    it('returns an empty array when the category does not exist', async () => {
-      await expect(repository.listActiveJoinedByCategorySlug('missing')).resolves.toEqual([]);
-    });
-
-    it('returns an empty array when the category is inactive', async () => {
-      seedCategory(store, { id: 'cat-1', slug: 'rosas', is_active: false });
-      seedProduct(store, { id: 'p1', category_id: 'cat-1' });
-
-      await expect(repository.listActiveJoinedByCategorySlug('rosas')).resolves.toEqual([]);
-    });
-  });
-
   describe('listSitemap', () => {
     it('lists active products in active categories, most recently updated first', async () => {
       seedCategory(store, { id: 'cat-1', slug: 'rosas', is_active: true });

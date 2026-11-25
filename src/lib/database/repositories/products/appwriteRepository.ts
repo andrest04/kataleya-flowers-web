@@ -329,19 +329,6 @@ export function createProductsRepository(store: DocumentStore): ProductsReposito
       return joined ?? null;
     },
 
-    async listActiveJoinedByCategorySlug(categorySlug: string): Promise<Product[]> {
-      const category = await store.findOne<CategoryRecord>(C.categories, {
-        equal: { slug: categorySlug, is_active: true },
-      });
-      if (!category) return [];
-
-      const products = await store.listAll<ProductDocRecord>(C.products, {
-        equal: { category_id: category.id, is_active: true },
-        orderBy: { field: 'display_order', direction: 'asc' },
-      });
-      return joinProducts(store, products);
-    },
-
     async listSitemap(): Promise<SitemapProductRow[]> {
       const [products, activeCategories] = await Promise.all([
         store.listAll<ProductDocRecord>(C.products, { equal: { is_active: true } }),

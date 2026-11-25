@@ -22,11 +22,11 @@ import {
 import { getPublishedPromoBanners } from '@/features/landing/queries/getPublishedPromoBanners';
 import { FALLBACK_TESTIMONIALS } from '@/features/landing/queries/getPublishedTestimonials';
 import { fallbackValueProps } from '@/features/landing/queries/getPublishedValueProps';
+import { HOME_DISCOVER_TILE_LIMIT_COPY } from '@/features/landing/rules/discoverTileLimit';
+import { HOME_TESTIMONIAL_LIMIT_COPY } from '@/features/landing/rules/testimonialLimit';
+import { bindValuePropIdentity } from '@/features/landing/rules/valuePropIdentity';
+import { HOME_VALUE_PROP_LIMIT_COPY } from '@/features/landing/rules/valuePropLimit';
 import { getSiteSettings } from '@/features/settings/queries/getSiteSettings';
-import { HOME_DISCOVER_TILE_LIMIT_COPY } from '@/lib/discoverTileLimit';
-import { HOME_TESTIMONIAL_LIMIT_COPY } from '@/lib/testimonialLimit';
-import { bindValuePropIdentity } from '@/lib/valuePropIdentity';
-import { HOME_VALUE_PROP_LIMIT_COPY } from '@/lib/valuePropLimit';
 
 export const metadata = { title: 'Inicio' };
 
@@ -59,14 +59,14 @@ export default async function AdminInicioPage() {
             initial={draftFromLive(liveHero ?? fallbackHeroSlide(settings))}
             showCancel={false}
             heading={(
-              <h2 id="hero-heading" className="font-serif text-xl text-(--color-dark)">Hero</h2>
+              <h2 id="hero-heading" className="font-serif text-xl text-(--color-dark)">Portada</h2>
             )}
           />
         ) : (
           <>
             <div className="flex items-end justify-between gap-4">
-              <h2 id="hero-heading" className="font-serif text-xl text-(--color-dark)">Hero</h2>
-              <Button href="/admin/inicio/hero/nuevo" size="sm">Agregar slide</Button>
+              <h2 id="hero-heading" className="font-serif text-xl text-(--color-dark)">Portada</h2>
+              <Button href="/admin/inicio/hero/nuevo" size="sm">Agregar imagen de portada</Button>
             </div>
             <HeroSlideList slides={slides} />
           </>

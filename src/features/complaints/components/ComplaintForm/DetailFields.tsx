@@ -1,13 +1,15 @@
 'use client';
 
+import { FieldError } from '@/components/ui/FieldError';
 import { FormField } from '@/components/ui/FormField';
 import { Textarea } from '@/components/ui/Input';
-import { FieldError } from '@/features/admin/components/ProductForm/FieldError';
 
+import type { ComplaintFormData } from '../../schemas/complaint';
 import type { ComplaintType } from '../../types';
 
 interface DetailFieldsProps {
   errors: Record<string, string>;
+  values?: ComplaintFormData;
   value: ComplaintType;
   onChange: (value: ComplaintType) => void;
 }
@@ -27,24 +29,20 @@ const OPTIONS: { value: ComplaintType; title: string; desc: string; color: strin
   },
 ];
 
-export default function DetailFields({ errors, value, onChange }: DetailFieldsProps) {
+export default function DetailFields({ errors, values, value, onChange }: DetailFieldsProps) {
   return (
     <div className="space-y-4">
       <fieldset>
         <legend className="text-sm font-medium mb-2 text-(--color-dark)">
           Tipo de reclamación <span className="text-primary">*</span>
         </legend>
-        <div className="grid gap-3 sm:grid-cols-2" role="radiogroup" aria-label="Tipo de reclamación">
+        <div className="grid gap-3 sm:grid-cols-2">
           {OPTIONS.map((opt) => {
             const selected = value === opt.value;
             return (
-              <button
+              <label
                 key={opt.value}
-                type="button"
-                role="radio"
-                aria-checked={selected}
-                onClick={() => onChange(opt.value)}
-                className="rounded-xl border p-4 text-left transition-colors"
+                className="block min-h-11 cursor-pointer rounded-xl border p-4 text-left transition-colors has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-(--color-primary)"
                 style={{
                   borderColor: selected ? opt.color : 'var(--color-border)',
                   background: selected
@@ -52,11 +50,19 @@ export default function DetailFields({ errors, value, onChange }: DetailFieldsPr
                     : 'var(--color-white)',
                 }}
               >
+                <input
+                  type="radio"
+                  name="complaintType"
+                  value={opt.value}
+                  checked={selected}
+                  onChange={() => onChange(opt.value)}
+                  className="sr-only"
+                />
                 <span className="block font-semibold" style={{ color: opt.color }}>
                   {opt.title}
                 </span>
                 <span className="block text-sm mt-1 text-(--color-dark)">{opt.desc}</span>
-              </button>
+              </label>
             );
           })}
         </div>
@@ -66,6 +72,7 @@ export default function DetailFields({ errors, value, onChange }: DetailFieldsPr
         <Textarea
           id="detail"
           name="detail"
+          defaultValue={values?.detail}
           rows={4}
           required
           aria-required="true"
@@ -79,6 +86,7 @@ export default function DetailFields({ errors, value, onChange }: DetailFieldsPr
         <Textarea
           id="consumerRequest"
           name="consumerRequest"
+          defaultValue={values?.consumerRequest}
           rows={3}
           required
           aria-required="true"

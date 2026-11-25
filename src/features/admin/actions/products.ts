@@ -58,14 +58,14 @@ async function cleanUpDeletedProductImages(imageUrls: string[]): Promise<string 
   if (imageUrls.length === 0) return undefined;
 
   try {
-    await imageStorage.deleteMany(imageUrls);
-    return undefined;
+    if (await imageStorage.deleteMany(imageUrls)) return undefined;
+    console.error('[products] storage cleanup incomplete after committed deletion');
   } catch (error) {
     console.error('[products] storage cleanup failed after committed deletion', {
       error: error instanceof Error ? error.message : error,
     });
-    return 'Los productos se eliminaron, pero no se pudieron limpiar algunas imágenes.';
   }
+  return 'Los productos se eliminaron, pero no se pudieron limpiar algunas imágenes.';
 }
 
 async function getAppwriteProductSlug(productId: string): Promise<string | null> {

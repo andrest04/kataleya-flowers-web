@@ -2,6 +2,19 @@ import { expect, type Page,test } from "@playwright/test";
 
 const SCREENSHOT_DIR = "QA/screenshots/phase1";
 
+const SITE_HOST = new URL(
+  process.env.E2E_SITE_URL ?? "https://www.kataleyaflowers.com",
+).host;
+
+async function readCanonical(page: Page): Promise<URL> {
+  const href = await page
+    .locator('link[rel="canonical"]')
+    .first()
+    .getAttribute("href");
+  expect(href, "link rel=canonical debe tener href").toBeTruthy();
+  return new URL(href ?? "");
+}
+
 const IGNORED_CONSOLE_PATTERNS: RegExp[] = [
   /upgrade-insecure-requests.*ignored.*report-only/i,
 ];
@@ -64,7 +77,7 @@ test.describe("Phase 1 — A) Root metadata + fonts", () => {
       .locator('meta[property="og:url"]')
       .getAttribute("content");
     expect(ogUrl).toBeTruthy();
-    expect(ogUrl).toContain("kataleya-flawers.appwrite.network");
+    expect(new URL(ogUrl ?? "").host).toBe(SITE_HOST);
 
     await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute(
       "content",
@@ -72,16 +85,50 @@ test.describe("Phase 1 — A) Root metadata + fonts", () => {
     );
   });
 
-  test("metadataBase resuelve a https://kataleya-flawers.appwrite.network via og:url y canonical", async ({
+  test("metadataBase resuelve al host de producción via canonical", async ({
     page,
   }) => {
     await page.goto("/");
 
-    const canonical = await page
-      .locator('link[rel="canonical"]')
-      .getAttribute("href");
-    expect(canonical).toBeTruthy();
-    expect(canonical).toContain("kataleya-flawers.appwrite.network");
+    const canonical = await readCanonical(page);
+    expect(canonical.protocol).toBe("https:");
+    expect(canonical.host).toBe(SITE_HOST);
+  });
+
+  test("canonical de / apunta a la raíz del host de producción", async ({
+    page,
+  }) => {
+    await page.goto("/");
+
+    const canonical = await readCanonical(page);
+    expect(canonical.host).toBe(SITE_HOST);
+    expect(canonical.pathname).toBe("/");
+  });
+
+  test("canonical de /catalogo apunta a /catalogo", async ({ page }) => {
+    await page.goto("/catalogo");
+
+    const canonical = await readCanonical(page);
+    expect(canonical.host).toBe(SITE_HOST);
+    expect(canonical.pathname).toBe("/catalogo");
+  });
+
+  test("canonical de /catalogo/{categoria} apunta a su propia ruta", async ({
+    page,
+  }) => {
+    await page.goto("/catalogo");
+    const firstCategoryLink = page
+      .locator('a[href^="/catalogo/"]:not([href="/catalogo"])')
+      .first();
+    await expect(firstCategoryLink).toBeVisible();
+    const href = await firstCategoryLink.getAttribute("href");
+    expect(href, "/catalogo debe enlazar al menos una categoría").toBeTruthy();
+    const categoryPath = new URL(href ?? "", "http://placeholder").pathname;
+    await page.goto(categoryPath);
+
+    const canonical = await readCanonical(page);
+    expect(canonical.host).toBe(SITE_HOST);
+    expect(canonical.pathname).toBe(categoryPath);
   });
 
   test("link rel=canonical presente en /", async ({ page }) => {
@@ -127,6 +174,26 @@ test.describe("Phase 1 — A) Root metadata + fonts", () => {
     const html = await page.content();
     expect(html).not.toContain("fonts.googleapis.com");
   });
+
+  test("JSON-LD de / incluye un Florist con @id y geo", async ({ page }) => {
+    await page.goto("/");
+
+    const blocks = await page
+      .locator('script[type="application/ld+json"]')
+      .allTextContents();
+    const nodes = blocks.flatMap((text) => {
+      const parsed: unknown = JSON.parse(text);
+      return Array.isArray(parsed) ? parsed : [parsed];
+    }) as Record<string, unknown>[];
+    const florist = nodes.find((node) => node["@type"] === "Florist");
+
+    expect(florist, "la home debe declarar un Florist").toBeTruthy();
+    expect(florist?.["@id"]).toBe(`https://${SITE_HOST}/#florist`);
+    const geo = florist?.geo as Record<string, unknown> | undefined;
+    expect(geo?.["@type"]).toBe("GeoCoordinates");
+    expect(typeof geo?.latitude).toBe("number");
+    expect(typeof geo?.longitude).toBe("number");
+  });
 });
 
 test.describe("Phase 1 — B) File-Based Metadata API", () => {
@@ -141,8 +208,8 @@ test.describe("Phase 1 — B) File-Based Metadata API", () => {
 
     const body = await response.text();
 
-    expect(body).toContain("kataleya-flawers.appwrite.network/</loc>");
-    expect(body).toContain("kataleya-flawers.appwrite.network/catalogo</loc>");
+    expect(body).toContain(`<loc>https://${SITE_HOST}/</loc>`);
+    expect(body).toContain(`<loc>https://${SITE_HOST}/catalogo</loc>`);
 
     const categoryMatches = body.match(
       /<loc>https?:\/\/[^<]+\/catalogo\/[^/<]+<\/loc>/g,
@@ -162,9 +229,11 @@ test.describe("Phase 1 — B) File-Based Metadata API", () => {
 
     expect(body).not.toMatch(/\/admin\//);
     expect(body).not.toMatch(/\/api\//);
+    expect(body).not.toMatch(/\/login</);
+    expect(body).not.toMatch(/\/buscar</);
   });
 
-  test("GET /robots.txt -> 200, contiene Disallow admin/api/login y referencia a sitemap", async ({
+  test("GET /robots.txt -> 200, contiene Disallow admin/api, permite /login y referencia a sitemap", async ({
     request,
   }) => {
     const response = await request.get("/robots.txt");
@@ -173,8 +242,36 @@ test.describe("Phase 1 — B) File-Based Metadata API", () => {
     const body = await response.text();
     expect(body).toContain("Disallow: /admin/");
     expect(body).toContain("Disallow: /api/");
-    expect(body).toMatch(/Disallow:\s*\/login/);
+    expect(body).not.toMatch(/Disallow:\s*\/login/);
     expect(body).toMatch(/Sitemap:\s*https?:\/\/[^\s]+\/sitemap\.xml/i);
+  });
+
+  test("/login emite noindex,nofollow y no declara canonical", async ({
+    page,
+  }) => {
+    await page.goto("/login");
+
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
+      "content",
+      /noindex,\s*nofollow/,
+    );
+    await expect(page.locator('link[rel="canonical"]')).toHaveCount(0);
+  });
+
+  test("/buscar?q=rosas emite noindex,follow y /buscar sigue indexable", async ({
+    page,
+  }) => {
+    await page.goto("/buscar?q=rosas");
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
+      "content",
+      /noindex,\s*follow/,
+    );
+
+    await page.goto("/buscar");
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
+      "content",
+      /^index,\s*follow/,
+    );
   });
 
   test("GET /manifest.webmanifest -> 200, JSON con name/short_name/theme_color/background_color", async ({

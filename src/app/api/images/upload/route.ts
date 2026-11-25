@@ -4,7 +4,26 @@ import { AdminAuthError, requireAdmin } from '@/features/admin/utils/auth';
 import { imageStorage, isAllowedImageFolder } from '@/lib/imageStorage';
 import { MAX_IMAGE_FILE_SIZE, validateImageBytes } from '@/lib/imageStorage/validateImageBytes';
 
+const MULTIPART_OVERHEAD_BYTES = 64 * 1024;
+const MAX_UPLOAD_REQUEST_BYTES = MAX_IMAGE_FILE_SIZE + MULTIPART_OVERHEAD_BYTES;
+
+function isSameOriginRequest(request: Request): boolean {
+  const origin = request.headers.get('origin');
+  if (origin && origin === new URL(request.url).origin) return true;
+  return request.headers.get('sec-fetch-site') === 'same-origin';
+}
+
+function declaredContentLength(request: Request): number | null {
+  const header = request.headers.get('content-length');
+  if (!header || !/^\d+$/.test(header)) return null;
+  return Number(header);
+}
+
 export async function POST(request: Request) {
+  if (!isSameOriginRequest(request)) {
+    return NextResponse.json({ error: 'forbidden_origin' }, { status: 403 });
+  }
+
   try {
     await requireAdmin();
   } catch (err) {
@@ -15,6 +34,17 @@ export async function POST(request: Request) {
       );
     }
     throw err;
+  }
+
+  const contentLength = declaredContentLength(request);
+  if (contentLength === null) {
+    return NextResponse.json({ error: 'length_required' }, { status: 411 });
+  }
+  if (contentLength > MAX_UPLOAD_REQUEST_BYTES) {
+    return NextResponse.json(
+      { error: 'file_too_large', message: 'La imagen no puede superar 10 MB' },
+      { status: 413 },
+    );
   }
 
   let formData: FormData;

@@ -1,10 +1,12 @@
-import { mapProductRow } from '@/features/catalog/queries/mappers';
+import { getCategories } from '@/features/catalog/queries/getCategories';
+import { getProducts } from '@/features/catalog/queries/getProducts';
 import type { Product } from '@/features/catalog/types';
-import { productsRepository } from '@/lib/database/repositories/products';
 
 export async function getProductsByCategory(
   categorySlug: string
 ): Promise<Product[]> {
-  const products = await productsRepository.listActiveJoinedByCategorySlug(categorySlug);
-  return products.map(mapProductRow);
+  const [categories, products] = await Promise.all([getCategories(), getProducts()]);
+  const category = categories.find((candidate) => candidate.slug === categorySlug);
+  if (!category) return [];
+  return products.filter((product) => product.categoryId === category.id);
 }

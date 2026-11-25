@@ -8,7 +8,7 @@ import { FormError, FormField } from '@/components/ui/FormField';
 import { Select, Textarea } from '@/components/ui/Input';
 
 import { updateComplaint } from '../../actions/updateComplaint';
-import { COMPLAINT_STATUSES } from '../../schemas/complaint';
+import { COMPLAINT_STATUSES } from '../../schemas/constants';
 
 interface ComplaintStatusFormProps {
   id: string;
@@ -16,9 +16,16 @@ interface ComplaintStatusFormProps {
   providerResponse: string | null;
 }
 
+interface FormValues {
+  status: string;
+  providerResponse: string;
+}
+
 interface FormState {
+  attempt: number;
   error?: string;
   ok?: boolean;
+  values?: FormValues;
 }
 
 const STATUS_LABEL: Record<string, string> = {
@@ -35,18 +42,19 @@ export default function ComplaintStatusForm({
   const router = useRouter();
 
   const [state, formAction, isPending] = useActionState<FormState, FormData>(
-    async (_prev, formData) => {
-      const result = await updateComplaint({
-        id,
-        status: formData.get('status'),
-        providerResponse: formData.get('providerResponse') ?? '',
-      });
-      if (!result.success) return { error: result.error };
+    async (prev, formData) => {
+      const values: FormValues = {
+        status: String(formData.get('status') ?? ''),
+        providerResponse: String(formData.get('providerResponse') ?? ''),
+      };
+      const result = await updateComplaint({ id, ...values });
+      if (!result.success) return { attempt: prev.attempt + 1, error: result.error, values };
       router.refresh();
-      return { ok: true };
+      return { attempt: prev.attempt + 1, ok: true, values };
     },
-    {},
+    { attempt: 0 },
   );
+  const values = state.values ?? { status, providerResponse: providerResponse ?? '' };
 
   return (
     <form action={formAction} className="space-y-4">
@@ -58,7 +66,7 @@ export default function ComplaintStatusForm({
       )}
 
       <FormField label="Estado" htmlFor="status">
-        <Select id="status" name="status" defaultValue={status}>
+        <Select key={state.attempt} id="status" name="status" defaultValue={values.status}>
           {COMPLAINT_STATUSES.map((s) => (
             <option key={s} value={s}>
               {STATUS_LABEL[s]}
@@ -72,8 +80,9 @@ export default function ComplaintStatusForm({
           id="providerResponse"
           name="providerResponse"
           rows={5}
-          defaultValue={providerResponse ?? ''}
-          placeholder="Detalle la respuesta enviada al consumidor."
+          key={state.attempt}
+          defaultValue={values.providerResponse}
+          placeholder="Detalla la respuesta enviada al consumidor."
         />
       </FormField>
 

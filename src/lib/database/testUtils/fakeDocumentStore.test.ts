@@ -220,6 +220,69 @@ describe('fakeDocumentStore', () => {
     });
   });
 
+  describe('permissions', () => {
+    it('records the permissions passed to create', async () => {
+      await store.create('complaints', 'c1', { name: 'A' }, { permissions: [] });
+      await store.create('widgets', 'w1', { name: 'B' });
+
+      expect(store.permissionsOf('complaints', 'c1')).toEqual([]);
+      expect(store.permissionsOf('widgets', 'w1')).toBeUndefined();
+    });
+  });
+
+  describe('increment', () => {
+    it('creates the document from createData with private permissions on first use', async () => {
+      const value = await store.increment('rate_limits', 'win', 'count', 1, {
+        expires_at: '2026-01-01T00:15:00.000Z',
+      });
+
+      expect(value).toBe(1);
+      await expect(store.getById('rate_limits', 'win')).resolves.toMatchObject({
+        count: 1,
+        expires_at: '2026-01-01T00:15:00.000Z',
+      });
+      expect(store.permissionsOf('rate_limits', 'win')).toEqual([]);
+    });
+
+    it('increments an existing document by the given amount', async () => {
+      await store.increment('counters', 'c', 'value', 1, {});
+      await store.increment('counters', 'c', 'value', 1, {});
+
+      await expect(store.increment('counters', 'c', 'value', 5, {})).resolves.toBe(7);
+    });
+
+    it('keeps concurrent increments consistent', async () => {
+      const values = await Promise.all(
+        Array.from({ length: 10 }, () => store.increment('counters', 'c', 'value', 1, {})),
+      );
+
+      expect([...values].sort((a, b) => a - b)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+    });
+  });
+
+  describe('deleteExpired', () => {
+    it('deletes only documents whose field is strictly before the cutoff', async () => {
+      await store.create('rate_limits', 'old', { expires_at: '2026-01-01T00:00:00.000Z' });
+      await store.create('rate_limits', 'edge', { expires_at: '2026-01-01T01:00:00.000Z' });
+      await store.create('rate_limits', 'live', { expires_at: '2026-01-01T02:00:00.000Z' });
+
+      await store.deleteExpired('rate_limits', 'expires_at', '2026-01-01T01:00:00.000Z', 100);
+
+      const remaining = await store.listAll('rate_limits');
+      expect(remaining.map((doc) => doc.id).sort()).toEqual(['edge', 'live']);
+    });
+
+    it('deletes at most limit documents per call', async () => {
+      for (let i = 0; i < 5; i += 1) {
+        await store.create('rate_limits', `old-${i}`, { expires_at: '2025-12-31T00:00:00.000Z' });
+      }
+
+      await store.deleteExpired('rate_limits', 'expires_at', '2026-01-01T00:00:00.000Z', 2);
+
+      await expect(store.listAll('rate_limits')).resolves.toHaveLength(3);
+    });
+  });
+
   describe('seed/reset test helpers', () => {
     it('seed inserts a document directly and reset clears every collection', async () => {
       store.seed<WidgetRecord>('widgets', {

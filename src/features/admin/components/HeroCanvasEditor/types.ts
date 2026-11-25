@@ -1,4 +1,4 @@
-import type { HeroCtaType } from '@/lib/db/rows';
+import type { HeroCtaType } from '@/lib/database/repositories/heroSlides';
 
 export interface HeroDraft {
   altText: string;

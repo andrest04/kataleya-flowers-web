@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { isExternalHttpsHref } from '@/lib/safeHref';
+
 import { nonEmptyString, storedImageUrl } from './common';
 
 function optionalMax(max: number) {
@@ -50,12 +52,8 @@ export const heroSlideSchema = z
     if (value.ctaType === 'url') {
       if (!value.ctaValue) {
         ctx.addIssue({ code: 'custom', message: 'La URL del botón es obligatoria', path: ['ctaValue'] });
-      } else {
-        try {
-          new URL(value.ctaValue);
-        } catch {
-          ctx.addIssue({ code: 'custom', message: 'URL inválida', path: ['ctaValue'] });
-        }
+      } else if (!isExternalHttpsHref(value.ctaValue)) {
+        ctx.addIssue({ code: 'custom', message: 'Usa una URL que empiece con https://', path: ['ctaValue'] });
       }
       if (!value.ctaLabel) {
         ctx.addIssue({ code: 'custom', message: 'El texto del botón es obligatorio', path: ['ctaLabel'] });

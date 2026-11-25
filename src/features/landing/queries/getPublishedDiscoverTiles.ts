@@ -1,8 +1,8 @@
 import { unstable_cache } from 'next/cache';
 
+import { HOME_DISCOVER_TILE_LIMIT } from '@/features/landing/rules/discoverTileLimit';
 import { getSiteSettings } from '@/features/settings/queries/getSiteSettings';
 import { type DiscoverTile, discoverTileRepository } from '@/lib/database/repositories/discoverTiles';
-import { HOME_DISCOVER_TILE_LIMIT } from '@/lib/discoverTileLimit';
 import { isPublished } from '@/lib/publishing';
 import { defaultWhatsappHref, type SiteSettings } from '@/lib/siteSettings';
 

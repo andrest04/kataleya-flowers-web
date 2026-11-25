@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import ValuePropEditor from '@/features/admin/components/ValuePropEditor';
 import { draftFromValueProp } from '@/features/admin/components/ValuePropEditor/mapDraft';
 import { getAdminValuePropById, getAdminValueProps } from '@/features/admin/queries/valueProps';
-import { HOME_VALUE_PROP_LIMIT } from '@/lib/valuePropLimit';
+import { HOME_VALUE_PROP_LIMIT } from '@/features/landing/rules/valuePropLimit';
 
 interface EditarDestacadoPageProps {
   params: Promise<{ id: string }>;

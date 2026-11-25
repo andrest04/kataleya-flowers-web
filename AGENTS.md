@@ -2,7 +2,7 @@
 
 Landing + admin para **Kataleya Flowers**, florería real en Lima, Perú. Negocio en producción — los cambios son reales.
 
-**Estado:** Post-audit (Phases 1–5). Las convenciones de este archivo son **vinculantes** y la mayoría están **automatizadas** vía ESLint custom rules (`eslint.config.mjs`). Antes de pedir una excepción, leé `QA/audit/`.
+**Estado:** Post-audit (Phases 1–5). Las convenciones de este archivo son **vinculantes** y la mayoría están **automatizadas** vía ESLint custom rules (`eslint.config.mjs`). Antes de pedir una excepción, lee `QA/audit/`.
 
 **Autoridad por tema — este archivo no repite ese contenido:**
 
@@ -14,21 +14,25 @@ Landing + admin para **Kataleya Flowers**, florería real en Lima, Perú. Negoci
 
 ## Stack
 
-Next.js 16 (App Router, RSC por defecto) · React 19 · TS 5 strict · Tailwind v4 (CSS-only, sin `tailwind.config.*`) · Framer Motion 12 · @dnd-kit · lucide-react · Radix primitives · zod · Appwrite (Auth + DB + Storage, único backend) · Resend (emails transaccionales) · Playwright · next/font/google (Crimson Text + Mulish).
+Next.js 16 (App Router, RSC por defecto) · React 19 · TS 5 strict · Tailwind v4 (CSS-only, sin `tailwind.config.*`) · Framer Motion 12 · @dnd-kit · lucide-react · Radix primitives · zod · Appwrite (Auth + DB + Storage, único backend) · Resend (emails transaccionales) · BotID (login) · Vitest · Playwright · next/font/google (Crimson Text + Mulish).
 
 ## Comandos
 
 ```bash
-npm run dev          # localhost:3000
-npm run build        # prod build
+npm run dev          # next dev → localhost:3000
+npm run dev -- --experimental-https  # HTTPS local: necesario para probar el login admin en Safari
+npm run build        # prebuild (scripts/check-no-tailwind-config.mjs) + next build
 npm run lint:strict  # eslint . --max-warnings 0
 npx tsc --noEmit     # type-check
-npm run test:e2e     # e2e
+npx vitest run       # unit tests (src/**/*.test.ts) — equivale a npm test
+npm run test:e2e     # playwright test (local, usa el webServer de playwright.config.ts)
 npx playwright test phase1-verify  # regression baseline (DEBE estar verde siempre)
-npm run doctor       # react-doctor@latest — lint/a11y/bundle/arquitectura
+npm run doctor       # npx react-doctor@0.9.23 (versión exacta fijada) — lint/a11y/bundle/arquitectura
 ```
 
-Pre-commit (manual, no hay hooks): `npm run lint:strict` + `npx tsc --noEmit`.
+Pre-commit (manual, no hay hooks): `npm run lint:strict` + `npx tsc --noEmit` + `npx vitest run`. CI (`.github/workflows/ci.yml`) corre los mismos tres en cada PR y push a `main`; es el gate de merge.
+
+**Safari y la cookie de sesión:** la cookie admin es `__Host-a_session`, que exige `Secure`. Chromium y Firefox tratan `http://localhost` como seguro; Safari/WebKit no, así que el login local en Safari solo funciona con `npm run dev -- --experimental-https` (incluido en Next, sin dependencia extra). No relajar `secure` para "arreglarlo".
 
 ---
 
@@ -61,7 +65,7 @@ Invocar la skill **antes** de trabajar en el área — no improvisar a mano.
 
 ## Reglas vinculantes (ESLint-enforced)
 
-No las silencies: corregí la causa raíz o pedí excepción.
+No las silencies: corrige la causa raíz o pide una excepción.
 
 | Regla | Detalle |
 |---|---|
@@ -86,6 +90,9 @@ No las silencies: corregí la causa raíz o pedí excepción.
 | **No `@import url(...)` Google Fonts** en CSS | Render-blocking — usar `next/font/google`. |
 | **No duplicar `NAV_LINKS`** | Re-exportar de `src/lib/navigation.ts`. |
 | **Requieren aprobación explícita** | Tocar la paleta · agregar dependencias · modificar `app/layout.tsx` (afecta toda la app). |
+| **`server-only` en módulos con secretos** | Todo módulo que lee secretos (API key de Appwrite, Resend) importa `'server-only'` en la primera línea: `src/lib/appwrite/{config,admin,session,account}.ts`, `src/lib/email/resendProvider.ts`. El paquete lo trae `next` (sin dependencia propia); `vitest.config.ts` lo aliasa a `next/dist/compiled/server-only/empty.js` para los unit tests. Si un client component termina importándolo, el build falla — corregir el import, no quitar la guarda. |
+| **IDs de Appwrite en cliente** | Código cliente (y cualquier módulo que solo necesite IDs) importa `APPWRITE_DATABASE_ID` / `APPWRITE_COLLECTIONS` / `APPWRITE_BUCKETS` **solo** de `src/lib/appwrite/ids.ts`, que no tiene secretos ni `server-only`. Nunca de `src/lib/appwrite/config.ts`. |
+| **`lib/` no importa `features/`** | La dependencia va siempre `features → lib`. Reglas de un dominio viven en su feature (p. ej. `features/landing/rules/`), primitivas genéricas en `lib/`. |
 
 ## Fuentes únicas de verdad
 
@@ -112,24 +119,36 @@ src/
 │   ├── layout.tsx            # metadata, fonts, JSON-LD Florist, skip link → #main-content
 │   ├── globals.css           # Tailwind v4 + CSS custom properties
 │   ├── sitemap.ts robots.ts manifest.ts opengraph-image.tsx   # file-based metadata API
-│   ├── (public)/             # landing (page.tsx), catálogo y libro-de-reclamaciones
-│   ├── (admin)/admin/        # page · productos · categorias · reclamos (auth)
+│   ├── (public)/             # landing (page.tsx), catalogo, buscar y libro-de-reclamaciones
+│   ├── (admin)/admin/        # page · inicio · productos · categorias · reclamos · configuracion (auth)
 │   ├── (auth)/login/
-│   └── api/images/upload · api/admin/*
+│   └── api/images/{upload,source} · api/admin/{product-color-usage,flower-type-usage}
 ├── components/
 │   ├── shared/               # Navbar, Footer, WhatsAppFloat, BusinessHoursBadge
 │   └── ui/                   # design system + primitives/ (shadcn/Radix)
 ├── features/
-│   ├── landing/components/   # HeroSection/, AboutSection, ContactSection…
-│   ├── catalog/              # incl. utils/filterProducts.ts
-│   ├── admin/                # actions (requireAdmin+zod+Result), schemas, utils/{auth,slugify}
-│   └── complaints/           # libro de reclamaciones: formulario, panel admin y emails
-└── lib/{constants,navigation}.ts · lib/appwrite/* (config · repositories · auth/session) · lib/db/rows.ts (tipos de fila)
+│   ├── landing/              # components/ (HeroSection/, ContactSection/…), queries/, rules/ (límites e identidad de secciones del home)
+│   ├── catalog/              # incl. utils/filterProducts.ts (único motor de filtros)
+│   ├── admin/                # actions (requireAdmin+zod+AdminActionResult), queries, schemas, utils/{auth,slugify}
+│   ├── complaints/           # libro de reclamaciones: formulario, panel admin y emails
+│   └── settings/             # site settings (getSiteSettings)
+└── lib/
+    ├── constants.ts · navigation.ts
+    ├── appwrite/             # config · admin · session · account (server-only) + ids.ts (IDs client-safe)
+    ├── auth/                 # AuthService: appwriteProvider (login, isAdmin), cookieSessionStore, admin.ts (requireAdmin)
+    ├── database/             # puerto DocumentStore (types.ts) + appwriteProvider + repositories/*
+    ├── rateLimit/            # RateLimiter sobre DocumentStore (colección rate_limits)
+    ├── validation/           # primitivas zod genéricas (primitives.ts)
+    └── imageStorage/ · email/
 ```
 
 **Rutas:** landing usa anchors `#hero #catalogo #nosotros #contacto`. Catálogo `/catalogo/[categoria]/[slug]`. Rutas dinámicas exportan `generateStaticParams`.
 
-**Datos:** Appwrite es la fuente (landing pública + admin CRUD), vía `lib/appwrite/repositories/*`. Tipos dominio `Product`/`Category` en `features/catalog/types`; los repos Appwrite reusan las formas de fila de `lib/db/rows.ts` (tipos nativos). Categorías base (6): Amor y Romance, Cumpleaños, Orquídeas Premium, Flores Amarillas, Corporativo y Eventos, Condolencias. Filtros client-side (texto, categoría, precio S/30–800, colores, flores) en `filterProducts.ts`.
+**Datos:** Appwrite es la fuente (landing pública + admin CRUD), vía `src/lib/database/repositories/*`, que hablan solo con el puerto `DocumentStore` (`src/lib/database/types.ts`): `listAll` · `findOne` · `getById` · `create` (con `options.permissions` opcionales) · `update` · `delete` · `increment` (contador atómico, crea el documento si falta) · `deleteExpired` (borra por campo de fecha, con límite) · `runInTransaction`. El adaptador real es `src/lib/database/appwriteProvider.ts`; los tests usan `src/lib/database/testUtils/fakeDocumentStore.ts`. Las formas de fila viven en el `appwriteRepository.ts` de cada repo (no hay archivo central de filas).
+
+**Dos tipos `Product` a propósito:** `src/lib/database/repositories/products/types.ts` es el modelo persistido completo (assignments, `productImages`, `displayOrder`, `isActive`, timestamps) que usan admin y queries; `src/features/catalog/types/index.ts` es la proyección pública, más chica y con opcionales, que consumen las vistas del catálogo. `features/catalog/queries/mappers.ts` convierte uno en otro. No fusionarlos: la vista pública no debe arrastrar campos de admin. Categorías base (6): Amor y Romance, Cumpleaños, Orquídeas Premium, Flores Amarillas, Corporativo y Eventos, Condolencias. Filtros client-side (texto, categoría, precio S/30–800, colores, flores) en `filterProducts.ts`.
+
+**Rate limiting:** `src/lib/rateLimit/` cuenta intentos con `DocumentStore.increment` en la colección `rate_limits` (`count`, `expires_at`) y limpia ventanas vencidas con `deleteExpired` sobre `expires_at`. El login admin falla cerrado si el limitador no responde; el libro de reclamaciones usa `createFailOpenRateLimiter`. La colección debe existir en Appwrite (ver `scripts/provision-private-collections.mjs`).
 
 ---
 
@@ -137,25 +156,46 @@ src/
 
 Toda action en `features/admin/actions/` **debe**:
 
-1. **Envolverse con `requireAdmin()` / `withAdminAuth()`** (`utils/auth.ts`). Verifican sesión Appwrite (`account.get()`) **y** membresía en el Team `admins` (`isAdminUserAppwrite`, ver `adminMembership.appwrite.ts`); si no, tira `FORBIDDEN`.
+1. **Llamar `await requireAdmin()` primero** (`features/admin/utils/auth.ts`, que re-exporta `src/lib/auth/admin.ts`) y mapear errores con `failureFromUnknown`. `requireAdmin` está envuelto en `cache()` de React (una verificación por request) y delega en `auth.requireAdmin()`: valida la sesión de la cookie (`getCurrentUser`) **y** la membresía confirmada en el Team `admins` (`isAdmin` en `src/lib/auth/appwriteProvider.ts`); si no, lanza `AuthError` `UNAUTHENTICATED` o `FORBIDDEN`. No hay wrapper HOF: cada action lo llama explícitamente.
    *Operacional:* el Team `admins` debe estar seedeado o todos los admins quedan bloqueados.
-2. **Validar input** con schema zod de `schemas/`.
-3. **Devolver `Result<T>` discriminado:**
+2. **Validar input** con schema zod de `schemas/` (primitivas genéricas en `src/lib/validation/primitives.ts`; `slug`, `storedImageUrl` y taxonomía en `features/admin/schemas/common.ts`).
+3. **Devolver `AdminActionResult<T>`** (`src/lib/auth/admin.ts`):
    ```ts
-   type Result<T> =
-     | { ok: true; data: T }
-     | { ok: false; error: { code: string; message: string; issues?: ZodIssue[] } };
+   type AdminActionResult<T = undefined> =
+     | { success: true; data?: T }
+     | {
+         success: false;
+         error: string;
+         code?: 'UNAUTHENTICATED' | 'FORBIDDEN' | 'VALIDATION' | 'INTERNAL' | 'COLOR_IN_USE' | 'FLOWER_TYPE_IN_USE';
+         issues?: ZodIssue[];
+       };
    ```
 4. **URLs de imagen** pasan por `imageStorage.isOwnedUrl` (`@/lib/imageStorage`) o el schema `storedImageUrl` de `schemas/common.ts`.
 5. **`revalidatePath`:**
    - *Productos:* `/`, `/catalogo`, `/catalogo/{cat.slug}`, `/catalogo/{cat.slug}/{slug}`, `/admin/categorias`.
    - *Categorías:* `/`, `/catalogo`, `/catalogo/{slug}` (cada slug afectado), `/admin/categorias`.
 
-**No cambiar el contrato `Result<T>` ni la firma al evolucionar autorización.**
+**Queries admin** (`features/admin/queries/*`, `features/complaints/queries/*`) también llaman `await requireAdmin()` antes de leer — el layout no basta. `src/app/(admin)/layout.tsx` usa `requireAdminOrRedirect()`, que redirige a `/login`.
+
+**Guarda en tests:** `src/features/admin/actions/adminActionsAuth.test.ts` recorre todas las actions exportadas (más `updateComplaint`) y falla si alguna toca repositorios, storage o `next/cache` sin admin; `src/features/admin/queries/adminQueries.test.ts` hace lo mismo con las queries. Toda action o query nueva debe pasar esa guarda.
+
+**No cambiar el contrato `AdminActionResult<T>` ni la firma al evolucionar autorización.**
+
+**Login** (`features/admin/actions/auth.ts`, `loginAction`): primero `checkBotId()` (BotID; un bot recibe el fallo genérico `INTERNAL`), luego zod, luego throttling (`login-ip` 20 y `login-email` 5 intentos por 15 min, fail-closed), luego `auth.login`, que además rechaza con `FORBIDDEN` al usuario sin membresía en `admins` y revoca su sesión. Contrato:
+```ts
+type LoginResult =
+  | { ok: true }
+  | { ok: false; error: string; code?: 'VALIDATION' | 'INVALID_CREDENTIALS' | 'FORBIDDEN' | 'RATE_LIMITED' | 'INTERNAL' };
+```
+
+**Recuperar contraseña** (mismo archivo, acciones públicas): `/login` enlaza a `/recuperar-contrasena`, cuyo `requestPasswordRecoveryAction` corre BotID → zod → `recovery-ip` 10 y `recovery-email` 3 por hora (fail-closed) y responde siempre el mismo éxito genérico. El envío corre en `after()`: `auth.requestPasswordRecovery` busca el usuario por email y solo llama a `account.createRecovery` si es miembro confirmado de `admins`; cualquier otro caso o error de Appwrite se traga y se loguea sin email ni secretos. El correo (de Appwrite, no de Resend) lleva a `/restablecer-contrasena?userId&secret`, donde `resetPasswordAction` corre BotID → link válido (si no, `INVALID_LINK`) → contraseña repetida dos veces con al menos 8 caracteres, una mayúscula, un número y un carácter especial, y puntaje zxcvbn ≥ 3 (el tope de 256 se valida pero no se muestra) → `reset-ip` 10 por 15 min (fail-closed) → `account.updateRecovery` y luego `users.deleteSessions` (revoca todas las sesiones). Éxito → `/login?reset=ok`. La política vive en un solo lugar para cliente y servidor: `features/admin/schemas/passwordPolicy.ts` (criterios, etiquetas, schema zod, client-safe) y `passwordStrength.ts` (zxcvbn-ts con diccionarios common + es-es; el server lo importa directo y `ResetPasswordForm` lo carga con `import()` dinámico al escribir, para dejar los diccionarios fuera del bundle inicial; si la carga falla, el botón se habilita con los 4 criterios y decide el server). El formulario muestra barra de seguridad (Radix `Progress` + etiqueta de texto), checklist en vivo y deja «Cambiar contraseña» deshabilitado hasta cumplir todo. Códigos: `VALIDATION` (con `fieldErrors`) · `INVALID_LINK` (401/404 o link malformado) · `WEAK_PASSWORD` (400) · `RATE_LIMITED` · `INTERNAL`. El origen del link sale de `SITE_URL` (`src/lib/auth/recoveryUrl.ts`; si falta o no es http(s), `BUSINESS.website`), **nunca** del header `Host`. Ambas rutas están en `protect` de BotID (`src/instrumentation-client.ts`).
+*Operacional (consola de Appwrite, manual):* registrar el dominio del sitio y `localhost` como plataforma Web (si no, Appwrite rechaza la URL de recuperación) y traducir al español la plantilla de email «Password recovery». La API key necesita los scopes `users.read`, `users.write` y `sessions.write`.
+
+**Cookie de sesión:** `__Host-a_session` (`src/lib/auth/sessionCookie.ts`), escrita y borrada solo por `src/lib/auth/cookieSessionStore.ts` con `httpOnly`, `secure`, `sameSite: 'lax'`, `path: '/'`. Borrarla con `cookies().delete(name)` a secas emite un `Set-Cookie` sin `Secure` que el navegador rechaza para nombres `__Host-`: se borra con `set(name, '', { ...opciones, maxAge: 0 })`. No hay `proxy`/middleware: la autorización vive en `requireAdmin`, no en el borde.
 
 **Slugs en edición:** preservar el original (no regenerar al cambiar `name`); regenerar solo opt-in (botón explícito). Server: mismo slug → no regenera; distinto → acepta. Impl: `useProductForm.autoSlug`, `CategoryForm` `readOnly` + botón.
 
-**API routes** (`/api/images/upload`): `auth.getUser()` o 401 · validar folder con `isAllowedImageFolder` (allowlist `productos`, `categorias`) · validar tipo/tamaño server-side, subir vía `imageStorage.upload` · logs sin secretos.
+**API routes** (`/api/images/*`, `/api/admin/*`): `await requireAdmin()` y mapear `AdminAuthError` a 401 (`UNAUTHENTICATED`) o 403 (`FORBIDDEN`) · upload: exigir mismo origen y `content-length`, validar folder con `isAllowedImageFolder` (allowlist `productos`, `categorias`, `contenido`), validar bytes/tamaño server-side (`validateImageBytes`) y subir vía `imageStorage.upload` · logs sin secretos.
 
 ## Libro de Reclamaciones
 
@@ -163,6 +203,9 @@ Toda action en `features/admin/actions/` **debe**:
 - Al registrar una hoja se envía por Resend una copia al consumidor y una notificación al negocio.
 - Plazo operativo: 15 días hábiles. El cálculo excluye sábados y domingos, pero **no** feriados peruanos — no presentarlo como cómputo legal exacto sin revisar ese límite.
 - No alterar los datos de la hoja ni las plantillas de email sin **preservar el escape HTML de toda entrada pública**.
+- El correlativo se toma del contador `counters/complaints-<año>` y la hoja persiste `correlativo` **y** `correlativo_year` (atributo entero, opcional por las filas legacy, que mapean a `null`).
+- La impresión usa un `<iframe>` oculto con `srcDoc` y `sandbox="allow-modals allow-same-origin"` (`ComplaintForm/SubmitState.tsx`, HTML de `printDocument.ts`): nunca `window.open` ni `document.write` sobre la página.
+- El envío está limitado por IP, y la copia al consumidor por destinatario y por tope global, con `createFailOpenRateLimiter` (`features/complaints/utils/rateLimit.ts`): si el limitador cae, la hoja igual se registra.
 
 ## Convenciones Next 16 + estilos
 
@@ -181,13 +224,14 @@ Toda action en `features/admin/actions/` **debe**:
 
 ## A11y + shared primitives
 
-- Skip link → `id="main-content"`. Forms: `aria-required/-invalid/-describedby` → `<FieldError role="alert">`. `<nav aria-label>`.
-- Drag & drop @dnd-kit: sensores Pointer+Keyboard+Touch + `<DndLiveRegion>` (announcements ES). Modales Radix (focus trap/restore/ESC/scroll-lock automáticos). Autocomplete: `role="combobox"` + `aria-autocomplete="list"` + `role="option"`.
+- Skip link → `id="main-content"`. Forms: `aria-required/-invalid` + `aria-describedby` → `<FieldError id>` (sin `role="alert"`); un solo `<FormError>` de resumen (p. ej. «Revisa los 3 campos marcados.») y, tras un submit fallido, foco al primer `[aria-invalid="true"]` en orden DOM. Un submit fallido conserva lo escrito: el estado del action devuelve los valores y los campos los reponen con `defaultValue` + `key` por intento. `<nav aria-label>`.
+- Drag & drop @dnd-kit: usar `ui/SortableList` (sensores Pointer+Keyboard+Touch + `announcements` ES de `SortableList/announcements`). Modales Radix (focus trap/restore/ESC/scroll-lock automáticos). Autocomplete: `role="combobox"` + `aria-autocomplete="list"` + `role="option"`.
 - `ui/` disponibles: `LightboxDialog`, `ConfirmDialog` (`default`/`destructive`), `JsonLd`, `Button`, `Input`, `Breadcrumb`, `FormField`, `EmptyState`, `FilterChip`, `PillToggle`, `ToggleSwitch`, `SectionHeader`.
 
 ## Tests / seguridad
 
-- Tests en `tests/` (+ `helpers/`). **`phase1-verify.spec.ts` = regression baseline, siempre verde.**
+- Unit tests (vitest) junto al código como `src/**/*.test.ts`; corren en CI (`.github/workflows/ci.yml`: lint strict + tsc + vitest) en cada PR y push a `main`.
+- E2E (Playwright) en `tests/` (+ `helpers/`). **`phase1-verify.spec.ts` = regression baseline, siempre verde.**
 - Specs admin leen `E2E_ADMIN_EMAIL` / `E2E_ADMIN_PASSWORD` del env — nunca hardcodear. Bug fuera de scope → `test.fixme` con razón.
 - `next.config.ts`: HSTS, X-Frame-Options DENY, nosniff, Referrer-Policy, Permissions-Policy, `poweredByHeader: false`. **CSP en Report-Only** (TODO Fase 6: enforced con nonce).
 
@@ -205,3 +249,13 @@ Conventional Commits en inglés, cortos, presente (`feat: add contact form valid
 - **Cerrar:** `mem_session_summary` (qué se hizo, archivos, decisiones) — no opcional.
 
 > El directorio local sigue llamándose `kataleya-flawers-web` (typo histórico), pero engram resuelve el proyecto desde el git remote como **`kataleya-flowers-web`**. Usar siempre el nombre con `o`.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+## This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

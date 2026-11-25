@@ -1,44 +1,65 @@
 'use client';
 
-import { AnimatePresence, domAnimation, LazyMotion, m } from 'framer-motion';
+import { AnimatePresence, LazyMotion, m } from 'framer-motion';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { useState, useSyncExternalStore } from 'react';
 
-import type { Category, Product } from '@/features/catalog/types';
-import { pickBestSellers } from '@/features/catalog/utils/pickBestSellers';
+import type { Category } from '@/features/catalog/types';
+import {
+  BEST_SELLERS_ALL_TAB,
+  type BestSellersByTab,
+} from '@/features/catalog/utils/pickBestSellers';
 
 import BestSellerProductCard from './BestSellerProductCard';
 
 const CATEGORY_QUERY_PARAM = 'bestsellers';
 
-interface BestSellersTabsProps {
-  products: Product[];
-  categoryById: Record<string, Category>;
-  tabCategories: Category[];
+const loadMotionFeatures = () =>
+  import('@/components/shared/motionFeatures').then((mod) => mod.default);
+
+function subscribeToNothing() {
+  return () => {
+    return undefined;
+  };
 }
 
-export default function BestSellersTabs({
-  products,
-  categoryById,
-  tabCategories,
-}: BestSellersTabsProps) {
+function getCategoryParamSnapshot(): string | null {
+  return new URLSearchParams(window.location.search).get(CATEGORY_QUERY_PARAM);
+}
+
+function getServerCategoryParamSnapshot(): string | null {
+  return null;
+}
+
+type BestSellersTabCategory = Pick<Category, 'id' | 'name' | 'slug'>;
+
+interface BestSellersTabsProps {
+  bestSellersByTab: BestSellersByTab;
+  tabCategories: BestSellersTabCategory[];
+}
+
+export default function BestSellersTabs({ bestSellersByTab, tabCategories }: BestSellersTabsProps) {
   const router = useRouter();
   const pathname = usePathname();
 
-  const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null);
+  const categoryParam = useSyncExternalStore(
+    subscribeToNothing,
+    getCategoryParamSnapshot,
+    getServerCategoryParamSnapshot,
+  );
+  const [userSelectedCategoryId, setUserSelectedCategoryId] = useState<
+    string | null | undefined
+  >(undefined);
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const slug = new URLSearchParams(window.location.search).get(CATEGORY_QUERY_PARAM);
-    if (!slug) return;
-    const matched = tabCategories.find((category) => category.slug === slug)?.id ?? null;
-    if (matched) setActiveCategoryId(matched);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const paramCategoryId = categoryParam
+    ? (tabCategories.find((category) => category.slug === categoryParam)?.id ?? null)
+    : null;
+  const activeCategoryId =
+    userSelectedCategoryId === undefined ? paramCategoryId : userSelectedCategoryId;
 
   const selectCategory = (categoryId: string | null) => {
-    setActiveCategoryId(categoryId);
+    setUserSelectedCategoryId(categoryId);
     const slug = categoryId
       ? tabCategories.find((category) => category.id === categoryId)?.slug
       : null;
@@ -52,12 +73,8 @@ export default function BestSellersTabs({
     router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
   };
 
-  const visibleProducts = useMemo(() => {
-    const scoped = activeCategoryId
-      ? products.filter((product) => product.categoryId === activeCategoryId)
-      : products;
-    return pickBestSellers(scoped);
-  }, [products, activeCategoryId]);
+  const visibleProducts = bestSellersByTab[activeCategoryId ?? BEST_SELLERS_ALL_TAB] ?? [];
+  const categorySlugById = new Map(tabCategories.map(({ id, slug }) => [id, slug]));
 
   return (
     <>
@@ -71,7 +88,7 @@ export default function BestSellersTabs({
               type="button"
               onClick={() => selectCategory(null)}
               aria-current={activeCategoryId === null ? 'true' : undefined}
-              className="shrink-0 px-2 py-2.5 transition-colors hover:text-(--color-primary) focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-(--color-secondary) aria-[current=true]:text-(--color-dark)"
+              className="shrink-0 px-2 py-2.5 transition-colors hover:text-(--color-primary) focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-(--color-primary) aria-[current=true]:text-(--color-dark)"
             >
               Todos
             </button>
@@ -81,7 +98,7 @@ export default function BestSellersTabs({
                 type="button"
                 onClick={() => selectCategory(category.id)}
                 aria-current={activeCategoryId === category.id ? 'true' : undefined}
-                className="shrink-0 px-2 py-2.5 transition-colors hover:text-(--color-primary) focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-(--color-secondary) aria-[current=true]:text-(--color-dark)"
+                className="shrink-0 px-2 py-2.5 transition-colors hover:text-(--color-primary) focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-(--color-primary) aria-[current=true]:text-(--color-dark)"
               >
                 {category.name}
               </button>
@@ -94,16 +111,16 @@ export default function BestSellersTabs({
         </div>
         <Link
           href="/catalogo"
-          className="shrink-0 border-b border-(--color-primary) px-2 py-2.5 font-body text-xs font-semibold uppercase tracking-[0.14em] text-(--color-primary) transition-colors hover:border-(--color-accent) hover:text-(--color-accent) focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-(--color-secondary) sm:text-sm"
+          className="shrink-0 border-b border-(--color-primary) px-2 py-2.5 font-body text-xs font-semibold uppercase tracking-[0.14em] text-(--color-primary) transition-colors hover:border-(--color-accent) hover:text-(--color-accent) focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-(--color-primary) sm:text-sm"
         >
           Ver todo
         </Link>
       </div>
 
-      <LazyMotion features={domAnimation}>
+      <LazyMotion features={loadMotionFeatures}>
         <AnimatePresence mode="wait">
           <m.div
-            key={activeCategoryId ?? 'all'}
+            key={activeCategoryId ?? BEST_SELLERS_ALL_TAB}
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
@@ -116,7 +133,7 @@ export default function BestSellersTabs({
               <BestSellerProductCard
                 key={product.id}
                 product={product}
-                categorySlug={categoryById[product.categoryId]?.slug}
+                categorySlug={categorySlugById.get(product.categoryId)}
               />
             ))}
           </m.div>

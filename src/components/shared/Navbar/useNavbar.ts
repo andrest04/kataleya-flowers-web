@@ -44,6 +44,11 @@ export function useNavbar() {
     catalogMenu.openCatalogMenu();
   }, [search, catalogMenu]);
 
+  const toggleCatalogMenu = useCallback(() => {
+    if (!catalogMenu.isCatalogMenuOpen) search.closeSearch();
+    catalogMenu.toggleCatalogMenu();
+  }, [search, catalogMenu]);
+
   const openSearch = useCallback(() => {
     catalogMenu.closeCatalogMenu();
     search.openSearch();
@@ -70,6 +75,7 @@ export function useNavbar() {
 
   return {
     isDrawerOpen: drawer.isOpen,
+    hasDrawerOpened: drawer.hasOpened,
     setIsDrawerOpen: drawer.setOpen,
     openDrawer,
     searchInputRef: drawer.searchInputRef,
@@ -85,12 +91,17 @@ export function useNavbar() {
     searchResults: search.searchResults,
     suggestions: search.suggestions,
     desktopSearchRef: search.desktopSearchRef,
+    searchTriggerRef: search.searchTriggerRef,
     clearSearch: search.clearSearch,
 
     isCatalogMenuOpen: catalogMenu.isCatalogMenuOpen,
     catalogMenuCategories: catalogMenu.categories,
     catalogMenuRef: catalogMenu.catalogMenuRef,
+    catalogTriggerRef: catalogMenu.catalogTriggerRef,
+    shouldFocusCatalogMenu: catalogMenu.shouldFocusCatalogMenu,
     openCatalogMenu,
+    toggleCatalogMenu,
+    handleCatalogMenuBlur: catalogMenu.handleCatalogMenuBlur,
     scheduleCloseCatalogMenu: catalogMenu.scheduleCloseCatalogMenu,
     cancelCloseCatalogMenu: catalogMenu.cancelCloseCatalogMenu,
     closeCatalogMenu: catalogMenu.closeCatalogMenu,

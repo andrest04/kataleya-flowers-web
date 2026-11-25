@@ -18,11 +18,11 @@ import DragHandle from '@/components/ui/SortableList/DragHandle';
 import SortableItem from '@/components/ui/SortableList/SortableItem';
 import ToggleSwitch from '@/components/ui/ToggleSwitch';
 import { deleteDiscoverTile, toggleDiscoverTileStatus } from '@/features/admin/actions/discoverTiles';
-import type { DiscoverTile } from '@/lib/database/repositories/discoverTiles';
 import {
   HOME_DISCOVER_TILE_LIMIT,
   HOME_DISCOVER_TILE_LIMIT_COPY,
-} from '@/lib/discoverTileLimit';
+} from '@/features/landing/rules/discoverTileLimit';
+import type { DiscoverTile } from '@/lib/database/repositories/discoverTiles';
 import { isPublished } from '@/lib/publishing';
 
 import { useDiscoverTileReorder } from './useDiscoverTileReorder';

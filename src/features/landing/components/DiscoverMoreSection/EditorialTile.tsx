@@ -50,7 +50,7 @@ export default function EditorialTile({
   );
 
   const className =
-    'group block focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-secondary)';
+    'group block focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary)';
 
   if (preview) {
     return <div className={className}>{content}</div>;
