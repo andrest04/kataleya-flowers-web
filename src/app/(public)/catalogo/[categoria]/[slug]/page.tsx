@@ -16,6 +16,7 @@ import { resolveProductRoute } from "@/features/catalog/queries/resolveProductRo
 import { toCatalogCardProduct } from "@/features/catalog/utils/toCatalogCardProduct";
 import { getSiteSettings } from "@/features/settings/queries/getSiteSettings";
 import { floralArrangementsSeoDescription } from "@/lib/siteSettings";
+import { buildProductJsonLd, productImageUrls } from "@/lib/structuredData";
 
 export const revalidate = 3600;
 
@@ -68,10 +69,7 @@ export async function generateMetadata({
 
     const { category, product } = route;
     const description = product.description.slice(0, 160);
-    const productImages =
-      product.images && product.images.length > 0
-        ? product.images
-        : [product.imageUrl];
+    const productImages = productImageUrls(product);
     const titleBase = `${product.name} | ${category.name}`;
     const canonicalPath = `/catalogo/${category.slug}/${product.slug}`;
 
@@ -92,7 +90,7 @@ export async function generateMetadata({
         card: "summary_large_image",
         title: titleBase,
         description,
-        images: [productImages[0]],
+        images: productImages.slice(0, 1),
       },
     };
   } catch {
@@ -126,43 +124,12 @@ export default async function ProductoPage({
 
   const SITE_URL = settings.website;
   const productUrl = `${SITE_URL}/catalogo/${category.slug}/${product.slug}`;
-  const productImages =
-    product.images && product.images.length > 0
-      ? product.images
-      : [product.imageUrl];
-
-  const offers =
-    product.priceTable && product.priceTable.length > 0
-      ? {
-          "@type": "AggregateOffer",
-          priceCurrency: "PEN",
-          lowPrice: Math.min(...product.priceTable.map((v) => v.price)),
-          highPrice: Math.max(...product.priceTable.map((v) => v.price)),
-          offerCount: product.priceTable.length,
-          availability: "https://schema.org/InStock",
-          url: productUrl,
-        }
-      : {
-          "@type": "Offer",
-          priceCurrency: "PEN",
-          price: product.price,
-          availability: "https://schema.org/InStock",
-          url: productUrl,
-        };
-
-  const productLd = {
-    "@context": "https://schema.org",
-    "@type": "Product",
-    name: product.name,
-    description: product.description,
-    image: productImages,
-    brand: {
-      "@type": "Brand",
-      name: settings.name,
-    },
-    category: category.name,
-    offers,
-  };
+  const productLd = buildProductJsonLd({
+    categoryName: category.name,
+    product,
+    productUrl,
+    settings,
+  });
 
   const breadcrumbLd = {
     "@context": "https://schema.org",

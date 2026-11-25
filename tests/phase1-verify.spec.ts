@@ -174,6 +174,26 @@ test.describe("Phase 1 — A) Root metadata + fonts", () => {
     const html = await page.content();
     expect(html).not.toContain("fonts.googleapis.com");
   });
+
+  test("JSON-LD de / incluye un Florist con @id y geo", async ({ page }) => {
+    await page.goto("/");
+
+    const blocks = await page
+      .locator('script[type="application/ld+json"]')
+      .allTextContents();
+    const nodes = blocks.flatMap((text) => {
+      const parsed: unknown = JSON.parse(text);
+      return Array.isArray(parsed) ? parsed : [parsed];
+    }) as Record<string, unknown>[];
+    const florist = nodes.find((node) => node["@type"] === "Florist");
+
+    expect(florist, "la home debe declarar un Florist").toBeTruthy();
+    expect(florist?.["@id"]).toBe(`https://${SITE_HOST}/#florist`);
+    const geo = florist?.geo as Record<string, unknown> | undefined;
+    expect(geo?.["@type"]).toBe("GeoCoordinates");
+    expect(typeof geo?.latitude).toBe("number");
+    expect(typeof geo?.longitude).toBe("number");
+  });
 });
 
 test.describe("Phase 1 — B) File-Based Metadata API", () => {

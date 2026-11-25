@@ -7,7 +7,9 @@ import type React from "react";
 import { MotionProvider } from "@/components/shared/MotionProvider";
 import { JsonLd } from "@/components/ui/JsonLd";
 import { getSiteSettings } from "@/features/settings/queries/getSiteSettings";
-import { floristSeoDescription, schemaDayNames } from "@/lib/siteSettings";
+import { BUSINESS } from "@/lib/constants";
+import { floristSeoDescription } from "@/lib/siteSettings";
+import { buildFloristJsonLd } from "@/lib/structuredData";
 
 const crimsonText = Crimson_Text({
   subsets: ["latin"],
@@ -69,30 +71,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const settings = await getSiteSettings();
-  const floristJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Florist",
-    name: settings.name,
-    description: floristSeoDescription(settings),
-    url: settings.website,
-    telephone: `+${settings.phone}`,
-    address: {
-      "@type": "PostalAddress",
-      streetAddress: settings.address,
-      addressLocality: settings.location,
-      addressCountry: "PE",
-    },
-    openingHoursSpecification: [
-      {
-        "@type": "OpeningHoursSpecification",
-        dayOfWeek: schemaDayNames(settings.hours.openDays),
-        opens: settings.hours.opens,
-        closes: settings.hours.closes,
-      },
-    ],
-    sameAs: [settings.instagram],
-    priceRange: "S/30 — S/800",
-  };
+  const floristJsonLd = buildFloristJsonLd(settings, BUSINESS.postalAddress);
 
   return (
     <html lang="es-PE" className={`${crimsonText.variable} ${mulish.variable}`}>
