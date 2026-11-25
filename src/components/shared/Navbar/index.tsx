@@ -106,7 +106,7 @@ export default function Navbar({ settings }: NavbarProps) {
                 <button
                   type="button"
                   className="flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center text-(--color-primary) transition-opacity hover:opacity-70 md:hidden"
-                  aria-label={isDrawerOpen ? "Cerrar menu" : "Abrir menu"}
+                  aria-label={isDrawerOpen ? "Cerrar menú" : "Abrir menú"}
                   aria-expanded={isDrawerOpen}
                   aria-controls="nav-drawer"
                   onPointerEnter={prefetchMobileDrawer}

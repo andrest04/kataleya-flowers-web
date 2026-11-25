@@ -12,7 +12,7 @@ interface EditarHeroSlidePageProps {
 export async function generateMetadata({ params }: EditarHeroSlidePageProps) {
   const { id } = await params;
   const slide = await getAdminHeroSlideById(id);
-  return { title: slide ? `Editar ${slide.title}` : 'Editar slide' };
+  return { title: slide ? `Editar ${slide.title}` : 'Editar imagen de portada' };
 }
 
 export default async function EditarHeroSlidePage({ params }: EditarHeroSlidePageProps) {
@@ -33,7 +33,7 @@ export default async function EditarHeroSlidePage({ params }: EditarHeroSlidePag
         ← Volver a inicio
       </Link>
       <div>
-        <h1 className="font-serif text-2xl font-semibold text-(--color-dark)">Editar slide</h1>
+        <h1 className="font-serif text-2xl font-semibold text-(--color-dark)">Editar imagen de portada</h1>
       </div>
       <HeroCanvasEditor allowHide={allowHide} initial={draftFromSlide(slide)} slideId={slide.id} />
     </div>

@@ -102,7 +102,7 @@ export default function CategoryForm({ category }: CategoryFormProps) {
           />
         </FormField>
 
-        <FormField label="Slug" htmlFor="slug">
+        <FormField label="Dirección web" htmlFor="slug">
           <div className="flex items-center gap-2">
             <Input
               ref={slugRef}
@@ -127,8 +127,8 @@ export default function CategoryForm({ category }: CategoryFormProps) {
                   }
                 }}
                 className="text-xs underline text-(--color-primary) hover:opacity-80 cursor-pointer"
-                aria-label="Regenerar slug desde el nombre. Cambiar el slug puede romper URLs públicas indexadas."
-                title="Cambiar el slug puede romper URLs públicas indexadas."
+                aria-label="Regenerar la dirección web desde el nombre. Cambiarla puede romper enlaces públicos ya indexados."
+                title="Cambiar la dirección web puede romper enlaces públicos ya indexados."
               >
                 Regenerar
               </button>

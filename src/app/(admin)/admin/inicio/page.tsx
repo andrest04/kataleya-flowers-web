@@ -59,14 +59,14 @@ export default async function AdminInicioPage() {
             initial={draftFromLive(liveHero ?? fallbackHeroSlide(settings))}
             showCancel={false}
             heading={(
-              <h2 id="hero-heading" className="font-serif text-xl text-(--color-dark)">Hero</h2>
+              <h2 id="hero-heading" className="font-serif text-xl text-(--color-dark)">Portada</h2>
             )}
           />
         ) : (
           <>
             <div className="flex items-end justify-between gap-4">
-              <h2 id="hero-heading" className="font-serif text-xl text-(--color-dark)">Hero</h2>
-              <Button href="/admin/inicio/hero/nuevo" size="sm">Agregar slide</Button>
+              <h2 id="hero-heading" className="font-serif text-xl text-(--color-dark)">Portada</h2>
+              <Button href="/admin/inicio/hero/nuevo" size="sm">Agregar imagen de portada</Button>
             </div>
             <HeroSlideList slides={slides} />
           </>

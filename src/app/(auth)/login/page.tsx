@@ -30,7 +30,7 @@ function ForbiddenBanner({ error }: { error: string | null }) {
   if (!display) return null;
 
   return (
-    <p className="text-sm" style={{ color: 'var(--color-primary)' }}>
+    <p id="login-error" role="alert" className="text-sm" style={{ color: 'var(--color-primary)' }}>
       {display}
     </p>
   );
@@ -67,6 +67,8 @@ export default function LoginPage() {
 
   return (
     <main
+      id="main-content"
+      tabIndex={-1}
       className="min-h-screen flex items-center justify-center px-4"
       style={{ background: 'var(--color-cream)' }}
     >
@@ -106,6 +108,8 @@ export default function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               required
               autoComplete="email"
+              aria-invalid={error ? true : undefined}
+              aria-describedby={error ? 'login-error' : undefined}
               className="w-full px-3 py-2.5 rounded-lg text-base md:text-sm outline-none transition-shadow focus:ring-2"
               style={{
                 border: '1px solid var(--color-border)',
@@ -130,6 +134,8 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
               autoComplete="current-password"
+              aria-invalid={error ? true : undefined}
+              aria-describedby={error ? 'login-error' : undefined}
               className="w-full px-3 py-2.5 rounded-lg text-base md:text-sm outline-none transition-shadow focus:ring-2"
               style={{
                 border: '1px solid var(--color-border)',
