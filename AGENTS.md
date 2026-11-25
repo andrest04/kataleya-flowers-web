@@ -188,6 +188,9 @@ type LoginResult =
   | { ok: false; error: string; code?: 'VALIDATION' | 'INVALID_CREDENTIALS' | 'FORBIDDEN' | 'RATE_LIMITED' | 'INTERNAL' };
 ```
 
+**Recuperar contraseña** (mismo archivo, acciones públicas): `/login` enlaza a `/recuperar-contrasena`, cuyo `requestPasswordRecoveryAction` corre BotID → zod → `recovery-ip` 10 y `recovery-email` 3 por hora (fail-closed) y responde siempre el mismo éxito genérico. El envío corre en `after()`: `auth.requestPasswordRecovery` busca el usuario por email y solo llama a `account.createRecovery` si es miembro confirmado de `admins`; cualquier otro caso o error de Appwrite se traga y se loguea sin email ni secretos. El correo (de Appwrite, no de Resend) lleva a `/restablecer-contrasena?userId&secret`, donde `resetPasswordAction` corre BotID → link válido (si no, `INVALID_LINK`) → contraseña repetida dos veces con al menos 8 caracteres, una mayúscula, un número y un carácter especial, y puntaje zxcvbn ≥ 3 (el tope de 256 se valida pero no se muestra) → `reset-ip` 10 por 15 min (fail-closed) → `account.updateRecovery` y luego `users.deleteSessions` (revoca todas las sesiones). Éxito → `/login?reset=ok`. La política vive en un solo lugar para cliente y servidor: `features/admin/schemas/passwordPolicy.ts` (criterios, etiquetas, schema zod, client-safe) y `passwordStrength.ts` (zxcvbn-ts con diccionarios common + es-es; el server lo importa directo y `ResetPasswordForm` lo carga con `import()` dinámico al escribir, para dejar los diccionarios fuera del bundle inicial; si la carga falla, el botón se habilita con los 4 criterios y decide el server). El formulario muestra barra de seguridad (Radix `Progress` + etiqueta de texto), checklist en vivo y deja «Cambiar contraseña» deshabilitado hasta cumplir todo. Códigos: `VALIDATION` (con `fieldErrors`) · `INVALID_LINK` (401/404 o link malformado) · `WEAK_PASSWORD` (400) · `RATE_LIMITED` · `INTERNAL`. El origen del link sale de `SITE_URL` (`src/lib/auth/recoveryUrl.ts`; si falta o no es http(s), `BUSINESS.website`), **nunca** del header `Host`. Ambas rutas están en `protect` de BotID (`src/instrumentation-client.ts`).
+*Operacional (consola de Appwrite, manual):* registrar el dominio del sitio y `localhost` como plataforma Web (si no, Appwrite rechaza la URL de recuperación) y traducir al español la plantilla de email «Password recovery». La API key necesita los scopes `users.read`, `users.write` y `sessions.write`.
+
 **Cookie de sesión:** `__Host-a_session` (`src/lib/auth/sessionCookie.ts`), escrita y borrada solo por `src/lib/auth/cookieSessionStore.ts` con `httpOnly`, `secure`, `sameSite: 'lax'`, `path: '/'`. Borrarla con `cookies().delete(name)` a secas emite un `Set-Cookie` sin `Secure` que el navegador rechaza para nombres `__Host-`: se borra con `set(name, '', { ...opciones, maxAge: 0 })`. No hay `proxy`/middleware: la autorización vive en `requireAdmin`, no en el borde.
 
 **Slugs en edición:** preservar el original (no regenerar al cambiar `name`); regenerar solo opt-in (botón explícito). Server: mismo slug → no regenera; distinto → acepta. Impl: `useProductForm.autoSlug`, `CategoryForm` `readOnly` + botón.
@@ -246,3 +249,13 @@ Conventional Commits en inglés, cortos, presente (`feat: add contact form valid
 - **Cerrar:** `mem_session_summary` (qué se hizo, archivos, decisiones) — no opcional.
 
 > El directorio local sigue llamándose `kataleya-flawers-web` (typo histórico), pero engram resuelve el proyecto desde el git remote como **`kataleya-flowers-web`**. Usar siempre el nombre con `o`.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+## This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

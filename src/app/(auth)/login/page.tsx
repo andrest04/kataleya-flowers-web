@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
 
@@ -32,6 +33,17 @@ function ForbiddenBanner({ error }: { error: string | null }) {
   return (
     <p id="login-error" role="alert" className="text-sm" style={{ color: 'var(--color-primary)' }}>
       {display}
+    </p>
+  );
+}
+
+function PasswordResetNotice({ hidden }: { hidden: boolean }) {
+  const passwordReset = useSearchParams().get('reset') === 'ok';
+  if (!passwordReset || hidden) return null;
+
+  return (
+    <p role="status" className="text-sm" style={{ color: 'var(--color-dark)' }}>
+      Tu contraseña se actualizó. Inicia sesión con la nueva.
     </p>
   );
 }
@@ -143,10 +155,20 @@ export default function LoginPage() {
                 color: 'var(--color-dark)',
               }}
             />
+            <div className="mt-2 text-right">
+              <Link
+                href="/recuperar-contrasena"
+                className="text-sm underline underline-offset-4"
+                style={{ color: 'var(--color-primary)' }}
+              >
+                ¿Olvidaste tu contraseña?
+              </Link>
+            </div>
           </div>
 
           <Suspense fallback={null}>
             <StaleSessionCleanup />
+            <PasswordResetNotice hidden={error !== null} />
             <ForbiddenBanner error={error} />
           </Suspense>
 
