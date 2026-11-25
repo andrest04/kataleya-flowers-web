@@ -18,6 +18,7 @@ interface ComplaintSeedOverrides {
   provider_response?: string | null;
   consumer_phone?: string | null;
   claimed_amount?: number | null;
+  correlativo_year?: number | null;
 }
 
 function seedComplaint(store: FakeDocumentStore, overrides: ComplaintSeedOverrides = {}): string {
@@ -27,6 +28,7 @@ function seedComplaint(store: FakeDocumentStore, overrides: ComplaintSeedOverrid
     createdAt: overrides.createdAt ?? '2026-01-01T00:00:00.000Z',
     updatedAt: overrides.updatedAt ?? '2026-01-01T00:00:00.000Z',
     correlativo: overrides.correlativo ?? 1,
+    ...('correlativo_year' in overrides ? { correlativo_year: overrides.correlativo_year } : {}),
     complaint_type: overrides.complaint_type ?? 'RECLAMO',
     consumer_name: 'Ana Torres',
     consumer_doc_type: 'DNI',
@@ -52,6 +54,7 @@ function seedComplaint(store: FakeDocumentStore, overrides: ComplaintSeedOverrid
 function baseInsert(overrides: Partial<ComplaintInsert> = {}): ComplaintInsert {
   return {
     correlativo: 5,
+    correlativoYear: 2026,
     complaintType: 'RECLAMO',
     consumerName: 'Ana Torres',
     consumerDocType: 'DNI',
@@ -165,6 +168,46 @@ describe('complaintsRepository (fake store)', () => {
 
       const stored = await repository.findById(created.id);
       expect(stored).toMatchObject({ isMinor: true, guardianName: 'Carlos Torres' });
+    });
+  });
+
+  describe('correlativoYear', () => {
+    it('round-trips the stored correlativo year', async () => {
+      const created = await repository.insert(baseInsert({ correlativoYear: 2026 }));
+
+      expect(created.correlativoYear).toBe(2026);
+      await expect(repository.findById(created.id)).resolves.toMatchObject({ correlativoYear: 2026 });
+    });
+
+    it('maps a legacy complaint without correlativo_year to null', async () => {
+      seedComplaint(store, { id: 'legacy' });
+
+      await expect(repository.findById('legacy')).resolves.toMatchObject({ correlativoYear: null });
+    });
+
+    it('maps an explicit null correlativo_year to null', async () => {
+      seedComplaint(store, { id: 'c1', correlativo_year: null });
+
+      await expect(repository.findById('c1')).resolves.toMatchObject({ correlativoYear: null });
+    });
+  });
+
+  describe('markEmailSent', () => {
+    it('sets email_sent to true', async () => {
+      seedComplaint(store, { id: 'c1' });
+
+      await repository.markEmailSent('c1');
+
+      await expect(repository.findById('c1')).resolves.toMatchObject({ emailSent: true });
+    });
+
+    it('updates only the email_sent attribute', async () => {
+      seedComplaint(store, { id: 'c1' });
+      const update = vi.spyOn(store, 'update');
+
+      await repository.markEmailSent('c1');
+
+      expect(update).toHaveBeenCalledWith(COLLECTION_ID, 'c1', { email_sent: true });
     });
   });
 

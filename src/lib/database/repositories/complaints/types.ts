@@ -1,6 +1,7 @@
 export interface Complaint {
   id: string;
   correlativo: number;
+  correlativoYear: number | null;
   complaintType: string;
   consumerName: string;
   consumerDocType: string;
@@ -25,6 +26,7 @@ export interface Complaint {
 
 export interface ComplaintInsert {
   correlativo: number;
+  correlativoYear: number | null;
   complaintType: string;
   consumerName: string;
   consumerDocType: string;
@@ -44,6 +46,7 @@ export interface ComplaintInsert {
 export interface ComplaintCreated {
   id: string;
   correlativo: number;
+  correlativoYear: number | null;
   createdAt: string;
 }
 
@@ -59,4 +62,5 @@ export interface ComplaintsRepository {
   allocateCorrelativo(year: number): Promise<number>;
   insert(input: ComplaintInsert): Promise<ComplaintCreated>;
   updateStatus(id: string, data: ComplaintStatusUpdate): Promise<void>;
+  markEmailSent(id: string): Promise<void>;
 }

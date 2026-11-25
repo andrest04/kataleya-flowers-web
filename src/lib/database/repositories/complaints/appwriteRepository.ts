@@ -18,6 +18,7 @@ const PRIVATE_DOCUMENT: CreateOptions = { permissions: [] };
 
 interface ComplaintDocument extends DocumentRecord {
   correlativo: number;
+  correlativo_year?: number | null;
   complaint_type: string;
   consumer_name: string;
   consumer_doc_type: string;
@@ -42,6 +43,7 @@ function toComplaint(doc: ComplaintDocument): Complaint {
   return {
     id: doc.id,
     correlativo: doc.correlativo,
+    correlativoYear: doc.correlativo_year ?? null,
     complaintType: doc.complaint_type,
     consumerName: doc.consumer_name,
     consumerDocType: doc.consumer_doc_type,
@@ -68,6 +70,7 @@ function toComplaint(doc: ComplaintDocument): Complaint {
 function toDocumentData(input: ComplaintInsert): Record<string, unknown> {
   return {
     correlativo: input.correlativo,
+    correlativo_year: input.correlativoYear,
     complaint_type: input.complaintType,
     consumer_name: input.consumerName,
     consumer_doc_type: input.consumerDocType,
@@ -117,7 +120,12 @@ export function createComplaintsRepository(store: DocumentStore): ComplaintsRepo
         toDocumentData(input),
         PRIVATE_DOCUMENT,
       );
-      return { id: doc.id, correlativo: doc.correlativo, createdAt: doc.createdAt };
+      return {
+        id: doc.id,
+        correlativo: doc.correlativo,
+        correlativoYear: doc.correlativo_year ?? null,
+        createdAt: doc.createdAt,
+      };
     },
 
     async updateStatus(id: string, data: ComplaintStatusUpdate): Promise<void> {
@@ -126,6 +134,10 @@ export function createComplaintsRepository(store: DocumentStore): ComplaintsRepo
         provider_response: data.providerResponse,
         responded_at: data.respondedAt,
       });
+    },
+
+    async markEmailSent(id: string): Promise<void> {
+      await store.update<ComplaintDocument>(COLLECTION_ID, id, { email_sent: true });
     },
   };
 }

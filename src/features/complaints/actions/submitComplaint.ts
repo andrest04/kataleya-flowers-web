@@ -5,14 +5,88 @@ import { checkBotId } from 'botid/server';
 import { complaintsRepository } from '@/lib/database/repositories/complaints';
 
 import { sendComplaintEmails } from '../email/sendComplaintEmails';
+import type { ComplaintFormData } from '../schemas/complaint';
 import { complaintSubmitSchema } from '../schemas/complaint';
-import type { ComplaintSubmitResult } from '../types';
-import { formatComplaintNumber } from '../utils/format';
+import type { ComplaintFieldIssue, ComplaintSubmitResult } from '../types';
+import { formatComplaintNumber, limaYear } from '../utils/format';
 import {
   getClientKey,
   isComplaintSubmissionAllowed,
   isConsumerCopyAllowed,
 } from '../utils/rateLimit';
+
+const INTERNAL_ERROR = 'No se pudo registrar tu reclamación. Intenta de nuevo en unos minutos.';
+
+interface RegisteredComplaint {
+  id: string;
+  complaintNumber: string;
+  createdAt: string;
+}
+
+function toFieldIssues(issues: { path: PropertyKey[]; message: string }[]): ComplaintFieldIssue[] {
+  return issues.map(({ path, message }) => ({
+    path: path.filter((segment): segment is string | number => typeof segment !== 'symbol'),
+    message,
+  }));
+}
+
+async function registerComplaint(data: ComplaintFormData): Promise<RegisteredComplaint> {
+  const year = limaYear(new Date());
+  const correlativo = await complaintsRepository.allocateCorrelativo(year);
+
+  const created = await complaintsRepository.insert({
+    correlativo,
+    correlativoYear: year,
+    complaintType: data.complaintType,
+    consumerName: data.consumerName,
+    consumerDocType: data.consumerDocType,
+    consumerDocNumber: data.consumerDocNumber,
+    consumerEmail: data.consumerEmail,
+    consumerPhone: data.consumerPhone || null,
+    consumerAddress: data.consumerAddress,
+    isMinor: data.isMinor,
+    guardianName: data.isMinor ? data.guardianName || null : null,
+    itemType: data.itemType,
+    itemDescription: data.itemDescription,
+    claimedAmount: data.claimedAmount ?? null,
+    detail: data.detail,
+    consumerRequest: data.consumerRequest,
+  });
+
+  return {
+    id: created.id,
+    complaintNumber: formatComplaintNumber(created.correlativo, {
+      year: created.correlativoYear,
+      createdAt: created.createdAt,
+    }),
+    createdAt: created.createdAt,
+  };
+}
+
+async function deliverComplaintEmails(
+  data: ComplaintFormData,
+  complaint: RegisteredComplaint,
+): Promise<boolean> {
+  try {
+    const includeConsumerCopy = await isConsumerCopyAllowed(data.consumerEmail);
+    return await sendComplaintEmails(
+      { ...data, complaintNumber: complaint.complaintNumber, createdAt: complaint.createdAt },
+      complaint.id,
+      { includeConsumerCopy },
+    );
+  } catch (err) {
+    console.error('[submitComplaint] email step failed:', { complaintId: complaint.id, err });
+    return false;
+  }
+}
+
+async function recordEmailSent(complaintId: string): Promise<void> {
+  try {
+    await complaintsRepository.markEmailSent(complaintId);
+  } catch (err) {
+    console.error('[submitComplaint] could not persist email_sent:', { complaintId, err });
+  }
+}
 
 // react-doctor-disable-next-line react-doctor/server-auth-actions
 export async function submitComplaint(
@@ -20,11 +94,7 @@ export async function submitComplaint(
 ): Promise<ComplaintSubmitResult> {
   const { isBot } = await checkBotId();
   if (isBot) {
-    return {
-      success: false,
-      error: 'No se pudo registrar tu reclamación. Intenta de nuevo en unos minutos.',
-      code: 'INTERNAL',
-    };
+    return { success: false, error: INTERNAL_ERROR, code: 'INTERNAL' };
   }
 
   const parsed = complaintSubmitSchema.safeParse(input);
@@ -33,7 +103,7 @@ export async function submitComplaint(
       success: false,
       error: 'Revisa los datos del formulario.',
       code: 'VALIDATION',
-      issues: parsed.error.issues,
+      issues: toFieldIssues(parsed.error.issues),
     };
   }
 
@@ -47,49 +117,21 @@ export async function submitComplaint(
 
   const data = parsed.data;
 
+  let complaint: RegisteredComplaint;
   try {
-    const year = new Date().getFullYear();
-    const correlativo = await complaintsRepository.allocateCorrelativo(year);
-
-    const created = await complaintsRepository.insert({
-      correlativo,
-      complaintType: data.complaintType,
-      consumerName: data.consumerName,
-      consumerDocType: data.consumerDocType,
-      consumerDocNumber: data.consumerDocNumber,
-      consumerEmail: data.consumerEmail,
-      consumerPhone: data.consumerPhone || null,
-      consumerAddress: data.consumerAddress,
-      isMinor: data.isMinor,
-      guardianName: data.isMinor ? data.guardianName || null : null,
-      itemType: data.itemType,
-      itemDescription: data.itemDescription,
-      claimedAmount: data.claimedAmount ?? null,
-      detail: data.detail,
-      consumerRequest: data.consumerRequest,
-    });
-
-    const complaintNumber = formatComplaintNumber(created.correlativo, created.createdAt);
-
-    const includeConsumerCopy = await isConsumerCopyAllowed(data.consumerEmail);
-    const emailSent = await sendComplaintEmails(
-      { ...data, complaintNumber, createdAt: created.createdAt },
-      created.id,
-      { includeConsumerCopy },
-    );
-
-    return {
-      success: true,
-      complaintNumber,
-      createdAt: created.createdAt,
-      emailSent,
-    };
+    complaint = await registerComplaint(data);
   } catch (err) {
     console.error('[submitComplaint] unexpected error:', err);
-    return {
-      success: false,
-      error: 'No se pudo registrar tu reclamación. Intenta de nuevo en unos minutos.',
-      code: 'INTERNAL',
-    };
+    return { success: false, error: INTERNAL_ERROR, code: 'INTERNAL' };
   }
+
+  const emailSent = await deliverComplaintEmails(data, complaint);
+  if (emailSent) await recordEmailSent(complaint.id);
+
+  return {
+    success: true,
+    complaintNumber: complaint.complaintNumber,
+    createdAt: complaint.createdAt,
+    emailSent,
+  };
 }

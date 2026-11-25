@@ -4,11 +4,15 @@ import { Resend } from 'resend';
 
 import type { EmailMessage, EmailProvider } from './types';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 export const resendEmailProvider: EmailProvider = {
   async sendBatch(messages: EmailMessage[]) {
+    const apiKey = process.env.RESEND_API_KEY;
+    if (!apiKey) {
+      return { ok: false, error: 'RESEND_API_KEY is not configured' };
+    }
+
     try {
+      const resend = new Resend(apiKey);
       const { error } = await resend.batch.send(
         messages.map((message) => ({
           from: message.from,
