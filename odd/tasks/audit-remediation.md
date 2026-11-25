@@ -22,9 +22,9 @@
 
 **Review:** receipt-driven development is off (global), so no native review runs. Each task is self-verified by its writer, followed by an independent verifier.
 
-**Forecast:** 33 tasks, about 7720 authored changed lines. Lockfiles are excluded.
+**Forecast:** 36 tasks, about 7980 authored changed lines. Lockfiles are excluded.
 
-**Progress:** 33/33 done.
+**Progress:** 36/36 done.
 
 **Sources:**
 - general audit workflow `wf_68c64c39-c2f`
@@ -65,6 +65,9 @@
 - [x] **T31** Untangle feature boundaries: shared zod primitives to lib/validation and landing limit/identity rules into features/landing/rules, keeping lib free of feature imports _(area architecture; about 300 lines; depends on T08, T24, T26, T29)_, commit `87df9de`
 - [x] **T32** Bring AGENTS.md in line with the code after the remediation _(area docs; about 90 lines; depends on T04, T05, T06, T11, T13, T23, T25, T28, T29, T31)_, commit `519fecf`
 - [x] **T33** Follow-up: clear react-doctor errors and warnings left after the remediation _(area conventions; about 250 lines; depends on T32)_, commit `78915a7`
+- [x] **T34** Keep every file when several images are uploaded at once in ImageUploader _(area bugfix; about 80 lines; depends on T33)_, commit `0f30ef8 + 7914133`
+- [x] **T35** Share one icon picker between the discover tile and value prop editors _(area refactor; about 120 lines; depends on T34)_, commit `6481501`
+- [x] **T36** Stage fallback seeding writes sequentially inside the Appwrite transaction _(area reliability; about 60 lines; depends on T35)_, commit `0414d1c`
 
 ## Task details
 
@@ -1088,6 +1091,81 @@ Change the AGENTS.md voseo to tuteo ('corrige la causa raíz').
 **Commit:** `refactor: clear react-doctor findings after audit remediation`
 
 **Evidence:** I extracted pure helpers to src/features/admin/components/CategoryList/deleteDialogCopy.ts and wrote deleteDialogCopy.test.ts first. RED: `npx vitest run src/features/admin/components/CategoryList/deleteDialogCopy.test.ts` showed "Test Files 1 failed (1), Tests no tests" because the import of './del | checks: npm run lint:strict: exit 0, no warnings; npx tsc --noEmit: exit 0; npx vitest run: 62 files passed, 826 tests passed, exit 0; npm run doctor: Score 87/100, 0 errors, 3 warnings: duplicate-jsx-subtree at; node --check scripts/lib/appwrite-provisioning.mjs: exit 0 | verifier pass, tier medium | deploy: None. No schema, console or env changes. The provisioning script change only affects how --apply runs, which stays sequential; it was not executed.
+
+### T34: Keep every file when several images are uploaded at once in ImageUploader
+
+**Observations:**
+- T33 writer: ImageUploader multi-upload calls onChange([...value, url]) once per file with the same stale value, so only the last of several simultaneously uploaded files is kept. This bug predates the remediation.
+
+**Approach:** Collect every successful upload URL from one selection and call onChange once with the previous value plus all new URLs, in selection order. Alternatively, read the latest value through a ref or a functional update when the parent API allows it. Failed uploads must not drop successful ones. Extract a pure helper that merges the current URLs with the new ones (dedupe, keep order) and unit-test it. Keep the component's public props unchanged.
+
+**Files:** `src/features/admin/components/ImageUploader.tsx`, `src/features/admin/utils/mergeUploadedUrls.ts`, `src/features/admin/utils/mergeUploadedUrls.test.ts`
+
+**Test plan:** RED/GREEN: write the merge-helper test first; on the current code the helper does not exist, so the test is RED. Implement until GREEN. The component wiring is checked with tsc, lint and react-doctor.
+
+**Acceptance:**
+- When N files are selected and all upload, all N URLs are appended in selection order
+- A failed upload does not discard the others
+- ImageUploader props are unchanged
+- The helper has unit tests
+
+**Checks:** `npm run lint:strict`, `npx tsc --noEmit`, `npx vitest run`, `npm run doctor -- --verbose`
+
+**Risk:** Low. If the component moves into a folder, every import path must keep resolving; prefer keeping ImageUploader.tsx in place and putting only the helper in the new directory.
+
+**Commit:** `fix(admin): keep every image when uploading several at once`
+
+**Evidence:** RED: I wrote src/features/admin/utils/mergeUploadedUrls.test.ts first. `npx vitest run src/features/admin/utils/mergeUploadedUrls.test.ts` failed with "Test Files 1 failed (1), Tests no tests" because the import './mergeUploadedUrls' could not be resolved (the module did not exist yet). GREEN: after | checks: npm run lint:strict: exit 0, no warnings; npx tsc --noEmit: exit 0; npx vitest run: exit 0; 63 test files passed, 833 tests passed; npm run doctor: exit 0; score 87, 3 warnings, none in the files I changed: d | verifier pass, tier medium | deploy: None. Client-side change only. No schema, console or environment change. | parent follow-up 7914133: guard detects new URLs instead of comparing list length (verifier minor issue).
+
+### T35: Share one icon picker between the discover tile and value prop editors
+
+**Observations:**
+- T33 react-doctor: duplicate-jsx-subtree at DiscoverTileEditor/IconPicker.tsx:27, which is duplicated with ValuePropEditor/IconPicker.tsx:27
+
+**Approach:** Create one shared presentational component, src/features/admin/components/IconPicker/index.tsx. It takes the icon options, the selected value, onChange and the labels as props. Turn both editor IconPickers into thin wrappers that pass their own icon sets and copy, or switch their callers to the shared component. Keep the same markup, radio semantics, accessible names, styles and behavior. One component per file, and no comments.
+
+**Files:** `src/features/admin/components/DiscoverTileEditor/IconPicker.tsx`, `src/features/admin/components/ValuePropEditor/IconPicker.tsx`
+
+**New files allowed in:** `src/features/admin/components/IconPicker`
+
+**Test plan:** No DOM runner exists, so there is no meaningful RED. Proportional check: react-doctor no longer reports duplicate-jsx-subtree for the two IconPickers, and lint, tsc and vitest stay green.
+
+**Acceptance:**
+- react-doctor no longer reports duplicate-jsx-subtree for the IconPickers
+- Both editors render the same options with the same accessible names and behavior
+- No new dependency and no production comments
+
+**Checks:** `npm run lint:strict`, `npx tsc --noEmit`, `npx vitest run`, `npm run doctor -- --verbose`
+
+**Risk:** Low. A visual regression is possible if class names drift, so keep them identical.
+
+**Commit:** `refactor(admin): share one icon picker across editors`
+
+**Evidence:** I made a planned exception to test-first. There is no DOM test runner, so no meaningful RED test exists. As the proportional check, I ran react-doctor (`npm run doctor -- --verbose`, react-doctor@0.9.23) after the refactor. It reported no duplicate-jsx-subtree finding. Lint, tsc and vitest all passe | checks: npm run lint:strict: Passed (exit 0). The first run failed with a simple-import-s; npx tsc --noEmit: Passed (exit 0).; npx vitest run: Passed (exit 0): 63 test files and 833 tests.; npm run doctor: Score 86/100 with 2 warnings. No duplicate-jsx-subtree findi | verifier pass, tier medium | deploy: None. This is a frontend refactor only, with no schema, environment or console changes.
+
+### T36: Stage fallback seeding writes sequentially inside the Appwrite transaction
+
+**Observations:**
+- T33 verifier: seedFallbacks stages tx.create calls concurrently with Promise.all against one Appwrite transactionId. Appwrite accepting concurrent staged operations on the same transaction is not proven, and the fake store cannot prove it.
+
+**Approach:** In src/features/admin/utils/orderableHomeCollection.ts, stage the fallback creates one after another, keeping the explicit displayOrder. Write the loop so react-doctor does not flag await-in-loop: reduce over a promise chain, or use the same inSequence helper pattern as scripts/lib/appwrite-provisioning.mjs, local to this module. Add a unit test that proves the creates are staged strictly in order, with no overlap, through a fake transaction that records start and end. Leave the rest of the transaction semantics unchanged.
+
+**Files:** `src/features/admin/utils/orderableHomeCollection.ts`, `src/features/admin/utils/orderableHomeCollection.test.ts`
+
+**Test plan:** RED/GREEN: the new ordering test uses a fake tx.create that resolves asynchronously and records whether creates overlap. It is RED with the current Promise.all and GREEN once the creates are sequential.
+
+**Acceptance:**
+- Fallback creates are staged strictly one after another (the test proves no overlap)
+- displayOrder and rollback behavior are unchanged
+- react-doctor reports no await-in-loop for this file
+
+**Checks:** `npm run lint:strict`, `npx tsc --noEmit`, `npx vitest run`, `npm run doctor -- --verbose`
+
+**Risk:** Low. Seeding becomes slightly slower: the fallback lists are small and seeding is one-time.
+
+**Commit:** `fix(admin): stage fallback seeding sequentially in the transaction`
+
+**Evidence:** RED: I added the test 'stages the fallback creates one after another, never overlapping'. Its fake tx.create resolves after a setTimeout(0) and records in-flight count and start/end events. With Promise.all it failed: "AssertionError: expected 3 to be 1" at maxInFlight (1 failed, 15 passed). GREEN:  | checks: npm run lint:strict: exit 0, eslint --max-warnings 0 clean; npx tsc --noEmit: exit 0, no errors; npx vitest run: 63 files, 834 tests passed, exit 0; npm run doctor: exit 0, score 86/100. Only 2 warnings, both pre-existing no- | verifier pass, tier medium | deploy: None. Code-only change, with no schema or console dependency.
 
 ## Owner console checklist (not done by the agent)
 
