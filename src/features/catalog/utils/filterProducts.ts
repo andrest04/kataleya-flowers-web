@@ -12,7 +12,7 @@ export interface ProductFilters {
   flowerTypes: string[];
 }
 
-export function getEffectivePrice(product: Product): number {
+export function getEffectivePrice(product: Pick<Product, 'price' | 'priceTable'>): number {
   if (product.priceTable?.length) {
     return Math.min(...product.priceTable.map((v) => v.price));
   }

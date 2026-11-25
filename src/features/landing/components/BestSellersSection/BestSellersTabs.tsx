@@ -3,10 +3,13 @@
 import { AnimatePresence, domAnimation, LazyMotion, m } from 'framer-motion';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useMemo, useState, useSyncExternalStore } from 'react';
+import { useState, useSyncExternalStore } from 'react';
 
-import type { Category, Product } from '@/features/catalog/types';
-import { pickBestSellers } from '@/features/catalog/utils/pickBestSellers';
+import type { Category } from '@/features/catalog/types';
+import {
+  BEST_SELLERS_ALL_TAB,
+  type BestSellersByTab,
+} from '@/features/catalog/utils/pickBestSellers';
 
 import BestSellerProductCard from './BestSellerProductCard';
 
@@ -26,17 +29,14 @@ function getServerCategoryParamSnapshot(): string | null {
   return null;
 }
 
+type BestSellersTabCategory = Pick<Category, 'id' | 'name' | 'slug'>;
+
 interface BestSellersTabsProps {
-  products: Product[];
-  categoryById: Record<string, Category>;
-  tabCategories: Category[];
+  bestSellersByTab: BestSellersByTab;
+  tabCategories: BestSellersTabCategory[];
 }
 
-export default function BestSellersTabs({
-  products,
-  categoryById,
-  tabCategories,
-}: BestSellersTabsProps) {
+export default function BestSellersTabs({ bestSellersByTab, tabCategories }: BestSellersTabsProps) {
   const router = useRouter();
   const pathname = usePathname();
 
@@ -70,12 +70,8 @@ export default function BestSellersTabs({
     router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
   };
 
-  const visibleProducts = useMemo(() => {
-    const scoped = activeCategoryId
-      ? products.filter((product) => product.categoryId === activeCategoryId)
-      : products;
-    return pickBestSellers(scoped);
-  }, [products, activeCategoryId]);
+  const visibleProducts = bestSellersByTab[activeCategoryId ?? BEST_SELLERS_ALL_TAB] ?? [];
+  const categorySlugById = new Map(tabCategories.map(({ id, slug }) => [id, slug]));
 
   return (
     <>
@@ -121,7 +117,7 @@ export default function BestSellersTabs({
       <LazyMotion features={domAnimation}>
         <AnimatePresence mode="wait">
           <m.div
-            key={activeCategoryId ?? 'all'}
+            key={activeCategoryId ?? BEST_SELLERS_ALL_TAB}
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
@@ -134,7 +130,7 @@ export default function BestSellersTabs({
               <BestSellerProductCard
                 key={product.id}
                 product={product}
-                categorySlug={categoryById[product.categoryId]?.slug}
+                categorySlug={categorySlugById.get(product.categoryId)}
               />
             ))}
           </m.div>

@@ -36,3 +36,17 @@ export interface Product {
   flowerTypes?: string[];
   isFeatured?: boolean;
 }
+
+export type CatalogCardProduct = Pick<
+  Product,
+  | 'id'
+  | 'name'
+  | 'slug'
+  | 'categoryId'
+  | 'imageUrl'
+  | 'price'
+  | 'priceTable'
+  | 'colors'
+  | 'flowerTypes'
+  | 'isFeatured'
+>;

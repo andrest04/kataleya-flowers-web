@@ -8,6 +8,7 @@ import { getCategories } from '@/features/catalog/queries/getCategories';
 import { getFlowerTypes } from '@/features/catalog/queries/getFlowerTypes';
 import { getProductColors } from '@/features/catalog/queries/getProductColors';
 import { getProducts } from '@/features/catalog/queries/getProducts';
+import { toCatalogCardProduct } from '@/features/catalog/utils/toCatalogCardProduct';
 import { getSiteSettings } from '@/features/settings/queries/getSiteSettings';
 import { catalogSeoDescription } from '@/lib/siteSettings';
 
@@ -72,7 +73,7 @@ export default async function CatalogoPage(): Promise<ReactElement> {
   );
   const collectionItems = products.flatMap((product) => {
     const categorySlug = categorySlugs.get(product.categoryId);
-    return categorySlug ? [{ product, categorySlug }] : [];
+    return categorySlug ? [{ product: toCatalogCardProduct(product), categorySlug }] : [];
   });
   const assignedCategoryIds = new Set(
     collectionItems.map(({ product }) => product.categoryId),

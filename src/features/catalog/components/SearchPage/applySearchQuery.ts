@@ -2,6 +2,7 @@ import type { CatalogCollectionItem } from '@/features/catalog/components/Catalo
 import type { CatalogSortOption } from '@/features/catalog/components/CatalogFilterSheet';
 import type { Category, Product } from '@/features/catalog/types';
 import { filterProducts, getEffectivePrice } from '@/features/catalog/utils/filterProducts';
+import { toCatalogCardProduct } from '@/features/catalog/utils/toCatalogCardProduct';
 
 export function firstParam(value: string | string[] | undefined): string {
   return Array.isArray(value) ? (value[0] ?? '') : (value ?? '');
@@ -33,7 +34,7 @@ export function toCollectionItems(
 ): CatalogCollectionItem[] {
   return products.flatMap((product) => {
     const categorySlug = slugByCategoryId.get(product.categoryId);
-    return categorySlug ? [{ product, categorySlug }] : [];
+    return categorySlug ? [{ product: toCatalogCardProduct(product), categorySlug }] : [];
   });
 }
 

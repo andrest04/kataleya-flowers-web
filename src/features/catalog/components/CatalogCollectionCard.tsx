@@ -2,11 +2,11 @@ import type { ImageProps } from 'next/image';
 import Link from 'next/link';
 
 import Image from '@/components/ui/StoredImage';
-import type { Product } from '@/features/catalog/types';
+import type { CatalogCardProduct } from '@/features/catalog/types';
 import { getEffectivePrice } from '@/features/catalog/utils/filterProducts';
 
 interface CatalogCollectionCardProps {
-  product: Product;
+  product: CatalogCardProduct;
   categorySlug: string;
   onClick?: () => void;
   size?: 'default' | 'compact';

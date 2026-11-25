@@ -13,6 +13,7 @@ import { getCategories } from "@/features/catalog/queries/getCategories";
 import { getProducts } from "@/features/catalog/queries/getProducts";
 import { getProductsByCategory } from "@/features/catalog/queries/getProductsByCategory";
 import { resolveProductRoute } from "@/features/catalog/queries/resolveProductRoute";
+import { toCatalogCardProduct } from "@/features/catalog/utils/toCatalogCardProduct";
 import { getSiteSettings } from "@/features/settings/queries/getSiteSettings";
 import { floralArrangementsSeoDescription } from "@/lib/siteSettings";
 
@@ -120,7 +121,8 @@ export default async function ProductoPage({
   const { category, product } = route;
   const relatedProducts = (await getProductsByCategory(category.slug))
     .filter((p) => p.id !== product.id)
-    .slice(0, 8);
+    .slice(0, 8)
+    .map(toCatalogCardProduct);
 
   const SITE_URL = settings.website;
   const productUrl = `${SITE_URL}/catalogo/${category.slug}/${product.slug}`;

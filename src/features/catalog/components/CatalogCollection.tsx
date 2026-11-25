@@ -12,7 +12,7 @@ import CatalogFilterSheet, {
   type CatalogFilters,
   type CatalogSortOption,
 } from '@/features/catalog/components/CatalogFilterSheet';
-import type { Category, Product } from '@/features/catalog/types';
+import type { CatalogCardProduct, Category } from '@/features/catalog/types';
 import {
   catalogCardSizes,
   type CatalogQueryState,
@@ -29,7 +29,7 @@ const DENSITY_GRID_CLASSES: Record<CatalogDensity, string> = {
 };
 
 export interface CatalogCollectionItem {
-  product: Product;
+  product: CatalogCardProduct;
   categorySlug: string;
 }
 

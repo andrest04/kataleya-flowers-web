@@ -9,6 +9,7 @@ import { getCategories } from "@/features/catalog/queries/getCategories";
 import { getFlowerTypes } from "@/features/catalog/queries/getFlowerTypes";
 import { getProductColors } from "@/features/catalog/queries/getProductColors";
 import { getProductsByCategory } from "@/features/catalog/queries/getProductsByCategory";
+import { toCatalogCardProduct } from "@/features/catalog/utils/toCatalogCardProduct";
 import { getSiteSettings } from "@/features/settings/queries/getSiteSettings";
 import { floralArrangementsSeoDescription } from "@/lib/siteSettings";
 
@@ -99,7 +100,7 @@ export default async function CategoriaPage({
   ]);
 
   const collectionItems = categoryProducts.map((product) => ({
-    product,
+    product: toCatalogCardProduct(product),
     categorySlug: category.slug,
   }));
   const assignedColors = new Set(
