@@ -24,7 +24,7 @@
 
 **Forecast:** 32 tasks, about 7470 authored changed lines. Lockfiles are excluded.
 
-**Progress:** 0/32 done.
+**Progress:** 4/32 done.
 
 **Sources:**
 - general audit workflow `wf_68c64c39-c2f`
@@ -32,11 +32,11 @@
 
 ## Checklist
 
-- [ ] **T01** Enforce admin authorization at the data-access layer for every admin query _(area security; about 180 lines; depends on nothing)_
-- [ ] **T02** Upgrade Next.js, zod and vulnerable transitive packages to patched versions _(area dependencies; about 30 lines; depends on nothing; approved flags: dependency-version-bump)_
-- [ ] **T03** Anchor Appwrite storage URL parsing (client-safe path parser plus server ownership check) and harden the image proxy, upload and delete paths _(area security; about 420 lines; depends on T02)_
-- [ ] **T04** Add a durable, self-cleaning Appwrite-backed rate limiter, private document permissions, and bounded complaint submissions and consumer-copy emails _(area security; about 480 lines; depends on T03)_
-- [ ] **T05** Throttle and BotID-gate admin login, refuse non-admin sessions, harden and clear the session cookie, and mark server modules server-only _(area security; about 340 lines; depends on T01, T04)_
+- [x] **T01** Enforce admin authorization at the data-access layer for every admin query _(area security; about 180 lines; depends on nothing)_, commit `93776bc`
+- [x] **T02** Upgrade Next.js, zod and vulnerable transitive packages to patched versions _(area dependencies; about 30 lines; depends on nothing; approved flags: dependency-version-bump)_, commit `cb1a0dc`
+- [x] **T03** Anchor Appwrite storage URL parsing (client-safe path parser plus server ownership check) and harden the image proxy, upload and delete paths _(area security; about 420 lines; depends on T02)_, commit `5fee48b`
+- [x] **T04** Add a durable, self-cleaning Appwrite-backed rate limiter, private document permissions, and bounded complaint submissions and consumer-copy emails _(area security; about 480 lines; depends on T03)_, commit `373e1fc`
+- [ ] **T05** Throttle and BotID-gate admin login, refuse non-admin sessions, harden and clear the session cookie, and mark server modules server-only _(area security; about 340 lines; depends on T01, T04)_, **in_progress**: blocked once: config.ts reachable from client via complaint schemas; user approved 5 extra paths
 - [ ] **T06** Fix the complaint number year to Lima time once at allocation, and keep a saved complaint successful when email or settings fail _(area security; about 300 lines; depends on T04, T05)_
 - [ ] **T07** Serve public product lookups from per-slug tagged caches with an active-category check, and serve category pages and navbar search from the cached catalog _(area security; about 240 lines; depends on T02)_
 - [ ] **T08** Restrict admin-entered links and map embeds to safe destinations _(area security; about 340 lines; depends on T03)_
@@ -88,11 +88,13 @@
 - requireAdmin is wrapped in React cache(); requireAdminOrRedirect and AdminActionResult are unchanged
 - The admin pages still render for an admin in npm run dev
 
-**Checks:** `npm run lint:strict`, `npx tsc --noEmit`, `npx vitest run`, `rg -L "requireAdmin\(\)" src/features/admin/queries src/features/complaints/queries --glob '!*.test.ts' (must list no file)`
+**Checks:** `npm run lint:strict`, `npx tsc --noEmit`, `npx vitest run`, `rg --files-without-match "requireAdmin\(\)" src/features/admin/queries src/features/complaints/queries --glob '!*.test.ts' (must list no file)`
 
 **Risk:** Low. If cache() were misapplied, each query would repeat the Appwrite calls, which is slower but still correct. A missed query file keeps the leak open, so the rg check is mandatory.
 
 **Commit:** `fix(admin): enforce requireAdmin in every admin and complaint query`
+
+**Evidence:** RED 48/48 failing on base (writer + verifier worktree repro); GREEN vitest 22 files/284 tests; tsc 0; lint only the 9 known tests/ errors; independent verifier pass; assess tier high (RDD off, no native review). Not verified: admin pages render in npm run dev (needs live Appwrite) - owner smoke test.
 
 ### T02: Upgrade Next.js, zod and vulnerable transitive packages to patched versions
 
@@ -100,9 +102,9 @@
 - GEN:architecture-security:Production Next.js 16.2.6 and zod 4.3.6 are in known-vulnerable ranges
 - SEC-H:[h11-supply-chain] package.json declares @next/third-parties ^16.3.5 while the lockfile root records 16.3.5; re-run npm install so package.json and package-lock.json agree
 
-**Approach:** Verified on the host: the lockfile resolves next 16.2.6, zod 4.3.6, undici 6.26.0 and sharp 0.34.5. npm audit --omit=dev reports next as critical (affected range up to 16.4.4), and zod, undici, sharp, postcss, nanoid and source-map-js as high. (1) Set next ^16.4.6, eslint-config-next ^16.4.6, @next/eslint-plugin-next 16.4.6, @next/third-parties ^16.4.6 and zod ^4.6.7. Raise overrides.postcss to ^8.5.33. (2) Refresh the transitive undici with npm update undici; node-appwrite 26.2.0 already allows ^6.26.0, so it needs no major bump. (3) Run npm install so package.json and package-lock.json agree. (4) Read the Next 16.3 and 16.4 upgrade notes, and adjust next.config.ts only for a renamed or removed option, such as experimental.turbopackFileSystemCacheForDev. Add no new packages. If eslint-config-next 16.4 raises new lint errors in src files outside this list, stop and report the files to the parent, who extends the edit surface.
+**Approach:** Verified on the host: the lockfile resolves next 16.2.6, zod 4.3.6, undici 6.26.0 and sharp 0.34.5. npm audit --omit=dev reports next as critical (affected range up to 16.4.4), and zod, undici, sharp, postcss, nanoid and source-map-js as high. (1) Set next ^16.4.6, eslint-config-next ^16.4.6, @next/eslint-plugin-next 16.4.6, @next/third-parties ^16.4.6 and zod ^4.6.7. Raise overrides.postcss to ^8.5.33. (2) Refresh the transitive undici with npm update undici; node-appwrite 26.2.0 already allows ^6.26.0, so it needs no major bump. (3) Run npm install so package.json and package-lock.json agree. (4) Read the Next 16.3 and 16.4 upgrade notes, and adjust next.config.ts only for a renamed or removed option, such as experimental.turbopackFileSystemCacheForDev. Add no new packages. If eslint-config-next 16.4 raises new lint errors in src files outside this list, stop and report the files to the parent, who extends the edit surface. User-approved surface extension (2026-11-25): src/components/shared/Navbar/useAnchorNavigation.ts, to satisfy the new @next/next/no-location-assign-relative-destination rule at line 31 without changing behavior.
 
-**Files:** `package.json`, `package-lock.json`, `next.config.ts`
+**Files:** `package.json`, `package-lock.json`, `next.config.ts`, `src/components/shared/Navbar/useAnchorNavigation.ts`
 
 **Test plan:** A version bump has no deterministic RED. The regression proof is the existing vitest suites, tsc and lint:strict, plus npm audit. Run a local npm run build only with owner consent, because generateStaticParams and the sitemap read production Appwrite (read-only). Do not run Playwright.
 
@@ -117,6 +119,8 @@
 **Risk:** Medium. Two Next minors (16.2 to 16.4) can change caching, image and lint defaults, and new eslint-config-next rules can turn lint:strict red. The lockfile diff is generated and is not counted in the forecast.
 
 **Commit:** `fix(deps): upgrade next, zod and vulnerable transitive packages`
+
+**Evidence:** next/@next/* 16.4.6, zod 4.6.7, undici 6.29.1, sharp 0.35.5; npm audit --omit=dev 0 vulns; tsc 0; vitest 284/284; lint only 9 known tests/ errors; new no-location-assign-relative-destination fixed in useAnchorNavigation.ts (user-approved surface). Verifier pass, tier medium. Advisory: preview-deploy smoke test before merge.
 
 ### T03: Anchor Appwrite storage URL parsing (client-safe path parser plus server ownership check) and harden the image proxy, upload and delete paths
 
@@ -158,6 +162,8 @@
 
 **Commit:** `fix(images): anchor storage URL parsing and harden image routes`
 
+**Evidence:** RED 33/36 failing then GREEN 60/60 targeted; full vitest 25 files/336; tsc 0; lint known-only. Verifier pass, tier medium. Note: stored image URLs must be canonical https single ?project param; legacy non-canonical records fail validation on next edit.
+
 ### T04: Add a durable, self-cleaning Appwrite-backed rate limiter, private document permissions, and bounded complaint submissions and consumer-copy emails
 
 **Observations:**
@@ -195,6 +201,8 @@
 
 **Commit:** `feat(security): add durable rate limiter and bound complaint emails`
 
+**Evidence:** Durable Appwrite rate limiter with fail-open decorator, expires_at cleanup, private permissions, complaint per-recipient/global email caps. Verifier pass, tier medium. HARD PREREQUISITE before deploy: rate_limits collection (count, expires_at + index).
+
 ### T05: Throttle and BotID-gate admin login, refuse non-admin sessions, harden and clear the session cookie, and mark server modules server-only
 
 **Observations:**
@@ -211,9 +219,9 @@
 - SEC-H:[h12-wildcard] '...requireAdminOrRedirect should delete the session cookie before redirecting on UNAUTHENTICATED/FORBIDDEN' (tail of the proxy.ts note)
 - SEC-H:[h09-platform-secrets] no module imports the server-only package
 
-**Approach:** loginAction (src/features/admin/actions/auth.ts:27-43) runs only zod. It creates the session with the API-key client (appwriteProvider.ts:13-14), which bypasses Appwrite's abuse limiter, and it sets the cookie for any account. (1) Register { path: '/login', method: 'POST' } in initBotId in src/instrumentation-client.ts, and call checkBotId() first in loginAction. (2) Use the T04 RateLimiter, failing closed: scope 'login-email' keyed on the lowercased email (5 per 15 min) and scope 'login-ip' via clientKey (20 per 15 min). Add the 'RATE_LIMITED' and 'FORBIDDEN' literals to LoginFailure.code; the {ok,error,code} shape is unchanged, and login/page.tsx maps both codes to safe Spanish messages. (3) AuthProvider.login also returns the session userId. AuthService.login calls provider.isAdmin(userId) before sessions.set; a non-admin gets provider.logout(secret) and FORBIDDEN, so no cookie is ever issued. (4) provider.logout returns a boolean and retries deleteSession once. service.logout still deletes the cookie but logs a failure with console.error. (5) The cookie: SESSION_COOKIE_NAME becomes '__Host-a_session', and the options are httpOnly, secure: true, sameSite 'lax', path '/', with no domain. CookieSessionStore.delete must call cookieStore.set(name, '', { ...options, maxAge: 0 }), or delete({ name, path: '/', secure: true }). A bare delete(name) emits a Set-Cookie without Secure, which browsers reject for a __Host- cookie, so logout would silently fail. (6) Stale-cookie cleanup: a Server Component layout cannot write cookies. requireAdminOrRedirect redirects to '/login?session=ended' (keeping error=forbidden for FORBIDDEN). The new 'use server' clearStaleSessionAction in actions/auth.ts calls the new AuthService.clearSession(), which deletes the store cookie only and makes no provider call. login/page.tsx calls it once in a mount effect when session=ended is present. A Server Action is POST with Next's Origin check, so this adds no logout-CSRF GET surface. (7) Delete the root proxy.ts: Next resolves proxy only under src/, so it is inert today, and moving it as-is would create the /login to /admin loop. (8) Drop the unused Databases from createSessionClient. (9) server-only: verified that next ships it. next/dist/compiled/server-only/{index,empty}.js exists, next/dist/build/create-compiler-aliases.js:186-197 aliases 'server-only$' for both the server and client layers, and next/types/global.d.ts:57 declares the module, so adding the import adds no npm dependency. Add `import 'server-only';` as the first line of src/lib/appwrite/admin.ts, session.ts, account.ts and config.ts, and src/lib/email/resendProvider.ts. None of them has a client importer: T03 moved the client-needed constants to ids.ts, and the only client imports of lib/database are `import type`. In vitest.config.ts, add resolve.alias { 'server-only': 'next/dist/compiled/server-only/empty.js' }, because vitest does not run Next's aliasing.
+**Approach:** loginAction (src/features/admin/actions/auth.ts:27-43) runs only zod. It creates the session with the API-key client (appwriteProvider.ts:13-14), which bypasses Appwrite's abuse limiter, and it sets the cookie for any account. (1) Register { path: '/login', method: 'POST' } in initBotId in src/instrumentation-client.ts, and call checkBotId() first in loginAction. (2) Use the T04 RateLimiter, failing closed: scope 'login-email' keyed on the lowercased email (5 per 15 min) and scope 'login-ip' via clientKey (20 per 15 min). Add the 'RATE_LIMITED' and 'FORBIDDEN' literals to LoginFailure.code; the {ok,error,code} shape is unchanged, and login/page.tsx maps both codes to safe Spanish messages. (3) AuthProvider.login also returns the session userId. AuthService.login calls provider.isAdmin(userId) before sessions.set; a non-admin gets provider.logout(secret) and FORBIDDEN, so no cookie is ever issued. (4) provider.logout returns a boolean and retries deleteSession once. service.logout still deletes the cookie but logs a failure with console.error. (5) The cookie: SESSION_COOKIE_NAME becomes '__Host-a_session', and the options are httpOnly, secure: true, sameSite 'lax', path '/', with no domain. CookieSessionStore.delete must call cookieStore.set(name, '', { ...options, maxAge: 0 }), or delete({ name, path: '/', secure: true }). A bare delete(name) emits a Set-Cookie without Secure, which browsers reject for a __Host- cookie, so logout would silently fail. (6) Stale-cookie cleanup: a Server Component layout cannot write cookies. requireAdminOrRedirect redirects to '/login?session=ended' (keeping error=forbidden for FORBIDDEN). The new 'use server' clearStaleSessionAction in actions/auth.ts calls the new AuthService.clearSession(), which deletes the store cookie only and makes no provider call. login/page.tsx calls it once in a mount effect when session=ended is present. A Server Action is POST with Next's Origin check, so this adds no logout-CSRF GET surface. (7) Delete the root proxy.ts: Next resolves proxy only under src/, so it is inert today, and moving it as-is would create the /login to /admin loop. (8) Drop the unused Databases from createSessionClient. (9) server-only: verified that next ships it. next/dist/compiled/server-only/{index,empty}.js exists, next/dist/build/create-compiler-aliases.js:186-197 aliases 'server-only$' for both the server and client layers, and next/types/global.d.ts:57 declares the module, so adding the import adds no npm dependency. Add `import 'server-only';` as the first line of src/lib/appwrite/admin.ts, session.ts, account.ts and config.ts, and src/lib/email/resendProvider.ts. None of them has a client importer: T03 moved the client-needed constants to ids.ts, and the only client imports of lib/database are `import type`. In vitest.config.ts, add resolve.alias { 'server-only': 'next/dist/compiled/server-only/empty.js' }, because vitest does not run Next's aliasing. User-approved surface extension (2026-11-25): move DOC_TYPES/ITEM_TYPES/COMPLAINT_STATUSES (and derived types) into a new zod-free client-safe src/features/complaints/schemas/constants.ts, re-export them from complaint.ts, and switch the 3 client components to import from constants.ts. That breaks the client chain to src/lib/appwrite/config.ts, which can then be marked server-only.
 
-**Files:** `src/features/admin/actions/auth.ts`, `src/features/admin/actions/auth.test.ts`, `src/features/admin/utils/auth.ts`, `src/instrumentation-client.ts`, `src/lib/auth/types.ts`, `src/lib/auth/service.ts`, `src/lib/auth/service.test.ts`, `src/lib/auth/appwriteProvider.ts`, `src/lib/auth/appwriteProvider.test.ts`, `src/lib/auth/sessionCookie.ts`, `src/lib/auth/cookieSessionStore.ts`, `src/lib/auth/cookieSessionStore.test.ts`, `src/lib/appwrite/session.ts`, `src/lib/appwrite/admin.ts`, `src/lib/appwrite/account.ts`, `src/lib/appwrite/config.ts`, `src/lib/email/resendProvider.ts`, `src/app/(auth)/login/page.tsx`, `vitest.config.ts`, `proxy.ts`
+**Files:** `src/features/admin/actions/auth.ts`, `src/features/admin/actions/auth.test.ts`, `src/features/admin/utils/auth.ts`, `src/instrumentation-client.ts`, `src/lib/auth/types.ts`, `src/lib/auth/service.ts`, `src/lib/auth/service.test.ts`, `src/lib/auth/appwriteProvider.ts`, `src/lib/auth/appwriteProvider.test.ts`, `src/lib/auth/sessionCookie.ts`, `src/lib/auth/cookieSessionStore.ts`, `src/lib/auth/cookieSessionStore.test.ts`, `src/lib/appwrite/session.ts`, `src/lib/appwrite/admin.ts`, `src/lib/appwrite/account.ts`, `src/lib/appwrite/config.ts`, `src/lib/email/resendProvider.ts`, `src/app/(auth)/login/page.tsx`, `vitest.config.ts`, `proxy.ts`, `src/features/complaints/schemas/constants.ts`, `src/features/complaints/schemas/complaint.ts`, `src/features/complaints/components/ComplaintForm/ConsumerFields.tsx`, `src/features/complaints/components/ComplaintForm/ItemFields.tsx`, `src/features/complaints/components/admin/ComplaintStatusForm.tsx`
 
 **New files allowed in:** `src/features/admin/actions`, `src/lib/auth`
 
@@ -1040,4 +1048,4 @@ Forecast is about 7,400 authored lines. Tasks over the 400-line advisory, kept w
 
 ## Next step
 
-T01: Enforce admin authorization at the data-access layer for every admin query
+T05: Throttle and BotID-gate admin login, refuse non-admin sessions, harden and clear the session cookie, and mark server modules server-only
