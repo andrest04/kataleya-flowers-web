@@ -125,7 +125,6 @@ export interface DeletedProductMetadata {
 export interface ProductsRepository {
   listActiveJoined(): Promise<Product[]>;
   findActiveJoinedBySlug(slug: string): Promise<Product | null>;
-  listActiveJoinedByCategorySlug(categorySlug: string): Promise<Product[]>;
   listSitemap(): Promise<SitemapProductRow[]>;
   listAdmin(): Promise<Product[]>;
   listAdminPage(input: ListAdminProductPageInput): Promise<AdminProductListPage>;

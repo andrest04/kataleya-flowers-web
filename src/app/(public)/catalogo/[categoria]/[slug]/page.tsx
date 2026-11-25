@@ -10,9 +10,9 @@ import CatalogCollectionCard from "@/features/catalog/components/CatalogCollecti
 import { ProductGallery } from "@/features/catalog/components/ProductGallery";
 import { ProductPurchasePanel } from "@/features/catalog/components/ProductPurchasePanel";
 import { getCategories } from "@/features/catalog/queries/getCategories";
-import { getProductBySlug } from "@/features/catalog/queries/getProductBySlug";
 import { getProducts } from "@/features/catalog/queries/getProducts";
 import { getProductsByCategory } from "@/features/catalog/queries/getProductsByCategory";
+import { resolveProductRoute } from "@/features/catalog/queries/resolveProductRoute";
 import { getSiteSettings } from "@/features/settings/queries/getSiteSettings";
 import { floralArrangementsSeoDescription } from "@/lib/siteSettings";
 
@@ -56,33 +56,23 @@ export async function generateMetadata({
   const { categoria, slug } = await params;
 
   try {
-    const [product, categories] = await Promise.all([
-      getProductBySlug(slug),
-      getCategories(),
-    ]);
+    const route = await resolveProductRoute(categoria, slug);
 
-    if (!product) {
+    if (!route) {
       return {
         title: "Producto no encontrado",
         description: "El producto solicitado no está disponible en el catálogo.",
       };
     }
 
-    const category = categories.find(
-      (cat) => cat.slug === categoria && cat.id === product.categoryId
-    );
-
+    const { category, product } = route;
     const description = product.description.slice(0, 160);
     const productImages =
       product.images && product.images.length > 0
         ? product.images
         : [product.imageUrl];
-    const titleBase = category
-      ? `${product.name} | ${category.name}`
-      : product.name;
-    const canonicalPath = category
-      ? `/catalogo/${category.slug}/${product.slug}`
-      : `/catalogo/${categoria}/${slug}`;
+    const titleBase = `${product.name} | ${category.name}`;
+    const canonicalPath = `/catalogo/${category.slug}/${product.slug}`;
 
     return {
       title: titleBase,
@@ -118,24 +108,16 @@ export default async function ProductoPage({
 }: ProductoPageProps): Promise<React.ReactElement> {
   const { categoria, slug } = await params;
 
-  const [product, categories, settings] = await Promise.all([
-    getProductBySlug(slug),
-    getCategories(),
+  const [route, settings] = await Promise.all([
+    resolveProductRoute(categoria, slug),
     getSiteSettings(),
   ]);
 
-  if (!product) {
+  if (!route) {
     notFound();
   }
 
-  const category = categories.find(
-    (cat) => cat.slug === categoria && cat.id === product.categoryId
-  );
-
-  if (!category) {
-    notFound();
-  }
-
+  const { category, product } = route;
   const relatedProducts = (await getProductsByCategory(category.slug))
     .filter((p) => p.id !== product.id)
     .slice(0, 8);
