@@ -16,11 +16,6 @@ export const revalidate = 3600;
 
 interface CategoriaPageProps {
   params: Promise<{ categoria: string }>;
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
-}
-
-function firstParam(value: string | string[] | undefined): string {
-  return Array.isArray(value) ? (value[0] ?? "") : (value ?? "");
 }
 
 export async function generateStaticParams(): Promise<{ categoria: string }[]> {
@@ -84,12 +79,10 @@ export async function generateMetadata({
 
 export default async function CategoriaPage({
   params,
-  searchParams,
 }: CategoriaPageProps): Promise<React.ReactElement> {
-  const [{ categoria }, categories, resolvedSearchParams, settings] = await Promise.all([
+  const [{ categoria }, categories, settings] = await Promise.all([
     params,
     getCategories(),
-    searchParams,
     getSiteSettings(),
   ]);
   const SITE_URL = settings.website;
@@ -119,15 +112,6 @@ export default async function CategoriaPage({
   const flowerTypes = flowerTypeRows
     .map(({ name }) => name)
     .filter((name) => assignedFlowerTypes.has(name));
-  const initialQuery = {
-    category: "",
-    priceMin: firstParam(resolvedSearchParams.precio_min),
-    priceMax: firstParam(resolvedSearchParams.precio_max),
-    colors: firstParam(resolvedSearchParams.color),
-    flowerTypes: firstParam(resolvedSearchParams.tipo),
-    sort: firstParam(resolvedSearchParams.orden),
-    density: firstParam(resolvedSearchParams.densidad),
-  };
 
   const breadcrumbLd = {
     "@context": "https://schema.org",
@@ -168,7 +152,7 @@ export default async function CategoriaPage({
   return (
     <main
       id="main-content"
-      className="min-h-screen bg-cream px-2 pb-16 pt-10 sm:px-2 lg:px-3"
+      className="min-h-screen overflow-x-clip bg-cream px-2 pb-16 pt-10 sm:px-2 lg:px-3"
     >
       <JsonLd data={[breadcrumbLd, itemListLd]} />
       <div className="-mx-2 px-4 sm:-mx-2 sm:px-6 lg:-mx-3 lg:px-10">
@@ -195,7 +179,6 @@ export default async function CategoriaPage({
           categories={[]}
           colors={colors}
           flowerTypes={flowerTypes}
-          initialQuery={initialQuery}
         />
       </div>
     </main>

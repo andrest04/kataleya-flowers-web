@@ -25,7 +25,7 @@ export default function Canvas({ draft, onChange }: CanvasProps) {
           src={draft.imageUrl}
           alt={draft.altText || 'Vista previa del hero'}
           fill
-          priority
+          preload
           sizes="100vw"
           className={HERO_IMAGE_CLASS}
           style={{ '--hero-focus': draft.focus } as CSSProperties}

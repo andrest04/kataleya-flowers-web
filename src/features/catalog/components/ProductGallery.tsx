@@ -77,7 +77,7 @@ export function ProductGallery({ imageUrl, images, name }: ProductGalleryProps) 
                 src={src}
                 alt={`${name} - foto ${i + 1}`}
                 fill
-                priority={i === 0}
+                preload={i === 0}
                 sizes="(max-width: 1024px) 100vw, 50vw"
                 className="object-cover"
               />

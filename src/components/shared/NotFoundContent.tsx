@@ -19,7 +19,6 @@ export default async function NotFoundContent() {
         aria-hidden="true"
         width={179}
         height={144}
-        priority
         unoptimized
         className="h-auto w-56 opacity-80 sm:w-64"
       />

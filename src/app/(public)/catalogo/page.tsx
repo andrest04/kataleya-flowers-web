@@ -58,23 +58,12 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-interface CatalogoPageProps {
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
-}
-
-function firstParam(value: string | string[] | undefined): string {
-  return Array.isArray(value) ? (value[0] ?? '') : (value ?? '');
-}
-
-export default async function CatalogoPage({
-  searchParams,
-}: CatalogoPageProps): Promise<ReactElement> {
-  const [categories, products, colorRows, flowerTypeRows, params, settings] = await Promise.all([
+export default async function CatalogoPage(): Promise<ReactElement> {
+  const [categories, products, colorRows, flowerTypeRows, settings] = await Promise.all([
     getCategories(),
     getProducts(),
     getProductColors(),
     getFlowerTypes(),
-    searchParams,
     getSiteSettings(),
   ]);
   const SITE_URL = settings.website;
@@ -99,15 +88,6 @@ export default async function CatalogoPage({
   const flowerTypes = flowerTypeRows
     .map(({ name }) => name)
     .filter((name) => assignedFlowerTypes.has(name));
-  const initialQuery = {
-    category: firstParam(params.categoria),
-    priceMin: firstParam(params.precio_min),
-    priceMax: firstParam(params.precio_max),
-    colors: firstParam(params.color),
-    flowerTypes: firstParam(params.tipo),
-    sort: firstParam(params.orden),
-    density: firstParam(params.densidad),
-  };
   const itemListLd = {
     '@context': 'https://schema.org',
     '@type': 'ItemList',
@@ -120,7 +100,7 @@ export default async function CatalogoPage({
   };
 
   return (
-    <main id="main-content" className="min-h-screen bg-cream px-2 pb-16 pt-10 sm:px-2 lg:px-3">
+    <main id="main-content" className="min-h-screen overflow-x-clip bg-cream px-2 pb-16 pt-10 sm:px-2 lg:px-3">
       <JsonLd data={[buildBreadcrumbLd(SITE_URL), itemListLd]} />
       <div className="mx-auto max-w-8xl">
         <header className="mx-auto mb-10 max-w-3xl text-center sm:mb-12">
@@ -135,7 +115,6 @@ export default async function CatalogoPage({
           categories={filterCategories}
           colors={colors}
           flowerTypes={flowerTypes}
-          initialQuery={initialQuery}
         />
       </div>
     </main>

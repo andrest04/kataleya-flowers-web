@@ -1,3 +1,4 @@
+import type { ImageProps } from 'next/image';
 import Link from 'next/link';
 
 import Image from '@/components/ui/StoredImage';
@@ -9,7 +10,9 @@ interface CatalogCollectionCardProps {
   categorySlug: string;
   onClick?: () => void;
   size?: 'default' | 'compact';
-  priority?: boolean;
+  sizes?: string;
+  preload?: boolean;
+  loading?: ImageProps['loading'];
 }
 
 export default function CatalogCollectionCard({
@@ -17,7 +20,9 @@ export default function CatalogCollectionCard({
   categorySlug,
   onClick,
   size = 'default',
-  priority = false,
+  sizes,
+  preload = false,
+  loading,
 }: CatalogCollectionCardProps) {
   const effectivePrice = getEffectivePrice(product);
   const imageUrl = product.imageUrl.trim();
@@ -42,12 +47,14 @@ export default function CatalogCollectionCard({
             src={imageSrc}
             alt=""
             fill
-            priority={priority}
+            preload={preload}
+            loading={loading}
             className="object-cover transition-transform duration-500 group-hover:scale-[1.02]"
             sizes={
-              size === 'compact'
+              sizes ??
+              (size === 'compact'
                 ? '(max-width: 1024px) 50vw, 25vw'
-                : '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw'
+                : '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw')
             }
           />
         </span>

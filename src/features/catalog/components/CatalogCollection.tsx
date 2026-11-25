@@ -1,7 +1,6 @@
 'use client';
 
-import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useState, useSyncExternalStore } from 'react';
 
 import { useHeaderVisibility } from '@/components/shared/Navbar/useHeaderVisibility';
 import CatalogCollectionCard from '@/features/catalog/components/CatalogCollectionCard';
@@ -11,8 +10,15 @@ import CatalogDensityToggle, {
 import CatalogFilterSheet, {
   type CatalogColorFacet,
   type CatalogFilters,
+  type CatalogSortOption,
 } from '@/features/catalog/components/CatalogFilterSheet';
 import type { Category, Product } from '@/features/catalog/types';
+import {
+  catalogCardSizes,
+  type CatalogQueryState,
+  parseCatalogQuery,
+  serializeCatalogQuery,
+} from '@/features/catalog/utils/catalogQuery';
 import { getEffectivePrice } from '@/features/catalog/utils/filterProducts';
 import { cn } from '@/lib/utils';
 
@@ -42,27 +48,36 @@ interface CatalogCollectionProps {
   categories: Category[];
   colors: CatalogColorFacet[];
   flowerTypes: string[];
-  initialQuery: CatalogInitialQuery;
+  initialQuery?: CatalogInitialQuery;
 }
 
-type SortOption = 'featured' | 'price-asc' | 'price-desc' | 'name-asc';
+const EAGER_CARD_COUNT = 3;
 
-const SORT_OPTIONS: SortOption[] = ['featured', 'price-asc', 'price-desc', 'name-asc'];
-const DENSITY_OPTIONS: CatalogDensity[] = [2, 3, 4];
-const DEFAULT_DENSITY: CatalogDensity = 3;
-const PAGE_SIZE = 10;
-
-function parseList(value: string, allowedValues: Set<string>): string[] {
-  return value
-    .split(',')
-    .map((item) => item.trim())
-    .filter((item) => item && allowedValues.has(item));
+function initialQueryToSearch(query: CatalogInitialQuery | undefined): string {
+  if (!query) return '';
+  const entries: [string, string][] = [
+    ['categoria', query.category],
+    ['precio_min', query.priceMin],
+    ['precio_max', query.priceMax],
+    ['color', query.colors],
+    ['tipo', query.flowerTypes],
+    ['orden', query.sort],
+    ['densidad', query.density],
+  ];
+  return new URLSearchParams(entries.filter(([, value]) => value)).toString();
 }
 
-function parsePrice(value: string, fallback: number, maximumPrice: number): number {
-  if (!value.trim()) return fallback;
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? Math.min(maximumPrice, Math.max(0, parsed)) : fallback;
+function subscribeToLocation(onChange: () => void) {
+  window.addEventListener('popstate', onChange);
+  return () => window.removeEventListener('popstate', onChange);
+}
+
+function getLocationSearch() {
+  return window.location.search;
+}
+
+function getServerLocationSearch() {
+  return '';
 }
 
 type FilterFacet = 'category' | 'price' | 'colors' | 'flowerTypes';
@@ -109,9 +124,16 @@ export default function CatalogCollection({
   flowerTypes,
   initialQuery,
 }: CatalogCollectionProps) {
-  const router = useRouter();
-  const pathname = usePathname();
   const maximumPrice = Math.max(0, ...items.map(({ product }) => getEffectivePrice(product)));
+  const facets = useMemo(
+    () => ({
+      categorySlugs: new Set(categories.map((category) => category.slug)),
+      colors: new Set(colors.map((color) => color.name)),
+      flowerTypes: new Set(flowerTypes),
+      maximumPrice,
+    }),
+    [categories, colors, flowerTypes, maximumPrice],
+  );
   const defaultFilters: CatalogFilters = {
     category: [],
     priceMin: 0,
@@ -119,48 +141,29 @@ export default function CatalogCollection({
     colors: [],
     flowerTypes: [],
   };
-  const [filters, setFilters] = useState<CatalogFilters>(() => {
-    const categorySlugs = new Set(categories.map((category) => category.slug));
-    const allowedColors = new Set(colors.map((color) => color.name));
-    const allowedFlowerTypes = new Set(flowerTypes);
-    return {
-      category: parseList(initialQuery.category, categorySlugs),
-      priceMin: parsePrice(initialQuery.priceMin, 0, maximumPrice),
-      priceMax: parsePrice(initialQuery.priceMax, maximumPrice, maximumPrice),
-      colors: parseList(initialQuery.colors, allowedColors),
-      flowerTypes: parseList(initialQuery.flowerTypes, allowedFlowerTypes),
-    };
-  });
-  const [sheetOpen, setSheetOpen] = useState(false);
-  const [sortOption, setSortOption] = useState<SortOption>(
-    SORT_OPTIONS.includes(initialQuery.sort as SortOption)
-      ? (initialQuery.sort as SortOption)
-      : 'featured',
+  const [query, setQuery] = useState<CatalogQueryState>(() =>
+    parseCatalogQuery(initialQueryToSearch(initialQuery), facets),
   );
-  const [density, setDensity] = useState<CatalogDensity>(() => {
-    const parsed = Number(initialQuery.density);
-    return DENSITY_OPTIONS.includes(parsed as CatalogDensity)
-      ? (parsed as CatalogDensity)
-      : DEFAULT_DENSITY;
-  });
+  const locationSearch = useSyncExternalStore(
+    subscribeToLocation,
+    getLocationSearch,
+    getServerLocationSearch,
+  );
+  const [seededSearch, setSeededSearch] = useState(getServerLocationSearch);
+  if (locationSearch !== seededSearch) {
+    setSeededSearch(locationSearch);
+    setQuery(parseCatalogQuery(locationSearch, facets));
+  }
+  const { filters, sort: sortOption, density } = query;
+  const [sheetOpen, setSheetOpen] = useState(false);
   const isHeaderHidden = useHeaderVisibility();
 
-  const syncQuery = (filters: CatalogFilters, sort: SortOption, density: CatalogDensity) => {
-    const params = new URLSearchParams(window.location.search);
-    ['categoria', 'precio_min', 'precio_max', 'color', 'tipo', 'densidad'].forEach((key) =>
-      params.delete(key),
-    );
-    if (filters.category.length) params.set('categoria', filters.category.join(','));
-    if (filters.priceMin > 0) params.set('precio_min', String(filters.priceMin));
-    if (filters.priceMax < maximumPrice) params.set('precio_max', String(filters.priceMax));
-    if (filters.colors.length) params.set('color', filters.colors.join(','));
-    if (filters.flowerTypes.length) params.set('tipo', filters.flowerTypes.join(','));
-    if (sort === 'featured') params.delete('orden');
-    else params.set('orden', sort);
-    if (density === DEFAULT_DENSITY) params.delete('densidad');
-    else params.set('densidad', String(density));
-    const query = params.toString();
-    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+  const commitQuery = (next: CatalogQueryState) => {
+    setQuery(next);
+    const search = serializeCatalogQuery(next, maximumPrice, window.location.search);
+    const { pathname, hash } = window.location;
+    window.history.replaceState(null, '', `${pathname}${search ? `?${search}` : ''}${hash}`);
+    setSeededSearch(window.location.search);
   };
 
   const filteredItems = useMemo(() => filterItems(items, filters), [filters, items]);
@@ -204,41 +207,11 @@ export default function CatalogCollection({
     }
   }, [filteredItems, sortOption]);
 
-  const updateFilters = (next: CatalogFilters) => {
-    setFilters(next);
-    syncQuery(next, sortOption, density);
-  };
+  const updateFilters = (next: CatalogFilters) => commitQuery({ ...query, filters: next });
   const clearFilters = () => updateFilters(defaultFilters);
-
-  const updateDensity = (next: CatalogDensity) => {
-    setDensity(next);
-    syncQuery(filters, sortOption, next);
-  };
-
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
-  const resetKey = `${JSON.stringify(filters)}|${sortOption}`;
-  const [lastResetKey, setLastResetKey] = useState(resetKey);
-  if (resetKey !== lastResetKey) {
-    setLastResetKey(resetKey);
-    setVisibleCount(PAGE_SIZE);
-  }
-  const visibleItems = sortedItems.slice(0, visibleCount);
-
-  const loadMoreRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const sentinel = loadMoreRef.current;
-    if (!sentinel) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setVisibleCount((count) => Math.min(count + PAGE_SIZE, sortedItems.length));
-        }
-      },
-      { rootMargin: '400px' },
-    );
-    observer.observe(sentinel);
-    return () => observer.disconnect();
-  }, [sortedItems.length]);
+  const updateDensity = (next: CatalogDensity) => commitQuery({ ...query, density: next });
+  const updateSort = (next: CatalogSortOption) => commitQuery({ ...query, sort: next });
+  const cardSizes = catalogCardSizes(density);
 
   return (
     <>
@@ -264,10 +237,7 @@ export default function CatalogCollection({
               availableFlowerTypes={availableFlowerTypes}
               maximumPrice={maximumPrice}
               sortOption={sortOption}
-              onSortChange={(sort) => {
-                setSortOption(sort);
-                syncQuery(filters, sort, density);
-              }}
+              onSortChange={updateSort}
             />
           </div>
         </div>
@@ -282,19 +252,18 @@ export default function CatalogCollection({
           {sortedItems.length === 1 ? '' : 's'}
         </p>
         {sortedItems.length > 0 ? (
-          <>
-            <div className={cn('grid', DENSITY_GRID_CLASSES[density])}>
-              {visibleItems.map(({ product, categorySlug }, index) => (
-                <CatalogCollectionCard
-                  key={product.id}
-                  product={product}
-                  categorySlug={categorySlug}
-                  priority={index < 4}
-                />
-              ))}
-            </div>
-            {visibleCount < sortedItems.length && <div ref={loadMoreRef} aria-hidden="true" />}
-          </>
+          <div className={cn('grid', DENSITY_GRID_CLASSES[density])}>
+            {sortedItems.map(({ product, categorySlug }, index) => (
+              <CatalogCollectionCard
+                key={product.id}
+                product={product}
+                categorySlug={categorySlug}
+                sizes={cardSizes}
+                preload={index === 0}
+                loading={index > 0 && index < EAGER_CARD_COUNT ? 'eager' : undefined}
+              />
+            ))}
+          </div>
         ) : (
           <div className="py-16 text-center font-body text-(--color-muted)">
             <p>No encontramos productos con esos filtros.</p>

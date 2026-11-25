@@ -135,7 +135,6 @@ function LightboxInner({
                       fill
                       sizes="(max-width: 1024px) 100vw, 80vw"
                       className="object-contain select-none"
-                      priority
                     />
                   </div>
 
