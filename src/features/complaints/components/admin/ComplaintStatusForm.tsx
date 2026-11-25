@@ -8,7 +8,7 @@ import { FormError, FormField } from '@/components/ui/FormField';
 import { Select, Textarea } from '@/components/ui/Input';
 
 import { updateComplaint } from '../../actions/updateComplaint';
-import { COMPLAINT_STATUSES } from '../../schemas/complaint';
+import { COMPLAINT_STATUSES } from '../../schemas/constants';
 
 interface ComplaintStatusFormProps {
   id: string;

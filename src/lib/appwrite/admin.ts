@@ -1,3 +1,5 @@
+import 'server-only';
+
 import { Account, Client, Databases, Storage, Teams, Users } from 'node-appwrite';
 
 import { getAppwriteConfig } from '@/lib/appwrite/config';

@@ -58,12 +58,14 @@ describe('appwriteAuthProvider.login', () => {
     mocks.createEmailPasswordSession.mockResolvedValueOnce({
       secret: 'secret-1',
       expire: '2026-01-01T00:00:00.000Z',
+      userId: 'user-1',
     });
 
     const result = await appwriteAuthProvider.login('user@example.com', 'password');
 
     expect(result).toEqual({
       ok: true,
+      userId: 'user-1',
       session: { secret: 'secret-1', expiresAt: '2026-01-01T00:00:00.000Z' },
     });
     expect(mocks.createEmailPasswordSession).toHaveBeenCalledWith({
@@ -100,17 +102,30 @@ describe('appwriteAuthProvider.login', () => {
 });
 
 describe('appwriteAuthProvider.logout', () => {
-  it('resolves even when the underlying delete session call throws', async () => {
-    mocks.deleteSession.mockRejectedValueOnce(new Error('session already gone'));
+  it('returns true when the delete session call succeeds', async () => {
+    mocks.deleteSession.mockResolvedValueOnce(undefined);
 
-    await expect(appwriteAuthProvider.logout('secret-1')).resolves.toBeUndefined();
+    await expect(appwriteAuthProvider.logout('secret-1')).resolves.toBe(true);
+    expect(mocks.deleteSession).toHaveBeenCalledTimes(1);
     expect(mocks.deleteSession).toHaveBeenCalledWith({ sessionId: 'current' });
   });
 
-  it('resolves when the delete session call succeeds', async () => {
-    mocks.deleteSession.mockResolvedValueOnce(undefined);
+  it('retries once and returns true when the retry succeeds', async () => {
+    mocks.deleteSession
+      .mockRejectedValueOnce(new Error('network blip'))
+      .mockResolvedValueOnce(undefined);
 
-    await expect(appwriteAuthProvider.logout('secret-1')).resolves.toBeUndefined();
+    await expect(appwriteAuthProvider.logout('secret-1')).resolves.toBe(true);
+    expect(mocks.deleteSession).toHaveBeenCalledTimes(2);
+  });
+
+  it('returns false instead of throwing when both attempts fail', async () => {
+    mocks.deleteSession
+      .mockRejectedValueOnce(new Error('session already gone'))
+      .mockRejectedValueOnce(new Error('session already gone'));
+
+    await expect(appwriteAuthProvider.logout('secret-1')).resolves.toBe(false);
+    expect(mocks.deleteSession).toHaveBeenCalledTimes(2);
   });
 });
 

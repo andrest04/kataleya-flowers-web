@@ -4,7 +4,7 @@ import { FormField } from '@/components/ui/FormField';
 import { Input, Select, Textarea } from '@/components/ui/Input';
 import { FieldError } from '@/features/admin/components/ProductForm/FieldError';
 
-import { ITEM_TYPES } from '../../schemas/complaint';
+import { ITEM_TYPES } from '../../schemas/constants';
 
 interface ItemFieldsProps {
   errors: Record<string, string>;

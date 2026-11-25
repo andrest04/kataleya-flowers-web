@@ -6,5 +6,9 @@ initBotId({
       path: "/libro-de-reclamaciones",
       method: "POST",
     },
+    {
+      path: "/login",
+      method: "POST",
+    },
   ],
 });

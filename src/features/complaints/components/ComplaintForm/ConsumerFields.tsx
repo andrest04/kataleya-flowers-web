@@ -5,7 +5,7 @@ import { Input, Select } from '@/components/ui/Input';
 import ToggleSwitch from '@/components/ui/ToggleSwitch';
 import { FieldError } from '@/features/admin/components/ProductForm/FieldError';
 
-import { DOC_TYPES } from '../../schemas/complaint';
+import { DOC_TYPES } from '../../schemas/constants';
 
 interface ConsumerFieldsProps {
   errors: Record<string, string>;

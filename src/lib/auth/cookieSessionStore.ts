@@ -5,7 +5,7 @@ import type { AuthSession, SessionStore } from './types';
 
 const SESSION_COOKIE_OPTIONS = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
+  secure: true,
   sameSite: 'lax',
   path: '/',
 } as const;
@@ -26,7 +26,7 @@ class CookieSessionStore implements SessionStore {
 
   async delete(): Promise<void> {
     const cookieStore = await cookies();
-    cookieStore.delete(SESSION_COOKIE_NAME);
+    cookieStore.set(SESSION_COOKIE_NAME, '', { ...SESSION_COOKIE_OPTIONS, maxAge: 0 });
   }
 }
 

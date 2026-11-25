@@ -7,12 +7,18 @@ import { createSessionClient } from '@/lib/appwrite/session';
 
 import type { AuthLoginResult, AuthProvider, AuthUser } from './types';
 
+const LOGOUT_ATTEMPTS = 2;
+
 class AppwriteAuthProvider implements AuthProvider {
   async login(email: string, password: string): Promise<AuthLoginResult> {
     try {
       const { account } = createAdminClient();
       const session = await account.createEmailPasswordSession({ email, password });
-      return { ok: true, session: { secret: session.secret, expiresAt: session.expire } };
+      return {
+        ok: true,
+        userId: session.userId,
+        session: { secret: session.secret, expiresAt: session.expire },
+      };
     } catch (error) {
       if (error instanceof AppwriteException && error.code === 401) {
         return {
@@ -30,13 +36,17 @@ class AppwriteAuthProvider implements AuthProvider {
     }
   }
 
-  async logout(sessionSecret: string): Promise<void> {
-    try {
-      const { account } = createSessionClient(sessionSecret);
-      await account.deleteSession({ sessionId: 'current' });
-    } catch (error) {
-      console.error('[auth] logout error:', error);
+  async logout(sessionSecret: string): Promise<boolean> {
+    for (let attempt = 1; attempt <= LOGOUT_ATTEMPTS; attempt += 1) {
+      try {
+        const { account } = createSessionClient(sessionSecret);
+        await account.deleteSession({ sessionId: 'current' });
+        return true;
+      } catch (error) {
+        console.error('[auth] logout error:', { attempt, error });
+      }
     }
+    return false;
   }
 
   async getCurrentUser(sessionSecret: string): Promise<AuthUser | null> {

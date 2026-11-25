@@ -37,7 +37,9 @@ export async function requireAdminOrRedirect(): Promise<AdminActionContext> {
     return await requireAdmin();
   } catch (err) {
     if (err instanceof AuthError) {
-      redirect(err.code === 'FORBIDDEN' ? '/login?error=forbidden' : '/login');
+      redirect(
+        err.code === 'FORBIDDEN' ? '/login?error=forbidden&session=ended' : '/login?session=ended',
+      );
     }
     throw err;
   }

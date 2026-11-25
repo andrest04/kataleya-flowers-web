@@ -1,10 +1,23 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Suspense, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 
-import { loginAction } from '@/features/admin/actions/auth';
+import type { LoginFailure } from '@/features/admin/actions/auth';
+import { clearStaleSessionAction, loginAction } from '@/features/admin/actions/auth';
 import { BUSINESS } from '@/lib/constants';
+
+const SERVER_MESSAGE_CODES = new Set<LoginFailure['code']>(['VALIDATION', 'INVALID_CREDENTIALS', 'FORBIDDEN', 'RATE_LIMITED']);
+
+function StaleSessionCleanup() {
+  const sessionEnded = useSearchParams().get('session') === 'ended';
+
+  useEffect(() => {
+    if (sessionEnded) void clearStaleSessionAction();
+  }, [sessionEnded]);
+
+  return null;
+}
 
 function ForbiddenBanner({ error }: { error: string | null }) {
   const searchParams = useSearchParams();
@@ -39,7 +52,7 @@ export default function LoginPage() {
       const result = await loginAction({ email, password });
       if (!result.ok) {
         const safeError =
-          result.code === 'VALIDATION' || result.code === 'INVALID_CREDENTIALS'
+          result.code && SERVER_MESSAGE_CODES.has(result.code)
             ? result.error
             : 'No se pudo iniciar sesión. Intenta de nuevo.';
         setError(safeError);
@@ -127,6 +140,7 @@ export default function LoginPage() {
           </div>
 
           <Suspense fallback={null}>
+            <StaleSessionCleanup />
             <ForbiddenBanner error={error} />
           </Suspense>
 

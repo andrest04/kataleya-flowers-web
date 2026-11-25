@@ -1,3 +1,5 @@
+import 'server-only';
+
 import {
   APPWRITE_BUCKETS,
   APPWRITE_COLLECTIONS,
