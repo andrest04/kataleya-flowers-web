@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 import { toMapsEmbedUrl } from '@/lib/mapsEmbed';
 import { isSafeSiteHref } from '@/lib/safeHref';
+import { normalizeSiteOrigin } from '@/lib/siteOrigin';
 import { isDerivedWhatsappCta } from '@/lib/siteSettings';
 
 import { email, nonEmptyString } from './common';
@@ -19,15 +20,6 @@ const optionalInstant = z
     }
     return parsed.toISOString();
   });
-
-function isHttpUrl(value: string): boolean {
-  try {
-    const parsed = new URL(value);
-    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
-  } catch {
-    return false;
-  }
-}
 
 const timeOfDay = z
   .string()
@@ -115,7 +107,14 @@ export const siteSettingsSchema = z
       .string()
       .trim()
       .max(2048, 'URL demasiado larga')
-      .refine(isHttpUrl, 'Usa una URL que empiece con https://'),
+      .transform((value, ctx) => {
+        const origin = normalizeSiteOrigin(value);
+        if (origin === null) {
+          ctx.addIssue({ code: 'custom', message: 'Usa una URL que empiece con https://' });
+          return z.NEVER;
+        }
+        return origin;
+      }),
     whatsappDefault: z
       .string()
       .trim()

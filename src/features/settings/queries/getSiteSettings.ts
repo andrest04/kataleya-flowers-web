@@ -1,6 +1,7 @@
 import { unstable_cache } from 'next/cache';
 
 import { type SiteSettingsRecord, siteSettingsRepository } from '@/lib/database/repositories/siteSettings';
+import { normalizeSiteOrigin } from '@/lib/siteOrigin';
 import {
   defaultSiteSettings,
   derivedContact,
@@ -52,25 +53,26 @@ function fromRow(row: SiteSettingsRecord): SiteSettings {
       contact: row.contact_title || defaults.titles.contact,
       discover: row.discover_title || defaults.titles.discover,
     },
-    website: row.website || defaults.website,
+    website: normalizeSiteOrigin(row.website) ?? defaults.website,
     whatsapp: contact.whatsapp,
   };
 }
 
 const getCachedSiteSettings = unstable_cache(
   async (): Promise<SiteSettings> => {
-    try {
-      const row = await siteSettingsRepository.get();
-      if (!row) return defaultSiteSettings();
-      return fromRow(row);
-    } catch {
-      return defaultSiteSettings();
-    }
+    const row = await siteSettingsRepository.get();
+    if (!row) return defaultSiteSettings();
+    return fromRow(row);
   },
   ['site-settings'],
   { revalidate: 300, tags: ['site-settings'] },
 );
 
 export async function getSiteSettings(): Promise<SiteSettings> {
-  return getCachedSiteSettings();
+  try {
+    return await getCachedSiteSettings();
+  } catch (error) {
+    console.error('[site-settings] repository unavailable, serving defaults uncached:', error);
+    return defaultSiteSettings();
+  }
 }

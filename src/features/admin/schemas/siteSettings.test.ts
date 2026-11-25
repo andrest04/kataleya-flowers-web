@@ -43,6 +43,22 @@ function issuesAt(field: string, overrides: Record<string, unknown>) {
   return result.error.issues.filter((issue) => issue.path[0] === field);
 }
 
+describe('siteSettingsSchema website', () => {
+  it.each([
+    ['https://www.kataleyaflowers.com/'],
+    ['http://www.kataleyaflowers.com'],
+    ['https://WWW.KataleyaFlowers.com/catalogo?ref=ig'],
+  ])('normalizes %s to a bare https origin', (website) => {
+    const result = siteSettingsSchema.safeParse(settings({ website }));
+    expect(result.success).toBe(true);
+    expect(result.data?.website).toBe('https://www.kataleyaflowers.com');
+  });
+
+  it.each([['www.kataleyaflowers.com'], ['javascript:alert(1)'], ['']])('rejects %j', (website) => {
+    expect(issuesAt('website', { website }).length).toBeGreaterThan(0);
+  });
+});
+
 describe('siteSettingsSchema mapsEmbedUrl', () => {
   it('keeps the current Google embed URL', () => {
     const result = siteSettingsSchema.safeParse(settings());
