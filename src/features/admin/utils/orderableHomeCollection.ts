@@ -55,6 +55,10 @@ export function readFromFallbackId(data: unknown): string | undefined {
   return typeof value === 'string' && value.trim() !== '' ? value : undefined;
 }
 
+function inSequence<T>(items: readonly T[], work: (item: T) => Promise<void>): Promise<void> {
+  return items.reduce<Promise<void>>((previous, item) => previous.then(() => work(item)), Promise.resolve());
+}
+
 function activeCount(rows: OrderableRecord[]): number {
   return rows.filter((row) => row.isActive).length;
 }
@@ -91,13 +95,11 @@ export function createOrderableHomeCollection<
       if (!mapped.ok) return mapped.failure;
       payloads.push(mapped.payload);
     }
-    await store.runInTransaction(async (tx) => {
-      await Promise.all(
-        payloads.map((payload) =>
-          tx.create(config.collectionId, randomUUID(), config.toDocumentData(payload)),
-        ),
-      );
-    });
+    await store.runInTransaction((tx) =>
+      inSequence(payloads, async (payload) => {
+        await tx.create(config.collectionId, randomUUID(), config.toDocumentData(payload));
+      }),
+    );
     return null;
   }
 

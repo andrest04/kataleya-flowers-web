@@ -170,6 +170,39 @@ describe('createOrderableHomeCollection', () => {
       expect(await storedWidgets()).toHaveLength(4);
     });
 
+    it('stages the fallback creates one after another, never overlapping', async () => {
+      const events: string[] = [];
+      let inFlight = 0;
+      let maxInFlight = 0;
+      const rejectOther = async (): Promise<never> => {
+        throw new Error('unsupported transaction operation');
+      };
+      const runInTransaction: DocumentStore['runInTransaction'] = async (work) =>
+        work({
+          create: async <T extends DocumentRecord>(_collectionId: string, id: string, data: Record<string, unknown>) => {
+            const order = String(data.display_order);
+            inFlight += 1;
+            maxInFlight = Math.max(maxInFlight, inFlight);
+            events.push(`start ${order}`);
+            await new Promise((resolve) => setTimeout(resolve, 0));
+            events.push(`end ${order}`);
+            inFlight -= 1;
+            return { ...data, id, createdAt: '', updatedAt: '' } as unknown as T;
+          },
+          update: rejectOther,
+          delete: rejectOther,
+          bulkUpdate: rejectOther,
+          bulkDelete: rejectOther,
+        });
+      const store = Object.assign(Object.create(base) as DocumentStore, { runInTransaction });
+      const collection = buildCollection(store);
+
+      await expect(collection.toggle('f-2', false)).resolves.toBeNull();
+
+      expect(maxInFlight).toBe(1);
+      expect(events).toEqual(['start 1', 'end 1', 'start 2', 'end 2', 'start 3', 'end 3']);
+    });
+
     it('leaves nothing seeded when the second create of the transaction fails', async () => {
       const store = withStagedTransactions(base, 2);
       const collection = buildCollection(store);
