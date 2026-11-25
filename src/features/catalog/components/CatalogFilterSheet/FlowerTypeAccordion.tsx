@@ -27,6 +27,7 @@ export default function FlowerTypeAccordion({
                 type="checkbox"
                 name="tipo"
                 value={flowerType}
+                aria-label={flowerType}
                 checked={selected}
                 disabled={disabled}
                 onChange={() => onToggle(flowerType)}

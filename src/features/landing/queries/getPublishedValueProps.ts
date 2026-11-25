@@ -93,8 +93,7 @@ const getCachedValuePropState = unstable_cache(
 );
 
 export async function getPublishedValueProps(): Promise<ValuePropView[]> {
-  const state = await getCachedValuePropState();
-  const settings = await getSiteSettings();
+  const [state, settings] = await Promise.all([getCachedValuePropState(), getSiteSettings()]);
   if (state.status === 'published') {
     return state.items.map((item) => bindValuePropIdentity(item, settings));
   }

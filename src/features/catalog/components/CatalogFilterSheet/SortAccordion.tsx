@@ -33,6 +33,7 @@ export default function SortAccordion({
                 type="radio"
                 name="orden"
                 value={option}
+                aria-label={SORT_LABELS[option]}
                 checked={selected}
                 onChange={() => onSelect(option)}
                 className="sr-only"

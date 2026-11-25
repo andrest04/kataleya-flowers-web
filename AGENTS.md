@@ -2,7 +2,7 @@
 
 Landing + admin para **Kataleya Flowers**, florería real en Lima, Perú. Negocio en producción — los cambios son reales.
 
-**Estado:** Post-audit (Phases 1–5). Las convenciones de este archivo son **vinculantes** y la mayoría están **automatizadas** vía ESLint custom rules (`eslint.config.mjs`). Antes de pedir una excepción, leé `QA/audit/`.
+**Estado:** Post-audit (Phases 1–5). Las convenciones de este archivo son **vinculantes** y la mayoría están **automatizadas** vía ESLint custom rules (`eslint.config.mjs`). Antes de pedir una excepción, lee `QA/audit/`.
 
 **Autoridad por tema — este archivo no repite ese contenido:**
 
@@ -65,7 +65,7 @@ Invocar la skill **antes** de trabajar en el área — no improvisar a mano.
 
 ## Reglas vinculantes (ESLint-enforced)
 
-No las silencies: corregí la causa raíz o pedí excepción.
+No las silencies: corrige la causa raíz o pide una excepción.
 
 | Regla | Detalle |
 |---|---|

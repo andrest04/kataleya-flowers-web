@@ -26,12 +26,12 @@ interface MultiProps extends BaseProps {
 type ImageUploaderProps = SingleProps | MultiProps;
 
 export default function ImageUploader(props: ImageUploaderProps) {
-  const { folder, className = '' } = props;
+  const { folder, className = '', multiple, value, onChange } = props;
   const { uploadImage, cancelUpload, isUploading, progress, error } = useImageUpload();
   const [isDragOver, setIsDragOver] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const urls = props.multiple ? props.value : props.value ? [props.value] : [];
+  const urls = multiple ? value : value ? [value] : [];
   const maxFiles = props.multiple ? (props.maxFiles ?? 10) : 1;
   const canAddMore = urls.length < maxFiles && !isUploading;
 
@@ -45,13 +45,13 @@ export default function ImageUploader(props: ImageUploaderProps) {
     for (const url of uploadedUrls) {
       if (!url) continue;
 
-      if (props.multiple) {
-        props.onChange([...props.value, url]);
+      if (multiple) {
+        onChange([...value, url]);
       } else {
-        props.onChange(url);
+        onChange(url);
       }
     }
-  }, [uploadImage, folder, maxFiles, urls.length, props]);
+  }, [uploadImage, folder, maxFiles, urls.length, multiple, value, onChange]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -77,12 +77,12 @@ export default function ImageUploader(props: ImageUploaderProps) {
   }, [handleFiles]);
 
   const removeImage = useCallback((index: number) => {
-    if (props.multiple) {
-      props.onChange(props.value.filter((_, i) => i !== index));
+    if (multiple) {
+      onChange(value.filter((_, i) => i !== index));
     } else {
-      props.onChange('');
+      onChange('');
     }
-  }, [props]);
+  }, [multiple, value, onChange]);
 
   return (
     <div className={className}>
@@ -158,7 +158,7 @@ export default function ImageUploader(props: ImageUploaderProps) {
                 ? 'Suelta la imagen aquí'
                 : 'Arrastra una imagen o haz clic'}
             </span>
-            {props.multiple && (
+            {multiple && (
               <span className="text-xs">
                 {urls.length}/{maxFiles} imágenes
               </span>
@@ -171,7 +171,7 @@ export default function ImageUploader(props: ImageUploaderProps) {
         ref={inputRef}
         type="file"
         accept="image/*"
-        multiple={props.multiple}
+        multiple={multiple}
         onChange={handleInputChange}
         className="hidden"
       />
@@ -183,7 +183,7 @@ export default function ImageUploader(props: ImageUploaderProps) {
             style={{ background: 'var(--color-surface)' }}
           >
             <div
-              className="h-full rounded-full transition-all duration-300"
+              className="h-full rounded-full transition-[width] duration-300"
               style={{
                 width: `${progress}%`,
                 background: 'var(--color-secondary)',

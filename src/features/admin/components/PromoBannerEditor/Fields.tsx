@@ -17,6 +17,8 @@ import { persistCta } from './mapDraft';
 import ScheduleFields from './ScheduleFields';
 import type { PromoBannerDraft } from './types';
 
+const NO_ERRORS: FieldErrors = {};
+
 interface PromoBannerFieldsProps {
   allowHide?: boolean;
   draft: PromoBannerDraft;
@@ -30,7 +32,7 @@ interface PromoBannerFieldsProps {
 export default function PromoBannerFields({
   allowHide = true,
   draft,
-  errors = {},
+  errors = NO_ERRORS,
   idPrefix,
   onChange,
   showSchedule = true,

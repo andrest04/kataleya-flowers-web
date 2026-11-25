@@ -29,6 +29,7 @@ export default function CategoryAccordion({
                 type="checkbox"
                 name="categoria"
                 value={category.slug}
+                aria-label={category.name}
                 checked={selected}
                 disabled={disabled}
                 onChange={() => onToggle(category.slug)}

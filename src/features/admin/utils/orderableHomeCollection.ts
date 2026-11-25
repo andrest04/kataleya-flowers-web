@@ -92,9 +92,11 @@ export function createOrderableHomeCollection<
       payloads.push(mapped.payload);
     }
     await store.runInTransaction(async (tx) => {
-      for (const payload of payloads) {
-        await tx.create(config.collectionId, randomUUID(), config.toDocumentData(payload));
-      }
+      await Promise.all(
+        payloads.map((payload) =>
+          tx.create(config.collectionId, randomUUID(), config.toDocumentData(payload)),
+        ),
+      );
     });
     return null;
   }

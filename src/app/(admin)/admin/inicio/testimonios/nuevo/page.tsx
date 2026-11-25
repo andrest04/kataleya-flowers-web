@@ -16,8 +16,8 @@ interface NuevoTestimonioPageProps {
 }
 
 export default async function NuevoTestimonioPage({ searchParams }: NuevoTestimonioPageProps) {
-  const { from } = await searchParams;
-  const [testimonials, liveTestimonials] = await Promise.all([
+  const [{ from }, testimonials, liveTestimonials] = await Promise.all([
+    searchParams,
     getAdminTestimonials(),
     getPublishedTestimonials(),
   ]);

@@ -28,6 +28,7 @@ export default function ColorAccordion({
                 type="checkbox"
                 name="color"
                 value={color.name}
+                aria-label={color.label}
                 checked={selected}
                 disabled={disabled}
                 onChange={() => onToggle(color.name)}

@@ -40,6 +40,10 @@ async function ignoreConflict(work) {
   }
 }
 
+function inSequence(items, work) {
+  return items.reduce((previous, item) => previous.then(() => work(item)), Promise.resolve());
+}
+
 async function findOrNull(work) {
   try {
     return await work();
@@ -184,23 +188,23 @@ export async function ensureCollection(context, definition) {
     });
   }
 
-  for (const attribute of plan.missingAttributes) {
-    await ignoreConflict(() => createAttribute(context, desired.id, attribute));
-  }
+  await inSequence(plan.missingAttributes, (attribute) =>
+    ignoreConflict(() => createAttribute(context, desired.id, attribute)),
+  );
   if (plan.missingAttributes.length > 0 || plan.missingIndexes.length > 0) {
     const indexedKeys = plan.missingIndexes.flatMap((index) => index.attributes);
     const keys = [...new Set([...plan.missingAttributes.map((attribute) => attribute.key), ...indexedKeys])];
     await waitForAttributes(context, desired.id, keys);
   }
-  for (const index of plan.missingIndexes) {
-    await ignoreConflict(() => context.databases.createIndex({
+  await inSequence(plan.missingIndexes, (index) =>
+    ignoreConflict(() => context.databases.createIndex({
       databaseId: DATABASE_ID,
       collectionId: desired.id,
       key: index.key,
       type: index.type,
       attributes: index.attributes,
-    }));
-  }
+    })),
+  );
   console.log(`  applied collection ${desired.id}`);
 }
 

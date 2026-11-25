@@ -18,7 +18,8 @@ export function useProductSelection(products: AdminProductListRow[]) {
 
   if (products !== previousProducts) {
     setPreviousProducts(products);
-    setSelectedIds((current) => current.filter((id) => visibleIds.includes(id)));
+    const visibleIdSet = new Set(visibleIds);
+    setSelectedIds((current) => current.filter((id) => visibleIdSet.has(id)));
   }
 
   const selectedCount = selectedIds.length;

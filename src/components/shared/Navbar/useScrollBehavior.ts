@@ -12,25 +12,24 @@ export function useScrollBehavior(threshold = 180, hideDelay = 500): boolean {
       const isPastThreshold = window.scrollY > threshold;
 
       if (!isPastThreshold) {
-        if (hideTimeout) clearTimeout(hideTimeout);
+        clearTimeout(hideTimeout);
         hideTimeout = undefined;
         setIsScrolled(false);
         return;
       }
 
-      if (!hideTimeout) {
-        hideTimeout = setTimeout(() => {
-          setIsScrolled(true);
-          hideTimeout = undefined;
-        }, hideDelay);
-      }
+      if (hideTimeout !== undefined) return;
+      hideTimeout = setTimeout(() => {
+        setIsScrolled(true);
+        hideTimeout = undefined;
+      }, hideDelay);
     };
 
     handleScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => {
       window.removeEventListener("scroll", handleScroll);
-      if (hideTimeout) clearTimeout(hideTimeout);
+      clearTimeout(hideTimeout);
     };
   }, [threshold, hideDelay]);
 
