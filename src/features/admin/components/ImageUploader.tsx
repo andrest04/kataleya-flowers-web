@@ -45,7 +45,7 @@ export default function ImageUploader(props: ImageUploaderProps) {
 
     if (multiple) {
       const merged = mergeUploadedUrls(value, uploadedUrls);
-      if (merged.length > value.length) onChange(merged);
+      if (uploadedUrls.some((url) => url && !value.includes(url))) onChange(merged);
       return;
     }
 
