@@ -11,6 +11,7 @@ export const APPWRITE_COLLECTIONS = {
   flowerTypeAssignments: 'flower_type_assignments',
   complaints: 'complaints',
   counters: 'counters',
+  rateLimits: 'rate_limits',
   heroSlides: 'hero_slides',
   promoBanners: 'promo_banners',
   testimonials: 'testimonials',

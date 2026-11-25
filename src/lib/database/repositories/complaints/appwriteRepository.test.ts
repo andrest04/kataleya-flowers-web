@@ -2,40 +2,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { createFakeDocumentStore, type FakeDocumentStore } from '@/lib/database/testUtils/fakeDocumentStore';
 
+import { createComplaintsRepository } from './appwriteRepository';
 import type { ComplaintInsert, ComplaintsRepository } from './types';
-
-const mocks = vi.hoisted(() => ({
-  incrementDocumentAttribute: vi.fn(),
-  createDocument: vi.fn(),
-}));
-
-class MockAppwriteException extends Error {
-  code: number;
-
-  constructor(message: string, code: number) {
-    super(message);
-    this.code = code;
-  }
-}
-
-vi.mock('node-appwrite', () => ({
-  AppwriteException: MockAppwriteException,
-}));
-
-vi.mock('@/lib/appwrite/admin', () => ({
-  createAdminClient: () => ({
-    databases: {
-      incrementDocumentAttribute: mocks.incrementDocumentAttribute,
-      createDocument: mocks.createDocument,
-    },
-  }),
-}));
-
-vi.mock('@/lib/appwrite/config', () => ({
-  getAppwriteConfig: () => ({ databaseId: 'test-db' }),
-}));
-
-const { createComplaintsRepository } = await import('./appwriteRepository');
 
 const COLLECTION_ID = 'complaints';
 
@@ -177,6 +145,12 @@ describe('complaintsRepository (fake store)', () => {
       });
     });
 
+    it('stores the complaint with private document permissions', async () => {
+      const created = await repository.insert(baseInsert());
+
+      expect(store.permissionsOf(COLLECTION_ID, created.id)).toEqual([]);
+    });
+
     it('preserves a null guardianName for adult consumers', async () => {
       const created = await repository.insert(baseInsert({ isMinor: false, guardianName: null }));
 
@@ -215,68 +189,55 @@ describe('complaintsRepository (fake store)', () => {
 });
 
 describe('complaintsRepository.allocateCorrelativo', () => {
+  let store: FakeDocumentStore;
   let repository: ComplaintsRepository;
 
   beforeEach(() => {
-    vi.clearAllMocks();
-    repository = createComplaintsRepository(createFakeDocumentStore());
+    store = createFakeDocumentStore();
+    repository = createComplaintsRepository(store);
   });
 
-  it('returns the incremented value on the happy path', async () => {
-    mocks.incrementDocumentAttribute.mockResolvedValueOnce({ value: 3 });
-
-    await expect(repository.allocateCorrelativo(2026)).resolves.toBe(3);
-    expect(mocks.incrementDocumentAttribute).toHaveBeenCalledWith({
-      databaseId: 'test-db',
-      collectionId: 'counters',
-      documentId: 'complaints-2026',
-      attribute: 'value',
-      value: 1,
-    });
-    expect(mocks.createDocument).not.toHaveBeenCalled();
-  });
-
-  it('creates the counter document when it does not exist yet (404)', async () => {
-    mocks.incrementDocumentAttribute.mockRejectedValueOnce(new MockAppwriteException('missing', 404));
-    mocks.createDocument.mockResolvedValueOnce({ value: 1 });
-
+  it('allocates sequential correlativos starting at 1', async () => {
     await expect(repository.allocateCorrelativo(2026)).resolves.toBe(1);
-    expect(mocks.createDocument).toHaveBeenCalledWith({
-      databaseId: 'test-db',
-      collectionId: 'counters',
-      documentId: 'complaints-2026',
-      data: { value: 1 },
+    await expect(repository.allocateCorrelativo(2026)).resolves.toBe(2);
+    await expect(repository.allocateCorrelativo(2026)).resolves.toBe(3);
+  });
+
+  it('keeps an independent sequence per year', async () => {
+    await repository.allocateCorrelativo(2026);
+    await repository.allocateCorrelativo(2026);
+
+    await expect(repository.allocateCorrelativo(2027)).resolves.toBe(1);
+  });
+
+  it('continues from an existing counter document', async () => {
+    store.seed('counters', {
+      id: 'complaints-2026',
+      createdAt: '2026-01-01T00:00:00.000Z',
+      updatedAt: '2026-01-01T00:00:00.000Z',
+      value: 41,
     });
+
+    await expect(repository.allocateCorrelativo(2026)).resolves.toBe(42);
   });
 
-  it('retries the increment when creation races into a conflict (409)', async () => {
-    mocks.incrementDocumentAttribute
-      .mockRejectedValueOnce(new MockAppwriteException('missing', 404))
-      .mockResolvedValueOnce({ value: 4 });
-    mocks.createDocument.mockRejectedValueOnce(new MockAppwriteException('exists', 409));
+  it('creates the counter document with private permissions', async () => {
+    await repository.allocateCorrelativo(2026);
 
-    await expect(repository.allocateCorrelativo(2026)).resolves.toBe(4);
-    expect(mocks.incrementDocumentAttribute).toHaveBeenCalledTimes(2);
+    expect(store.permissionsOf('counters', 'complaints-2026')).toEqual([]);
   });
 
-  it('rethrows an unexpected error from the initial increment', async () => {
-    mocks.incrementDocumentAttribute.mockRejectedValueOnce(new Error('boom'));
+  it('increments the counters collection through the document store port', async () => {
+    const increment = vi.spyOn(store, 'increment');
+
+    await repository.allocateCorrelativo(2026);
+
+    expect(increment).toHaveBeenCalledWith('counters', 'complaints-2026', 'value', 1, {});
+  });
+
+  it('propagates store failures', async () => {
+    vi.spyOn(store, 'increment').mockRejectedValueOnce(new Error('boom'));
 
     await expect(repository.allocateCorrelativo(2026)).rejects.toThrow('boom');
-    expect(mocks.createDocument).not.toHaveBeenCalled();
-  });
-
-  it('rethrows an unexpected error from the fallback create', async () => {
-    mocks.incrementDocumentAttribute.mockRejectedValueOnce(new MockAppwriteException('missing', 404));
-    mocks.createDocument.mockRejectedValueOnce(new Error('boom'));
-
-    await expect(repository.allocateCorrelativo(2026)).rejects.toThrow('boom');
-  });
-
-  it('rethrows a non-409 error from the fallback create', async () => {
-    mocks.incrementDocumentAttribute.mockRejectedValueOnce(new MockAppwriteException('missing', 404));
-    mocks.createDocument.mockRejectedValueOnce(new MockAppwriteException('forbidden', 403));
-
-    await expect(repository.allocateCorrelativo(2026)).rejects.toMatchObject({ code: 403 });
   });
 });

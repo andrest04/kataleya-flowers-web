@@ -8,9 +8,12 @@ import { sendComplaintEmails } from '../email/sendComplaintEmails';
 import { complaintSubmitSchema } from '../schemas/complaint';
 import type { ComplaintSubmitResult } from '../types';
 import { formatComplaintNumber } from '../utils/format';
-import { checkComplaintRateLimit, getClientIp } from '../utils/rateLimit';
+import {
+  getClientKey,
+  isComplaintSubmissionAllowed,
+  isConsumerCopyAllowed,
+} from '../utils/rateLimit';
 
-// Libro de Reclamaciones: legally public, protected by rate limiting + BotID
 // react-doctor-disable-next-line react-doctor/server-auth-actions
 export async function submitComplaint(
   input: unknown,
@@ -24,15 +27,6 @@ export async function submitComplaint(
     };
   }
 
-  const ip = await getClientIp();
-  if (!checkComplaintRateLimit(ip)) {
-    return {
-      success: false,
-      error: 'Alcanzaste el límite de reclamos por ahora. Intenta de nuevo en unos minutos.',
-      code: 'RATE_LIMITED',
-    };
-  }
-
   const parsed = complaintSubmitSchema.safeParse(input);
   if (!parsed.success) {
     return {
@@ -40,6 +34,14 @@ export async function submitComplaint(
       error: 'Revisa los datos del formulario.',
       code: 'VALIDATION',
       issues: parsed.error.issues,
+    };
+  }
+
+  if (!(await isComplaintSubmissionAllowed(await getClientKey()))) {
+    return {
+      success: false,
+      error: 'Alcanzaste el límite de reclamos por ahora. Intenta de nuevo en unos minutos.',
+      code: 'RATE_LIMITED',
     };
   }
 
@@ -69,9 +71,11 @@ export async function submitComplaint(
 
     const complaintNumber = formatComplaintNumber(created.correlativo, created.createdAt);
 
+    const includeConsumerCopy = await isConsumerCopyAllowed(data.consumerEmail);
     const emailSent = await sendComplaintEmails(
       { ...data, complaintNumber, createdAt: created.createdAt },
       created.id,
+      { includeConsumerCopy },
     );
 
     return {

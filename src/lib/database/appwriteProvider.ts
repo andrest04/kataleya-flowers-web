@@ -8,6 +8,7 @@ import { ConflictError } from './errors';
 import type {
   BulkDeleteOperation,
   BulkUpdateOperation,
+  CreateOptions,
   DocumentRecord,
   DocumentStore,
   QuerySpec,
@@ -16,11 +17,23 @@ import type {
 
 const APPWRITE_PAGE_SIZE = 100;
 
+function isAppwriteErrorWithCode(error: unknown, code: number): boolean {
+  return error instanceof AppwriteException && error.code === code;
+}
+
 function throwMappedWriteError(error: unknown): never {
-  if (error instanceof AppwriteException && error.code === 409) {
+  if (isAppwriteErrorWithCode(error, 409)) {
     throw new ConflictError();
   }
   throw error;
+}
+
+function readNumericAttribute(doc: Models.Document, attribute: string): number {
+  const value = (doc as unknown as Record<string, unknown>)[attribute];
+  if (typeof value !== 'number') {
+    throw new Error(`[database] attribute ${attribute} of ${doc.$id} is not numeric`);
+  }
+  return value;
 }
 
 function getContext(): {
@@ -113,8 +126,9 @@ class AppwriteDocumentStore implements DocumentStore {
     try {
       const doc = await databases.getDocument({ databaseId, collectionId, documentId: id });
       return toRecord<T>(doc);
-    } catch {
-      return null;
+    } catch (error) {
+      if (isAppwriteErrorWithCode(error, 404)) return null;
+      throw error;
     }
   }
 
@@ -122,6 +136,7 @@ class AppwriteDocumentStore implements DocumentStore {
     collectionId: string,
     id: string,
     data: Record<string, unknown>,
+    options?: CreateOptions,
   ): Promise<T> {
     const { databases, databaseId } = getContext();
     try {
@@ -130,6 +145,7 @@ class AppwriteDocumentStore implements DocumentStore {
         collectionId,
         documentId: ID.custom(id),
         data,
+        ...(options?.permissions ? { permissions: options.permissions } : {}),
       });
       return toRecord<T>(doc);
     } catch (error) {
@@ -154,6 +170,56 @@ class AppwriteDocumentStore implements DocumentStore {
   async delete(collectionId: string, id: string): Promise<void> {
     const { databases, databaseId } = getContext();
     await databases.deleteDocument({ databaseId, collectionId, documentId: id });
+  }
+
+  async increment(
+    collectionId: string,
+    id: string,
+    attribute: string,
+    by: number,
+    createData: Record<string, unknown>,
+  ): Promise<number> {
+    const { databases, databaseId } = getContext();
+    const incrementExisting = async (): Promise<number> => {
+      const doc = await databases.incrementDocumentAttribute({
+        databaseId,
+        collectionId,
+        documentId: id,
+        attribute,
+        value: by,
+      });
+      return readNumericAttribute(doc, attribute);
+    };
+
+    try {
+      return await incrementExisting();
+    } catch (error) {
+      if (!isAppwriteErrorWithCode(error, 404)) throw error;
+    }
+
+    try {
+      const created = await databases.createDocument({
+        databaseId,
+        collectionId,
+        documentId: ID.custom(id),
+        data: { ...createData, [attribute]: by },
+        permissions: [],
+      });
+      return readNumericAttribute(created, attribute);
+    } catch (error) {
+      if (!isAppwriteErrorWithCode(error, 409)) throw error;
+    }
+
+    return incrementExisting();
+  }
+
+  async deleteExpired(collectionId: string, field: string, before: string, limit: number): Promise<void> {
+    const { databases, databaseId } = getContext();
+    await databases.deleteDocuments({
+      databaseId,
+      collectionId,
+      queries: [Query.lessThan(field, before), Query.limit(limit)],
+    });
   }
 
   async runInTransaction<T>(work: (tx: TransactionHandle) => Promise<T>): Promise<T> {
