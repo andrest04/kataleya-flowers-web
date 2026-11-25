@@ -24,7 +24,7 @@
 
 **Forecast:** 32 tasks, about 7470 authored changed lines. Lockfiles are excluded.
 
-**Progress:** 14/32 done.
+**Progress:** 22/32 done.
 
 **Sources:**
 - general audit workflow `wf_68c64c39-c2f`
@@ -46,14 +46,14 @@
 - [x] **T12** Remove binding-convention violations: the eslint-disable, production comments and the 550-line CatalogFilterSheet _(area conventions; about 640 lines; depends on T06, T11)_, commit `363662a`
 - [x] **T13** Load analytics only on public production pages, allow GA in the CSP, and move Toaster to the admin layout _(area performance; about 70 lines; depends on T12; approved flags: layout.tsx)_, commit `ca70147`
 - [x] **T14** Prerender catalog pages, sync filters with history.replaceState, and render every product link in server HTML _(area performance; about 300 lines; depends on T07, T12; approved flags: design-change)_, commit `f5011ff`
-- [ ] **T15** Send slim card DTOs to client components and compute best sellers on the server _(area performance; about 280 lines; depends on T14)_, commit `a1bd5a1`, **in_progress**: partial: navbar suggestions still send full Product; completing with extended surface
-- [ ] **T16** Lazy-load navbar overlays and load Framer Motion features asynchronously _(area performance; about 90 lines; depends on T13)_
-- [ ] **T17** Route local public images through the built-in optimizer instead of the passthrough loader _(area performance; about 40 lines; depends on T03)_
-- [ ] **T18** Remove /login and /buscar from the sitemap, noindex login, admin and query-bearing /buscar, and use real lastModified dates _(area seo; about 130 lines; depends on T10, T13, T15; approved flags: layout.tsx)_
-- [ ] **T19** Normalize the CMS website value to a single https origin and stop caching default settings on errors _(area seo; about 140 lines; depends on T08)_
-- [ ] **T20** Enrich Florist and Product JSON-LD (id, image, geo, hasMap, areaServed, sku, seller) from business constants, and drop empty images _(area seo; about 240 lines; depends on T07, T13, T15, T19; approved flags: layout.tsx)_
-- [ ] **T21** Add local intent to titles and H1s, trim descriptions on word boundaries, size product OG images, redirect recategorized products, and add a fallback home H1 _(area seo; about 200 lines; depends on T14, T15, T17, T20; approved flags: design-change)_
-- [ ] **T22** Carry admin-written image alt text through to the product gallery and lightbox _(area seo; about 110 lines; depends on T14, T15)_
+- [x] **T15** Send slim card DTOs to client components and compute best sellers on the server _(area performance; about 280 lines; depends on T14)_, commit `a1bd5a1 + cccfa68`
+- [x] **T16** Lazy-load navbar overlays and load Framer Motion features asynchronously _(area performance; about 90 lines; depends on T13)_, commit `b28a1f7`
+- [x] **T17** Route local public images through the built-in optimizer instead of the passthrough loader _(area performance; about 40 lines; depends on T03)_, commit `69f869d`
+- [x] **T18** Remove /login and /buscar from the sitemap, noindex login, admin and query-bearing /buscar, and use real lastModified dates _(area seo; about 130 lines; depends on T10, T13, T15; approved flags: layout.tsx)_, commit `99dcda3`
+- [x] **T19** Normalize the CMS website value to a single https origin and stop caching default settings on errors _(area seo; about 140 lines; depends on T08)_, commit `8767367`
+- [x] **T20** Enrich Florist and Product JSON-LD (id, image, geo, hasMap, areaServed, sku, seller) from business constants, and drop empty images _(area seo; about 240 lines; depends on T07, T13, T15, T19; approved flags: layout.tsx)_, commit `60e0fbc`
+- [x] **T21** Add local intent to titles and H1s, trim descriptions on word boundaries, size product OG images, redirect recategorized products, and add a fallback home H1 _(area seo; about 200 lines; depends on T14, T15, T17, T20; approved flags: design-change)_, commit `937cb53`
+- [x] **T22** Carry admin-written image alt text through to the product gallery and lightbox _(area seo; about 110 lines; depends on T14, T15)_, commit `4e00407`
 - [ ] **T23** Keep complaint form values on failed submit, focus the first invalid field, and print the consumer copy from a sandboxed iframe _(area a11y-ux; about 320 lines; depends on T06, T12; approved flags: design-change)_
 - [ ] **T24** Make complaint form widgets accessible and give each field an actionable error message _(area a11y-ux; about 200 lines; depends on T03, T23; approved flags: design-change)_
 - [ ] **T25** Complete the navbar search combobox pattern with keyboard support, add mega-menu keyboard access, and stop iOS zoom in the mobile search _(area a11y-ux; about 330 lines; depends on T16; approved flags: design-change)_
@@ -581,14 +581,16 @@ Fault injection (each change reverted with git checkout, nothing committed):
 
 **Commit:** `perf(catalog): send slim card DTOs to client components`
 
+**Evidence:** RED: I added a pickBestSellerCards describe block (2 tests) to src/features/catalog/utils/pickBestSellers.test.ts. Running `npx vitest run src/features/catalog/utils/pickBestSellers.test.ts` gave "TypeError: pickBestSellerCards is not a function": Tests 2 failed | 6 passed (8). GREEN: I implemented  | checks: npm run lint:strict: exit 0, no warnings or errors (eslint . --max-warnings 0); npx tsc --noEmit: exit 0, no output; npx vitest run: 49 test files passed, 667 tests passed; npx react-doctor@latest --verbose: score 87. 7 warnings, all in files outside this commit (Cata | verifier pass, tier medium | deploy: None. No schema, console or env changes.
+
 ### T16: Lazy-load navbar overlays and load Framer Motion features asynchronously
 
 **Observations:**
 - GEN:performance:Framer Motion features and the full Navbar overlay tree load eagerly on every public page
 
-**Approach:** Navbar/index.tsx:9-13 statically imports CatalogMenu, SearchOverlay and MobileDrawer, and CatalogMenu/index.tsx, SearchOverlay/index.tsx and SearchSuggestionsPanel.tsx each import domAnimation statically. (1) Load the three overlays with next/dynamic({ ssr: false }) and render each only after it first opens, keeping a hasOpened flag so closing animations still run. Prefetch on pointerenter or focus of their triggers by calling the dynamic import. (2) New src/components/shared/motionFeatures.ts default-exports domAnimation. Each LazyMotion uses features={() => import('@/components/shared/motionFeatures').then((m) => m.default)}, which keeps the LazyMotion + m rule.
+**Approach:** Navbar/index.tsx:9-13 statically imports CatalogMenu, SearchOverlay and MobileDrawer, and CatalogMenu/index.tsx, SearchOverlay/index.tsx and SearchSuggestionsPanel.tsx each import domAnimation statically. (1) Load the three overlays with next/dynamic({ ssr: false }) and render each only after it first opens, keeping a hasOpened flag so closing animations still run. Prefetch on pointerenter or focus of their triggers by calling the dynamic import. (2) New src/components/shared/motionFeatures.ts default-exports domAnimation. Each LazyMotion uses features={() => import('@/components/shared/motionFeatures').then((m) => m.default)}, which keeps the LazyMotion + m rule. Surface extended under the user standing authorization: src/features/landing/components/BestSellersSection/BestSellersTabs.tsx, src/components/ui/LightboxDialog.tsx.
 
-**Files:** `src/components/shared/Navbar/index.tsx`, `src/components/shared/Navbar/CatalogMenu/index.tsx`, `src/components/shared/Navbar/SearchOverlay/index.tsx`, `src/components/shared/Navbar/SearchOverlay/SearchSuggestionsPanel.tsx`, `src/components/shared/motionFeatures.ts`
+**Files:** `src/components/shared/Navbar/index.tsx`, `src/components/shared/Navbar/CatalogMenu/index.tsx`, `src/components/shared/Navbar/SearchOverlay/index.tsx`, `src/components/shared/Navbar/SearchOverlay/SearchSuggestionsPanel.tsx`, `src/components/shared/motionFeatures.ts`, `src/features/landing/components/BestSellersSection/BestSellersTabs.tsx`, `src/components/ui/LightboxDialog.tsx`
 
 **New files allowed in:** `src/components/shared`
 
@@ -604,6 +606,9 @@ Fault injection (each change reverted with git checkout, nothing committed):
 **Risk:** Low-medium. On a slow network, the first open may lag if the prefetch does not fire. T25 must account for the deferred mount.
 
 **Commit:** `perf(navbar): lazy-load overlays and motion features`
+
+**Evidence:** No meaningful RED is possible. This change is about how code is bundled and loaded, and vitest runs without a DOM, so no deterministic unit test can observe it. I ran the proportional checks instead: lint, tsc, vitest, react-doctor, and the rg check for domAnimation. I did not do the in-browser dev  | checks: npm run lint:strict: exit 0, no warnings; npx tsc --noEmit: exit 0; npx vitest run: 49 files, 667 tests passed; npm run doctor: exit 1, score 67/100. The 2 errors are both react-doctor/eff; npx react-doctor@0.9.23 --verbose: exit 0, score 87/100. 7 warnings, all in files outside this ; rg -n "domAnimation": Only src/components/shared/motionFeatures.ts (lines 1 and 3) | verifier pass, tier medium | surface extended: 1. I reused the previous writer's uncommitted in-surface work as it was.
+2. Under the extended surface, I applied the sa | deploy: No deploy steps. One risk: useMobileDrawer focuses the search input 150 ms after the drawer opens. If the drawer chunk was not prefetched and loads slower than that on the first open, the input does not get focus. Radix still moves focus into the dialog when it mounts. T25 has to account for overlay
 
 ### T17: Route local public images through the built-in optimizer instead of the passthrough loader
 
@@ -626,6 +631,8 @@ Fault injection (each change reverted with git checkout, nothing committed):
 **Risk:** Low. It spends a little of the Vercel image optimization quota on a few static assets.
 
 **Commit:** `perf(images): optimize local public images with next/image`
+
+**Evidence:** RED: added isStoredImageSrc/isLocalAssetSrc cases to src/lib/imageLoader.test.ts (APPWRITE_* stubbed empty); `npx vitest run src/lib/imageLoader.test.ts` -> 13 failed | 5 passed, "TypeError: isStoredImageSrc is not a function" / "isLocalAssetSrc is not a function". GREEN: after implementing exports  | checks: npm run lint:strict: exit 0, no warnings; npx tsc --noEmit: exit 0; npx vitest run: 49 files passed, 680 tests passed; npx react-doctor@latest --verbose: score 87; no diagnostics reference StoredImage.tsx or imageL | verifier pass, tier medium | deploy: No config or schema changes. Local raster assets such as /libro-reclamaciones-indecopi.png and the /images fallbacks now use Vercel Image Optimization, which uses a small amount of quota. Pending manual check: in dev, confirm the footer badge loads from /_next/image?url=%2Flibro-reclamaciones-indeco
 
 ### T18: Remove /login and /buscar from the sitemap, noindex login, admin and query-bearing /buscar, and use real lastModified dates
 
@@ -655,6 +662,8 @@ Fault injection (each change reverted with git checkout, nothing committed):
 
 **Commit:** `fix(seo): clean the sitemap and noindex auth, admin and search`
 
+**Evidence:** RED: I wrote src/lib/sitemapEntries.test.ts first. Running `npx vitest run src/lib/sitemapEntries.test.ts` failed with "Failed to resolve import ./sitemapEntries" (Test Files 1 failed, no tests ran) because the helper did not exist yet. GREEN: I added src/lib/sitemapEntries.ts and the same command p | checks: npm run lint:strict: exit 0, no warnings; npx tsc --noEmit: exit 0, no errors; npx vitest run: Test Files 50 passed (50), Tests 688 passed (688); npx playwright test: Total: 100 tests in 16 files, exit 0; the new and renamed T1; npx react-doctor@latest --verbose: Score 87, the same as the baseline (87) measured with my tra | verifier pass, tier medium | deploy: No schema or console prerequisites. After deployment robots.txt no longer contains 'Disallow: /login', so Googlebot can crawl /login and read its noindex. /admin/ and /api/ are still disallowed. If Search Console flagged /login as 'Indexed, though blocked by robots.txt', it should clear once Google 
+
 ### T19: Normalize the CMS website value to a single https origin and stop caching default settings on errors
 
 **Observations:**
@@ -678,6 +687,8 @@ Fault injection (each change reverted with git checkout, nothing committed):
 **Risk:** Low. During an Appwrite outage, each request retries Appwrite instead of serving cached defaults, which costs slightly more under failure.
 
 **Commit:** `fix(seo): normalize the site origin and stop caching error defaults`
+
+**Evidence:** RED (observed before implementation, `npx vitest run` on the 3 target test files): Test Files 3 failed, Tests 8 failed | 21 passed. siteOrigin.test.ts failed with "Cannot find module './siteOrigin'". In siteSettings.test.ts the website normalization cases failed, for example "expected 'https://www.k | checks: npm run lint:strict: exit 0, eslint --max-warnings 0 clean; npx tsc --noEmit: exit 0, no errors; npx vitest run: exit 0, Test Files 52 passed (52), Tests 716 passed (716) | verifier pass, tier medium | deploy: No schema or console change needed. Rows already stored with a trailing slash, http or a path are normalized when read, and unparseable values fall back to BUSINESS.website. The next admin save also writes the normalized origin. Expected cost: during an Appwrite outage each request calls the reposit
 
 ### T20: Enrich Florist and Product JSON-LD (id, image, geo, hasMap, areaServed, sku, seller) from business constants, and drop empty images
 
@@ -705,6 +716,8 @@ Fault injection (each change reverted with git checkout, nothing committed):
 **Risk:** Low. Coordinates parsed from the embed URL depend on the owner's maps paste. The owner validates the result with Google's Rich Results Test after deploy.
 
 **Commit:** `feat(seo): enrich Florist and Product structured data`
+
+**Evidence:** RED: I wrote src/lib/structuredData.test.ts before the module existed. `npx vitest run src/lib/structuredData.test.ts` reported "Test Files 1 failed (1), Tests no tests" because the import of './structuredData' could not be resolved. GREEN: after I added BUSINESS.postalAddress and src/lib/structured | checks: npm run lint:strict: exit 0, no warnings; npx tsc --noEmit: exit 0; npx vitest run: 53 files / 728 tests passed, exit 0; npx playwright test: Total: 101 tests in 16 files, exit 0; it lists the new 'JSON; npx react-doctor@latest --verbose: score 87; 7 warnings, all in files outside this task (script | verifier pass, tier medium | deploy: No schema or console change is needed. The owner should confirm BUSINESS.postalAddress.district, postalCode and googleBusinessProfileUrl in src/lib/constants.ts; they stay null and are left out until then. geo and hasMap come from the site settings mapsEmbedUrl: if the owner pastes a map URL with no
 
 ### T21: Add local intent to titles and H1s, trim descriptions on word boundaries, size product OG images, redirect recategorized products, and add a fallback home H1
 
@@ -735,14 +748,16 @@ Fault injection (each change reverted with git checkout, nothing committed):
 
 **Commit:** `feat(seo): add local intent, sized OG images and category redirects`
 
+**Evidence:** RED: I wrote both test files first and ran `npx vitest run src/lib/seoText.test.ts src/lib/imageLoader.test.ts`. Result: 2 failed files, 3 failed tests, 18 passed. seoText.test.ts failed with "Error: Cannot find module './seoText'". The 3 ogImageUrl tests failed with "TypeError: ogImageUrl is not a  | checks: npm run lint:strict: exit 0, no warnings or errors; npx tsc --noEmit: exit 0, no errors; npx vitest run: 54 files passed, 738 tests passed, exit 0; npx react-doctor@latest --verbose: score 87; 7 warnings, all in files outside this change (scri | verifier pass, tier medium | deploy: No schema or console changes. Product and category titles change, which resets some search-result snippets. A 308 is cached by browsers, but it fires only for an existing active product in an active category. Redirects from an old product slug are still out of scope; they would need a previous_slugs
+
 ### T22: Carry admin-written image alt text through to the product gallery and lightbox
 
 **Observations:**
 - GEN:seo:Alt text the admin writes for product images is saved but never shown; the public site uses generic or empty alts
 
-**Approach:** products/mappers.ts:32-38 deriveProductImages drops altText, although fetchRelated already loads it. Return { imageUrl, imageAlt, gallery, galleryAlts }, and add imageAlt?: string and imageAlts?: string[] (aligned with images) to the repository Product and to the catalog Product, through mapProductRow. ProductGallery.tsx uses the stored alt, falls back to `${name} - foto ${i + 1}` or the name, and passes it to LightboxDialog. Listing cards keep alt='' because their text already names the product, and CatalogCardProduct is unchanged.
+**Approach:** products/mappers.ts:32-38 deriveProductImages drops altText, although fetchRelated already loads it. Return { imageUrl, imageAlt, gallery, galleryAlts }, and add imageAlt?: string and imageAlts?: string[] (aligned with images) to the repository Product and to the catalog Product, through mapProductRow. ProductGallery.tsx uses the stored alt, falls back to `${name} - foto ${i + 1}` or the name, and passes it to LightboxDialog. Listing cards keep alt='' because their text already names the product, and CatalogCardProduct is unchanged. Surface extended under the user standing authorization: src/app/(public)/catalogo/[categoria]/[slug]/page.tsx.
 
-**Files:** `src/lib/database/repositories/products/mappers.ts`, `src/lib/database/repositories/products/mappers.test.ts`, `src/lib/database/repositories/products/types.ts`, `src/features/catalog/types/index.ts`, `src/features/catalog/queries/mappers.ts`, `src/features/catalog/components/ProductGallery.tsx`, `src/components/ui/LightboxDialog.tsx`
+**Files:** `src/lib/database/repositories/products/mappers.ts`, `src/lib/database/repositories/products/mappers.test.ts`, `src/lib/database/repositories/products/types.ts`, `src/features/catalog/types/index.ts`, `src/features/catalog/queries/mappers.ts`, `src/features/catalog/components/ProductGallery.tsx`, `src/components/ui/LightboxDialog.tsx`, `src/app/(public)/catalogo/[categoria]/[slug]/page.tsx`
 
 **Test plan:** RED/GREEN with vitest. Extend mappers.test.ts so deriveProductImages returns the primary image's altText as imageAlt and the gallery alts in display order. RED today, because alt text is not returned.
 
@@ -755,6 +770,8 @@ Fault injection (each change reverted with git checkout, nothing committed):
 **Risk:** Low.
 
 **Commit:** `fix(catalog): render admin-written alt text in the product gallery`
+
+**Evidence:** RED: I extended mappers.test.ts so deriveProductImages must return imageAlt and galleryAlts, and toProduct must expose imageAlt and imageAlts. Running `npx vitest run src/lib/database/repositories/products/mappers.test.ts` gave "Tests 8 failed | 6 passed (14)", for example "expected undefined to be  | checks: npm run lint:strict: exit 0, no warnings (eslint . --max-warnings 0); npx tsc --noEmit: exit 0; npx vitest run: 54 files passed, 740 tests passed, exit 0; npx react-doctor@latest --score: 67 before and 67 after: no regression; npx react-doctor@latest --verbose: 7 warnings, all in files this task did not touch (the Catalo | verifier pass, tier medium | surface extended: 1) I also edited src/app/(public)/catalogo/[categoria]/[slug]/page.tsx, a surface extension authorized by the parent, so | deploy: No schema or console changes. Alt text is already stored in product images and loaded by fetchRelated.
 
 ### T23: Keep complaint form values on failed submit, focus the first invalid field, and print the consumer copy from a sandboxed iframe
 
@@ -1082,4 +1099,4 @@ Forecast is about 7,400 authored lines. Tasks over the 400-line advisory, kept w
 
 ## Next step
 
-T15: Send slim card DTOs to client components and compute best sellers on the server
+T23: Keep complaint form values on failed submit, focus the first invalid field, and print the consumer copy from a sandboxed iframe
