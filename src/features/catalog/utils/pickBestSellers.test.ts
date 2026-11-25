@@ -2,7 +2,12 @@ import { describe, expect, it } from 'vitest';
 
 import type { Product } from '@/features/catalog/types';
 
-import { BEST_SELLERS_ALL_TAB, buildBestSellersByTab, pickBestSellers } from './pickBestSellers';
+import {
+  BEST_SELLERS_ALL_TAB,
+  buildBestSellersByTab,
+  pickBestSellerCards,
+  pickBestSellers,
+} from './pickBestSellers';
 
 function makeProduct(id: string, categoryId: string, overrides: Partial<Product> = {}): Product {
   return {
@@ -38,6 +43,23 @@ describe('pickBestSellers', () => {
 
   it('falls back to the first products when none are featured', () => {
     expect(pickBestSellers(roses).map(({ id }) => id)).toEqual(['r0', 'r1', 'r2', 'r3']);
+  });
+});
+
+describe('pickBestSellerCards', () => {
+  it('returns at most four slim card products without detail-only fields', () => {
+    const cards = pickBestSellerCards(roses);
+
+    expect(cards.map(({ id }) => id)).toEqual(['r0', 'r1', 'r2', 'r3']);
+    for (const card of cards) {
+      for (const key of ['description', 'images', 'includes', 'note', 'occasion']) {
+        expect(card).not.toHaveProperty(key);
+      }
+    }
+  });
+
+  it('prefers featured products', () => {
+    expect(pickBestSellerCards(products).map(({ id }) => id)).toEqual(['o1']);
   });
 });
 

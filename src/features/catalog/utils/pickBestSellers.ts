@@ -15,17 +15,19 @@ export function pickBestSellers<T extends Pick<Product, 'isFeatured'>>(
   return (featured.length > 0 ? featured : products).slice(0, max);
 }
 
+export function pickBestSellerCards(products: Product[]): CatalogCardProduct[] {
+  return pickBestSellers(products).map(toCatalogCardProduct);
+}
+
 export function buildBestSellersByTab(
   products: Product[],
   tabCategories: Pick<Category, 'id'>[],
 ): BestSellersByTab {
-  const toCards = (scoped: Product[]) => pickBestSellers(scoped).map(toCatalogCardProduct);
-
   return Object.fromEntries([
-    [BEST_SELLERS_ALL_TAB, toCards(products)],
+    [BEST_SELLERS_ALL_TAB, pickBestSellerCards(products)],
     ...tabCategories.map(({ id }) => [
       id,
-      toCards(products.filter((product) => product.categoryId === id)),
+      pickBestSellerCards(products.filter((product) => product.categoryId === id)),
     ]),
   ]);
 }
