@@ -29,7 +29,9 @@ export interface Product {
   description: string;
   price: number;
   imageUrl: string;
+  imageAlt?: string;
   images: string[];
+  imageAlts?: string[];
   includes: string[];
   colors: string[];
   flowerTypes: string[];

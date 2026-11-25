@@ -212,7 +212,9 @@ export default async function ProductoPage({
         <div className="grid grid-cols-1 lg:grid-cols-[4fr_3fr] gap-8 lg:gap-x-[5%]">
           <ProductGallery
             imageUrl={product.imageUrl}
+            imageAlt={product.imageAlt}
             images={product.images}
+            imageAlts={product.imageAlts}
             name={product.name}
           />
 

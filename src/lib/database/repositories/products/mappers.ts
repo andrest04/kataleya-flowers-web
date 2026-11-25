@@ -29,13 +29,27 @@ export interface RelatedData {
   imagesByProduct: Map<string, ProductImage[]>;
 }
 
-export function deriveProductImages(
-  images: ProductImage[],
-): { imageUrl: string; gallery: string[] } {
+export interface DerivedProductImages {
+  imageUrl: string;
+  imageAlt: string;
+  gallery: string[];
+  galleryAlts: string[];
+}
+
+function altOf(image: ProductImage | undefined): string {
+  return image?.altText?.trim() ?? '';
+}
+
+export function deriveProductImages(images: ProductImage[]): DerivedProductImages {
   const sorted = [...images].sort((a, b) => a.displayOrder - b.displayOrder);
   const primary = sorted.find((image) => image.isPrimary) ?? sorted[0];
-  const gallery = sorted.flatMap((image) => (image.isPrimary ? [] : [image.url]));
-  return { imageUrl: primary?.url ?? '', gallery };
+  const galleryImages = sorted.filter((image) => !image.isPrimary);
+  return {
+    imageUrl: primary?.url ?? '',
+    imageAlt: altOf(primary),
+    gallery: galleryImages.map((image) => image.url),
+    galleryAlts: galleryImages.map(altOf),
+  };
 }
 
 function isPriceVariant(value: unknown): value is PriceVariant {
@@ -58,7 +72,7 @@ export function toProduct(doc: ProductDocRecord, related: RelatedData): Product 
   const colorAssignments = related.colorAssignmentsByProduct.get(doc.id) ?? [];
   const flowerTypeAssignments = related.flowerAssignmentsByProduct.get(doc.id) ?? [];
   const productImages = related.imagesByProduct.get(doc.id) ?? [];
-  const { imageUrl, gallery } = deriveProductImages(productImages);
+  const { imageUrl, imageAlt, gallery, galleryAlts } = deriveProductImages(productImages);
 
   return {
     id: doc.id,
@@ -68,7 +82,9 @@ export function toProduct(doc: ProductDocRecord, related: RelatedData): Product 
     description: doc.description,
     price: doc.price,
     imageUrl,
+    imageAlt,
     images: gallery,
+    imageAlts: galleryAlts,
     includes: doc.includes ?? [],
     colors: colorAssignments.flatMap((assignment) => (assignment.color ? [assignment.color.name] : [])),
     flowerTypes: flowerTypeAssignments.flatMap((assignment) =>

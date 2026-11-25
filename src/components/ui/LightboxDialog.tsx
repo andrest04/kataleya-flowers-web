@@ -16,6 +16,7 @@ interface LightboxDialogProps {
   images: string[];
   initialIndex?: number;
   alt: string;
+  alts?: string[];
 }
 
 const SWIPE_THRESHOLD = 50;
@@ -36,6 +37,7 @@ function LightboxInner({
   images,
   initialIndex = 0,
   alt,
+  alts,
 }: LightboxDialogProps) {
   const safeImages = images.length > 0 ? images : [];
   const [index, setIndex] = useState(() => clampIndex(initialIndex, safeImages.length));
@@ -96,6 +98,8 @@ function LightboxInner({
   if (total === 0) return null;
   const currentSrc = safeImages[index];
   if (!currentSrc) return null;
+  const currentAlt =
+    alts?.[index]?.trim() || (hasMultiple ? `${alt} (${index + 1} de ${total})` : alt);
 
   return (
     <LazyMotion features={loadMotionFeatures}>
@@ -134,7 +138,7 @@ function LightboxInner({
                   <div className="relative w-full h-full max-w-5xl max-h-[85vh]">
                     <Image
                       src={currentSrc}
-                      alt={hasMultiple ? `${alt} (${index + 1} de ${total})` : alt}
+                      alt={currentAlt}
                       fill
                       sizes="(max-width: 1024px) 100vw, 80vw"
                       className="object-contain select-none"

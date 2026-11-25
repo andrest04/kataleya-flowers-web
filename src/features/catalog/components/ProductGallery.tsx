@@ -8,12 +8,38 @@ import Image from '@/components/ui/StoredImage';
 
 interface ProductGalleryProps {
   imageUrl: string;
+  imageAlt?: string;
   images?: string[];
+  imageAlts?: string[];
   name: string;
 }
 
-export function ProductGallery({ imageUrl, images, name }: ProductGalleryProps) {
-  const allImages = images && images.length > 0 ? [imageUrl, ...images] : [imageUrl];
+function resolveAlts(
+  storedAlts: (string | undefined)[],
+  total: number,
+  name: string,
+): string[] {
+  return Array.from({ length: total }, (_, i) => {
+    const stored = storedAlts[i]?.trim();
+    if (stored) return stored;
+    return total > 1 ? `${name} - foto ${i + 1}` : name;
+  });
+}
+
+export function ProductGallery({
+  imageUrl,
+  imageAlt,
+  images,
+  imageAlts,
+  name,
+}: ProductGalleryProps) {
+  const hasGallery = images !== undefined && images.length > 0;
+  const allImages = hasGallery ? [imageUrl, ...images] : [imageUrl];
+  const allAlts = resolveAlts(
+    hasGallery ? [imageAlt, ...images.map((_, i) => imageAlts?.[i])] : [imageAlt],
+    allImages.length,
+    name,
+  );
   const [index, setIndex] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const hasMultiple = allImages.length > 1;
@@ -75,7 +101,7 @@ export function ProductGallery({ imageUrl, images, name }: ProductGalleryProps) 
             >
               <Image
                 src={src}
-                alt={`${name} - foto ${i + 1}`}
+                alt={allAlts[i] ?? name}
                 fill
                 preload={i === 0}
                 sizes="(max-width: 1024px) 100vw, 50vw"
@@ -127,6 +153,7 @@ export function ProductGallery({ imageUrl, images, name }: ProductGalleryProps) 
         open={lightboxOpen}
         onOpenChange={setLightboxOpen}
         images={allImages}
+        alts={allAlts}
         initialIndex={index}
         alt={name}
       />
