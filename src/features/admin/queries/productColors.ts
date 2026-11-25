@@ -1,8 +1,6 @@
 import { requireAdmin } from '@/features/admin/utils/auth';
 import { type ColorRepoRow, taxonomyRepository } from '@/lib/database/repositories/taxonomy';
-import type { ProductColorRow } from '@/lib/db/rows';
 
-export type { ProductColorRow };
 export type { ColorRepoRow };
 
 export async function getProductColors(): Promise<ColorRepoRow[]> {

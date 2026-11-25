@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 import { cache } from 'react';
-import type { ZodIssue, ZodSchema } from 'zod';
+import type { ZodIssue } from 'zod';
 
 import type { AuthUser } from '@/lib/auth';
 import { auth, AuthError } from '@/lib/auth';
@@ -61,45 +61,5 @@ export function failureFromUnknown(err: unknown): AdminActionFailure {
     success: false,
     error: 'No se pudo completar la operación. Intenta de nuevo en unos minutos.',
     code: 'INTERNAL',
-  };
-}
-
-export function withAdminAuth<TInput, TOutput extends { success: boolean }>(
-  schema: ZodSchema<TInput> | null,
-) {
-  return function bind(
-    fn: (input: TInput, ctx: AdminActionContext) => Promise<TOutput>,
-  ): (input: unknown) => Promise<TOutput | AdminActionFailure> {
-    return async (rawInput: unknown) => {
-      let ctx: AdminActionContext;
-      try {
-        ctx = await requireAdmin();
-      } catch (err) {
-        return failureFromUnknown(err);
-      }
-
-      let parsed: TInput;
-      if (schema) {
-        const result = schema.safeParse(rawInput);
-        if (!result.success) {
-          console.warn('[admin-action] validation failed:', result.error.issues);
-          return {
-            success: false,
-            error: 'Datos inválidos. Revisa el formulario.',
-            code: 'VALIDATION',
-            issues: result.error.issues,
-          };
-        }
-        parsed = result.data;
-      } else {
-        parsed = rawInput as TInput;
-      }
-
-      try {
-        return await fn(parsed, ctx);
-      } catch (err) {
-        return failureFromUnknown(err) as TOutput | AdminActionFailure;
-      }
-    };
   };
 }

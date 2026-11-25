@@ -11,7 +11,7 @@ import { createHeroSlide, updateHeroSlide } from '@/features/admin/actions/heroS
 import CoverDialog from '@/features/admin/components/CoverEditor/CoverDialog';
 import { HERO_COVER_CROP } from '@/features/admin/components/CoverEditor/profile';
 import { useImageUpload } from '@/features/admin/hooks/useImageUpload';
-import type { HeroCtaType } from '@/lib/db/rows';
+import type { HeroCtaType } from '@/lib/database/repositories/heroSlides';
 
 import Canvas from './Canvas';
 import HeroLiveFrame from './HeroLiveFrame';
