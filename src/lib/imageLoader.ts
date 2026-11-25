@@ -27,3 +27,16 @@ export default function storedImageLoader({ src, width, quality }: StoredImageLo
   url.searchParams.set('output', 'webp');
   return url.toString();
 }
+
+export function ogImageUrl(src: string, width: number, height: number): string {
+  if (!isStoredImageSrc(src)) return src;
+
+  const url = new URL(src);
+  url.pathname = url.pathname.replace(/\/view$/, '/preview');
+  url.searchParams.set('width', String(width));
+  url.searchParams.set('height', String(height));
+  url.searchParams.set('gravity', 'center');
+  url.searchParams.set('quality', String(DEFAULT_QUALITY));
+  url.searchParams.set('output', 'jpg');
+  return url.toString();
+}

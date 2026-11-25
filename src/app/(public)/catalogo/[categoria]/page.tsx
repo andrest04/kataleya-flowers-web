@@ -11,6 +11,8 @@ import { getProductColors } from "@/features/catalog/queries/getProductColors";
 import { getProductsByCategory } from "@/features/catalog/queries/getProductsByCategory";
 import { toCatalogCardProduct } from "@/features/catalog/utils/toCatalogCardProduct";
 import { getSiteSettings } from "@/features/settings/queries/getSiteSettings";
+import { BUSINESS } from "@/lib/constants";
+import { truncateOnWord } from "@/lib/seoText";
 import { floralArrangementsSeoDescription } from "@/lib/siteSettings";
 
 export const revalidate = 3600;
@@ -46,17 +48,18 @@ export async function generateMetadata({
       };
     }
 
-    const description = category.description.slice(0, 160);
+    const description = truncateOnWord(category.description, 160);
     const ogImages = category.imageUrl ? [category.imageUrl] : undefined;
+    const title = `${category.name} a domicilio en ${BUSINESS.postalAddress.locality}`;
 
     return {
-      title: `${category.name} | Catálogo`,
+      title,
       description,
       alternates: {
         canonical: `/catalogo/${categoria}`,
       },
       openGraph: {
-        title: `${category.name} | Catálogo`,
+        title,
         description,
         url: `/catalogo/${categoria}`,
         type: "website",
@@ -64,7 +67,7 @@ export async function generateMetadata({
       },
       twitter: {
         card: "summary_large_image",
-        title: `${category.name} | Catálogo`,
+        title,
         description,
         images: ogImages,
       },

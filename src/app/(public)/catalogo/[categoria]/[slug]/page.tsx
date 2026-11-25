@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import React from "react";
 
 import Breadcrumb from "@/components/ui/Breadcrumb";
@@ -10,18 +10,40 @@ import CatalogCollectionCard from "@/features/catalog/components/CatalogCollecti
 import { ProductGallery } from "@/features/catalog/components/ProductGallery";
 import { ProductPurchasePanel } from "@/features/catalog/components/ProductPurchasePanel";
 import { getCategories } from "@/features/catalog/queries/getCategories";
+import { getProductBySlug } from "@/features/catalog/queries/getProductBySlug";
 import { getProducts } from "@/features/catalog/queries/getProducts";
 import { getProductsByCategory } from "@/features/catalog/queries/getProductsByCategory";
 import { resolveProductRoute } from "@/features/catalog/queries/resolveProductRoute";
 import { toCatalogCardProduct } from "@/features/catalog/utils/toCatalogCardProduct";
 import { getSiteSettings } from "@/features/settings/queries/getSiteSettings";
+import { BUSINESS } from "@/lib/constants";
+import { ogImageUrl } from "@/lib/imageLoader";
+import { truncateOnWord } from "@/lib/seoText";
 import { floralArrangementsSeoDescription } from "@/lib/siteSettings";
 import { buildProductJsonLd, productImageUrls } from "@/lib/structuredData";
 
 export const revalidate = 3600;
 
+const PRODUCT_SLUG_PATTERN = /^[a-z0-9-]{1,120}$/;
+const OG_IMAGE_WIDTH = 1200;
+const OG_IMAGE_HEIGHT = 630;
+const OG_IMAGE_LIMIT = 3;
+
 interface ProductoPageProps {
   params: Promise<{ categoria: string; slug: string }>;
+}
+
+async function findCanonicalProductPath(slug: string): Promise<string | null> {
+  if (!PRODUCT_SLUG_PATTERN.test(slug)) return null;
+
+  const [product, categories] = await Promise.all([
+    getProductBySlug(slug),
+    getCategories(),
+  ]);
+  if (!product) return null;
+
+  const actualCategory = categories.find((category) => category.id === product.categoryId);
+  return actualCategory ? `/catalogo/${actualCategory.slug}/${product.slug}` : null;
 }
 
 export async function generateStaticParams(): Promise<
@@ -68,9 +90,16 @@ export async function generateMetadata({
     }
 
     const { category, product } = route;
-    const description = product.description.slice(0, 160);
-    const productImages = productImageUrls(product);
-    const titleBase = `${product.name} | ${category.name}`;
+    const description = truncateOnWord(product.description, 160);
+    const ogImages = productImageUrls(product)
+      .slice(0, OG_IMAGE_LIMIT)
+      .map((url) => ({
+        url: ogImageUrl(url, OG_IMAGE_WIDTH, OG_IMAGE_HEIGHT),
+        width: OG_IMAGE_WIDTH,
+        height: OG_IMAGE_HEIGHT,
+        alt: product.name,
+      }));
+    const titleBase = `${product.name} | Flores en ${BUSINESS.postalAddress.locality}`;
     const canonicalPath = `/catalogo/${category.slug}/${product.slug}`;
 
     return {
@@ -84,13 +113,13 @@ export async function generateMetadata({
         description,
         type: "website",
         url: canonicalPath,
-        images: productImages,
+        images: ogImages,
       },
       twitter: {
         card: "summary_large_image",
         title: titleBase,
         description,
-        images: productImages.slice(0, 1),
+        images: ogImages.slice(0, 1),
       },
     };
   } catch {
@@ -113,6 +142,10 @@ export default async function ProductoPage({
   ]);
 
   if (!route) {
+    const canonicalPath = await findCanonicalProductPath(slug);
+    if (canonicalPath) {
+      permanentRedirect(canonicalPath);
+    }
     notFound();
   }
 

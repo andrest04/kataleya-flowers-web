@@ -10,6 +10,7 @@ import { getProductColors } from '@/features/catalog/queries/getProductColors';
 import { getProducts } from '@/features/catalog/queries/getProducts';
 import { toCatalogCardProduct } from '@/features/catalog/utils/toCatalogCardProduct';
 import { getSiteSettings } from '@/features/settings/queries/getSiteSettings';
+import { BUSINESS } from '@/lib/constants';
 import { catalogSeoDescription } from '@/lib/siteSettings';
 
 function buildBreadcrumbLd(siteUrl: string) {
@@ -106,7 +107,7 @@ export default async function CatalogoPage(): Promise<ReactElement> {
       <div className="mx-auto max-w-8xl">
         <header className="mx-auto mb-10 max-w-3xl text-center sm:mb-12">
           <h1 className="text-balance font-heading text-4xl leading-tight text-(--color-primary) sm:text-5xl">
-            Flores para cada momento
+            Catálogo de flores y arreglos en {BUSINESS.postalAddress.locality}
           </h1>
         </header>
 
