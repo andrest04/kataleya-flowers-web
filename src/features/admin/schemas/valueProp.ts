@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import { isSafeSiteHref } from '@/lib/safeHref';
 import { isValuePropIconName } from '@/lib/valuePropIcons';
 import { isInstagramHref } from '@/lib/valuePropIdentity';
 
@@ -79,7 +80,7 @@ export const valuePropSchema = z
     if (
       !value.isAnchor
       && !value.isExternal
-      && (!value.href.startsWith('/') || value.href.startsWith('//'))
+      && (!value.href.startsWith('/') || !isSafeSiteHref(value.href))
     ) {
       ctx.addIssue({
         code: 'custom',

@@ -2,11 +2,14 @@ import { z } from 'zod';
 
 import { isDiscoverIconName } from '@/lib/discoverIcons';
 import { isOwnedStorageUrl } from '@/lib/imageStorage/ownership';
+import { isSafeSiteHref } from '@/lib/safeHref';
 
 import { nonEmptyString } from './common';
 
+const PUBLIC_SITE_IMAGE_PATH = /^\/images\/[A-Za-z0-9/_.-]+$/;
+
 export function isPublicSiteImagePath(value: string): boolean {
-  return value.startsWith('/') && !value.startsWith('//') && !value.includes('..');
+  return PUBLIC_SITE_IMAGE_PATH.test(value) && !value.includes('..');
 }
 
 export function isDiscoverTileImageUrl(value: string): boolean {
@@ -49,7 +52,11 @@ export const discoverTileSchema = z
       .string()
       .trim()
       .min(1, 'Campo obligatorio')
-      .max(2048, 'URL demasiado larga'),
+      .max(2048, 'URL demasiado larga')
+      .refine(
+        isSafeSiteHref,
+        'Usa una ruta del sitio como /catalogo, un ancla como #contacto o una URL que empiece con https://',
+      ),
     icon: z
       .string()
       .trim()

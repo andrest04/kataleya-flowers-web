@@ -5,18 +5,21 @@ const IFRAME_SRC =
 const PLACE_PATH = /\/maps\/place\/([^/?#]+)/;
 const SEARCH_PATH = /\/maps\/search\/([^/?#]+)/;
 
+const MAPS_SHORT_LINK_HOSTS: ReadonlySet<string> = new Set(['maps.app.goo.gl', 'goo.gl']);
+const MAPS_HOSTS: ReadonlySet<string> = new Set([
+  'google.com',
+  'www.google.com',
+  'maps.google.com',
+  'www.google.com.pe',
+  ...MAPS_SHORT_LINK_HOSTS,
+]);
+
 export function isMapsShortLinkHost(hostname: string): boolean {
-  const host = hostname.toLowerCase();
-  return host === 'maps.app.goo.gl' || host === 'goo.gl';
+  return MAPS_SHORT_LINK_HOSTS.has(hostname.toLowerCase());
 }
 
 export function isAllowedMapsHost(hostname: string): boolean {
-  const host = hostname.toLowerCase();
-  if (isMapsShortLinkHost(host)) return true;
-  if (host === 'google.com' || host.endsWith('.google.com')) return true;
-  if (/^(?:www\.|maps\.)?google\.com(?:\.[a-z]{2,3})?$/.test(host)) return true;
-  if (/^(?:www\.|maps\.)?google\.co\.[a-z]{2}$/.test(host)) return true;
-  return false;
+  return MAPS_HOSTS.has(hostname.toLowerCase());
 }
 
 export function extractMapsCandidate(raw: string): string {

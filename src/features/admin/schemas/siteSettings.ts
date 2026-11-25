@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { toMapsEmbedUrl } from '@/lib/mapsEmbed';
+import { isSafeSiteHref } from '@/lib/safeHref';
 import { isDerivedWhatsappCta } from '@/lib/siteSettings';
 
 import { email, nonEmptyString } from './common';
@@ -27,17 +29,6 @@ function isHttpUrl(value: string): boolean {
   }
 }
 
-function isCustomAnnouncementHref(value: string): boolean {
-  if (value.startsWith('/') && !value.startsWith('//')) return true;
-  if (value.startsWith('#') && value.length > 1) return true;
-  try {
-    const parsed = new URL(value);
-    return parsed.protocol === 'https:' && Boolean(parsed.hostname);
-  } catch {
-    return false;
-  }
-}
-
 const timeOfDay = z
   .string()
   .trim()
@@ -56,7 +47,7 @@ export const siteSettingsSchema = z
       .trim()
       .max(2048, 'URL demasiado larga')
       .refine(
-        (href) => !href || isDerivedWhatsappCta(href) || isCustomAnnouncementHref(href),
+        (href) => !href || isDerivedWhatsappCta(href) || isSafeSiteHref(href),
         'Usa WhatsApp (déjalo vacío), una ruta del sitio o una URL que empiece con https://',
       ),
     announcementCtaLabel: nonEmptyString,
@@ -97,7 +88,7 @@ export const siteSettingsSchema = z
       .trim()
       .min(1, 'Campo obligatorio')
       .max(2048, 'URL demasiado larga')
-      .refine(isHttpUrl, 'Usa una URL que empiece con https://'),
+      .transform((value) => toMapsEmbedUrl(value) ?? value),
     mapsLink: z
       .string()
       .trim()
@@ -142,6 +133,13 @@ export const siteSettingsSchema = z
       .max(500, 'Máximo 500 caracteres'),
   })
   .superRefine((value, ctx) => {
+    if (!value.mapsLink && toMapsEmbedUrl(value.mapsEmbedUrl) === null) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'Pega el link de Compartir de Google Maps',
+        path: ['mapsEmbedUrl'],
+      });
+    }
     if (
       value.announcementStartsAt
       && value.announcementEndsAt

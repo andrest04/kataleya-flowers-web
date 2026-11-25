@@ -1,4 +1,5 @@
 import { BUSINESS } from '@/lib/constants';
+import { isSafeSiteHref } from '@/lib/safeHref';
 import type { SiteSettings } from '@/lib/siteSettings';
 
 export const VALUE_PROP_INSTAGRAM_HREF = 'instagram';
@@ -108,6 +109,11 @@ function bindCopy(value: string, settings: SiteSettings, instagramBound: boolean
   return bound.replace(/@[\w.]+/g, settings.instagramHandle);
 }
 
+function bindHref(href: string, settings: SiteSettings): string {
+  const bound = bindIdentityText(href, settings);
+  return isSafeSiteHref(bound) ? bound : href;
+}
+
 function withMappedLinkLabel<T extends ValuePropIdentityFields>(
   item: T,
   mapped: T,
@@ -125,7 +131,7 @@ export function bindValuePropIdentity<T extends ValuePropIdentityFields>(
   const mapped = {
     ...item,
     description: bindCopy(item.description, settings, instagramBound),
-    href: instagramBound ? settings.instagram : bindIdentityText(item.href, settings),
+    href: instagramBound ? settings.instagram : bindHref(item.href, settings),
     isAnchor: instagramBound ? false : item.isAnchor,
     isExternal: instagramBound ? true : item.isExternal,
     title: bindCopy(item.title, settings, instagramBound),
