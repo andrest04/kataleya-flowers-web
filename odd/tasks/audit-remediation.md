@@ -24,7 +24,7 @@
 
 **Forecast:** 33 tasks, about 7720 authored changed lines. Lockfiles are excluded.
 
-**Progress:** 32/33 done.
+**Progress:** 33/33 done.
 
 **Sources:**
 - general audit workflow `wf_68c64c39-c2f`
@@ -64,7 +64,7 @@
 - [x] **T30** Make filterProducts the single catalog filter engine with facet exclusion _(area architecture; about 160 lines; depends on T14, T15)_, commit `521f6dc`
 - [x] **T31** Untangle feature boundaries: shared zod primitives to lib/validation and landing limit/identity rules into features/landing/rules, keeping lib free of feature imports _(area architecture; about 300 lines; depends on T08, T24, T26, T29)_, commit `87df9de`
 - [x] **T32** Bring AGENTS.md in line with the code after the remediation _(area docs; about 90 lines; depends on T04, T05, T06, T11, T13, T23, T25, T28, T29, T31)_, commit `519fecf`
-- [ ] **T33** Follow-up: clear react-doctor errors and warnings left after the remediation _(area conventions; about 250 lines; depends on T32)_
+- [x] **T33** Follow-up: clear react-doctor errors and warnings left after the remediation _(area conventions; about 250 lines; depends on T32)_, commit `78915a7`
 
 ## Task details
 
@@ -1087,6 +1087,8 @@ Change the AGENTS.md voseo to tuteo ('corrige la causa raíz').
 
 **Commit:** `refactor: clear react-doctor findings after audit remediation`
 
+**Evidence:** I extracted pure helpers to src/features/admin/components/CategoryList/deleteDialogCopy.ts and wrote deleteDialogCopy.test.ts first. RED: `npx vitest run src/features/admin/components/CategoryList/deleteDialogCopy.test.ts` showed "Test Files 1 failed (1), Tests no tests" because the import of './del | checks: npm run lint:strict: exit 0, no warnings; npx tsc --noEmit: exit 0; npx vitest run: 62 files passed, 826 tests passed, exit 0; npm run doctor: Score 87/100, 0 errors, 3 warnings: duplicate-jsx-subtree at; node --check scripts/lib/appwrite-provisioning.mjs: exit 0 | verifier pass, tier medium | deploy: None. No schema, console or env changes. The provisioning script change only affects how --apply runs, which stays sequential; it was not executed.
+
 ## Owner console checklist (not done by the agent)
 
 - [ ] [SEC appwrite-acl:complaints-collection-unprovisioned-direct-api] Appwrite Console > Databases > kataleya > complaints > Settings: record Permissions and Document security. Expected: no read, create, update or delete for any, guests or users (empty, or team:admins only). If any of those roles has read, PII is exposed: remove the grant immediately. Also check Auth > Settings: disable anonymous sessions and email/password signup unless needed.
@@ -1158,4 +1160,4 @@ Forecast is about 7,400 authored lines. Tasks over the 400-line advisory, kept w
 
 ## Next step
 
-T33: Follow-up: clear react-doctor errors and warnings left after the remediation
+All tasks done. The user merges fix/audit-remediation into dev and completes the owner console checklist.
