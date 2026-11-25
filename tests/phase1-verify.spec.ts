@@ -209,9 +209,11 @@ test.describe("Phase 1 — B) File-Based Metadata API", () => {
 
     expect(body).not.toMatch(/\/admin\//);
     expect(body).not.toMatch(/\/api\//);
+    expect(body).not.toMatch(/\/login</);
+    expect(body).not.toMatch(/\/buscar</);
   });
 
-  test("GET /robots.txt -> 200, contiene Disallow admin/api/login y referencia a sitemap", async ({
+  test("GET /robots.txt -> 200, contiene Disallow admin/api, permite /login y referencia a sitemap", async ({
     request,
   }) => {
     const response = await request.get("/robots.txt");
@@ -220,8 +222,36 @@ test.describe("Phase 1 — B) File-Based Metadata API", () => {
     const body = await response.text();
     expect(body).toContain("Disallow: /admin/");
     expect(body).toContain("Disallow: /api/");
-    expect(body).toMatch(/Disallow:\s*\/login/);
+    expect(body).not.toMatch(/Disallow:\s*\/login/);
     expect(body).toMatch(/Sitemap:\s*https?:\/\/[^\s]+\/sitemap\.xml/i);
+  });
+
+  test("/login emite noindex,nofollow y no declara canonical", async ({
+    page,
+  }) => {
+    await page.goto("/login");
+
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
+      "content",
+      /noindex,\s*nofollow/,
+    );
+    await expect(page.locator('link[rel="canonical"]')).toHaveCount(0);
+  });
+
+  test("/buscar?q=rosas emite noindex,follow y /buscar sigue indexable", async ({
+    page,
+  }) => {
+    await page.goto("/buscar?q=rosas");
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
+      "content",
+      /noindex,\s*follow/,
+    );
+
+    await page.goto("/buscar");
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
+      "content",
+      /^index,\s*follow/,
+    );
   });
 
   test("GET /manifest.webmanifest -> 200, JSON con name/short_name/theme_color/background_color", async ({

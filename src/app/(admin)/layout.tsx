@@ -1,6 +1,13 @@
+import type { Metadata } from 'next';
+
 import { Toaster } from '@/components/ui/primitives/sonner';
 import AdminSidebar from '@/features/admin/components/AdminSidebar';
 import { requireAdminOrRedirect } from '@/features/admin/utils/auth';
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+  alternates: { canonical: null },
+};
 
 export default async function AdminLayout({
   children,
