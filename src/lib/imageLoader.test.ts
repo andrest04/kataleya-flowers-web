@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import storedImageLoader from './imageLoader';
+import storedImageLoader, { isLocalAssetSrc, isStoredImageSrc } from './imageLoader';
 
 const CANONICAL = 'https://nyc.cloud.appwrite.io/v1/storage/buckets/product_images/files/file-1/view?project=proj-test';
 
@@ -43,5 +43,40 @@ describe('storedImageLoader', () => {
 
   it('passes local images through unchanged', () => {
     expect(storedImageLoader({ src: '/images/hero/rosas.jpg', width: 640 })).toBe('/images/hero/rosas.jpg');
+  });
+});
+
+describe('isStoredImageSrc', () => {
+  it('accepts a canonical storage view URL', () => {
+    expect(isStoredImageSrc(CANONICAL)).toBe(true);
+  });
+
+  it.each([
+    ['/libro-reclamaciones-indecopi.png'],
+    ['/images/hero/rosas.jpg'],
+    ['https://nyc.cloud.appwrite.io/v1/locale?x=/storage/buckets/product_images/files/a/view&project=p'],
+  ])('rejects %s', (src) => {
+    expect(isStoredImageSrc(src)).toBe(false);
+  });
+});
+
+describe('isLocalAssetSrc', () => {
+  it.each([
+    ['/libro-reclamaciones-indecopi.png'],
+    ['/images/hero/rosas.jpg'],
+  ])('accepts the public asset %s', (src) => {
+    expect(isLocalAssetSrc(src)).toBe(true);
+  });
+
+  it.each([
+    [CANONICAL],
+    ['//cdn.example.com/a.png'],
+    ['/api/images/source?url=x'],
+    ['/a.png#frag'],
+    ['blob:http://localhost/123'],
+    ['data:image/png;base64,AAAA'],
+    ['https://example.com/a.png'],
+  ])('rejects %s', (src) => {
+    expect(isLocalAssetSrc(src)).toBe(false);
   });
 });
