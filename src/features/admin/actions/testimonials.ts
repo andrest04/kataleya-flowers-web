@@ -32,7 +32,8 @@ function revalidateHomeContent(): void {
   updateTag('home-content');
 }
 
-async function ensureStoredTestimonialImage(url: string): Promise<string | AdminActionFailure> {
+async function ensureStoredTestimonialImage(rawUrl: string): Promise<string | AdminActionFailure> {
+  const url = rawUrl.trim();
   if (imageStorage.isOwnedUrl(url)) return url;
   return {
     success: false,

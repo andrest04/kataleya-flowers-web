@@ -1,7 +1,14 @@
-import { APPWRITE_BUCKETS, getAppwriteConfig } from '@/lib/appwrite/config';
+import { getAppwriteConfig } from '@/lib/appwrite/config';
+import { APPWRITE_BUCKETS } from '@/lib/appwrite/ids';
 
 import type { AllowedImageFolder } from './types';
-import { parseAppwriteStorageUrl } from './urlValidation';
+import { parseStorageViewPath } from './urlValidation';
+
+export interface OwnedStorageFile {
+  bucketId: string;
+  fileId: string;
+  canonicalUrl: string;
+}
 
 const FOLDER_BUCKETS: Record<AllowedImageFolder, string> = {
   categorias: APPWRITE_BUCKETS.categories,
@@ -9,39 +16,65 @@ const FOLDER_BUCKETS: Record<AllowedImageFolder, string> = {
   productos: APPWRITE_BUCKETS.products,
 };
 
-function matchesOwnedStorage(url: string): { bucketId: string; fileId: string } | null {
-  const parsed = parseAppwriteStorageUrl(url);
+interface StorageEndpoint {
+  origin: string;
+  host: string;
+  path: string;
+  projectId: string;
+}
+
+function resolveStorageEndpoint(): StorageEndpoint | null {
+  const { endpoint, projectId } = getAppwriteConfig();
+  let parsed: URL;
+  try {
+    parsed = new URL(endpoint);
+  } catch {
+    return null;
+  }
+  if (parsed.protocol !== 'https:') return null;
+  return {
+    origin: parsed.origin,
+    host: parsed.host,
+    path: parsed.pathname.replace(/\/+$/, ''),
+    projectId,
+  };
+}
+
+function viewUrl(endpoint: StorageEndpoint, bucketId: string, fileId: string): string {
+  return `${endpoint.origin}${endpoint.path}/storage/buckets/${encodeURIComponent(bucketId)}/files/${encodeURIComponent(fileId)}/view?project=${encodeURIComponent(endpoint.projectId)}`;
+}
+
+export function buildStorageViewUrl(bucketId: string, fileId: string): string {
+  const endpoint = resolveStorageEndpoint();
+  if (!endpoint) throw new Error('Appwrite endpoint must be an https URL.');
+  return viewUrl(endpoint, bucketId, fileId);
+}
+
+export function parseOwnedStorageUrl(url: string): OwnedStorageFile | null {
+  const parsed = parseStorageViewPath(url);
   if (!parsed) return null;
 
-  const { endpoint, projectId } = getAppwriteConfig();
-  let endpointHost: string;
-  try {
-    endpointHost = new URL(endpoint).host;
-  } catch {
-    return null;
-  }
+  const endpoint = resolveStorageEndpoint();
+  if (!endpoint) return null;
+  if (parsed.host !== endpoint.host || parsed.endpointPath !== endpoint.path) return null;
+  if (parsed.paramCount !== 1 || parsed.projectParams.length !== 1) return null;
+  if (parsed.projectParams[0] !== endpoint.projectId) return null;
 
-  let candidate: URL;
-  try {
-    candidate = new URL(url);
-  } catch {
-    return null;
-  }
-
-  if (candidate.host !== endpointHost) return null;
-  if (candidate.searchParams.get('project') !== projectId) return null;
-
-  const bucketIds: string[] = Object.values(APPWRITE_BUCKETS);
-  if (!bucketIds.includes(parsed.bucketId)) return null;
-
-  return parsed;
+  return {
+    bucketId: parsed.bucketId,
+    fileId: parsed.fileId,
+    canonicalUrl: viewUrl(endpoint, parsed.bucketId, parsed.fileId),
+  };
 }
 
 export function isOwnedStorageUrl(url: string): boolean {
-  return matchesOwnedStorage(url) !== null;
+  return parseOwnedStorageUrl(url) !== null;
 }
 
 export function isOwnedStorageUrlInFolder(url: string, folder: AllowedImageFolder): boolean {
-  const parsed = matchesOwnedStorage(url);
-  return parsed?.bucketId === FOLDER_BUCKETS[folder];
+  return parseOwnedStorageUrl(url)?.bucketId === FOLDER_BUCKETS[folder];
+}
+
+export function bucketIdForFolder(folder: AllowedImageFolder): string {
+  return FOLDER_BUCKETS[folder];
 }

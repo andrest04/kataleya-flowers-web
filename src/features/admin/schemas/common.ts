@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { isOwnedStorageUrl } from '@/lib/imageStorage/ownership';
+import { isOwnedStorageUrl, parseOwnedStorageUrl } from '@/lib/imageStorage/ownership';
 
 export const nonEmptyString = z
   .string()
@@ -38,7 +38,8 @@ export const storedImageUrl = z
   .refine(
     (value) => isOwnedStorageUrl(value),
     'La imagen debe servirse desde el storage propio del proyecto',
-  );
+  )
+  .transform((value) => parseOwnedStorageUrl(value)?.canonicalUrl ?? value);
 
 export const priceVariant = z.object({
   label: nonEmptyString,
