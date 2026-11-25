@@ -1,4 +1,4 @@
-import { requireAdmin } from '@/features/admin/utils/auth';
+import { requireAdmin } from '@/lib/auth/admin';
 import { complaintsRepository } from '@/lib/database/repositories/complaints';
 
 import type { Complaint } from '../types';

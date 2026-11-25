@@ -7,8 +7,8 @@ import {
   fallbackValueProps,
   getPublishedValueProps,
 } from '@/features/landing/queries/getPublishedValueProps';
+import { HOME_VALUE_PROP_LIMIT } from '@/features/landing/rules/valuePropLimit';
 import { getSiteSettings } from '@/features/settings/queries/getSiteSettings';
-import { HOME_VALUE_PROP_LIMIT } from '@/lib/valuePropLimit';
 
 export const metadata = { title: 'Nuevo destacado' };
 

@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
+import { isInstagramHref } from '@/features/landing/rules/valuePropIdentity';
 import { isSafeSiteHref } from '@/lib/safeHref';
 import { isValuePropIconName } from '@/lib/valuePropIcons';
-import { isInstagramHref } from '@/lib/valuePropIdentity';
 
 import { nonEmptyString } from './common';
 

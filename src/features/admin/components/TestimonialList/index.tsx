@@ -18,12 +18,12 @@ import DragHandle from '@/components/ui/SortableList/DragHandle';
 import SortableItem from '@/components/ui/SortableList/SortableItem';
 import ToggleSwitch from '@/components/ui/ToggleSwitch';
 import { deleteTestimonial, toggleTestimonialStatus } from '@/features/admin/actions/testimonials';
-import type { Testimonial } from '@/lib/database/repositories/testimonials';
-import { isPublished } from '@/lib/publishing';
 import {
   HOME_TESTIMONIAL_LIMIT,
   HOME_TESTIMONIAL_LIMIT_COPY,
-} from '@/lib/testimonialLimit';
+} from '@/features/landing/rules/testimonialLimit';
+import type { Testimonial } from '@/lib/database/repositories/testimonials';
+import { isPublished } from '@/lib/publishing';
 
 import { useTestimonialReorder } from './useTestimonialReorder';
 

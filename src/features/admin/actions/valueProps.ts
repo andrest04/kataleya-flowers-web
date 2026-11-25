@@ -18,6 +18,11 @@ import {
   fallbackValueProps,
   type ValuePropView,
 } from '@/features/landing/queries/getPublishedValueProps';
+import { tokenizeValuePropIdentity } from '@/features/landing/rules/valuePropIdentity';
+import {
+  HOME_VALUE_PROP_LIMIT,
+  HOME_VALUE_PROP_LIMIT_COPY,
+} from '@/features/landing/rules/valuePropLimit';
 import { getSiteSettings } from '@/features/settings/queries/getSiteSettings';
 import { documentStore } from '@/lib/database';
 import {
@@ -25,11 +30,6 @@ import {
   type ValuePropWritePayload,
 } from '@/lib/database/repositories/valueProps';
 import { valuePropConfig } from '@/lib/database/repositories/valueProps/config';
-import { tokenizeValuePropIdentity } from '@/lib/valuePropIdentity';
-import {
-  HOME_VALUE_PROP_LIMIT,
-  HOME_VALUE_PROP_LIMIT_COPY,
-} from '@/lib/valuePropLimit';
 
 type ValuePropActionResult = { success: true } | AdminActionFailure;
 

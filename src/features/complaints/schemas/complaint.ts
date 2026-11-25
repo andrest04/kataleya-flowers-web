@@ -7,7 +7,7 @@ import {
   peruPhoneField,
   requiredString,
   uuid,
-} from '@/features/admin/schemas/common';
+} from '@/lib/validation/primitives';
 
 import { COMPLAINT_STATUSES, COMPLAINT_TYPES, DOC_TYPES, ITEM_TYPES } from './constants';
 

@@ -1,8 +1,8 @@
 import { unstable_cache } from 'next/cache';
 
+import { HOME_TESTIMONIAL_LIMIT } from '@/features/landing/rules/testimonialLimit';
 import { type Testimonial, testimonialRepository } from '@/lib/database/repositories/testimonials';
 import { isPublished } from '@/lib/publishing';
-import { HOME_TESTIMONIAL_LIMIT } from '@/lib/testimonialLimit';
 
 function isTestimonialPublished(testimonial: Testimonial, now: Date): boolean {
   return isPublished(

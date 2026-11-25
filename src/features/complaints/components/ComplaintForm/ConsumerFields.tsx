@@ -1,9 +1,9 @@
 'use client';
 
+import { FieldError } from '@/components/ui/FieldError';
 import { FormField } from '@/components/ui/FormField';
 import { Input, Select } from '@/components/ui/Input';
 import ToggleSwitch from '@/components/ui/ToggleSwitch';
-import { FieldError } from '@/features/admin/components/ProductForm/FieldError';
 
 import type { ComplaintFormData } from '../../schemas/complaint';
 import { DOC_TYPES } from '../../schemas/constants';

@@ -1,8 +1,8 @@
 'use client';
 
+import { FieldError } from '@/components/ui/FieldError';
 import { FormField } from '@/components/ui/FormField';
 import { Textarea } from '@/components/ui/Input';
-import { FieldError } from '@/features/admin/components/ProductForm/FieldError';
 
 import type { ComplaintFormData } from '../../schemas/complaint';
 import type { ComplaintType } from '../../types';

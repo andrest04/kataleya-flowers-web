@@ -7,7 +7,7 @@ import {
   FALLBACK_TESTIMONIALS,
   getPublishedTestimonials,
 } from '@/features/landing/queries/getPublishedTestimonials';
-import { HOME_TESTIMONIAL_LIMIT } from '@/lib/testimonialLimit';
+import { HOME_TESTIMONIAL_LIMIT } from '@/features/landing/rules/testimonialLimit';
 
 export const metadata = { title: 'Nuevo testimonio' };
 

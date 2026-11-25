@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { longText } from '@/features/admin/schemas/common';
+import { longText } from '@/lib/validation/primitives';
 
 import { complaintSubmitSchema } from './complaint';
 

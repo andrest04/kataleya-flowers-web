@@ -6,7 +6,7 @@ import { FormField } from '@/components/ui/FormField';
 import { Input, Textarea } from '@/components/ui/Input';
 import { FieldError } from '@/features/admin/components/ProductForm/FieldError';
 import VisibilityLimitControl from '@/features/admin/components/VisibilityLimitControl';
-import { HOME_VALUE_PROP_LIMIT_COPY } from '@/lib/valuePropLimit';
+import { HOME_VALUE_PROP_LIMIT_COPY } from '@/features/landing/rules/valuePropLimit';
 
 import DestinationModePicker from './DestinationModePicker';
 import type { FieldErrors } from './formErrors';

@@ -7,8 +7,8 @@ import {
   fallbackDiscoverTiles,
   getPublishedDiscoverTiles,
 } from '@/features/landing/queries/getPublishedDiscoverTiles';
+import { HOME_DISCOVER_TILE_LIMIT } from '@/features/landing/rules/discoverTileLimit';
 import { getSiteSettings } from '@/features/settings/queries/getSiteSettings';
-import { HOME_DISCOVER_TILE_LIMIT } from '@/lib/discoverTileLimit';
 
 export const metadata = { title: 'Nueva tarjeta' };
 

@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import TestimonialEditor from '@/features/admin/components/TestimonialEditor';
 import { draftFromTestimonial } from '@/features/admin/components/TestimonialEditor/mapDraft';
 import { getAdminTestimonialById, getAdminTestimonials } from '@/features/admin/queries/testimonials';
-import { HOME_TESTIMONIAL_LIMIT } from '@/lib/testimonialLimit';
+import { HOME_TESTIMONIAL_LIMIT } from '@/features/landing/rules/testimonialLimit';
 
 interface EditarTestimonioPageProps {
   params: Promise<{ id: string }>;

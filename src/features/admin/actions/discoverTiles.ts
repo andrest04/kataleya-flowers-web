@@ -21,6 +21,10 @@ import {
   type DiscoverTileView,
   fallbackDiscoverTiles,
 } from '@/features/landing/queries/getPublishedDiscoverTiles';
+import {
+  HOME_DISCOVER_TILE_LIMIT,
+  HOME_DISCOVER_TILE_LIMIT_COPY,
+} from '@/features/landing/rules/discoverTileLimit';
 import { getSiteSettings } from '@/features/settings/queries/getSiteSettings';
 import { documentStore } from '@/lib/database';
 import {
@@ -28,10 +32,6 @@ import {
   type DiscoverTileWritePayload,
 } from '@/lib/database/repositories/discoverTiles';
 import { discoverTileConfig } from '@/lib/database/repositories/discoverTiles/config';
-import {
-  HOME_DISCOVER_TILE_LIMIT,
-  HOME_DISCOVER_TILE_LIMIT_COPY,
-} from '@/lib/discoverTileLimit';
 import { imageStorage } from '@/lib/imageStorage';
 
 type DiscoverTileActionResult = { success: true } | AdminActionFailure;

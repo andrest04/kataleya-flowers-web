@@ -18,6 +18,10 @@ import {
   FALLBACK_TESTIMONIALS,
   type TestimonialView,
 } from '@/features/landing/queries/getPublishedTestimonials';
+import {
+  HOME_TESTIMONIAL_LIMIT,
+  HOME_TESTIMONIAL_LIMIT_COPY,
+} from '@/features/landing/rules/testimonialLimit';
 import { documentStore } from '@/lib/database';
 import {
   testimonialRepository,
@@ -25,10 +29,6 @@ import {
 } from '@/lib/database/repositories/testimonials';
 import { testimonialConfig } from '@/lib/database/repositories/testimonials/config';
 import { imageStorage } from '@/lib/imageStorage';
-import {
-  HOME_TESTIMONIAL_LIMIT,
-  HOME_TESTIMONIAL_LIMIT_COPY,
-} from '@/lib/testimonialLimit';
 
 type TestimonialActionResult = { success: true } | AdminActionFailure;
 

@@ -22,11 +22,11 @@ import {
 import { getPublishedPromoBanners } from '@/features/landing/queries/getPublishedPromoBanners';
 import { FALLBACK_TESTIMONIALS } from '@/features/landing/queries/getPublishedTestimonials';
 import { fallbackValueProps } from '@/features/landing/queries/getPublishedValueProps';
+import { HOME_DISCOVER_TILE_LIMIT_COPY } from '@/features/landing/rules/discoverTileLimit';
+import { HOME_TESTIMONIAL_LIMIT_COPY } from '@/features/landing/rules/testimonialLimit';
+import { bindValuePropIdentity } from '@/features/landing/rules/valuePropIdentity';
+import { HOME_VALUE_PROP_LIMIT_COPY } from '@/features/landing/rules/valuePropLimit';
 import { getSiteSettings } from '@/features/settings/queries/getSiteSettings';
-import { HOME_DISCOVER_TILE_LIMIT_COPY } from '@/lib/discoverTileLimit';
-import { HOME_TESTIMONIAL_LIMIT_COPY } from '@/lib/testimonialLimit';
-import { bindValuePropIdentity } from '@/lib/valuePropIdentity';
-import { HOME_VALUE_PROP_LIMIT_COPY } from '@/lib/valuePropLimit';
 
 export const metadata = { title: 'Inicio' };
 

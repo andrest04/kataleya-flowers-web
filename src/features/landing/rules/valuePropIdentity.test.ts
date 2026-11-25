@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { defaultSiteSettings } from './siteSettings';
+import { defaultSiteSettings } from '@/lib/siteSettings';
+
 import { bindValuePropIdentity } from './valuePropIdentity';
 
 function item(href: string) {

@@ -12,8 +12,8 @@ import {
   bindValuePropIdentity,
   VALUE_PROP_IDENTITY_TOKEN,
   VALUE_PROP_INSTAGRAM_HREF,
-} from '@/lib/valuePropIdentity';
-import { HOME_VALUE_PROP_LIMIT } from '@/lib/valuePropLimit';
+} from '@/features/landing/rules/valuePropIdentity';
+import { HOME_VALUE_PROP_LIMIT } from '@/features/landing/rules/valuePropLimit';
 
 export interface ValuePropView {
   description: string;

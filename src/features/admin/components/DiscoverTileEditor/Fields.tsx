@@ -13,7 +13,7 @@ import VisibilityLimitControl from '@/features/admin/components/VisibilityLimitC
 import { useImageUpload } from '@/features/admin/hooks/useImageUpload';
 import EditorialTile from '@/features/landing/components/DiscoverMoreSection/EditorialTile';
 import { discoverIcon } from '@/features/landing/components/DiscoverMoreSection/icons';
-import { HOME_DISCOVER_TILE_LIMIT_COPY } from '@/lib/discoverTileLimit';
+import { HOME_DISCOVER_TILE_LIMIT_COPY } from '@/features/landing/rules/discoverTileLimit';
 
 import type { FieldErrors } from './formErrors';
 import IconPicker from './IconPicker';
