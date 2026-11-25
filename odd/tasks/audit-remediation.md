@@ -24,7 +24,7 @@
 
 **Forecast:** 32 tasks, about 7470 authored changed lines. Lockfiles are excluded.
 
-**Progress:** 4/32 done.
+**Progress:** 10/32 done.
 
 **Sources:**
 - general audit workflow `wf_68c64c39-c2f`
@@ -36,12 +36,12 @@
 - [x] **T02** Upgrade Next.js, zod and vulnerable transitive packages to patched versions _(area dependencies; about 30 lines; depends on nothing; approved flags: dependency-version-bump)_, commit `cb1a0dc`
 - [x] **T03** Anchor Appwrite storage URL parsing (client-safe path parser plus server ownership check) and harden the image proxy, upload and delete paths _(area security; about 420 lines; depends on T02)_, commit `5fee48b`
 - [x] **T04** Add a durable, self-cleaning Appwrite-backed rate limiter, private document permissions, and bounded complaint submissions and consumer-copy emails _(area security; about 480 lines; depends on T03)_, commit `373e1fc`
-- [ ] **T05** Throttle and BotID-gate admin login, refuse non-admin sessions, harden and clear the session cookie, and mark server modules server-only _(area security; about 340 lines; depends on T01, T04)_, **in_progress**: blocked once: config.ts reachable from client via complaint schemas; user approved 5 extra paths
-- [ ] **T06** Fix the complaint number year to Lima time once at allocation, and keep a saved complaint successful when email or settings fail _(area security; about 300 lines; depends on T04, T05)_
-- [ ] **T07** Serve public product lookups from per-slug tagged caches with an active-category check, and serve category pages and navbar search from the cached catalog _(area security; about 240 lines; depends on T02)_
-- [ ] **T08** Restrict admin-entered links and map embeds to safe destinations _(area security; about 340 lines; depends on T03)_
-- [ ] **T09** Codify least-privilege Appwrite ACLs and the private-collection schema in the provisioning scripts _(area security; about 220 lines; depends on T04, T06)_
-- [ ] **T10** Fix lint:strict errors in e2e specs and the stale production host in SEO guard tests _(area tests; about 60 lines; depends on T02)_
+- [x] **T05** Throttle and BotID-gate admin login, refuse non-admin sessions, harden and clear the session cookie, and mark server modules server-only _(area security; about 340 lines; depends on T01, T04)_, commit `8006a1a`
+- [x] **T06** Fix the complaint number year to Lima time once at allocation, and keep a saved complaint successful when email or settings fail _(area security; about 300 lines; depends on T04, T05)_, commit `e8b6611`
+- [x] **T07** Serve public product lookups from per-slug tagged caches with an active-category check, and serve category pages and navbar search from the cached catalog _(area security; about 240 lines; depends on T02)_, commit `b279ac6`
+- [x] **T08** Restrict admin-entered links and map embeds to safe destinations _(area security; about 340 lines; depends on T03)_, commit `1d0a5f7`
+- [x] **T09** Codify least-privilege Appwrite ACLs and the private-collection schema in the provisioning scripts _(area security; about 220 lines; depends on T04, T06)_, commit `1c9967b`
+- [x] **T10** Fix lint:strict errors in e2e specs and the stale production host in SEO guard tests _(area tests; about 60 lines; depends on T02)_, commit `0ff92db`
 - [ ] **T11** Add a CI gate (lint, typecheck, unit tests) with a test that every admin Server Action enforces auth, and pin the workflow supply chain _(area tests; about 230 lines; depends on T02, T10)_
 - [ ] **T12** Remove binding-convention violations: the eslint-disable, production comments and the 550-line CatalogFilterSheet _(area conventions; about 640 lines; depends on T06, T11)_
 - [ ] **T13** Load analytics only on public production pages, allow GA in the CSP, and move Toaster to the admin layout _(area performance; about 70 lines; depends on T12; approved flags: layout.tsx)_
@@ -245,6 +245,11 @@
 
 **Commit:** `fix(auth): throttle admin login and harden the session cookie`
 
+**Evidence:** RED: I wrote the new tests first, in service.test.ts, appwriteProvider.test.ts, the new cookieSessionStore.test.ts and the new actions/auth.test.ts. `npx vitest run src/lib/auth src/features/admin/actions` gave 16 failed and 18 passed. The failures were:
+- login returned no userId;
+- logout returned | checks: npm run lint:strict: Fails with exactly the 9 known base errors, all in tests/*.s; npx tsc --noEmit: exit 0, no errors; npx vitest run: Test Files 30 passed (30); Tests 388 passed (388); rg -n "a_session": 4 matches. One is the constant at src/lib/auth/sessionCookie; rg -l "import: Exactly 5 files: src/lib/appwrite/{admin,session,account,con; node <scratchpad>/trace-client-imports.mjs .: Before the change, 4 chains from 'use client' files reached ; npx react-doctor@latest --verbose: Score 100/100, no issues found; security-review self-check (inline): No finding at confidence 8 or higher. Note: the FORBIDDEN co | verifier pass, tier high | deploy: - HARD PREREQUISITE: the T04 'rate_limits' collection (count, expires_at and an index) must exist before deploy. Admin login fails closed without it and returns INTERNAL for every attempt.
+- After deploy, every admin is logged out once and must log in again, because the cookie is renamed to __Host-a
+
 ### T06: Fix the complaint number year to Lima time once at allocation, and keep a saved complaint successful when email or settings fail
 
 **Observations:**
@@ -281,6 +286,10 @@
 - Before deploying: in Appwrite complaints, create the integer attribute 'correlativo_year' (not required, no default). Otherwise every insert fails with Unknown attribute. T09's script can also create it.
 
 **Commit:** `fix(complaints): persist the Lima year and isolate the email step`
+
+**Evidence:** RED: I added the tests first and ran `npx vitest run src/features/complaints src/lib/database/repositories/complaints`. Result: 4 files failed, 19 tests failed, 26 passed. The failures were:
+- format.test.ts: limaYear does not exist; formatComplaintNumber has the old signature.
+- submitComplaint.tes | checks: npm run lint:strict: Exactly the 9 known errors remain, all in tests/*.spec.ts (c; npx tsc --noEmit: Clean, no output.; npx vitest run: 33 files passed, 413/413 tests.; npx react-doctor@latest --verbose: Score 100/100, no issues found. | verifier pass, tier medium | deploy: This is a hard prerequisite with no fallback. Before deploying, create the integer attribute 'correlativo_year' on the Appwrite complaints collection (not required, no default). Every insert now writes correlativo_year, so until the attribute exists every new complaint fails with Unknown attribute a
 
 ### T07: Serve public product lookups from per-slug tagged caches with an active-category check, and serve category pages and navbar search from the cached catalog
 
@@ -321,6 +330,8 @@
 
 **Commit:** `fix(catalog): serve public product lookups from tagged caches`
 
+**Evidence:** RED (npx vitest run src/features/catalog, before implementation): 10 failed | 6 passed, plus resolveProductRoute.test.ts failed to import (module missing). searchProducts: "TypeError: query.trim is not a function" for number/object, "Cannot read properties of null (reading 'trim')" for null, and lis | checks: npm run lint:strict: 9 errors, 0 warnings, all the known tests/*.spec.ts no-empty; npx tsc --noEmit: passed, no output; npx vitest run: Test Files 37 passed (37), Tests 436 passed (436); rg -n "listActiveJoinedByCategorySlug": no match (exit 1); npx react-doctor@latest --verbose: Score 100/100, no issues found; security-review self-check (inline,: no HIGH/MEDIUM findings; verified admin product and category | verifier pass, tier medium | deploy: No schema or console changes are needed. Product detail pages are served from per-slug unstable_cache entries (key 'catalog-product' + slug, tag 'catalog-products', revalidate 3600). Edits show up after the admin actions' existing updateTag('catalog-products'). Deactivating a category takes effect t
+
 ### T08: Restrict admin-entered links and map embeds to safe destinations
 
 **Observations:**
@@ -354,6 +365,12 @@
 
 **Commit:** `fix(admin): restrict admin links and map embeds to safe targets`
 
+**Evidence:** RED: I wrote the tests first and ran them before implementing. Result: 31 failed tests, plus 3 test files that could not load because the modules did not exist yet (./safeHref, ./jsonLd, ./mapsShortLink).
+- mapsEmbed.test: isAllowedMapsHost wrongly returned true for evil.google.com, sites.google.com | checks: npm run lint:strict: 9 problems (9 errors, 0 warnings), all in the 4 known tests/; npx tsc --noEmit: exit 0, no errors; npx vitest run: Test Files 46 passed (46); Tests 551 passed (551); npx react-doctor@latest --verbose: With allow-same-origin in the sandbox: 84/100 and 1 new ifra; security-review self-check of: No high-confidence findings. | verifier pass, tier medium | deploy: No schema, console or env changes. Stored CMS records with now-invalid values are not rewritten; the owner sees validation errors the next time they save them:
+- hero and promo ctaValue that is http:, a path or a non-https scheme;
+- discover tile hrefs outside the safe set;
+- discover images outside
+
 ### T09: Codify least-privilege Appwrite ACLs and the private-collection schema in the provisioning scripts
 
 **Observations:**
@@ -385,6 +402,8 @@
 
 **Commit:** `chore(scripts): codify least-privilege Appwrite provisioning`
 
+**Evidence:** No meaningful vitest RED exists, as the task's test plan says. The scripts live outside src/** and need a live Appwrite project. Instead I ran a throwaway smoke harness, kept in the scratchpad and not committed, that loads scripts/lib/appwrite-provisioning.mjs against fake Databases/Storage clients. | checks: npm run lint:strict: Exit 1 with only the 9 known errors in tests/*.spec.ts (cata; npx tsc --noEmit: exit 0, no errors; npx vitest run: 46 files, 551 tests passed; node --check scripts/provision-home-content.mjs: OK; node --check scripts/provision-private-collections.mjs: OK (scripts/lib/appwrite-provisioning.mjs also passes node - | verifier pass, tier medium | deploy: Owner only. With APPWRITE_* set, run `node scripts/provision-home-content.mjs` and `node scripts/provision-private-collections.mjs` as dry-runs, ideally against a non-production project first, and review the printed current -> desired diffs. Then re-run each with --apply. Breaking change for anyone 
+
 ### T10: Fix lint:strict errors in e2e specs and the stale production host in SEO guard tests
 
 **Observations:**
@@ -408,6 +427,8 @@
 **Risk:** Low. The e2e assertions stay unverified until the owner runs the suite.
 
 **Commit:** `test(e2e): fix lint errors and stale host in SEO guards`
+
+**Evidence:** No vitest applies (Playwright specs; running them is forbidden). RED: `npm run lint:strict` failed with 9 errors (no-empty-function at catalog-taxonomy-baseline.spec.ts:62,154,209, category-page.spec.ts:58,111, product-detail.spec.ts:29,82, seo-metadata.spec.ts:61; no-empty at seo-metadata.spec.ts:2 | checks: npm run lint:strict: exit 0, 0 errors/0 warnings; npx tsc --noEmit: exit 0; npx vitest run: 46 files / 551 tests passed; npx playwright test: exit 0, Total: 98 tests in 16 files; rg -n "appwrite.network": no match (exit 1) | verifier pass, tier medium | deploy: No deploy steps. The e2e assertions stay unverified until the owner runs the suite against the site. If the target environment's site settings `website` differs from www.kataleyaflowers.com, set E2E_SITE_URL to match, because canonical, og:url and sitemap URLs come from settings.website.
 
 ### T11: Add a CI gate (lint, typecheck, unit tests) with a test that every admin Server Action enforces auth, and pin the workflow supply chain
 
@@ -1048,4 +1069,4 @@ Forecast is about 7,400 authored lines. Tasks over the 400-line advisory, kept w
 
 ## Next step
 
-T05: Throttle and BotID-gate admin login, refuse non-admin sessions, harden and clear the session cookie, and mark server modules server-only
+T11: Add a CI gate (lint, typecheck, unit tests) with a test that every admin Server Action enforces auth, and pin the workflow supply chain
