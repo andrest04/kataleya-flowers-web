@@ -27,7 +27,7 @@ export const complaintSubmitSchema = z
     guardianName: z.string().trim().max(255).optional().or(z.literal('')),
 
     itemType: z.enum(ITEM_TYPES, { message: 'Selecciona producto o servicio' }),
-    itemDescription: longTextField('Describe el producto o servicio'),
+    itemDescription: longTextField('Describe el producto o servicio', 2000),
     claimedAmount: z
       .number({ message: 'El monto debe ser un número' })
       .nonnegative('El monto no puede ser negativo')
@@ -48,7 +48,7 @@ export type ComplaintFormData = z.infer<typeof complaintSubmitSchema>;
 export const complaintStatusUpdateSchema = z.object({
   id: uuid,
   status: z.enum(COMPLAINT_STATUSES, { message: 'Estado inválido' }),
-  providerResponse: z.string().trim().max(5000).optional().or(z.literal('')),
+  providerResponse: z.string().trim().max(2000, 'Máximo 2000 caracteres').optional().or(z.literal('')),
 });
 
 export type ComplaintStatusUpdateData = z.infer<typeof complaintStatusUpdateSchema>;

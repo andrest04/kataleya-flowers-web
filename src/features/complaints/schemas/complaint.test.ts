@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { longText } from '@/lib/validation/primitives';
 
-import { complaintSubmitSchema } from './complaint';
+import { complaintStatusUpdateSchema, complaintSubmitSchema } from './complaint';
 
 const VALID_INPUT = {
   consumerName: 'Ana Torres',
@@ -44,6 +44,36 @@ describe('complaintSubmitSchema messages', () => {
     ['claimedAmount', 2_000_000, 'El monto debe ser de S/ 1 000 000 como máximo'],
   ])('gives %s an actionable message for %j', (field, value, message) => {
     expect(messageFor(field, { [field]: value })).toBe(message);
+  });
+});
+
+describe('storage-bound field lengths', () => {
+  it('accepts an item description of exactly 2000 characters', () => {
+    const result = complaintSubmitSchema.safeParse({ ...VALID_INPUT, itemDescription: 'a'.repeat(2000) });
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects an item description over 2000 characters with an actionable message', () => {
+    expect(messageFor('itemDescription', { itemDescription: 'a'.repeat(2001) })).toBe('Máximo 2000 caracteres');
+  });
+
+  it('still allows 5000 characters in detail and consumer request', () => {
+    const result = complaintSubmitSchema.safeParse({
+      ...VALID_INPUT,
+      detail: 'a'.repeat(5000),
+      consumerRequest: 'a'.repeat(5000),
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects a provider response over 2000 characters', () => {
+    const result = complaintStatusUpdateSchema.safeParse({
+      id: '3f2b6c1e-8a4d-4e2f-9b7a-1c2d3e4f5a6b',
+      status: 'EN_PROCESO',
+      providerResponse: 'a'.repeat(2001),
+    });
+    expect(result.success).toBe(false);
+    expect(result.error?.issues[0]?.message).toBe('Máximo 2000 caracteres');
   });
 });
 

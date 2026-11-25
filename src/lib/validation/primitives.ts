@@ -12,8 +12,8 @@ export const optionalTrimmedString = z
   .optional()
   .nullable();
 
-export const longTextField = (requiredMessage = 'La descripción es obligatoria') =>
-  z.string().trim().min(1, requiredMessage).max(5000, 'Máximo 5000 caracteres');
+export const longTextField = (requiredMessage = 'La descripción es obligatoria', maxLength = 5000) =>
+  z.string().trim().min(1, requiredMessage).max(maxLength, `Máximo ${maxLength} caracteres`);
 
 export const longText = longTextField();
 
