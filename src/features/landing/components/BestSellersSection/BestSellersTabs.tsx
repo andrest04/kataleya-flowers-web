@@ -3,7 +3,7 @@
 import { AnimatePresence, domAnimation, LazyMotion, m } from 'framer-motion';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState, useSyncExternalStore } from 'react';
 
 import type { Category, Product } from '@/features/catalog/types';
 import { pickBestSellers } from '@/features/catalog/utils/pickBestSellers';
@@ -11,6 +11,20 @@ import { pickBestSellers } from '@/features/catalog/utils/pickBestSellers';
 import BestSellerProductCard from './BestSellerProductCard';
 
 const CATEGORY_QUERY_PARAM = 'bestsellers';
+
+function subscribeToNothing() {
+  return () => {
+    return undefined;
+  };
+}
+
+function getCategoryParamSnapshot(): string | null {
+  return new URLSearchParams(window.location.search).get(CATEGORY_QUERY_PARAM);
+}
+
+function getServerCategoryParamSnapshot(): string | null {
+  return null;
+}
 
 interface BestSellersTabsProps {
   products: Product[];
@@ -26,19 +40,23 @@ export default function BestSellersTabs({
   const router = useRouter();
   const pathname = usePathname();
 
-  const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null);
+  const categoryParam = useSyncExternalStore(
+    subscribeToNothing,
+    getCategoryParamSnapshot,
+    getServerCategoryParamSnapshot,
+  );
+  const [userSelectedCategoryId, setUserSelectedCategoryId] = useState<
+    string | null | undefined
+  >(undefined);
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const slug = new URLSearchParams(window.location.search).get(CATEGORY_QUERY_PARAM);
-    if (!slug) return;
-    const matched = tabCategories.find((category) => category.slug === slug)?.id ?? null;
-    if (matched) setActiveCategoryId(matched);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const paramCategoryId = categoryParam
+    ? (tabCategories.find((category) => category.slug === categoryParam)?.id ?? null)
+    : null;
+  const activeCategoryId =
+    userSelectedCategoryId === undefined ? paramCategoryId : userSelectedCategoryId;
 
   const selectCategory = (categoryId: string | null) => {
-    setActiveCategoryId(categoryId);
+    setUserSelectedCategoryId(categoryId);
     const slug = categoryId
       ? tabCategories.find((category) => category.id === categoryId)?.slug
       : null;
