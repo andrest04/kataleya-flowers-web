@@ -26,6 +26,8 @@ function fakeProvider(overrides: Partial<AuthProvider> = {}): AuthProvider {
     logout: vi.fn().mockResolvedValue(true),
     getCurrentUser: vi.fn(),
     isAdmin: vi.fn(),
+    requestPasswordRecovery: vi.fn().mockResolvedValue(undefined),
+    completePasswordRecovery: vi.fn().mockResolvedValue({ ok: true }),
     ...overrides,
   };
 }
@@ -194,5 +196,43 @@ describe('createAuthService.requireAdmin', () => {
     await expect(auth.requireAdmin()).resolves.toEqual(user);
     expect(provider.getCurrentUser).toHaveBeenCalledWith('secret-1');
     expect(provider.isAdmin).toHaveBeenCalledWith('user-1');
+  });
+});
+
+describe('createAuthService.requestPasswordRecovery', () => {
+  it('delegates to the provider with the email and redirect url', async () => {
+    const provider = fakeProvider();
+    const auth = createAuthService(provider, memorySessions());
+
+    await expect(
+      auth.requestPasswordRecovery('admin@example.com', 'https://example.com/restablecer-contrasena'),
+    ).resolves.toBeUndefined();
+    expect(provider.requestPasswordRecovery).toHaveBeenCalledWith(
+      'admin@example.com',
+      'https://example.com/restablecer-contrasena',
+    );
+  });
+});
+
+describe('createAuthService.completePasswordRecovery', () => {
+  it('returns the provider result untouched', async () => {
+    const failure = {
+      ok: false,
+      code: 'INVALID_LINK',
+      message: 'El enlace no es válido o ya venció. Solicita uno nuevo.',
+    } as const;
+    const provider = fakeProvider({
+      completePasswordRecovery: vi.fn().mockResolvedValue(failure),
+    });
+    const auth = createAuthService(provider, memorySessions());
+
+    await expect(
+      auth.completePasswordRecovery('user-1', 'secret-1', 'a-long-new-password'),
+    ).resolves.toEqual(failure);
+    expect(provider.completePasswordRecovery).toHaveBeenCalledWith(
+      'user-1',
+      'secret-1',
+      'a-long-new-password',
+    );
   });
 });

@@ -17,5 +17,7 @@ export type {
   AuthService,
   AuthSession,
   AuthUser,
+  PasswordRecovery,
+  PasswordRecoveryResult,
   SessionStore,
 } from './types';

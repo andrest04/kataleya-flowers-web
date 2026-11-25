@@ -57,5 +57,13 @@ export function createAuthService(
 
       return user;
     },
+
+    requestPasswordRecovery(email, redirectUrl) {
+      return provider.requestPasswordRecovery(email, redirectUrl);
+    },
+
+    completePasswordRecovery(userId, secret, password) {
+      return provider.completePasswordRecovery(userId, secret, password);
+    },
   };
 }

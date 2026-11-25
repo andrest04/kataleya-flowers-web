@@ -10,7 +10,8 @@ export function createAdminClient() {
   const client = new Client()
     .setEndpoint(config.endpoint)
     .setProject(config.projectId)
-    .setKey(config.apiKey);
+    .setKey(config.apiKey)
+    .setLocale('es');
 
   return {
     databases: new Databases(client),
