@@ -11,13 +11,19 @@ import {
   requireAdmin,
 } from '@/features/admin/utils/auth';
 import {
+  createOrderableHomeCollection,
+  readFromFallbackId,
+} from '@/features/admin/utils/orderableHomeCollection';
+import {
   FALLBACK_TESTIMONIALS,
   type TestimonialView,
 } from '@/features/landing/queries/getPublishedTestimonials';
+import { documentStore } from '@/lib/database';
 import {
   testimonialRepository,
   type TestimonialWritePayload,
 } from '@/lib/database/repositories/testimonials';
+import { testimonialConfig } from '@/lib/database/repositories/testimonials/config';
 import { imageStorage } from '@/lib/imageStorage';
 import {
   HOME_TESTIMONIAL_LIMIT,
@@ -69,12 +75,6 @@ async function parseTestimonialInput(data: unknown): Promise<
   return { ok: true, value: parsed.data };
 }
 
-function readFromFallbackId(data: unknown): string | undefined {
-  if (!data || typeof data !== 'object' || !('fromFallbackId' in data)) return undefined;
-  const value = data.fromFallbackId;
-  return typeof value === 'string' && value.trim() !== '' ? value : undefined;
-}
-
 function toWritePayload(
   value: ReturnType<typeof testimonialSchema.parse>,
   displayOrder: number,
@@ -91,14 +91,6 @@ function toWritePayload(
     stars: value.stars,
     startsAt: value.startsAt,
   };
-}
-
-function activeCount(rows: { isActive: boolean }[]): number {
-  return rows.filter((row) => row.isActive).length;
-}
-
-function limitFailure(): AdminActionFailure {
-  return { success: false, error: HOME_TESTIMONIAL_LIMIT_COPY, code: 'VALIDATION' };
 }
 
 function payloadFromFallback(
@@ -120,53 +112,32 @@ function payloadFromFallback(
   };
 }
 
-async function seedFallbackDocuments(
-  exceptId: string | undefined,
-  replacement?: TestimonialWritePayload,
-): Promise<AdminActionFailure | null> {
-  for (const [index, item] of FALLBACK_TESTIMONIALS.entries()) {
-    const displayOrder = index + 1;
-    if (exceptId && item.id === exceptId && replacement) {
-      await testimonialRepository.create({ ...replacement, displayOrder });
-      continue;
-    }
-    const storedUrl = await ensureStoredTestimonialImage(item.photoSrc);
-    if (typeof storedUrl !== 'string') return storedUrl;
-    await testimonialRepository.create(payloadFromFallback(item, displayOrder, storedUrl));
-  }
-  return null;
-}
+const testimonials = createOrderableHomeCollection({
+  store: documentStore,
+  config: testimonialConfig,
+  repository: testimonialRepository,
+  activeLimit: HOME_TESTIMONIAL_LIMIT,
+  limitCopy: HOME_TESTIMONIAL_LIMIT_COPY,
+  notFoundCopy: 'No encontramos ese testimonio.',
+  loadFallbacks: async () => FALLBACK_TESTIMONIALS,
+  payloadFromFallback: async (view, displayOrder) => {
+    const storedUrl = await ensureStoredTestimonialImage(view.photoSrc);
+    if (typeof storedUrl !== 'string') return { ok: false, failure: storedUrl };
+    return { ok: true, payload: payloadFromFallback(view, displayOrder, storedUrl) };
+  },
+});
 
 export async function createTestimonial(data: unknown): Promise<TestimonialActionResult> {
   try {
     await requireAdmin();
-    const fromFallbackId = readFromFallbackId(data);
     const parsed = await parseTestimonialInput(data);
     if (!parsed.ok) return parsed.failure;
-    const existing = await testimonialRepository.list();
-    if (existing.length === 0) {
-      const matchesFallback = FALLBACK_TESTIMONIALS.some((item) => item.id === fromFallbackId);
-      if (matchesFallback) {
-        const seedError = await seedFallbackDocuments(
-          fromFallbackId,
-          toWritePayload(parsed.value, 1),
-        );
-        if (seedError) return seedError;
-      } else {
-        const seedError = await seedFallbackDocuments(undefined);
-        if (seedError) return seedError;
-        if (parsed.value.isActive) return limitFailure();
-        const displayOrder = await testimonialRepository.getNextOrder();
-        await testimonialRepository.create(toWritePayload(parsed.value, displayOrder));
-      }
-      revalidateHomeContent();
-      return { success: true };
-    }
-    if (parsed.value.isActive && activeCount(existing) >= HOME_TESTIMONIAL_LIMIT) {
-      return limitFailure();
-    }
-    const displayOrder = await testimonialRepository.getNextOrder();
-    await testimonialRepository.create(toWritePayload(parsed.value, displayOrder));
+    const failure = await testimonials.create({
+      fromFallbackId: readFromFallbackId(data),
+      isActive: parsed.value.isActive,
+      toPayload: (displayOrder) => toWritePayload(parsed.value, displayOrder),
+    });
+    if (failure) return failure;
     revalidateHomeContent();
     return { success: true };
   } catch (err) {
@@ -187,12 +158,8 @@ export async function updateTestimonial(id: string, data: unknown): Promise<Test
     if (!existing) {
       return { success: false, error: 'No encontramos ese testimonio.', code: 'INTERNAL' };
     }
-    if (parsed.value.isActive && !existing.isActive) {
-      const others = await testimonialRepository.list();
-      if (activeCount(others.filter((row) => row.id !== existing.id)) >= HOME_TESTIMONIAL_LIMIT) {
-        return limitFailure();
-      }
-    }
+    const activationFailure = await testimonials.activationFailure(existing, parsed.value.isActive);
+    if (activationFailure) return activationFailure;
     await testimonialRepository.update(
       idParsed.data,
       toWritePayload(parsed.value, existing.displayOrder),
@@ -213,34 +180,8 @@ export async function toggleTestimonialStatus(
     if (typeof isActive !== 'boolean') {
       return { success: false, error: 'Estado inválido.', code: 'VALIDATION' };
     }
-    const existingRows = await testimonialRepository.list();
-    if (existingRows.length === 0) {
-      const fallback = FALLBACK_TESTIMONIALS.find((item) => item.id === id);
-      if (!fallback) {
-        return { success: false, error: 'No encontramos ese testimonio.', code: 'INTERNAL' };
-      }
-      const storedUrl = await ensureStoredTestimonialImage(fallback.photoSrc);
-      if (typeof storedUrl !== 'string') return storedUrl;
-      const seedError = await seedFallbackDocuments(id, {
-        ...payloadFromFallback(fallback, 1, storedUrl),
-        isActive,
-      });
-      if (seedError) return seedError;
-      revalidateHomeContent();
-      return { success: true };
-    }
-    const idParsed = uuid.safeParse(id);
-    if (!idParsed.success) {
-      return { success: false, error: 'Identificador inválido.', code: 'VALIDATION', issues: idParsed.error.issues };
-    }
-    const existing = await testimonialRepository.findById(idParsed.data);
-    if (!existing) {
-      return { success: false, error: 'No encontramos ese testimonio.', code: 'INTERNAL' };
-    }
-    if (isActive && !existing.isActive && activeCount(existingRows) >= HOME_TESTIMONIAL_LIMIT) {
-      return limitFailure();
-    }
-    await testimonialRepository.setActive(idParsed.data, isActive);
+    const failure = await testimonials.toggle(id, isActive);
+    if (failure) return failure;
     revalidateHomeContent();
     return { success: true };
   } catch (err) {
