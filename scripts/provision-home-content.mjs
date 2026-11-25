@@ -1,21 +1,12 @@
-import { AppwriteException, Client, Databases, Permission, Role, Storage } from 'node-appwrite';
+import {
+  createProvisioningContext,
+  ensureBucket,
+  ensureCollection,
+  finish,
+  PUBLIC_FILE_READ,
+} from './lib/appwrite-provisioning.mjs';
 
-const DATABASE_ID = 'kataleya';
-const TEAM_ADMINS = 'admins';
-const CONTENT_PERMISSIONS = [
-  Permission.read(Role.any()),
-  Permission.create(Role.team(TEAM_ADMINS)),
-  Permission.update(Role.team(TEAM_ADMINS)),
-  Permission.delete(Role.team(TEAM_ADMINS)),
-];
-
-const client = new Client()
-  .setEndpoint(process.env.APPWRITE_ENDPOINT)
-  .setProject(process.env.APPWRITE_PROJECT_ID)
-  .setKey(process.env.APPWRITE_API_KEY);
-
-const databases = new Databases(client);
-const storage = new Storage(client);
+const CONTENT_PERMISSIONS = [];
 
 const PUBLISHING = [
   { kind: 'boolean', key: 'is_active', required: true },
@@ -130,87 +121,24 @@ const COLLECTIONS = [
   },
 ];
 
-async function ignoreConflict(work) {
-  try {
-    await work();
-  } catch (error) {
-    if (error instanceof AppwriteException && error.code === 409) return;
-    throw error;
-  }
-}
+const context = createProvisioningContext();
 
-async function createAttribute(collectionId, attribute) {
-  const base = { databaseId: DATABASE_ID, collectionId, key: attribute.key, required: attribute.required };
-  if (attribute.kind === 'string') {
-    await databases.createStringAttribute({ ...base, size: attribute.size });
-    return;
-  }
-  if (attribute.kind === 'boolean') {
-    await databases.createBooleanAttribute(base);
-    return;
-  }
-  if (attribute.kind === 'datetime') {
-    await databases.createDatetimeAttribute(base);
-    return;
-  }
-  if (attribute.kind === 'integer') {
-    await databases.createIntegerAttribute({
-      ...base,
-      min: attribute.min,
-      max: attribute.max,
-    });
-    return;
-  }
-  if (attribute.kind === 'enum') {
-    await databases.createEnumAttribute({ ...base, elements: attribute.elements });
-  }
-}
-
-async function waitForAttributes(collectionId, keys) {
-  const deadline = Date.now() + 60_000;
-  while (Date.now() < deadline) {
-    const collection = await databases.getCollection({ databaseId: DATABASE_ID, collectionId });
-    const byKey = new Map(collection.attributes.map((attribute) => [attribute.key, attribute]));
-    const pending = keys.filter((key) => byKey.get(key)?.status !== 'available');
-    if (pending.length === 0) return;
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-  }
-  throw new Error(`Attributes for ${collectionId} did not become available in time`);
-}
-
-try {
-  await ignoreConflict(() => storage.createBucket({
-    bucketId: 'content_images',
-    name: 'content_images',
-    permissions: [Permission.read(Role.any())],
-    fileSecurity: false,
+await ensureBucket(context, {
+  id: 'content_images',
+  permissions: [PUBLIC_FILE_READ],
+  fileSecurity: false,
+  createOptions: {
     maximumFileSize: 10 * 1024 * 1024,
     allowedFileExtensions: ['jpg', 'jpeg', 'png', 'webp', 'avif'],
-  }));
-  console.log('ready content_images');
-} catch (error) {
-  if (error instanceof AppwriteException && error.type === 'general_unauthorized_scope') {
-    console.warn('skip content_images: API key missing buckets.write — create the bucket in the Appwrite console');
-  } else {
-    throw error;
-  }
-}
+  },
+});
 
 for (const collection of COLLECTIONS) {
-  await ignoreConflict(() => databases.createCollection({
-    databaseId: DATABASE_ID,
-    collectionId: collection.id,
-    name: collection.name,
+  await ensureCollection(context, {
+    ...collection,
     permissions: CONTENT_PERMISSIONS,
     documentSecurity: false,
-    enabled: true,
-  }));
-
-  for (const attribute of collection.attributes) {
-    await ignoreConflict(() => createAttribute(collection.id, attribute));
-  }
-  await waitForAttributes(collection.id, collection.attributes.map((attribute) => attribute.key));
-  console.log(`ready ${collection.id}`);
+  });
 }
 
-console.log('done');
+finish(context);
