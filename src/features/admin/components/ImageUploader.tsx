@@ -4,6 +4,7 @@ import { useCallback, useRef, useState } from 'react';
 
 import Image from '@/components/ui/StoredImage';
 import { useImageUpload } from '@/features/admin/hooks/useImageUpload';
+import { mergeUploadedUrls } from '@/features/admin/utils/mergeUploadedUrls';
 
 interface BaseProps {
   folder?: string;
@@ -42,15 +43,14 @@ export default function ImageUploader(props: ImageUploaderProps) {
 
     const uploadedUrls = await Promise.all(toUpload.map((file) => uploadImage(file, folder)));
 
-    for (const url of uploadedUrls) {
-      if (!url) continue;
-
-      if (multiple) {
-        onChange([...value, url]);
-      } else {
-        onChange(url);
-      }
+    if (multiple) {
+      const merged = mergeUploadedUrls(value, uploadedUrls);
+      if (merged.length > value.length) onChange(merged);
+      return;
     }
+
+    const uploaded = uploadedUrls.find(Boolean);
+    if (uploaded) onChange(uploaded);
   }, [uploadImage, folder, maxFiles, urls.length, multiple, value, onChange]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
