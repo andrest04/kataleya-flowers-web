@@ -31,7 +31,9 @@ function categoryToFormData(category: Category): Omit<CategoryFormData, 'display
 }
 
 interface FormState {
+  attempt: number;
   error?: string;
+  values?: CategoryFormData;
 }
 
 export default function CategoryForm({ category }: CategoryFormProps) {
@@ -47,7 +49,7 @@ export default function CategoryForm({ category }: CategoryFormProps) {
     const autoSlugRef = useRef(!isEditing);
 
   const [state, formAction, isPending] = useActionState<FormState, FormData>(
-    async (_prev: FormState, formData: FormData) => {
+    async (prev: FormState, formData: FormData) => {
       const data: CategoryFormData = {
         name: formData.get('name') as string,
         slug: formData.get('slug') as string,
@@ -64,14 +66,19 @@ export default function CategoryForm({ category }: CategoryFormProps) {
         : await createCategory(data);
 
       if (!result.success) {
-        return { error: result.error ?? 'Error desconocido' };
+        return {
+          attempt: prev.attempt + 1,
+          error: result.error ?? 'Error desconocido',
+          values: data,
+        };
       }
 
       router.push('/admin/categorias');
-      return {};
+      return { attempt: prev.attempt + 1, values: data };
     },
-    {}
+    { attempt: 0 }
   );
+  const values = state.values ?? initial;
 
   return (
     <form action={formAction} className="space-y-5">
@@ -85,7 +92,8 @@ export default function CategoryForm({ category }: CategoryFormProps) {
             type="text"
             required
             aria-required="true"
-            defaultValue={initial.name}
+            key={state.attempt}
+            defaultValue={values.name}
             onChange={(e) => {
               if (autoSlugRef.current && slugRef.current) {
                 slugRef.current.value = slugify(e.target.value);
@@ -101,7 +109,8 @@ export default function CategoryForm({ category }: CategoryFormProps) {
               id="slug"
               name="slug"
               type="text"
-              defaultValue={initial.slug}
+              key={state.attempt}
+              defaultValue={values.slug}
               placeholder="se genera desde el nombre"
               readOnly
               aria-readonly="true"
@@ -133,7 +142,7 @@ export default function CategoryForm({ category }: CategoryFormProps) {
         required
         htmlFor="description"
         action={
-          <InfoTooltip label="Esta descripción se usa como meta description para Google. Mencioná tu distrito (Barranco) y Lima para aparecer en búsquedas locales." />
+          <InfoTooltip label="Esta descripción se usa como meta description para Google. Menciona tu distrito (Barranco) y Lima para aparecer en búsquedas locales." />
         }
       >
         <Textarea
@@ -142,7 +151,8 @@ export default function CategoryForm({ category }: CategoryFormProps) {
           required
           aria-required="true"
           rows={3}
-          defaultValue={initial.description}
+          key={state.attempt}
+          defaultValue={values.description}
         />
       </FormField>
 
@@ -152,7 +162,8 @@ export default function CategoryForm({ category }: CategoryFormProps) {
             id="occasion"
             name="occasion"
             type="text"
-            defaultValue={initial.occasion}
+            key={state.attempt}
+            defaultValue={values.occasion}
             placeholder="ej: cumpleaños, amor, condolencias"
           />
         </FormField>

@@ -181,7 +181,7 @@ Toda action en `features/admin/actions/` **debe**:
 
 ## A11y + shared primitives
 
-- Skip link → `id="main-content"`. Forms: `aria-required/-invalid/-describedby` → `<FieldError role="alert">`. `<nav aria-label>`.
+- Skip link → `id="main-content"`. Forms: `aria-required/-invalid` + `aria-describedby` → `<FieldError id>` (sin `role="alert"`); un solo `<FormError>` de resumen (p. ej. «Revisa los 3 campos marcados.») y, tras un submit fallido, foco al primer `[aria-invalid="true"]` en orden DOM. Un submit fallido conserva lo escrito: el estado del action devuelve los valores y los campos los reponen con `defaultValue` + `key` por intento. `<nav aria-label>`.
 - Drag & drop @dnd-kit: sensores Pointer+Keyboard+Touch + `<DndLiveRegion>` (announcements ES). Modales Radix (focus trap/restore/ESC/scroll-lock automáticos). Autocomplete: `role="combobox"` + `aria-autocomplete="list"` + `role="option"`.
 - `ui/` disponibles: `LightboxDialog`, `ConfirmDialog` (`default`/`destructive`), `JsonLd`, `Button`, `Input`, `Breadcrumb`, `FormField`, `EmptyState`, `FilterChip`, `PillToggle`, `ToggleSwitch`, `SectionHeader`.
 

@@ -10,7 +10,6 @@ export function FieldError({ id, message }: FieldErrorProps) {
   return (
     <p
       id={id}
-      role="alert"
       className="mt-1 text-xs"
       style={{ color: 'var(--color-primary)' }}
     >

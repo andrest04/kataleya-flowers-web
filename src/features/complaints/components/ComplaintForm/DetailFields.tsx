@@ -4,10 +4,12 @@ import { FormField } from '@/components/ui/FormField';
 import { Textarea } from '@/components/ui/Input';
 import { FieldError } from '@/features/admin/components/ProductForm/FieldError';
 
+import type { ComplaintFormData } from '../../schemas/complaint';
 import type { ComplaintType } from '../../types';
 
 interface DetailFieldsProps {
   errors: Record<string, string>;
+  values?: ComplaintFormData;
   value: ComplaintType;
   onChange: (value: ComplaintType) => void;
 }
@@ -27,7 +29,7 @@ const OPTIONS: { value: ComplaintType; title: string; desc: string; color: strin
   },
 ];
 
-export default function DetailFields({ errors, value, onChange }: DetailFieldsProps) {
+export default function DetailFields({ errors, values, value, onChange }: DetailFieldsProps) {
   return (
     <div className="space-y-4">
       <fieldset>
@@ -66,6 +68,7 @@ export default function DetailFields({ errors, value, onChange }: DetailFieldsPr
         <Textarea
           id="detail"
           name="detail"
+          defaultValue={values?.detail}
           rows={4}
           required
           aria-required="true"
@@ -79,6 +82,7 @@ export default function DetailFields({ errors, value, onChange }: DetailFieldsPr
         <Textarea
           id="consumerRequest"
           name="consumerRequest"
+          defaultValue={values?.consumerRequest}
           rows={3}
           required
           aria-required="true"

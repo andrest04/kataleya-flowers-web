@@ -5,16 +5,19 @@ import { Input, Select } from '@/components/ui/Input';
 import ToggleSwitch from '@/components/ui/ToggleSwitch';
 import { FieldError } from '@/features/admin/components/ProductForm/FieldError';
 
+import type { ComplaintFormData } from '../../schemas/complaint';
 import { DOC_TYPES } from '../../schemas/constants';
 
 interface ConsumerFieldsProps {
   errors: Record<string, string>;
+  values?: ComplaintFormData;
   isMinor: boolean;
   onMinorChange: (value: boolean) => void;
 }
 
 export default function ConsumerFields({
   errors,
+  values,
   isMinor,
   onMinorChange,
 }: ConsumerFieldsProps) {
@@ -24,6 +27,7 @@ export default function ConsumerFields({
         <Input
           id="consumerName"
           name="consumerName"
+          defaultValue={values?.consumerName}
           required
           aria-required="true"
           aria-invalid={!!errors.consumerName}
@@ -34,7 +38,11 @@ export default function ConsumerFields({
 
       <div className="grid gap-4 sm:grid-cols-2">
         <FormField label="Tipo de documento" required htmlFor="consumerDocType">
-          <Select id="consumerDocType" name="consumerDocType" defaultValue="DNI">
+          <Select
+            id="consumerDocType"
+            name="consumerDocType"
+            defaultValue={values?.consumerDocType ?? 'DNI'}
+          >
             {DOC_TYPES.map((t) => (
               <option key={t} value={t}>
                 {t}
@@ -46,6 +54,7 @@ export default function ConsumerFields({
           <Input
             id="consumerDocNumber"
             name="consumerDocNumber"
+            defaultValue={values?.consumerDocNumber}
             required
             aria-required="true"
             aria-invalid={!!errors.consumerDocNumber}
@@ -59,6 +68,7 @@ export default function ConsumerFields({
         <Input
           id="consumerAddress"
           name="consumerAddress"
+          defaultValue={values?.consumerAddress}
           required
           aria-required="true"
           aria-invalid={!!errors.consumerAddress}
@@ -72,6 +82,7 @@ export default function ConsumerFields({
           <Input
             id="consumerPhone"
             name="consumerPhone"
+            defaultValue={values?.consumerPhone}
             type="tel"
             aria-invalid={!!errors.consumerPhone}
             aria-describedby="err-consumerPhone"
@@ -82,6 +93,7 @@ export default function ConsumerFields({
           <Input
             id="consumerEmail"
             name="consumerEmail"
+            defaultValue={values?.consumerEmail}
             type="email"
             required
             aria-required="true"
@@ -112,6 +124,7 @@ export default function ConsumerFields({
           <Input
             id="guardianName"
             name="guardianName"
+            defaultValue={values?.guardianName}
             aria-invalid={!!errors.guardianName}
             aria-describedby="err-guardianName"
           />
