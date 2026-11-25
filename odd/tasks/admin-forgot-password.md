@@ -96,6 +96,12 @@
   - Decision: `useLevenshteinDistance` stays off. With it, a check took ~150–550 ms per keystroke; without it, 5–45 ms, and common passwords still score below 3.
   - Evidence: RED observed twice (missing module/exports, then "easy to guess" accepted), then GREEN. See verification below.
 
+**Commits:**
+- `5349be0`: auth port and adapter.
+- `7ba861b`: actions, UI, password policy and dependencies.
+- `5abb712`: this document.
+- Not pushed.
+
 ## Acceptance criteria
 
 - An unknown or non-admin email returns the same success message as an admin email.
