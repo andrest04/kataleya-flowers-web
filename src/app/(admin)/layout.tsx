@@ -1,3 +1,4 @@
+import { Toaster } from '@/components/ui/primitives/sonner';
 import AdminSidebar from '@/features/admin/components/AdminSidebar';
 import { requireAdminOrRedirect } from '@/features/admin/utils/auth';
 
@@ -21,6 +22,7 @@ export default async function AdminLayout({
       <main id="main-content" tabIndex={-1} className="flex-1 overflow-auto p-4 pb-24 md:p-8">
         {children}
       </main>
+      <Toaster />
     </div>
   );
 }

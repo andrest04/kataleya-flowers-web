@@ -30,3 +30,5 @@ export const BUSINESS = {
       `Hola, me interesa el producto: ${productName}`,
   },
 } as const;
+
+export const GA_MEASUREMENT_ID = "G-YDFWMY50NN";

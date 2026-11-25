@@ -1,15 +1,11 @@
 import "./globals.css";
 
-import { GoogleAnalytics } from "@next/third-parties/google";
-import { Analytics } from "@vercel/analytics/next";
-import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata, Viewport } from "next";
 import { Crimson_Text, Mulish } from "next/font/google";
 import type React from "react";
 
 import { MotionProvider } from "@/components/shared/MotionProvider";
 import { JsonLd } from "@/components/ui/JsonLd";
-import { Toaster } from "@/components/ui/primitives/sonner";
 import { getSiteSettings } from "@/features/settings/queries/getSiteSettings";
 import { floristSeoDescription, schemaDayNames } from "@/lib/siteSettings";
 
@@ -19,8 +15,6 @@ const crimsonText = Crimson_Text({
   display: "swap",
   variable: "--font-heading",
 });
-
-const GA_MEASUREMENT_ID = "G-YDFWMY50NN";
 
 const mulish = Mulish({
   subsets: ["latin"],
@@ -114,11 +108,7 @@ export default async function RootLayout({
           Saltar al contenido principal
         </a>
         <MotionProvider>{children}</MotionProvider>
-        <Toaster />
-        <Analytics />
-        <SpeedInsights />
       </body>
-      <GoogleAnalytics gaId={GA_MEASUREMENT_ID} />
     </html>
   );
 }

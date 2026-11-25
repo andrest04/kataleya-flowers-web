@@ -39,11 +39,11 @@ function imageStorageOrigin(): string {
 
 const CSP_REPORT_ONLY = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://va.vercel-scripts.com https://www.googletagmanager.com",
   "style-src 'self' 'unsafe-inline'",
-  `img-src 'self' data: blob: ${imageStorageOrigin()}`,
+  `img-src 'self' data: blob: ${imageStorageOrigin()} https://*.google-analytics.com https://www.googletagmanager.com`,
   "font-src 'self' data:",
-  "connect-src 'self'",
+  "connect-src 'self' https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com",
   "frame-src 'self' https://www.google.com",
   "object-src 'none'",
   "base-uri 'self'",
