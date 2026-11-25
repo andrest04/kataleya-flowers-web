@@ -1,11 +1,14 @@
 'use client';
 
-import { AnimatePresence, domAnimation, LazyMotion, m } from 'framer-motion';
+import { AnimatePresence, LazyMotion, m } from 'framer-motion';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { Dialog as DialogPrimitive } from 'radix-ui';
 import { useCallback, useEffect, useEffectEvent, useRef, useState } from 'react';
 
 import Image from '@/components/ui/StoredImage';
+
+const loadMotionFeatures = () =>
+  import('@/components/shared/motionFeatures').then((mod) => mod.default);
 
 interface LightboxDialogProps {
   open: boolean;
@@ -95,7 +98,7 @@ function LightboxInner({
   if (!currentSrc) return null;
 
   return (
-    <LazyMotion features={domAnimation}>
+    <LazyMotion features={loadMotionFeatures}>
       <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
         <AnimatePresence>
           {open && (

@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, domAnimation, LazyMotion, m } from "framer-motion";
+import { AnimatePresence, LazyMotion, m } from "framer-motion";
 import type { FormEvent, RefObject } from "react";
 
 import type { SearchSuggestions } from "@/features/catalog/actions/getSearchSuggestions";
@@ -9,6 +9,9 @@ import type { SearchResult } from "../constants";
 import SearchBar from "./SearchBar";
 import SearchResultsPanel from "./SearchResultsPanel";
 import SearchSuggestionsPanel from "./SearchSuggestionsPanel";
+
+const loadMotionFeatures = () =>
+  import("@/components/shared/motionFeatures").then((mod) => mod.default);
 
 interface SearchOverlayProps {
   searchQuery: string;
@@ -34,7 +37,7 @@ export default function SearchOverlay({
   const showResults = searchQuery.trim().length > 0;
 
   return (
-    <LazyMotion features={domAnimation}>
+    <LazyMotion features={loadMotionFeatures}>
       <m.div
         ref={desktopSearchRef}
         className="relative hidden w-full md:block"

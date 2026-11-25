@@ -70,6 +70,7 @@ export function useNavbar() {
 
   return {
     isDrawerOpen: drawer.isOpen,
+    hasDrawerOpened: drawer.hasOpened,
     setIsDrawerOpen: drawer.setOpen,
     openDrawer,
     searchInputRef: drawer.searchInputRef,

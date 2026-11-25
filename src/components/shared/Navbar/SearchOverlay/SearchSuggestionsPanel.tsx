@@ -1,6 +1,6 @@
 "use client";
 
-import { domAnimation, LazyMotion, m } from "framer-motion";
+import { LazyMotion, m } from "framer-motion";
 import Link from "next/link";
 
 import type { SearchSuggestions } from "@/features/catalog/actions/getSearchSuggestions";
@@ -8,6 +8,9 @@ import CatalogCollectionCard from "@/features/catalog/components/CatalogCollecti
 
 import { PANEL_CONTAINER } from "./constants";
 import SearchSuggestionsSkeleton from "./SearchSuggestionsSkeleton";
+
+const loadMotionFeatures = () =>
+  import("@/components/shared/motionFeatures").then((mod) => mod.default);
 
 interface SearchSuggestionsPanelProps {
   suggestions: SearchSuggestions | null;
@@ -32,7 +35,7 @@ export default function SearchSuggestionsPanel({
   }
 
   return (
-    <LazyMotion features={domAnimation}>
+    <LazyMotion features={loadMotionFeatures}>
       <div className={`${PANEL_CONTAINER} pt-6 pb-15`}>
         <div className="flex flex-col gap-10 lg:flex-row lg:gap-10">
           {featuredCategories.length > 0 && (

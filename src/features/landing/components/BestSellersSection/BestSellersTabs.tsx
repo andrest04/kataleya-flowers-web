@@ -1,6 +1,6 @@
 'use client';
 
-import { AnimatePresence, domAnimation, LazyMotion, m } from 'framer-motion';
+import { AnimatePresence, LazyMotion, m } from 'framer-motion';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, useSyncExternalStore } from 'react';
@@ -14,6 +14,9 @@ import {
 import BestSellerProductCard from './BestSellerProductCard';
 
 const CATEGORY_QUERY_PARAM = 'bestsellers';
+
+const loadMotionFeatures = () =>
+  import('@/components/shared/motionFeatures').then((mod) => mod.default);
 
 function subscribeToNothing() {
   return () => {
@@ -114,7 +117,7 @@ export default function BestSellersTabs({ bestSellersByTab, tabCategories }: Bes
         </Link>
       </div>
 
-      <LazyMotion features={domAnimation}>
+      <LazyMotion features={loadMotionFeatures}>
         <AnimatePresence mode="wait">
           <m.div
             key={activeCategoryId ?? BEST_SELLERS_ALL_TAB}

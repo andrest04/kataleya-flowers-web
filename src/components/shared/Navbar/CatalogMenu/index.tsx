@@ -1,6 +1,6 @@
 "use client";
 
-import { domAnimation, LazyMotion, m } from "framer-motion";
+import { LazyMotion, m } from "framer-motion";
 import Link from "next/link";
 import type { RefObject } from "react";
 
@@ -10,6 +10,9 @@ import { PANEL_CONTAINER } from "../SearchOverlay/constants";
 import CatalogCategoryRow from "./CatalogCategoryRow";
 import CatalogFeaturedCard from "./CatalogFeaturedCard";
 import CatalogMenuSkeleton from "./CatalogMenuSkeleton";
+
+const loadMotionFeatures = () =>
+  import("@/components/shared/motionFeatures").then((mod) => mod.default);
 
 interface CatalogMenuProps {
   categories: Category[] | null;
@@ -30,7 +33,7 @@ export default function CatalogMenu({
     categories?.filter((category) => category.isFeatured).slice(0, 2) ?? [];
 
   return (
-    <LazyMotion features={domAnimation}>
+    <LazyMotion features={loadMotionFeatures}>
       <m.div
         ref={catalogMenuRef}
         onMouseEnter={onMouseEnter}
