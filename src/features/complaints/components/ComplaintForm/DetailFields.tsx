@@ -36,17 +36,13 @@ export default function DetailFields({ errors, values, value, onChange }: Detail
         <legend className="text-sm font-medium mb-2 text-(--color-dark)">
           Tipo de reclamación <span className="text-primary">*</span>
         </legend>
-        <div className="grid gap-3 sm:grid-cols-2" role="radiogroup" aria-label="Tipo de reclamación">
+        <div className="grid gap-3 sm:grid-cols-2">
           {OPTIONS.map((opt) => {
             const selected = value === opt.value;
             return (
-              <button
+              <label
                 key={opt.value}
-                type="button"
-                role="radio"
-                aria-checked={selected}
-                onClick={() => onChange(opt.value)}
-                className="rounded-xl border p-4 text-left transition-colors"
+                className="block min-h-11 cursor-pointer rounded-xl border p-4 text-left transition-colors has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-(--color-primary)"
                 style={{
                   borderColor: selected ? opt.color : 'var(--color-border)',
                   background: selected
@@ -54,11 +50,19 @@ export default function DetailFields({ errors, values, value, onChange }: Detail
                     : 'var(--color-white)',
                 }}
               >
+                <input
+                  type="radio"
+                  name="complaintType"
+                  value={opt.value}
+                  checked={selected}
+                  onChange={() => onChange(opt.value)}
+                  className="sr-only"
+                />
                 <span className="block font-semibold" style={{ color: opt.color }}>
                   {opt.title}
                 </span>
                 <span className="block text-sm mt-1 text-(--color-dark)">{opt.desc}</span>
-              </button>
+              </label>
             );
           })}
         </div>

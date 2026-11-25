@@ -2,11 +2,10 @@ import { z } from 'zod';
 
 import { isOwnedStorageUrl, parseOwnedStorageUrl } from '@/lib/imageStorage/ownership';
 
-export const nonEmptyString = z
-  .string()
-  .trim()
-  .min(1, 'Campo obligatorio')
-  .max(255, 'Máximo 255 caracteres');
+export const requiredString = (requiredMessage = 'Campo obligatorio') =>
+  z.string().trim().min(1, requiredMessage).max(255, 'Máximo 255 caracteres');
+
+export const nonEmptyString = requiredString();
 
 export const optionalTrimmedString = z
   .string()
@@ -15,11 +14,10 @@ export const optionalTrimmedString = z
   .optional()
   .nullable();
 
-export const longText = z
-  .string()
-  .trim()
-  .min(1, 'La descripción es obligatoria')
-  .max(5000, 'Máximo 5000 caracteres');
+export const longTextField = (requiredMessage = 'La descripción es obligatoria') =>
+  z.string().trim().min(1, requiredMessage).max(5000, 'Máximo 5000 caracteres');
+
+export const longText = longTextField();
 
 export const uuid = z.uuid('Identificador inválido');
 
@@ -65,20 +63,32 @@ export const taxonomyName = z
   .min(1, 'Nombre obligatorio')
   .max(60, 'Nombre demasiado largo');
 
-export const email = z
-  .string()
-  .trim()
-  .toLowerCase()
-  .min(1, 'El email es obligatorio')
-  .email('Email inválido')
-  .max(255, 'Email demasiado largo');
+export const emailField = ({
+  required = 'El email es obligatorio',
+  invalid = 'Email inválido',
+}: { required?: string; invalid?: string } = {}) =>
+  z
+    .string()
+    .trim()
+    .toLowerCase()
+    .min(1, required)
+    .email(invalid)
+    .max(255, 'Email demasiado largo');
 
-export const peruPhone = z
-  .string()
-  .trim()
-  .regex(/^[0-9+\s()-]{6,20}$/, 'Teléfono inválido');
+export const email = emailField();
 
-export const docNumber = z
-  .string()
-  .trim()
-  .regex(/^[0-9A-Za-z]{6,15}$/, 'Documento inválido');
+export const peruPhoneField = (invalidMessage = 'Teléfono inválido') =>
+  z
+    .string()
+    .trim()
+    .regex(/^[0-9+\s()-]{6,20}$/, invalidMessage);
+
+export const peruPhone = peruPhoneField();
+
+export const docNumberField = (invalidMessage = 'Documento inválido') =>
+  z
+    .string()
+    .trim()
+    .regex(/^[0-9A-Za-z]{6,15}$/, invalidMessage);
+
+export const docNumber = docNumberField();

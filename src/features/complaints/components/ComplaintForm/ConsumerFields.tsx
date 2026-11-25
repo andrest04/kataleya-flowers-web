@@ -8,6 +8,8 @@ import { FieldError } from '@/features/admin/components/ProductForm/FieldError';
 import type { ComplaintFormData } from '../../schemas/complaint';
 import { DOC_TYPES } from '../../schemas/constants';
 
+const MINOR_LABEL = 'Represento a un menor de edad';
+
 interface ConsumerFieldsProps {
   errors: Record<string, string>;
   values?: ComplaintFormData;
@@ -28,6 +30,7 @@ export default function ConsumerFields({
           id="consumerName"
           name="consumerName"
           defaultValue={values?.consumerName}
+          autoComplete="name"
           required
           aria-required="true"
           aria-invalid={!!errors.consumerName}
@@ -69,6 +72,7 @@ export default function ConsumerFields({
           id="consumerAddress"
           name="consumerAddress"
           defaultValue={values?.consumerAddress}
+          autoComplete="street-address"
           required
           aria-required="true"
           aria-invalid={!!errors.consumerAddress}
@@ -84,6 +88,7 @@ export default function ConsumerFields({
             name="consumerPhone"
             defaultValue={values?.consumerPhone}
             type="tel"
+            autoComplete="tel"
             aria-invalid={!!errors.consumerPhone}
             aria-describedby="err-consumerPhone"
           />
@@ -95,6 +100,7 @@ export default function ConsumerFields({
             name="consumerEmail"
             defaultValue={values?.consumerEmail}
             type="email"
+            autoComplete="email"
             required
             aria-required="true"
             aria-invalid={!!errors.consumerEmail}
@@ -104,16 +110,10 @@ export default function ConsumerFields({
         </FormField>
       </div>
 
-      <div className="flex items-center gap-3 pt-1">
-        <ToggleSwitch
-          checked={isMinor}
-          onChange={onMinorChange}
-          label="El consumidor es menor de edad"
-        />
-        <span className="text-sm text-(--color-dark)">
-          Represento a un menor de edad
-        </span>
-      </div>
+      <label className="flex min-h-11 w-fit cursor-pointer items-center gap-3 pt-1">
+        <ToggleSwitch checked={isMinor} onChange={onMinorChange} label={MINOR_LABEL} />
+        <span className="text-sm text-(--color-dark)">{MINOR_LABEL}</span>
+      </label>
 
       {isMinor && (
         <FormField
