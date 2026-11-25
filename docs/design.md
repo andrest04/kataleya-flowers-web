@@ -77,7 +77,7 @@ Paleta fija de negocio (definida en `src/app/globals.css`, **prohibido modificar
 - **Rojo Tulipán** (`--color-primary`, #c0392b): la voz de la marca. Títulos de sección, AnnouncementBar, hover de botones primarios/whatsapp, logo.
 
 ### Secondary
-- **Dorado** (`--color-secondary`, #e8b84b): el destello — íconos de confianza (estrellas de testimonios), kicker del hero, acentos de foco (`focus-visible:outline-(--color-secondary)` en CategoryTile). **Solo decorativo o sobre fondos oscuros verificados** — sobre claros falla AA (1.8:1), ver Named Rules.
+- **Dorado** (`--color-secondary`, #e8b84b): el destello — relleno de las estrellas de testimonios (con contorno `--color-gold-text`), kicker del hero, anillos de foco del footer sobre verde. **Solo decorativo, como relleno, o sobre fondos oscuros verificados** — sobre claros falla AA (1.8:1), ver Named Rules.
 
 ### Tertiary
 - **Verde Tallo** (`--color-accent`, #2d5a1b): fondo del footer, badge "ABIERTO" (`BusinessHoursBadge`).
@@ -92,6 +92,8 @@ Paleta fija de negocio (definida en `src/app/globals.css`, **prohibido modificar
 ### Named Rules
 
 **La Regla del Dorado-No-Es-Texto.** El dorado #e8b84b está prohibido como color de texto sobre crema, blanco o fotos claras (contraste 1.8:1, falla WCAG AA). Sobre fondos claros, el texto dorado usa `--color-gold-text` (#8a6a1f, 4.92:1 sobre crema); sobre el verde del footer usa `--color-gold-text-dark` (#f0c668, 5.01:1). **Estado: implementado** (P1-1 del audit, ambos tokens presentes en `globals.css`).
+
+**La Regla del Foco-Sobre-Crema.** Los anillos de foco (`focus-visible:outline-*`) sobre crema o blanco usan `--color-primary`, como el resto del sitio; nunca dorado. Solo el footer, sobre verde (4.37:1), conserva `focus-visible:outline-(--color-secondary)`. **Estado: aplicado por ESLint** — `no-restricted-syntax` en `eslint.config.mjs` rechaza cualquier clase `text-(--color-secondary)` u `outline-(--color-secondary)` fuera de `src/components/shared/Footer.tsx`.
 
 **El WhatsApp verde quedó sin uso real (divergencia abierta).** El variant `whatsapp` de `Button.tsx` es idéntico al `primary` (blanco/tinta) — no usa `--color-whatsapp`. El audit (`QA/audit/10-design-audit-landing.md`, P2-1) señala además que donde sí aparece verde-sobre-blanco el contraste es 2.0:1 (falla AA). **Estado: sin resolver.** Antes de usar `--color-whatsapp` en un botón nuevo, verificar contraste real contra el fondo.
 

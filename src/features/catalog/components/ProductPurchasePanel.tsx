@@ -64,6 +64,8 @@ export function ProductPurchasePanel({
 
   const selectedVariant = variants.find((v) => v.label === selectedLabel);
   const displayPrice = selectedVariant?.price ?? product.price;
+  const hasChosenVariant = userSelectedLabel !== undefined || paramLabel !== undefined;
+  const showsStartingPrice = variants.length > 0 && !hasChosenVariant;
 
   const baseMessage = interpolateProductMessage(whatsappProductTemplate, product.name);
   const whatsappMessage = selectedVariant
@@ -74,7 +76,7 @@ export function ProductPurchasePanel({
   return (
     <div className="flex flex-col">
       <p className="font-body text-primary font-semibold text-xl mb-2">
-        {variants.length > 0 ? 'Desde ' : ''}S/{' '}
+        {showsStartingPrice ? 'Desde ' : ''}S/{' '}
         {displayPrice.toLocaleString('es-PE', {
           minimumFractionDigits: displayPrice % 1 === 0 ? 0 : 2,
           maximumFractionDigits: 2,
@@ -126,7 +128,7 @@ export function ProductPurchasePanel({
             })}
           </div>
           {product.note && (
-            <p className="mt-2 text-sm font-body font-semibold" style={{ color: 'var(--color-secondary)' }}>
+            <p className="mt-2 text-sm font-body font-semibold text-(--color-gold-text)">
               {product.note}
             </p>
           )}
@@ -148,7 +150,7 @@ export function ProductPurchasePanel({
           Consultar por WhatsApp
         </Button>
 
-        <p className="mt-4 font-body text-dark/50 text-sm">
+        <p className="mt-4 font-body text-(--color-muted) text-sm">
           Te responderemos a la brevedad con disponibilidad y opciones de entrega.
         </p>
       </div>

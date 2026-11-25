@@ -87,14 +87,14 @@ export default function TestimonialCard({ cover, testimonial }: TestimonialCardP
         {`Compra verificada · ${testimonial.occasion}`}
       </p>
       <div
-        className="mt-3 flex gap-0.5 text-(--color-secondary)"
+        className="mt-3 flex gap-0.5 text-(--color-gold-text)"
         role="img"
         aria-label={`${stars} de 5 estrellas`}
       >
         {Array.from({ length: 5 }, (_, index) => (
           <Star
             key={index}
-            className={`h-4 w-4 ${index < stars ? 'fill-current' : ''}`}
+            className={`h-4 w-4 ${index < stars ? 'fill-(--color-secondary)' : ''}`}
             aria-hidden="true"
           />
         ))}

@@ -4,7 +4,7 @@ import Link from 'next/link';
 import FooterAnchorLink from '@/components/shared/FooterAnchorLink';
 
 const LINK_CLASS =
-  'font-body text-xs font-semibold tracking-[0.15em] uppercase underline underline-offset-4 transition-colors hover:text-(--color-primary) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-secondary)';
+  'font-body text-xs font-semibold tracking-[0.15em] uppercase underline underline-offset-4 transition-colors hover:text-(--color-primary) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary)';
 
 export interface ValueProp {
   Icon: LucideIcon;

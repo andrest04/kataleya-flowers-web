@@ -15,7 +15,7 @@ export default function CategoryTile({ category, layoutClasses }: CategoryTilePr
   return (
     <Link
       href={`/catalogo/${category.slug}`}
-      className={`group block focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-secondary) ${layoutClasses}`}
+      className={`group block focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary) ${layoutClasses}`}
     >
       <div className="relative aspect-[4/5] overflow-hidden rounded-md bg-(--color-surface) outline outline-1 -outline-offset-1 outline-black/10">
         {category.imageUrl ? (
@@ -28,7 +28,7 @@ export default function CategoryTile({ category, layoutClasses }: CategoryTilePr
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
-            <Flower2 className="h-12 w-12 text-(--color-secondary) opacity-50" aria-hidden="true" />
+            <Flower2 className="h-12 w-12 text-(--color-gold-text) opacity-50" aria-hidden="true" />
           </div>
         )}
       </div>

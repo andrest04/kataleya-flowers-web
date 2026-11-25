@@ -4,7 +4,7 @@ import Link from 'next/link';
 import type { SiteSettings } from '@/lib/siteSettings';
 
 const CARD_CLASS =
-  'group flex flex-col items-center gap-1 text-center transition-opacity duration-200 hover:opacity-80 focus-visible:outline-2 focus-visible:outline-offset-2 sm:px-4';
+  'group flex flex-col items-center gap-1 text-center transition-opacity duration-200 hover:opacity-80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary) sm:px-4';
 
 interface OtherContactMethodsProps {
   settings: SiteSettings;
@@ -61,8 +61,6 @@ export default function OtherContactMethods({ settings }: OtherContactMethodsPro
             </>
           );
 
-          const style = { outlineColor: 'var(--color-secondary)' };
-
           return external ? (
             <a
               key={label}
@@ -70,12 +68,11 @@ export default function OtherContactMethods({ settings }: OtherContactMethodsPro
               target="_blank"
               rel="noopener noreferrer"
               className={CARD_CLASS}
-              style={style}
             >
               {inner}
             </a>
           ) : (
-            <Link key={label} href={href} className={CARD_CLASS} style={style}>
+            <Link key={label} href={href} className={CARD_CLASS}>
               {inner}
             </Link>
           );

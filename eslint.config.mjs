@@ -12,6 +12,65 @@ import tseslint from 'typescript-eslint';
 // `scripts/check-no-tailwind-config.mjs` y corre vía `prebuild`. ESLint no
 // valida presencia de archivos.
 
+// Reglas AST agrupadas: hex en JSX, datos de contacto hardcodeados, z-index libres
+// y dorado como texto o anillo de foco. Flat config reemplaza las opciones de una
+// regla en vez de fusionarlas, así que los overrides filtran esta lista.
+const goldSelector = {
+  selector:
+    "Literal[value=/(text|outline)-\\(--color-secondary\\)/], TemplateElement[value.raw=/(text|outline)-\\(--color-secondary\\)/]",
+  message:
+    'Dorado (--color-secondary) como texto o anillo de foco falla AA sobre fondos claros (1.8:1). Usá --color-gold-text sobre claros, --color-gold-text-dark sobre oscuros y --color-primary para el foco.',
+};
+
+const restrictedSyntaxSelectors = [
+  // CRITICAL: hex hardcodeado en `style={{ ... }}` — debe usar var(--color-*).
+  {
+    selector: "JSXAttribute[name.name='style'] Literal[value=/#[0-9a-fA-F]{3,8}/]",
+    message:
+      'Color hardcodeado en JSX `style`. Usá una CSS variable de globals.css (var(--color-*)).',
+  },
+  // CRITICAL: hex en clases Tailwind arbitrarias `text-[#fff]`, `bg-[#000]`, `border-[#abc]`.
+  {
+    selector:
+      "JSXAttribute[name.name='className'] Literal[value=/(text|bg|border|ring|fill|stroke|from|to|via)-\\[#[0-9a-fA-F]/]",
+    message:
+      'Color hex en clase Tailwind. Usá tokens del proyecto (var(--color-*) o utilities con tokens).',
+  },
+  // CRITICAL: rgb()/rgba() hardcodeados como string literal en JSX.
+  {
+    selector: "JSXAttribute[name.name='style'] Literal[value=/rgba?\\(/]",
+    message:
+      'Color rgb/rgba hardcodeado. Usá var(--color-*) o color-mix(in srgb, ...).',
+  },
+  // CRITICAL: número del negocio fuera de `src/lib/constants.ts`.
+  {
+    selector: "Literal[value=/51990051041/]",
+    message:
+      'Número de WhatsApp hardcodeado. Importá BUSINESS.phone o BUSINESS.whatsapp de @/lib/constants.',
+  },
+  // CRITICAL: URL wa.me/<número> fuera de constants.
+  {
+    selector: "Literal[value=/wa\\.me\\/\\d/]",
+    message:
+      'URL de WhatsApp hardcodeada. Usá BUSINESS.whatsapp o BUSINESS.whatsappWithMessage de @/lib/constants.',
+  },
+  // CRITICAL: handle de Instagram hardcodeado.
+  {
+    selector: "Literal[value=/kataleyaflawers12/]",
+    message:
+      'Handle de Instagram hardcodeado. Usá BUSINESS.instagram / BUSINESS.instagramHandle de @/lib/constants.',
+  },
+  // CRITICAL: z-index custom no permitido. Stack del proyecto: z-50, z-[90], z-[100].
+  // Acepta `z-50`, `z-[90]`, `z-[100]`. Cualquier otro `z-N` o `z-[N]` arbitrario falla.
+  {
+    selector:
+      "JSXAttribute[name.name='className'] Literal[value=/\\bz-(?!50\\b|\\[90\\]|\\[100\\])(\\d+|\\[\\d+\\])\\b/]",
+    message:
+      'z-index custom no permitido. Z-stack del proyecto: Navbar z-[90], WhatsAppFloat z-50, Lightbox z-[100]. Si necesitás otro nivel, justificá y agregá un token CSS.',
+  },
+  goldSelector,
+];
+
 export default defineConfig([
   // 1. Ignores globales
   {
@@ -135,54 +194,8 @@ export default defineConfig([
       // CRITICAL: `console.log` no debe llegar a producción. `warn`/`error` permitidos.
       'no-console': ['warn', { allow: ['warn', 'error'] }],
 
-      // Reglas AST agrupadas: hex en JSX, datos de contacto hardcodeados, z-index libres.
-      'no-restricted-syntax': ['error',
-        // CRITICAL: hex hardcodeado en `style={{ ... }}` — debe usar var(--color-*).
-        {
-          selector: "JSXAttribute[name.name='style'] Literal[value=/#[0-9a-fA-F]{3,8}/]",
-          message:
-            'Color hardcodeado en JSX `style`. Usá una CSS variable de globals.css (var(--color-*)).',
-        },
-        // CRITICAL: hex en clases Tailwind arbitrarias `text-[#fff]`, `bg-[#000]`, `border-[#abc]`.
-        {
-          selector:
-            "JSXAttribute[name.name='className'] Literal[value=/(text|bg|border|ring|fill|stroke|from|to|via)-\\[#[0-9a-fA-F]/]",
-          message:
-            'Color hex en clase Tailwind. Usá tokens del proyecto (var(--color-*) o utilities con tokens).',
-        },
-        // CRITICAL: rgb()/rgba() hardcodeados como string literal en JSX.
-        {
-          selector: "JSXAttribute[name.name='style'] Literal[value=/rgba?\\(/]",
-          message:
-            'Color rgb/rgba hardcodeado. Usá var(--color-*) o color-mix(in srgb, ...).',
-        },
-        // CRITICAL: número del negocio fuera de `src/lib/constants.ts`.
-        {
-          selector: "Literal[value=/51990051041/]",
-          message:
-            'Número de WhatsApp hardcodeado. Importá BUSINESS.phone o BUSINESS.whatsapp de @/lib/constants.',
-        },
-        // CRITICAL: URL wa.me/<número> fuera de constants.
-        {
-          selector: "Literal[value=/wa\\.me\\/\\d/]",
-          message:
-            'URL de WhatsApp hardcodeada. Usá BUSINESS.whatsapp o BUSINESS.whatsappWithMessage de @/lib/constants.',
-        },
-        // CRITICAL: handle de Instagram hardcodeado.
-        {
-          selector: "Literal[value=/kataleyaflawers12/]",
-          message:
-            'Handle de Instagram hardcodeado. Usá BUSINESS.instagram / BUSINESS.instagramHandle de @/lib/constants.',
-        },
-        // CRITICAL: z-index custom no permitido. Stack del proyecto: z-50, z-[90], z-[100].
-        // Acepta `z-50`, `z-[90]`, `z-[100]`. Cualquier otro `z-N` o `z-[N]` arbitrario falla.
-        {
-          selector:
-            "JSXAttribute[name.name='className'] Literal[value=/\\bz-(?!50\\b|\\[90\\]|\\[100\\])(\\d+|\\[\\d+\\])\\b/]",
-          message:
-            'z-index custom no permitido. Z-stack del proyecto: Navbar z-[90], WhatsAppFloat z-50, Lightbox z-[100]. Si necesitás otro nivel, justificá y agregá un token CSS.',
-        },
-      ],
+      // Reglas AST agrupadas: ver `restrictedSyntaxSelectors`.
+      'no-restricted-syntax': ['error', ...restrictedSyntaxSelectors],
     },
   },
 
@@ -233,6 +246,20 @@ export default defineConfig([
     files: ['src/lib/constants.ts'],
     rules: {
       'no-restricted-syntax': 'off',
+    },
+  },
+
+  // 10. Override para `src/components/shared/Footer.tsx` — sus anillos de foco
+  //     dorados van sobre el verde del footer (4.37:1). Solo se exime el selector
+  //     del dorado; el resto de `restrictedSyntaxSelectors` sigue aplicando.
+  {
+    name: 'project/footer-gold-overrides',
+    files: ['src/components/shared/Footer.tsx'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        ...restrictedSyntaxSelectors.filter((selector) => selector !== goldSelector),
+      ],
     },
   },
 ]);
