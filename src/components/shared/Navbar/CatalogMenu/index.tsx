@@ -2,7 +2,8 @@
 
 import { LazyMotion, m } from "framer-motion";
 import Link from "next/link";
-import type { RefObject } from "react";
+import type { FocusEvent, RefObject } from "react";
+import { useEffect } from "react";
 
 import type { Category } from "@/features/catalog/types";
 
@@ -17,6 +18,8 @@ const loadMotionFeatures = () =>
 interface CatalogMenuProps {
   categories: Category[] | null;
   catalogMenuRef: RefObject<HTMLDivElement | null>;
+  shouldFocusOnOpen: boolean;
+  onBlur: (event: FocusEvent<HTMLElement>) => void;
   onMouseEnter: () => void;
   onMouseLeave: () => void;
   onNavigate: () => void;
@@ -25,10 +28,16 @@ interface CatalogMenuProps {
 export default function CatalogMenu({
   categories,
   catalogMenuRef,
+  shouldFocusOnOpen,
+  onBlur,
   onMouseEnter,
   onMouseLeave,
   onNavigate,
 }: CatalogMenuProps) {
+  useEffect(() => {
+    if (shouldFocusOnOpen) catalogMenuRef.current?.focus({ preventScroll: true });
+  }, [shouldFocusOnOpen, catalogMenuRef]);
+
   const featuredCategories =
     categories?.filter((category) => category.isFeatured).slice(0, 2) ?? [];
 
@@ -36,9 +45,14 @@ export default function CatalogMenu({
     <LazyMotion features={loadMotionFeatures}>
       <m.div
         ref={catalogMenuRef}
+        id="catalog-menu"
+        tabIndex={-1}
+        role="region"
+        aria-label="Menú de categorías"
+        onBlur={onBlur}
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
-        className="absolute inset-x-0 top-full hidden w-full border-t border-(--color-border) bg-(--color-cream) md:block"
+        className="absolute inset-x-0 top-full hidden w-full outline-none border-t border-(--color-border) bg-(--color-cream) md:block"
         initial={{ opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.22, ease: "easeOut" }}

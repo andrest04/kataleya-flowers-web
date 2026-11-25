@@ -6,12 +6,15 @@ import type { FormEvent, RefObject } from "react";
 import type { SearchSuggestions } from "@/features/catalog/actions/getSearchSuggestions";
 
 import type { SearchResult } from "../constants";
+import { useComboboxNavigation } from "../useComboboxNavigation";
 import SearchBar from "./SearchBar";
 import SearchResultsPanel from "./SearchResultsPanel";
 import SearchSuggestionsPanel from "./SearchSuggestionsPanel";
 
 const loadMotionFeatures = () =>
   import("@/components/shared/motionFeatures").then((mod) => mod.default);
+
+const NO_RESULTS: SearchResult[] = [];
 
 interface SearchOverlayProps {
   searchQuery: string;
@@ -35,6 +38,13 @@ export default function SearchOverlay({
   closeSearch,
 }: SearchOverlayProps) {
   const showResults = searchQuery.trim().length > 0;
+  const options = showResults ? searchResults : NO_RESULTS;
+  const { activeDescendant, onKeyDown, getOptionProps } = useComboboxNavigation({
+    idPrefix: "search",
+    items: options,
+    inputValue: searchQuery,
+    onSelect: (result) => handleResultClick(result.categorySlug, result.slug),
+  });
 
   return (
     <LazyMotion features={loadMotionFeatures}>
@@ -50,7 +60,9 @@ export default function SearchOverlay({
           setSearchQuery={setSearchQuery}
           handleSearchSubmit={handleSearchSubmit}
           closeSearch={closeSearch}
-          isExpanded={showResults}
+          isExpanded={options.length > 0}
+          activeDescendant={activeDescendant}
+          onKeyDown={onKeyDown}
         />
 
         <p className="sr-only" aria-live="polite" aria-atomic="true">
@@ -62,7 +74,6 @@ export default function SearchOverlay({
         </p>
 
         <div
-          id="search-panel"
           className="absolute inset-x-0 top-full w-full overflow-hidden border-t border-(--color-border) bg-(--color-overlay)"
           style={{
             boxShadow:
@@ -83,6 +94,7 @@ export default function SearchOverlay({
                   searchResults={searchResults}
                   handleResultClick={handleResultClick}
                   closeSearch={closeSearch}
+                  getOptionProps={getOptionProps}
                 />
               </m.div>
             ) : (

@@ -20,6 +20,7 @@ interface UseDesktopSearchResult {
   searchResults: SearchResult[];
   suggestions: SearchSuggestions | null;
   desktopSearchRef: RefObject<HTMLDivElement | null>;
+  searchTriggerRef: RefObject<HTMLButtonElement | null>;
   clearSearch: () => void;
 }
 
@@ -31,6 +32,8 @@ export function useDesktopSearch(): UseDesktopSearchResult {
     null,
   );
   const desktopSearchRef = useRef<HTMLDivElement>(null);
+  const searchTriggerRef = useRef<HTMLButtonElement>(null);
+  const wasSearchOpenRef = useRef(false);
 
   const setSearchQuery = useCallback((next: string) => {
     setSearchQueryState(next);
@@ -73,7 +76,23 @@ export function useDesktopSearch(): UseDesktopSearchResult {
   }, [isSearchOpen, suggestions]);
 
   useEffect(() => {
+    if (isSearchOpen) {
+      wasSearchOpenRef.current = true;
+      return;
+    }
+    if (!wasSearchOpenRef.current) return;
+    wasSearchOpenRef.current = false;
+    const focused = document.activeElement;
+    if (!focused || focused === document.body) {
+      searchTriggerRef.current?.focus();
+    }
+  }, [isSearchOpen]);
+
+  useEffect(() => {
     if (!isSearchOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeSearch();
+    };
     const handleClickOutside = (e: MouseEvent) => {
       if (
         desktopSearchRef.current &&
@@ -83,8 +102,10 @@ export function useDesktopSearch(): UseDesktopSearchResult {
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
     };
   }, [isSearchOpen, closeSearch]);
 
@@ -120,6 +141,7 @@ export function useDesktopSearch(): UseDesktopSearchResult {
     searchResults,
     suggestions,
     desktopSearchRef,
+    searchTriggerRef,
     clearSearch,
   };
 }

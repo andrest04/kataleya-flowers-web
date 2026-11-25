@@ -48,11 +48,16 @@ export default function Navbar({ settings }: NavbarProps) {
     suggestions,
     searchInputRef,
     desktopSearchRef,
+    searchTriggerRef,
     clearSearch,
     isCatalogMenuOpen,
     catalogMenuCategories,
     catalogMenuRef,
+    catalogTriggerRef,
+    shouldFocusCatalogMenu,
     openCatalogMenu,
+    toggleCatalogMenu,
+    handleCatalogMenuBlur,
     scheduleCloseCatalogMenu,
     cancelCloseCatalogMenu,
     closeCatalogMenu,
@@ -118,7 +123,10 @@ export default function Navbar({ settings }: NavbarProps) {
                 <DesktopNav
                   handleNavigate={handleNavigate}
                   isCatalogMenuOpen={isCatalogMenuOpen}
+                  catalogTriggerRef={catalogTriggerRef}
                   openCatalogMenu={openCatalogMenu}
+                  toggleCatalogMenu={toggleCatalogMenu}
+                  handleCatalogMenuBlur={handleCatalogMenuBlur}
                   scheduleCloseCatalogMenu={scheduleCloseCatalogMenu}
                   closeCatalogMenu={closeCatalogMenu}
                 />
@@ -147,6 +155,7 @@ export default function Navbar({ settings }: NavbarProps) {
                   brandName={settings.name}
                   handleNavigate={handleNavigate}
                   openSearch={openSearch}
+                  searchTriggerRef={searchTriggerRef}
                 />
               </div>
             </div>
@@ -168,6 +177,8 @@ export default function Navbar({ settings }: NavbarProps) {
               <CatalogMenu
                 categories={catalogMenuCategories}
                 catalogMenuRef={catalogMenuRef}
+                shouldFocusOnOpen={shouldFocusCatalogMenu}
+                onBlur={handleCatalogMenuBlur}
                 onMouseEnter={cancelCloseCatalogMenu}
                 onMouseLeave={scheduleCloseCatalogMenu}
                 onNavigate={closeCatalogMenu}

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRef } from "react";
 
 import type { SearchResult } from "../constants";
+import type { ComboboxOptionProps } from "../useComboboxNavigation";
 import { PANEL_CONTAINER, SCROLLBAR_HIDDEN } from "./constants";
 import HorizontalScrollBar from "./HorizontalScrollBar";
 import SearchResultCard from "./SearchResultCard";
@@ -13,6 +14,7 @@ interface SearchResultsPanelProps {
   searchResults: SearchResult[];
   handleResultClick: (categorySlug: string, productSlug: string) => void;
   closeSearch: () => void;
+  getOptionProps: (index: number) => ComboboxOptionProps;
 }
 
 export default function SearchResultsPanel({
@@ -20,6 +22,7 @@ export default function SearchResultsPanel({
   searchResults,
   handleResultClick,
   closeSearch,
+  getOptionProps,
 }: SearchResultsPanelProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -77,13 +80,17 @@ export default function SearchResultsPanel({
           </div>
           <div
             ref={scrollRef}
+            id="search-listbox"
+            role="listbox"
+            aria-label="Productos"
             className={`flex gap-8 overflow-x-auto lg:gap-10 ${SCROLLBAR_HIDDEN}`}
           >
-            {searchResults.map((result) => (
+            {searchResults.map((result, index) => (
               <SearchResultCard
                 key={`${result.categorySlug}/${result.slug}`}
                 result={result}
                 onClick={() => handleResultClick(result.categorySlug, result.slug)}
+                optionProps={getOptionProps(index)}
                 className="w-40 shrink-0 sm:w-48 lg:w-56"
               />
             ))}
