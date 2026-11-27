@@ -3,6 +3,7 @@ import Link from 'next/link';
 
 import Image from '@/components/ui/StoredImage';
 import type { CatalogCardProduct } from '@/features/catalog/types';
+import { getCardMeta } from '@/features/catalog/utils/cardMeta';
 import { getEffectivePrice } from '@/features/catalog/utils/filterProducts';
 
 interface CatalogCollectionCardProps {
@@ -30,6 +31,7 @@ export default function CatalogCollectionCard({
     !imageUrl || imageUrl === '/placeholder-product.jpg'
       ? '/catalog-placeholder.svg'
       : imageUrl;
+  const meta = getCardMeta(product);
   const formattedPrice = effectivePrice.toLocaleString('es-PE', {
     minimumFractionDigits: effectivePrice % 1 === 0 ? 0 : 2,
     maximumFractionDigits: 2,
@@ -66,6 +68,11 @@ export default function CatalogCollectionCard({
           >
             {product.name}
           </span>
+          {meta && (
+            <span className="mt-1 block font-body text-xs leading-snug text-(--color-muted)">
+              {meta}
+            </span>
+          )}
           <span
             className={`mt-1 block font-body leading-none tabular-nums text-(--color-dark) ${
               size === 'compact' ? 'text-sm' : 'text-lg'

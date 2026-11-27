@@ -1,12 +1,17 @@
 'use client';
 
+import { MessageCircle } from 'lucide-react';
 import { useMemo, useState, useSyncExternalStore } from 'react';
 
 import { useHeaderVisibility } from '@/components/shared/Navbar/useHeaderVisibility';
+import Button from '@/components/ui/Button';
+import EmptyState from '@/components/ui/EmptyState';
+import FilterChip from '@/components/ui/FilterChip';
 import CatalogCollectionCard from '@/features/catalog/components/CatalogCollectionCard';
 import CatalogDensityToggle, {
   type CatalogDensity,
 } from '@/features/catalog/components/CatalogDensityToggle';
+import CatalogExploreMore from '@/features/catalog/components/CatalogExploreMore';
 import CatalogFilterSheet, {
   type CatalogColorFacet,
   type CatalogFilters,
@@ -53,7 +58,12 @@ interface CatalogCollectionProps {
   colors: CatalogColorFacet[];
   flowerTypes: string[];
   initialQuery?: CatalogInitialQuery;
+  whatsappHref?: string;
+  relatedCategories?: Category[];
+  showCatalogLink?: boolean;
 }
+
+const SPARSE_ITEM_COUNT = 2;
 
 const EAGER_CARD_COUNT = 3;
 
@@ -94,6 +104,9 @@ export default function CatalogCollection({
   colors,
   flowerTypes,
   initialQuery,
+  whatsappHref,
+  relatedCategories = [],
+  showCatalogLink = false,
 }: CatalogCollectionProps) {
   const maximumPrice = Math.max(0, ...items.map(({ product }) => getEffectivePrice(product)));
   const facets = useMemo(
@@ -190,13 +203,38 @@ export default function CatalogCollection({
   const updateDensity = (next: CatalogDensity) => commitQuery({ ...query, density: next });
   const updateSort = (next: CatalogSortOption) => commitQuery({ ...query, sort: next });
   const cardSizes = catalogCardSizes(density);
+  const isSparse = sortedItems.length > 0 && sortedItems.length <= SPARSE_ITEM_COUNT;
+  const countLabel = `${sortedItems.length} ${sortedItems.length === 1 ? 'arreglo' : 'arreglos'}`;
+  const appliedChips = [
+    ...filters.category.map((slug) => ({
+      key: `category-${slug}`,
+      label: categories.find((category) => category.slug === slug)?.name ?? slug,
+      onRemove: () =>
+        updateFilters({ ...filters, category: filters.category.filter((value) => value !== slug) }),
+    })),
+    ...filters.colors.map((name) => ({
+      key: `color-${name}`,
+      label: colors.find((color) => color.name === name)?.label ?? name,
+      onRemove: () =>
+        updateFilters({ ...filters, colors: filters.colors.filter((value) => value !== name) }),
+    })),
+    ...filters.flowerTypes.map((flowerType) => ({
+      key: `flower-${flowerType}`,
+      label: flowerType,
+      onRemove: () =>
+        updateFilters({
+          ...filters,
+          flowerTypes: filters.flowerTypes.filter((value) => value !== flowerType),
+        }),
+    })),
+  ];
 
   return (
     <>
       <section
         aria-label="Opciones del catálogo"
         className={cn(
-          'sticky z-50 mt-8 mb-14 ml-[calc(50%-50vw)] flex min-h-20 w-screen items-stretch border-y border-(--color-primary) bg-(--color-cream) transition-[top] duration-300 ease-out',
+          'sticky z-50 mt-6 mb-6 ml-[calc(50%-50vw)] flex min-h-20 w-screen items-stretch border-y border-(--color-primary) bg-(--color-cream) transition-[top] duration-300 ease-out',
           isHeaderHidden ? 'top-0' : 'top-[calc(6.5rem-1px)]',
         )}
       >
@@ -225,12 +263,37 @@ export default function CatalogCollection({
       </section>
 
       <section aria-label="Productos">
-        <p className="sr-only" aria-live="polite" aria-atomic="true">
-          {sortedItems.length} producto{sortedItems.length === 1 ? '' : 's'} encontrado
-          {sortedItems.length === 1 ? '' : 's'}
-        </p>
+        <div className="mb-8 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 sm:justify-start">
+          <p
+            className="font-body text-sm font-semibold text-(--color-dark)"
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            {countLabel}
+          </p>
+          {appliedChips.map((chip) => (
+            <FilterChip key={chip.key} label={chip.label} onRemove={chip.onRemove} />
+          ))}
+          {appliedChips.length > 0 && (
+            <button
+              type="button"
+              onClick={clearFilters}
+              className="min-h-11 px-2 font-body text-sm font-semibold text-(--color-primary) underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary)"
+            >
+              Limpiar filtros
+            </button>
+          )}
+        </div>
         {sortedItems.length > 0 ? (
-          <div className={cn('grid', DENSITY_GRID_CLASSES[density])}>
+          <div
+            className={cn(
+              'grid',
+              isSparse
+                ? 'mx-auto grid-cols-1 gap-x-5 gap-y-10 sm:grid-cols-2'
+                : DENSITY_GRID_CLASSES[density],
+              sortedItems.length === 1 ? 'max-w-sm sm:grid-cols-1' : isSparse && 'max-w-2xl',
+            )}
+          >
             {sortedItems.map(({ product, categorySlug }, index) => (
               <CatalogCollectionCard
                 key={product.id}
@@ -243,16 +306,33 @@ export default function CatalogCollection({
             ))}
           </div>
         ) : (
-          <div className="py-16 text-center font-body text-(--color-muted)">
-            <p>No encontramos productos con esos filtros.</p>
-            <button
-              type="button"
-              onClick={clearFilters}
-              className="mt-4 min-h-11 border border-(--color-border) px-4 font-semibold text-(--color-dark) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary)"
-            >
-              Limpiar filtros
-            </button>
-          </div>
+          <EmptyState
+            message="No encontramos arreglos con esos filtros. Prueba quitando alguno o cuéntanos qué buscas."
+            action={
+              <div className="flex flex-col items-center gap-3">
+                <button
+                  type="button"
+                  onClick={clearFilters}
+                  className="min-h-11 border border-(--color-border) px-4 font-body font-semibold text-(--color-dark) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary)"
+                >
+                  Limpiar filtros
+                </button>
+                {whatsappHref && (
+                  <Button variant="whatsapp" size="md" href={whatsappHref} external>
+                    <MessageCircle className="size-5" aria-hidden="true" />
+                    Pedir por WhatsApp
+                  </Button>
+                )}
+              </div>
+            }
+          />
+        )}
+        {sortedItems.length > 0 && whatsappHref && (
+          <CatalogExploreMore
+            whatsappHref={whatsappHref}
+            relatedCategories={isSparse ? relatedCategories : []}
+            showCatalogLink={showCatalogLink}
+          />
         )}
       </section>
     </>

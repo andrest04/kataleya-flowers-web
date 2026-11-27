@@ -13,7 +13,7 @@ import { toCatalogCardProduct } from "@/features/catalog/utils/toCatalogCardProd
 import { getSiteSettings } from "@/features/settings/queries/getSiteSettings";
 import { BUSINESS } from "@/lib/constants";
 import { truncateOnWord } from "@/lib/seoText";
-import { floralArrangementsSeoDescription } from "@/lib/siteSettings";
+import { defaultWhatsappHref, floralArrangementsSeoDescription } from "@/lib/siteSettings";
 
 export const revalidate = 3600;
 
@@ -183,6 +183,9 @@ export default async function CategoriaPage({
           categories={[]}
           colors={colors}
           flowerTypes={flowerTypes}
+          whatsappHref={defaultWhatsappHref(settings)}
+          relatedCategories={categories.filter((cat) => cat.id !== category.id)}
+          showCatalogLink
         />
       </div>
     </main>
