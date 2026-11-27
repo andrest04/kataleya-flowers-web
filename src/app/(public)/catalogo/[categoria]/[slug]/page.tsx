@@ -8,7 +8,10 @@ import { JsonLd } from "@/components/ui/JsonLd";
 import SectionHeader from "@/components/ui/SectionHeader";
 import CatalogCollectionCard from "@/features/catalog/components/CatalogCollectionCard";
 import { ProductGallery } from "@/features/catalog/components/ProductGallery";
-import { ProductPurchasePanel } from "@/features/catalog/components/ProductPurchasePanel";
+import {
+  PAGE_END_ID,
+  ProductPurchasePanel,
+} from "@/features/catalog/components/ProductPurchasePanel";
 import { getCategories } from "@/features/catalog/queries/getCategories";
 import { getProductBySlug } from "@/features/catalog/queries/getProductBySlug";
 import { getProducts } from "@/features/catalog/queries/getProducts";
@@ -271,6 +274,7 @@ export default async function ProductoPage({
           </div>
         )}
       </div>
+      <div id={PAGE_END_ID} aria-hidden="true" />
     </main>
   );
 }

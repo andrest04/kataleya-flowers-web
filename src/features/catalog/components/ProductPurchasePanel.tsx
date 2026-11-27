@@ -24,6 +24,7 @@ interface ProductPurchasePanelProps {
 }
 
 const VARIANT_PARAM = "variante";
+export const PAGE_END_ID = "product-page-end";
 
 function subscribeToNothing() {
   // The variant param is only read once per navigation; nothing to unsubscribe from.
@@ -114,6 +115,7 @@ export function ProductPurchasePanel({
 
   const ctaRef = useRef<HTMLDivElement>(null);
   const [ctaVisible, setCtaVisible] = useState(true);
+  const [pageEndVisible, setPageEndVisible] = useState(false);
 
   useEffect(() => {
     const node = ctaRef.current;
@@ -124,6 +126,18 @@ export function ProductPurchasePanel({
     observer.observe(node);
     return () => observer.disconnect();
   }, []);
+
+  useEffect(() => {
+    const node = document.getElementById(PAGE_END_ID);
+    if (!node) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      setPageEndVisible(entry.isIntersecting);
+    });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
+  const barHidden = ctaVisible || pageEndVisible;
 
   return (
     <div className="flex flex-col">
@@ -193,11 +207,11 @@ export function ProductPurchasePanel({
       </div>
 
       <div
-        aria-hidden={ctaVisible}
-        inert={ctaVisible}
+        aria-hidden={barHidden}
+        inert={barHidden}
         className={cn(
           "fixed inset-x-0 bottom-0 z-50 flex items-center gap-4 border-t border-(--color-border) bg-(--color-white) px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] transition-transform duration-300 lg:hidden",
-          ctaVisible ? "translate-y-full" : "translate-y-0",
+          barHidden ? "translate-y-full" : "translate-y-0",
         )}
       >
         <p className="font-body text-primary shrink-0 text-lg font-semibold">
