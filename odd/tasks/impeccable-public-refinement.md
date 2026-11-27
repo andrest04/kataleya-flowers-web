@@ -75,6 +75,7 @@ Each implementation task is delegated direct (one Sonnet writer via workflow; 2+
 - 2026-11-26: T9 re-critique done (snapshots `.impeccable/critique/2026-11-27T01-4*`). Landing 59% → 75%, catalog 69% → 75%, product 67% → 72%, search 63% → 68%, complaints 65% → 65%. Note: the runs scored different heuristic sets, so compare percentages.
 
 - 2026-11-26: polish P1–P5 committed; vitest 72 files / 935 tests green (parent spot check).
+- 2026-11-26: owner manual review fixes: contact map no longer hidden by a false load-failure timeout (iframe `onLoad` can fire before hydration), value props band closed with a bottom rule above "Visítanos".
 
 ## Follow-ups (no approval needed)
 
