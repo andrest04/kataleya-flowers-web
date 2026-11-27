@@ -42,6 +42,16 @@ Critiques on 2026-11-26 scored the public surfaces between 59% and 69%: the visu
 - [x] T8 Libro de Reclamaciones: neutral selected type, helper text, refined field skin. Commit `ca4bb3f`. Verifier: pass.
 - [x] T9 Close: re-critique done; polish round P1–P5 on approval-free findings, each independently verified (all pass): catalog `1a7bdc2`, product `d2f122f`, search `a9780d3`, complaints `8456a78`, landing `94a0ce5`.
 
+### Owner-approved close-out (2026-11-26)
+
+- [x] T10 Hours in Peruvian Spanish format via `src/lib/formatHours.ts` (test-first). Commit `5f83296`.
+- [x] T11 "Visítanos" names Barranco via shared `STORE_LOCALITY`. Commit `0807ad1`.
+- [x] T12 Libro de Reclamaciones regulatory notice and data-use line. Commit `ab5a6e5`.
+- [x] T13 Admin hero kicker wins, positioning fallback (test-first). Commit `4f8e1a1`; fallback slide kicker emptied in a follow-up commit. Appwrite: both hero slides' kicker set to "32 años en Barranco, Lima".
+- [x] T14 Appwrite: discover tile "Entrega el mismo día" set inactive (promo banner kept). Done by direct DB write, so cached pages refresh on revalidation.
+- [x] T15 Playwright `phase1-verify` 25/25 after fixing a stale h1 assertion (h1 text changed in `b39c8ae` on dev). `product-detail.spec.ts`: helper fixed (cards have no h3 since dev); 5/8 pass. Still failing: `.prose p` (no prose class on dev either), thumbnails (data: first product has one image), lightbox focus restore (gallery diff is class-only and LightboxDialog is unchanged, so likely pre-existing; not confirmed against dev).
+- [x] T16 Merged into `dev` (owner works solo: merge, no PRs). Not pushed.
+
 ## Route per task
 
 Each implementation task is delegated direct (one Sonnet writer via workflow; 2+ non-trivial files per task), verified with `npm run lint:strict`, `npx tsc --noEmit`, `npx vitest run`, and an `impeccable detect` + `shot` pass on the touched surface.
