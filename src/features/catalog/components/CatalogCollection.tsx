@@ -98,6 +98,48 @@ function toProductFilters({ category, ...rest }: CatalogFilters): ProductFilters
   return { ...rest, categorySlugs: category };
 }
 
+interface AppliedChip {
+  key: string;
+  label: string;
+  onRemove: () => void;
+}
+
+function ResultsSummary({
+  countLabel,
+  chips,
+  onClear,
+  className,
+}: {
+  countLabel: string;
+  chips: AppliedChip[];
+  onClear: () => void;
+  className?: string;
+}) {
+  return (
+    <div className={cn('flex flex-wrap items-center gap-x-4 gap-y-2', className)}>
+      <p
+        className="font-body text-sm font-semibold text-(--color-dark)"
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        {countLabel}
+      </p>
+      {chips.map((chip) => (
+        <FilterChip key={chip.key} label={chip.label} onRemove={chip.onRemove} />
+      ))}
+      {chips.length > 0 && (
+        <button
+          type="button"
+          onClick={onClear}
+          className="min-h-11 px-2 font-body text-sm font-semibold text-(--color-primary) underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary)"
+        >
+          Limpiar filtros
+        </button>
+      )}
+    </div>
+  );
+}
+
 export default function CatalogCollection({
   items,
   categories,
@@ -238,51 +280,44 @@ export default function CatalogCollection({
           isHeaderHidden ? 'top-0' : 'top-[calc(6.5rem-1px)]',
         )}
       >
-        <div className="mx-auto flex max-w-8xl flex-wrap items-stretch divide-x divide-(--color-primary)">
-          <div className="flex w-full items-stretch border-(--color-primary) sm:w-auto sm:absolute sm:inset-y-0 sm:left-0 sm:border-r">
-            <CatalogFilterSheet
-              open={sheetOpen}
-              onOpenChange={setSheetOpen}
-              filters={filters}
-              onFiltersChange={updateFilters}
-              categories={categories}
-              colors={colors}
-              flowerTypes={flowerTypes}
-              availableCategorySlugs={availableCategorySlugs}
-              availableColors={availableColors}
-              availableFlowerTypes={availableFlowerTypes}
-              maximumPrice={maximumPrice}
-              sortOption={sortOption}
-              onSortChange={updateSort}
-            />
-          </div>
+        <div className="flex w-full items-stretch sm:w-auto sm:shrink-0 sm:border-r sm:border-(--color-primary)">
+          <CatalogFilterSheet
+            open={sheetOpen}
+            onOpenChange={setSheetOpen}
+            filters={filters}
+            onFiltersChange={updateFilters}
+            categories={categories}
+            colors={colors}
+            flowerTypes={flowerTypes}
+            availableCategorySlugs={availableCategorySlugs}
+            availableColors={availableColors}
+            availableFlowerTypes={availableFlowerTypes}
+            maximumPrice={maximumPrice}
+            sortOption={sortOption}
+            onSortChange={updateSort}
+          />
         </div>
-        <div className="absolute inset-y-0 right-0 hidden items-center border-l border-(--color-primary) px-14 sm:flex">
+        <div className="hidden min-w-0 flex-1 items-center px-6 py-2 sm:flex">
+          <ResultsSummary
+            countLabel={countLabel}
+            chips={appliedChips}
+            onClear={clearFilters}
+            className="justify-center"
+          />
+        </div>
+        <div className="hidden shrink-0 items-center border-l border-(--color-primary) px-14 sm:flex">
           <CatalogDensityToggle density={density} onDensityChange={updateDensity} />
         </div>
       </section>
 
       <section aria-label="Productos">
-        <div className="mb-8 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 sm:justify-start">
-          <p
-            className="font-body text-sm font-semibold text-(--color-dark)"
-            aria-live="polite"
-            aria-atomic="true"
-          >
-            {countLabel}
-          </p>
-          {appliedChips.map((chip) => (
-            <FilterChip key={chip.key} label={chip.label} onRemove={chip.onRemove} />
-          ))}
-          {appliedChips.length > 0 && (
-            <button
-              type="button"
-              onClick={clearFilters}
-              className="min-h-11 px-2 font-body text-sm font-semibold text-(--color-primary) underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary)"
-            >
-              Limpiar filtros
-            </button>
-          )}
+        <div className="mb-8 sm:hidden">
+          <ResultsSummary
+            countLabel={countLabel}
+            chips={appliedChips}
+            onClear={clearFilters}
+            className="justify-center"
+          />
         </div>
         {sortedItems.length > 0 ? (
           <div
