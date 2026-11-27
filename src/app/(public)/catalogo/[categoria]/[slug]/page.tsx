@@ -213,7 +213,7 @@ export default async function ProductoPage({
           { label: product.name },
         ]} />
 
-        <div className="grid grid-cols-1 lg:grid-cols-[4fr_3fr] gap-8 lg:gap-x-[5%]">
+        <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-8 lg:gap-x-12">
           <ProductGallery
             imageUrl={product.imageUrl}
             imageAlt={product.imageAlt}
@@ -228,15 +228,12 @@ export default async function ProductoPage({
             </h1>
             <ProductPurchasePanel
               phone={settings.phone}
+              proofLine={heroPositioningKicker(settings)}
               product={product}
               whatsappProductTemplate={settings.messages.whatsappProduct}
             />
 
-            <p className="font-body text-dark/70 mt-6 border-t border-(--color-border) pt-4 text-sm">
-              {heroPositioningKicker(settings)}
-            </p>
-
-            <div className="mt-6 max-w-prose">
+            <div className="mt-8 max-w-prose">
               <h2 className="font-heading text-primary mb-3 text-2xl">Descripción</h2>
               <p className="font-body text-dark/80 leading-relaxed text-pretty">
                 {product.description}

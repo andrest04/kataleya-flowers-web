@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils";
 interface ProductPurchasePanelProps {
   phone: string;
   product: Product;
+  proofLine: string;
   whatsappProductTemplate: string;
 }
 
@@ -57,6 +58,7 @@ function WhatsAppIcon({ className }: { className: string }) {
 export function ProductPurchasePanel({
   phone,
   product,
+  proofLine,
   whatsappProductTemplate,
 }: ProductPurchasePanelProps) {
   const router = useRouter();
@@ -141,7 +143,7 @@ export function ProductPurchasePanel({
 
   return (
     <div className="flex flex-col">
-      <p className="font-body text-primary font-semibold text-xl mb-2">
+      <p className="font-body text-primary mb-2 text-2xl font-semibold tabular-nums">
         {priceLabel}
       </p>
 
@@ -169,7 +171,7 @@ export function ProductPurchasePanel({
                   <span className="font-body text-dark text-base">
                     {variant.label}
                   </span>
-                  <span className="font-body text-dark/70 mt-0.5 text-xs">
+                  <span className="font-body text-dark/70 mt-0.5 text-sm tabular-nums">
                     S/{" "}
                     {variant.price.toLocaleString("es-PE", {
                       maximumFractionDigits: 2,
@@ -200,10 +202,13 @@ export function ProductPurchasePanel({
           Pedir este ramo por WhatsApp
         </Button>
 
-        <p className="mt-4 font-body text-(--color-muted) text-sm">
-          Te responderemos a la brevedad con disponibilidad y opciones de
-          entrega.
-        </p>
+        <div className="mt-4 font-body text-sm">
+          <p className="text-dark font-semibold">{proofLine}</p>
+          <p className="mt-1 text-(--color-muted)">
+            Te responderemos a la brevedad con disponibilidad y opciones de
+            entrega.
+          </p>
+        </div>
       </div>
 
       <div
@@ -214,7 +219,7 @@ export function ProductPurchasePanel({
           barHidden ? "translate-y-full" : "translate-y-0",
         )}
       >
-        <p className="font-body text-primary shrink-0 text-lg font-semibold">
+        <p className="font-body text-primary shrink-0 text-lg font-semibold tabular-nums">
           {priceLabel}
         </p>
         <Button
@@ -222,10 +227,10 @@ export function ProductPurchasePanel({
           size="md"
           href={whatsappUrl}
           external
-          className="font-body h-12 min-w-0 flex-1 px-3 text-xs whitespace-normal leading-tight"
+          className="font-body h-12 min-w-0 flex-1 px-3 text-sm whitespace-nowrap"
         >
-          <WhatsAppIcon className="h-5 w-5" />
-          Pedir este ramo por WhatsApp
+          <WhatsAppIcon className="hidden h-5 w-5 min-[360px]:block" />
+          Pedir por WhatsApp
         </Button>
       </div>
     </div>
