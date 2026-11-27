@@ -1,14 +1,13 @@
 import type { ReactElement } from 'react';
 
-import Carousel from '@/components/ui/Carousel';
 import CatalogCollection, {
   type CatalogCollectionItem,
 } from '@/features/catalog/components/CatalogCollection';
-import CatalogCollectionCard from '@/features/catalog/components/CatalogCollectionCard';
 import type { CatalogColorFacet } from '@/features/catalog/components/CatalogFilterSheet';
 import SearchEmptyResults from '@/features/catalog/components/SearchPage/SearchEmptyResults';
 import SearchFrequentSearches from '@/features/catalog/components/SearchPage/SearchFrequentSearches';
 import SearchStoreForm from '@/features/catalog/components/SearchPage/SearchStoreForm';
+import SearchSuggestions from '@/features/catalog/components/SearchPage/SearchSuggestions';
 import type { Category } from '@/features/catalog/types';
 
 interface SearchPageProps {
@@ -19,6 +18,7 @@ interface SearchPageProps {
   filterCategories: Category[];
   colors: CatalogColorFacet[];
   flowerTypes: string[];
+  whatsappHref: string;
   initialQuery: {
     category: string;
     priceMin: string;
@@ -38,6 +38,7 @@ export default function SearchPage({
   filterCategories,
   colors,
   flowerTypes,
+  whatsappHref,
   initialQuery,
 }: SearchPageProps): ReactElement {
   const hasQuery = query.length > 0;
@@ -55,7 +56,9 @@ export default function SearchPage({
       </header>
 
       {hasQuery ? (
-        <div className="mx-auto mt-16 max-w-[110rem] sm:mt-20">
+        <div
+          className={`mx-auto max-w-[110rem] ${results.length > 0 ? 'mt-16 sm:mt-20' : 'mt-10 sm:mt-12'}`}
+        >
           {results.length > 0 ? (
             <CatalogCollection
               items={results}
@@ -63,9 +66,17 @@ export default function SearchPage({
               colors={colors}
               flowerTypes={flowerTypes}
               initialQuery={initialQuery}
+              whatsappHref={whatsappHref}
             />
           ) : (
-            <SearchEmptyResults query={query} />
+            <>
+              <SearchEmptyResults
+                query={query}
+                categories={frequentCategories}
+                whatsappHref={whatsappHref}
+              />
+              <SearchSuggestions items={suggestionItems} />
+            </>
           )}
         </div>
       ) : (
@@ -73,35 +84,7 @@ export default function SearchPage({
           <div className="mx-auto mt-8 max-w-8xl">
             <SearchFrequentSearches categories={frequentCategories} />
           </div>
-          {suggestionItems.length > 0 && (
-            <section
-              aria-labelledby="buscar-sugeridos"
-              className="mt-16 overflow-x-hidden sm:mt-20"
-            >
-              <div className="relative left-1/2 w-screen -translate-x-1/2 border-t border-(--color-primary)" />
-              <div className="pt-16 sm:pt-20">
-                <h2
-                  id="buscar-sugeridos"
-                  className="px-8 font-heading text-[28px] leading-[1.25] text-(--color-dark) sm:px-12 sm:text-[32px] lg:px-16 lg:text-[40px]"
-                >
-                  También te puede gustar
-                </h2>
-                <Carousel ariaLabel="También te puede gustar">
-                  {suggestionItems.map(({ product, categorySlug }) => (
-                    <div
-                      key={product.id}
-                      className="w-[80vw] shrink-0 snap-start sm:w-[50vw] lg:w-[24rem]"
-                    >
-                      <CatalogCollectionCard
-                        product={product}
-                        categorySlug={categorySlug}
-                      />
-                    </div>
-                  ))}
-                </Carousel>
-              </div>
-            </section>
-          )}
+          <SearchSuggestions items={suggestionItems} />
         </>
       )}
     </main>

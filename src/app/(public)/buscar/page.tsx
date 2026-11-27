@@ -16,6 +16,7 @@ import { getProductColors } from '@/features/catalog/queries/getProductColors';
 import { getProducts } from '@/features/catalog/queries/getProducts';
 import { getEffectivePrice } from '@/features/catalog/utils/filterProducts';
 import { getSiteSettings } from '@/features/settings/queries/getSiteSettings';
+import { defaultWhatsappHref } from '@/lib/siteSettings';
 
 const FREQUENT_LIMIT = 4;
 
@@ -172,6 +173,7 @@ export default async function BuscarPage({
         filterCategories={filterCategories}
         colors={colors}
         flowerTypes={flowerTypes}
+        whatsappHref={defaultWhatsappHref(settings)}
         initialQuery={initialQuery}
       />
     </>

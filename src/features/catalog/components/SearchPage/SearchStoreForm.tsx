@@ -1,4 +1,5 @@
-import { Search } from 'lucide-react';
+import { Search, X } from 'lucide-react';
+import Link from 'next/link';
 
 interface SearchStoreFormProps {
   query: string;
@@ -29,8 +30,17 @@ export default function SearchStoreForm({ query }: SearchStoreFormProps) {
           placeholder="Buscar ramos, rosas, cumpleaños…"
           autoComplete="off"
           enterKeyHint="search"
-          className="h-12 w-full rounded-md border border-(--color-border) bg-(--color-white) pr-4 pl-[39px] font-body text-base text-(--color-dark) outline-none placeholder:text-(--color-muted) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary)"
+          className="h-12 w-full rounded-md border border-(--color-border) bg-(--color-white) pr-12 pl-[39px] [&::-webkit-search-cancel-button]:appearance-none font-body text-base text-(--color-dark) outline-none placeholder:text-(--color-muted) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary)"
         />
+        {query && (
+          <Link
+            href="/buscar"
+            aria-label="Borrar búsqueda"
+            className="absolute top-1/2 right-1 flex size-11 -translate-y-1/2 items-center justify-center rounded-md text-(--color-muted) transition-colors hover:text-(--color-dark) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary)"
+          >
+            <X className="size-4" aria-hidden="true" strokeWidth={1.8} />
+          </Link>
+        )}
       </div>
     </form>
   );
