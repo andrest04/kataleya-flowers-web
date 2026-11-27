@@ -36,7 +36,7 @@ async function navigateToFirstProduct(page: Page): Promise<{
   const firstCard = productCards.first();
   const productHref = (await firstCard.getAttribute("href")) ?? "";
   const productName =
-    (await firstCard.locator("h3").textContent())?.trim() ?? "";
+    (await firstCard.innerText()).split("\n").map((line) => line.trim()).find(Boolean) ?? "";
 
   await page.goto(productHref);
   await expect(page).toHaveURL(/\/catalogo\/[a-z0-9-]+\/[a-z0-9-]+$/);
