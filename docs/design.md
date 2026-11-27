@@ -165,7 +165,8 @@ A diferencia del sistema original ("plano por defecto, sombra solo en foto o est
 
 ### Badges / Chips
 - **BusinessHoursBadge:** pill, fondo `--color-accent` "ABIERTO" / `--color-primary` "CERRADO", texto crema, calcula hora de Perú.
-- **FilterChip:** pill, tinte 10% rojo tulipán, siempre en estado "activo/removible" (con X).
+- **FilterChip:** pill, tinte 10% rojo tulipán, siempre en estado "activo/removible" (con X); `min-h-11` (44px) y anillo `focus-visible` primario.
+- **Catalog pill** (`catalogPill.ts`; category strip and "Sigue explorando"): `min-h-11`, `px-4`, `rounded-full`, 1px border, `font-body text-sm font-semibold`. States: idle (border `--color-border`, text dark, hover primary), active (filled primary, white text, `aria-current="page"`), outline (primary border and text, fills on hover). Focus: 2px primary outline, 2px offset. The strip is one snap-scroll row on mobile and wraps from `sm`.
 - **PillToggle:** pill, 4 combinaciones de estado (activo/inactivo × filled/outline), color configurable (`primary`/`accent`) vía prop.
 
 ## 6. Do's and Don'ts

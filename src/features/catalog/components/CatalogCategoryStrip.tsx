@@ -1,25 +1,34 @@
 import Link from 'next/link';
 
+import { catalogPillClass } from '@/features/catalog/components/catalogPill';
 import type { Category } from '@/features/catalog/types';
 
 interface CatalogCategoryStripProps {
   categories: Category[];
+  activeSlug?: string;
 }
 
-export default function CatalogCategoryStrip({ categories }: CatalogCategoryStripProps) {
+export default function CatalogCategoryStrip({
+  categories,
+  activeSlug,
+}: CatalogCategoryStripProps) {
   return (
     <nav aria-label="Categorías del catálogo">
-      <ul className="flex flex-wrap justify-center gap-2">
-        {categories.map((category) => (
-          <li key={category.id}>
-            <Link
-              href={`/catalogo/${category.slug}`}
-              className="inline-flex min-h-11 items-center rounded-full border border-(--color-border) px-5 font-heading text-lg text-(--color-dark) transition-colors hover:border-(--color-primary) hover:text-(--color-primary) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary)"
-            >
-              {category.name}
-            </Link>
-          </li>
-        ))}
+      <ul className="-mx-2 flex snap-x snap-mandatory gap-2 overflow-x-auto px-2 pb-1 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:justify-center sm:overflow-visible sm:px-0 [&::-webkit-scrollbar]:hidden">
+        {categories.map((category) => {
+          const isActive = category.slug === activeSlug;
+          return (
+            <li key={category.id} className="snap-start">
+              <Link
+                href={`/catalogo/${category.slug}`}
+                aria-current={isActive ? 'page' : undefined}
+                className={catalogPillClass(isActive ? 'active' : 'idle')}
+              >
+                {category.name}
+              </Link>
+            </li>
+          );
+        })}
       </ul>
     </nav>
   );

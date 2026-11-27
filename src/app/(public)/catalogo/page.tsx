@@ -102,11 +102,11 @@ export default async function CatalogoPage(): Promise<ReactElement> {
   };
 
   return (
-    <main id="main-content" className="min-h-screen overflow-x-clip bg-cream px-2 pb-16 pt-10 sm:px-2 lg:px-3">
+    <main id="main-content" className="min-h-screen overflow-x-clip bg-cream px-2 pb-16 pt-6 sm:pt-10 sm:px-2 lg:px-3">
       <JsonLd data={[buildBreadcrumbLd(SITE_URL), itemListLd]} />
       <div className="mx-auto max-w-8xl">
-        <header className="mx-auto mb-6 max-w-3xl text-center sm:mb-8">
-          <h1 className="text-balance font-heading text-4xl leading-tight text-(--color-primary) sm:text-5xl">
+        <header className="mx-auto mb-4 max-w-3xl text-center sm:mb-8">
+          <h1 className="text-balance font-heading text-3xl leading-tight text-(--color-primary) sm:text-5xl">
             Catálogo de flores y arreglos en {BUSINESS.postalAddress.locality}
           </h1>
         </header>

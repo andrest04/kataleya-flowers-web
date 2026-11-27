@@ -2,6 +2,7 @@ import { ArrowRight, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
 
 import Button from '@/components/ui/Button';
+import { catalogPillClass } from '@/features/catalog/components/catalogPill';
 import type { Category } from '@/features/catalog/types';
 
 interface CatalogExploreMoreProps {
@@ -27,7 +28,7 @@ export default function CatalogExploreMore({
               <li>
                 <Link
                   href="/catalogo"
-                  className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-(--color-primary) px-4 font-body text-sm font-semibold text-(--color-primary) transition-colors hover:bg-(--color-primary) hover:text-(--color-white) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary)"
+                  className={catalogPillClass('outline')}
                 >
                   Ver todo el catálogo
                   <ArrowRight className="size-4" aria-hidden="true" />
@@ -38,7 +39,7 @@ export default function CatalogExploreMore({
               <li key={category.id}>
                 <Link
                   href={`/catalogo/${category.slug}`}
-                  className="inline-flex min-h-11 items-center rounded-full border border-(--color-border) px-4 font-body text-sm font-semibold text-(--color-dark) transition-colors hover:border-(--color-primary) hover:text-(--color-primary) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary)"
+                  className={catalogPillClass()}
                 >
                   {category.name}
                 </Link>

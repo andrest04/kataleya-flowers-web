@@ -110,20 +110,22 @@ function ResultsSummary({
   onClear,
   className,
 }: {
-  countLabel: string;
+  countLabel?: string;
   chips: AppliedChip[];
   onClear: () => void;
   className?: string;
 }) {
   return (
     <div className={cn('flex flex-wrap items-center gap-x-4 gap-y-2', className)}>
-      <p
-        className="font-body text-sm font-semibold text-(--color-dark)"
-        aria-live="polite"
-        aria-atomic="true"
-      >
-        {countLabel}
-      </p>
+      {countLabel && (
+        <p
+          className="font-body text-sm font-semibold text-(--color-dark)"
+          aria-live="polite"
+          aria-atomic="true"
+        >
+          {countLabel}
+        </p>
+      )}
       {chips.map((chip) => (
         <FilterChip key={chip.key} label={chip.label} onRemove={chip.onRemove} />
       ))}
@@ -276,11 +278,11 @@ export default function CatalogCollection({
       <section
         aria-label="Opciones del catálogo"
         className={cn(
-          'sticky z-50 mt-6 mb-6 ml-[calc(50%-50vw)] flex min-h-20 w-screen items-stretch border-y border-(--color-primary) bg-(--color-cream) transition-[top] duration-300 ease-out',
+          'sticky z-50 mt-4 mb-6 ml-[calc(50%-50vw)] flex min-h-20 w-screen items-stretch border-y border-(--color-primary) bg-(--color-cream) transition-[top] duration-300 ease-out',
           isHeaderHidden ? 'top-0' : 'top-[calc(6.5rem-1px)]',
         )}
       >
-        <div className="flex w-full items-stretch sm:w-auto sm:shrink-0 sm:border-r sm:border-(--color-primary)">
+        <div className="flex min-w-0 flex-1 items-stretch sm:w-auto sm:flex-none sm:shrink-0 sm:border-r sm:border-(--color-primary)">
           <CatalogFilterSheet
             open={sheetOpen}
             onOpenChange={setSheetOpen}
@@ -297,6 +299,9 @@ export default function CatalogCollection({
             onSortChange={updateSort}
           />
         </div>
+        <p className="flex shrink-0 items-center border-l border-(--color-primary) px-4 font-body text-sm font-semibold text-(--color-dark) sm:hidden">
+          {countLabel}
+        </p>
         <div className="hidden min-w-0 flex-1 items-center px-6 py-2 sm:flex">
           <ResultsSummary
             countLabel={countLabel}
@@ -311,14 +316,15 @@ export default function CatalogCollection({
       </section>
 
       <section aria-label="Productos">
-        <div className="mb-8 sm:hidden">
-          <ResultsSummary
-            countLabel={countLabel}
-            chips={appliedChips}
-            onClear={clearFilters}
-            className="justify-center"
-          />
-        </div>
+        {appliedChips.length > 0 && (
+          <div className="mb-6 sm:hidden">
+            <ResultsSummary
+              chips={appliedChips}
+              onClear={clearFilters}
+              className="justify-center"
+            />
+          </div>
+        )}
         {sortedItems.length > 0 ? (
           <div
             className={cn(

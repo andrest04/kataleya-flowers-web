@@ -4,6 +4,7 @@ import React from "react";
 
 import Breadcrumb from "@/components/ui/Breadcrumb";
 import { JsonLd } from "@/components/ui/JsonLd";
+import CatalogCategoryStrip from "@/features/catalog/components/CatalogCategoryStrip";
 import CatalogCollection from "@/features/catalog/components/CatalogCollection";
 import { getCategories } from "@/features/catalog/queries/getCategories";
 import { getFlowerTypes } from "@/features/catalog/queries/getFlowerTypes";
@@ -169,8 +170,8 @@ export default async function CategoriaPage({
         />
       </div>
       <div className="mx-auto max-w-8xl">
-        <header className="mx-auto mb-10 max-w-4xl text-center sm:mb-12">
-          <h1 className="text-balance font-heading text-4xl leading-tight text-(--color-primary) sm:text-5xl">
+        <header className="mx-auto mb-6 max-w-4xl text-center sm:mb-8">
+          <h1 className="text-balance font-heading text-3xl leading-tight text-(--color-primary) sm:text-5xl">
             {category.name}
           </h1>
           <p className="mt-4 font-body text-base text-(--color-muted) sm:text-lg">
@@ -178,6 +179,7 @@ export default async function CategoriaPage({
           </p>
         </header>
 
+        <CatalogCategoryStrip categories={categories} activeSlug={category.slug} />
         <CatalogCollection
           items={collectionItems}
           categories={[]}
