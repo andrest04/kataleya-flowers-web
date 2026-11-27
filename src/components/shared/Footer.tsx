@@ -6,6 +6,7 @@ import FooterAnchorLink from "@/components/shared/FooterAnchorLink";
 import Image from '@/components/ui/StoredImage';
 import { getCategories } from "@/features/catalog/queries/getCategories";
 import { whatsappWithMessage } from "@/lib/contactLinks";
+import { formatHours } from "@/lib/formatHours";
 import { allNavLinks } from "@/lib/navigation";
 import type { SiteSettings } from "@/lib/siteSettings";
 
@@ -145,7 +146,7 @@ export default async function Footer({ settings }: FooterProps) {
                   </FooterAnchorLink>
                 </li>
                 <li className="opacity-80">
-                  {settings.hours.weekdays} · {settings.hours.time}
+                  {settings.hours.weekdays} · {formatHours(settings.hours.time)}
                 </li>
                 <li className="opacity-80">{settings.location}</li>
               </ul>

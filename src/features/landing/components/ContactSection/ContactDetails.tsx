@@ -4,6 +4,7 @@ import { FaInstagram, FaWhatsapp } from 'react-icons/fa';
 import BusinessHoursBadge from '@/components/shared/BusinessHoursBadge';
 import Button from '@/components/ui/Button';
 import { whatsappWithMessage } from '@/lib/contactLinks';
+import { formatHours } from '@/lib/formatHours';
 import type { SiteSettings } from '@/lib/siteSettings';
 
 import { mapsDirectionsHref } from './mapsDirectionsHref';
@@ -42,7 +43,7 @@ export default function ContactDetails({ settings }: ContactDetailsProps) {
               <BusinessHoursBadge hours={settings.hours} />
             </dt>
             <dd className="mt-1 text-(--color-dark)">
-              {settings.hours.weekdays} · {settings.hours.time}
+              {settings.hours.weekdays} · {formatHours(settings.hours.time)}
             </dd>
           </dl>
         </div>
