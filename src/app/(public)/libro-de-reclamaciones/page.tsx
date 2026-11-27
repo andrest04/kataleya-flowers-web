@@ -63,6 +63,13 @@ export default async function LibroDeReclamacionesPage() {
             <Clock size={16} aria-hidden="true" />
             Plazo de respuesta: {RESPONSE_BUSINESS_DAYS} días hábiles.
           </p>
+          <div className="mt-3 space-y-1 border-t border-(--color-border) pt-3 text-xs text-pretty text-(--color-muted)">
+            <p>
+              La formulación del reclamo no impide acudir a otras vías de solución de controversias ni es
+              requisito previo para interponer una denuncia ante el INDECOPI.
+            </p>
+            <p>Usamos tus datos solo para registrar y responder esta hoja de reclamación.</p>
+          </div>
         </div>
 
         <div className="mt-12">
