@@ -81,8 +81,7 @@ export function ProductGallery({
   return (
     <>
       <div
-        className="relative w-full aspect-[4/3] lg:aspect-square rounded-lg overflow-hidden"
-        style={{ backgroundColor: 'var(--color-surface)' }}
+        className="relative w-full aspect-[4/5] lg:aspect-square rounded-lg overflow-hidden bg-(--color-surface)"
       >
         <div
           ref={scrollRef}
@@ -94,7 +93,7 @@ export function ProductGallery({
               key={src}
               type="button"
               onClick={() => setLightboxOpen(true)}
-              className="relative h-full w-full flex-none snap-start cursor-zoom-in outline-none focus-visible:ring-2"
+              className="relative h-full w-full flex-none snap-start cursor-zoom-in focus-visible:ring-2 focus-visible:ring-(color:--color-primary) focus-visible:ring-inset focus-visible:outline-none"
               aria-label={`Ver imagen ${i + 1} de ${allImages.length} de ${name}`}
               aria-haspopup="dialog"
               aria-expanded={lightboxOpen}
@@ -123,7 +122,7 @@ export function ProductGallery({
             <button
               type="button"
               onClick={goPrev}
-              className="absolute left-2 top-1/2 -translate-y-1/2 flex items-center justify-center w-11 h-11 rounded-full bg-dark/50 text-white transition-colors hover:bg-dark/70 outline-none focus-visible:ring-2"
+              className="absolute left-2 top-1/2 -translate-y-1/2 flex items-center justify-center w-11 h-11 rounded-full bg-dark/50 text-white transition-colors hover:bg-dark/70 focus-visible:ring-2 focus-visible:ring-(color:--color-white) focus-visible:ring-inset focus-visible:outline-none"
               aria-label={`Imagen anterior de ${name}`}
             >
               <ChevronLeft className="w-5 h-5" aria-hidden="true" />
@@ -131,7 +130,7 @@ export function ProductGallery({
             <button
               type="button"
               onClick={goNext}
-              className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center justify-center w-11 h-11 rounded-full bg-dark/50 text-white transition-colors hover:bg-dark/70 outline-none focus-visible:ring-2"
+              className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center justify-center w-11 h-11 rounded-full bg-dark/50 text-white transition-colors hover:bg-dark/70 focus-visible:ring-2 focus-visible:ring-(color:--color-white) focus-visible:ring-inset focus-visible:outline-none"
               aria-label={`Siguiente imagen de ${name}`}
             >
               <ChevronRight className="w-5 h-5" aria-hidden="true" />
