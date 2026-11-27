@@ -40,7 +40,7 @@ Critiques on 2026-11-26 scored the public surfaces between 59% and 69%: the visu
 - [x] T6 Product detail: mobile sticky order bar hidden at page end, description and "Incluye" under the CTA, repeated thumbnails dropped. Commits `8ccd0b1` + fix `511bba4`.
 - [x] T7 Search: accent- and plural-tolerant matching (test-first), warm empty state with WhatsApp CTA, clear button. Commit `e8e5989`. Verifier: pass.
 - [x] T8 Libro de Reclamaciones: neutral selected type, helper text, refined field skin. Commit `ca4bb3f`. Verifier: pass.
-- [ ] T9 Close: re-critique every public surface and run `/impeccable polish`.
+- [x] T9 Close: re-critique done; polish round P1–P5 on approval-free findings, each independently verified (all pass): catalog `1a7bdc2`, product `d2f122f`, search `a9780d3`, complaints `8456a78`, landing `94a0ce5`.
 
 ## Route per task
 
@@ -74,6 +74,16 @@ Each implementation task is delegated direct (one Sonnet writer via workflow; 2+
 
 - 2026-11-26: T9 re-critique done (snapshots `.impeccable/critique/2026-11-27T01-4*`). Landing 59% → 75%, catalog 69% → 75%, product 67% → 72%, search 63% → 68%, complaints 65% → 65%. Note: the runs scored different heuristic sets, so compare percentages.
 
+- 2026-11-26: polish P1–P5 committed; vitest 72 files / 935 tests green (parent spot check).
+
+## Follow-ups (no approval needed)
+
+- Scroll the active category pill into view on mobile category pages (needs a small client component).
+- `WhatsAppFloat` can still overlap carousel scroll bars mid-page (`src/components/ui/Carousel.tsx`).
+- Not seen rendered: EditorialTile no-image state, ContactMap failure state, product sticky bar at 390px, complaint Queja/error/success states, keyboard focus pass.
+- Align "Desde S/" in best-seller, search and drawer cards.
+- Move "Reclamo / Queja" before the item step in the complaint form (larger reorder).
+
 ## Next step
 
-T9 polish round on the approval-free re-critique findings (catalog mobile fold, search live region and initial state, complaint textareas and labels, product sticky bar and price), then owner decisions listed above.
+Owner decisions above (fallback testimonials first), a manual mobile and keyboard pass, Playwright `phase1-verify`, then choose the PR slicing strategy.
