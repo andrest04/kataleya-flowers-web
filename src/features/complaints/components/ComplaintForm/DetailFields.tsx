@@ -1,11 +1,15 @@
-'use client';
+"use client";
 
-import { FieldError } from '@/components/ui/FieldError';
-import { FormField } from '@/components/ui/FormField';
-import { Textarea } from '@/components/ui/Input';
+import { Check } from "lucide-react";
 
-import type { ComplaintFormData } from '../../schemas/complaint';
-import type { ComplaintType } from '../../types';
+import { FieldError } from "@/components/ui/FieldError";
+import { FormField } from "@/components/ui/FormField";
+import { Textarea } from "@/components/ui/Input";
+
+import type { ComplaintFormData } from "../../schemas/complaint";
+import type { ComplaintType } from "../../types";
+import FieldHint from "./FieldHint";
+import { FIELD_CLASS } from "./fieldStyles";
 
 interface DetailFieldsProps {
   errors: Record<string, string>;
@@ -14,22 +18,25 @@ interface DetailFieldsProps {
   onChange: (value: ComplaintType) => void;
 }
 
-const OPTIONS: { value: ComplaintType; title: string; desc: string; color: string }[] = [
+const OPTIONS: { value: ComplaintType; title: string; desc: string }[] = [
   {
-    value: 'RECLAMO',
-    title: 'Reclamo',
-    desc: 'Disconformidad con el producto o servicio.',
-    color: 'var(--color-primary)',
+    value: "RECLAMO",
+    title: "Reclamo",
+    desc: "Disconformidad con el producto o servicio.",
   },
   {
-    value: 'QUEJA',
-    title: 'Queja',
-    desc: 'Malestar respecto a la atención al cliente.',
-    color: 'var(--color-accent)',
+    value: "QUEJA",
+    title: "Queja",
+    desc: "Malestar respecto a la atención al cliente.",
   },
 ];
 
-export default function DetailFields({ errors, values, value, onChange }: DetailFieldsProps) {
+export default function DetailFields({
+  errors,
+  values,
+  value,
+  onChange,
+}: DetailFieldsProps) {
   return (
     <div className="space-y-4">
       <fieldset>
@@ -42,13 +49,11 @@ export default function DetailFields({ errors, values, value, onChange }: Detail
             return (
               <label
                 key={opt.value}
-                className="block min-h-11 cursor-pointer rounded-xl border p-4 text-left transition-colors has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-(--color-primary)"
-                style={{
-                  borderColor: selected ? opt.color : 'var(--color-border)',
-                  background: selected
-                    ? `color-mix(in srgb, ${opt.color} 8%, var(--color-white))`
-                    : 'var(--color-white)',
-                }}
+                className={`relative block min-h-11 cursor-pointer rounded-xl border p-4 text-left transition-colors has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-(--color-primary) ${
+                  selected
+                    ? "border-2 border-(--color-dark) bg-(--color-white)"
+                    : "border-[color-mix(in_srgb,var(--color-dark)_55%,var(--color-cream))] bg-(--color-white) hover:border-(--color-dark)"
+                }`}
               >
                 <input
                   type="radio"
@@ -58,10 +63,15 @@ export default function DetailFields({ errors, values, value, onChange }: Detail
                   onChange={() => onChange(opt.value)}
                   className="sr-only"
                 />
-                <span className="block font-semibold" style={{ color: opt.color }}>
+                <span className="flex items-center justify-between gap-2 font-semibold text-(--color-dark)">
                   {opt.title}
+                  {selected && (
+                    <Check size={18} strokeWidth={2.5} aria-hidden="true" />
+                  )}
                 </span>
-                <span className="block text-sm mt-1 text-(--color-dark)">{opt.desc}</span>
+                <span className="block text-sm mt-1 text-(--color-dark)">
+                  {opt.desc}
+                </span>
               </label>
             );
           })}
@@ -70,6 +80,7 @@ export default function DetailFields({ errors, values, value, onChange }: Detail
 
       <FormField label="Detalle de lo ocurrido" required htmlFor="detail">
         <Textarea
+          className={FIELD_CLASS}
           id="detail"
           name="detail"
           defaultValue={values?.detail}
@@ -77,13 +88,21 @@ export default function DetailFields({ errors, values, value, onChange }: Detail
           required
           aria-required="true"
           aria-invalid={!!errors.detail}
-          aria-describedby="err-detail"
+          aria-describedby="help-detail err-detail"
         />
+        <FieldHint id="help-detail">
+          Cuéntanos qué pasó, cuándo y cómo, con los datos que recuerdes.
+        </FieldHint>
         <FieldError id="err-detail" message={errors.detail} />
       </FormField>
 
-      <FormField label="Pedido concreto del consumidor" required htmlFor="consumerRequest">
+      <FormField
+        label="Pedido concreto del consumidor"
+        required
+        htmlFor="consumerRequest"
+      >
         <Textarea
+          className={FIELD_CLASS}
           id="consumerRequest"
           name="consumerRequest"
           defaultValue={values?.consumerRequest}
@@ -91,8 +110,12 @@ export default function DetailFields({ errors, values, value, onChange }: Detail
           required
           aria-required="true"
           aria-invalid={!!errors.consumerRequest}
-          aria-describedby="err-consumerRequest"
+          aria-describedby="help-consumerRequest err-consumerRequest"
         />
+        <FieldHint id="help-consumerRequest">
+          Dinos qué solución esperas, por ejemplo un cambio o la devolución de
+          tu pago.
+        </FieldHint>
         <FieldError id="err-consumerRequest" message={errors.consumerRequest} />
       </FormField>
     </div>
