@@ -17,7 +17,7 @@ export default function SearchFrequentSearches({
         id="buscar-frecuentes"
         className="font-heading text-[22px] leading-[1.25] text-(--color-dark)"
       >
-        Búsquedas frecuentes
+        Explora por categoría
       </h2>
       <ul className="mt-8 flex flex-wrap justify-center gap-3">
         {categories.map((category) => (

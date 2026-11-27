@@ -20,8 +20,8 @@ export default function AnnouncementBar({
   if (announcement.kind === 'fallback') {
     const href = whatsappWithMessage(phone, whatsappDefault);
     return (
-      <div className="flex h-10 items-center justify-center bg-(--color-primary) px-4 text-center">
-        <p className="truncate font-body text-xs tracking-[0.01em] text-(--color-cream) sm:text-sm">
+      <div className="flex h-8 items-center sm:h-10 justify-center bg-(--color-primary) px-4 text-center">
+        <p className="truncate font-body text-xs leading-none tracking-[0.01em] text-(--color-cream) sm:text-sm">
           <span className="hidden sm:inline">Flores frescas para cada ocasión. </span>
           <span className="sm:hidden">Flores frescas. </span>
           <a
@@ -41,8 +41,8 @@ export default function AnnouncementBar({
   const isExternal = isExternalHttpsHref(announcement.ctaHref);
 
   return (
-    <div className="flex h-10 items-center justify-center bg-(--color-primary) px-4 text-center">
-      <p className="truncate font-body text-xs tracking-[0.01em] text-(--color-cream) sm:text-sm">
+    <div className="flex h-8 items-center sm:h-10 justify-center bg-(--color-primary) px-4 text-center">
+      <p className="truncate font-body text-xs leading-none tracking-[0.01em] text-(--color-cream) sm:text-sm">
         {announcement.text}{' '}
         {isExternal ? (
           <a

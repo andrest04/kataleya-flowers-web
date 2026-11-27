@@ -18,6 +18,7 @@ export default function HeroButtons({
       variant="ghost"
       href={href}
       external={external}
+      data-hero-cta
       className="rounded-none border-2 border-(--color-dark) bg-(--color-cream) px-8 py-3.5 text-xs font-bold tracking-[0.15em] text-(--color-dark) uppercase transition-colors duration-300 hover:bg-(--color-dark) hover:text-(--color-cream)"
     >
       {label}

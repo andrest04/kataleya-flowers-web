@@ -142,3 +142,41 @@ describe('filterProducts', () => {
     });
   });
 });
+
+describe('filterProducts accent and plural tolerant search', () => {
+  const searchable = [
+    { product: makeProduct('o', { name: 'Orquídea Blanca', description: 'Elegante.' }), categorySlug: 'orquideas' },
+    { product: makeProduct('r', { name: 'Ramo de Rosas', description: 'Cumpleaños feliz.' }), categorySlug: 'rosas' },
+    { product: makeProduct('t', { name: 'Tulipán', description: 'Primavera.' }), categorySlug: 'tulipanes' },
+  ];
+  const search = (q: string) => ids(filterProducts(searchable, { ...noFilters, q }));
+
+  it('matches without accents', () => {
+    expect(search('orquidea')).toEqual(['o']);
+    expect(search('tulipan')).toEqual(['t']);
+  });
+
+  it('matches accented queries against unaccented text', () => {
+    expect(search('cumpleanos')).toEqual(['r']);
+    expect(search('cumpleaños')).toEqual(['r']);
+  });
+
+  it('is case insensitive', () => {
+    expect(search('ORQUÍDEA')).toEqual(['o']);
+  });
+
+  it('tolerates a trailing plural s', () => {
+    expect(search('orquideas')).toEqual(['o']);
+    expect(search('tulipanes')).toEqual(['t']);
+    expect(search('rosa')).toEqual(['r']);
+  });
+
+  it('matches multi-word phrases', () => {
+    expect(search('ramo de rosas')).toEqual(['r']);
+    expect(search('ramo de orquidea')).toEqual([]);
+  });
+
+  it('returns nothing for unknown terms', () => {
+    expect(search('zzzz')).toEqual([]);
+  });
+});

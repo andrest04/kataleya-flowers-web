@@ -23,15 +23,6 @@ export interface DiscoverTileView {
 export function fallbackDiscoverTiles(settings: SiteSettings): readonly DiscoverTileView[] {
   return [
     {
-      description: `Pedidos a tiempo llegan el mismo día en ${settings.location}.`,
-      external: false,
-      href: '/#contacto',
-      icon: 'truck',
-      id: 'd-001',
-      imageSrc: '/images/hero/rosas.jpg',
-      title: 'Entrega el mismo día',
-    },
-    {
       description: 'Atención personalizada, de principio a fin, por WhatsApp.',
       external: true,
       href: defaultWhatsappHref(settings),

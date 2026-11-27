@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { FormEvent, RefObject } from "react";
 
 import SearchResultItem from "@/components/shared/SearchResultItem";
+import Button from "@/components/ui/Button";
 import {
   Sheet,
   SheetContent,
@@ -18,6 +19,7 @@ import { useComboboxNavigation } from "./useComboboxNavigation";
 
 interface MobileDrawerProps {
   brandName: string;
+  whatsappHref: string;
   isDrawerOpen: boolean;
   onClose: () => void;
   searchQuery: string;
@@ -32,6 +34,7 @@ interface MobileDrawerProps {
 
 export default function MobileDrawer({
   brandName,
+  whatsappHref,
   isDrawerOpen,
   onClose,
   searchQuery,
@@ -215,18 +218,9 @@ export default function MobileDrawer({
         </nav>
 
         <div className="px-6 pb-8">
-          <Link
-            href="/#contacto"
-            onClick={(event) => {
-              if (document.getElementById("contacto")) {
-                event.preventDefault();
-                handleNavigate("#contacto");
-              }
-            }}
-            className="block w-full rounded-full bg-primary px-6 py-3 text-center font-body text-[0.8rem] font-semibold tracking-[0.08em] text-cream uppercase shadow-sm transition-opacity duration-300 hover:opacity-90"
-          >
-            Hacer pedido
-          </Link>
+          <Button variant="whatsapp" size="lg" href={whatsappHref} external fullWidth>
+            Pedir por WhatsApp
+          </Button>
         </div>
       </SheetContent>
     </Sheet>

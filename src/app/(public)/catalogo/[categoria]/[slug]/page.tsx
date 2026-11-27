@@ -8,13 +8,17 @@ import { JsonLd } from "@/components/ui/JsonLd";
 import SectionHeader from "@/components/ui/SectionHeader";
 import CatalogCollectionCard from "@/features/catalog/components/CatalogCollectionCard";
 import { ProductGallery } from "@/features/catalog/components/ProductGallery";
-import { ProductPurchasePanel } from "@/features/catalog/components/ProductPurchasePanel";
+import {
+  PAGE_END_ID,
+  ProductPurchasePanel,
+} from "@/features/catalog/components/ProductPurchasePanel";
 import { getCategories } from "@/features/catalog/queries/getCategories";
 import { getProductBySlug } from "@/features/catalog/queries/getProductBySlug";
 import { getProducts } from "@/features/catalog/queries/getProducts";
 import { getProductsByCategory } from "@/features/catalog/queries/getProductsByCategory";
 import { resolveProductRoute } from "@/features/catalog/queries/resolveProductRoute";
 import { toCatalogCardProduct } from "@/features/catalog/utils/toCatalogCardProduct";
+import { heroPositioningKicker } from "@/features/landing/rules/heroPositioning";
 import { getSiteSettings } from "@/features/settings/queries/getSiteSettings";
 import { BUSINESS } from "@/lib/constants";
 import { ogImageUrl } from "@/lib/imageLoader";
@@ -198,7 +202,7 @@ export default async function ProductoPage({
   return (
     <main
       id="main-content"
-      className="min-h-screen bg-cream pt-10 pb-12 px-4 sm:px-6 lg:px-8"
+      className="min-h-screen bg-cream pt-10 px-4 pb-28 sm:px-6 lg:px-8 lg:pb-12"
     >
       <JsonLd data={[productLd, breadcrumbLd]} />
       <div className="max-w-8xl mx-auto">
@@ -209,7 +213,7 @@ export default async function ProductoPage({
           { label: product.name },
         ]} />
 
-        <div className="grid grid-cols-1 lg:grid-cols-[4fr_3fr] gap-8 lg:gap-x-[5%]">
+        <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-8 lg:gap-x-12">
           <ProductGallery
             imageUrl={product.imageUrl}
             imageAlt={product.imageAlt}
@@ -218,27 +222,30 @@ export default async function ProductoPage({
             name={product.name}
           />
 
-          <div className="lg:sticky lg:top-36 lg:self-start">
+          <div className="min-w-0 lg:sticky lg:top-36 lg:self-start">
             <h1 className="font-heading font-normal text-3xl md:text-[2.3rem] text-primary mb-3">
               {product.name}
             </h1>
             <ProductPurchasePanel
               phone={settings.phone}
+              proofLine={heroPositioningKicker(settings)}
               product={product}
               whatsappProductTemplate={settings.messages.whatsappProduct}
             />
-          </div>
-        </div>
 
-        <div className="max-w-2xl mt-12 lg:mt-16">
-          <h2 className="font-heading text-2xl text-primary mb-3">Descripción</h2>
-          <p className="font-body text-dark/80 leading-relaxed">{product.description}</p>
-          {product.includes && product.includes.length > 0 && (
-            <p className="font-body text-dark/80 leading-relaxed mt-3">
-              <span className="font-semibold text-dark">Incluye: </span>
-              {product.includes.join(', ')}
-            </p>
-          )}
+            <div className="mt-8 max-w-prose">
+              <h2 className="font-heading text-primary mb-3 text-2xl">Descripción</h2>
+              <p className="font-body text-dark/80 leading-relaxed text-pretty">
+                {product.description}
+              </p>
+              {product.includes && product.includes.length > 0 && (
+                <p className="font-body text-dark/80 mt-3 leading-relaxed text-pretty">
+                  <span className="text-dark font-semibold">Incluye: </span>
+                  {product.includes.join(', ')}
+                </p>
+              )}
+            </div>
+          </div>
         </div>
 
         {relatedProducts.length > 0 && (
@@ -264,6 +271,7 @@ export default async function ProductoPage({
           </div>
         )}
       </div>
+      <div id={PAGE_END_ID} aria-hidden="true" />
     </main>
   );
 }

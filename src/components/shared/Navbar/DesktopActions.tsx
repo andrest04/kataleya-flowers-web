@@ -1,38 +1,30 @@
 "use client";
 
-import Link from "next/link";
 import type { RefObject } from "react";
 
 import DesktopSearch from "./DesktopSearch";
 
 interface DesktopActionsProps {
-  brandName: string;
-  handleNavigate: (href: string) => void;
+  whatsappHref: string;
   openSearch: () => void;
   searchTriggerRef: RefObject<HTMLButtonElement | null>;
 }
 
 export default function DesktopActions({
-  brandName,
-  handleNavigate,
+  whatsappHref,
   openSearch,
   searchTriggerRef,
 }: DesktopActionsProps) {
   return (
     <div className="hidden items-center justify-end gap-6 md:flex">
-      <Link
-        href="/#contacto"
-        onClick={(event) => {
-          if (document.getElementById("contacto")) {
-            event.preventDefault();
-            handleNavigate("#contacto");
-          }
-        }}
-        className="font-body text-[0.9rem] text-(--color-dark) transition-colors duration-200 hover:text-(--color-primary)"
-        aria-label={`Hacer pedido por WhatsApp a ${brandName}`}
+      <a
+        href={whatsappHref}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="font-body text-[0.9rem] font-semibold text-(--color-primary) transition-colors duration-200 hover:text-(--color-dark)"
       >
-        Hacer pedido
-      </Link>
+        Pedir por WhatsApp
+      </a>
 
       <DesktopSearch onOpen={openSearch} triggerRef={searchTriggerRef} />
     </div>

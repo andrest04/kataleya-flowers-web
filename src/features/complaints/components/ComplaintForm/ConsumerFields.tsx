@@ -1,14 +1,15 @@
-'use client';
+"use client";
 
-import { FieldError } from '@/components/ui/FieldError';
-import { FormField } from '@/components/ui/FormField';
-import { Input, Select } from '@/components/ui/Input';
-import ToggleSwitch from '@/components/ui/ToggleSwitch';
+import { FieldError } from "@/components/ui/FieldError";
+import { FormField } from "@/components/ui/FormField";
+import { Input, Select } from "@/components/ui/Input";
+import ToggleSwitch from "@/components/ui/ToggleSwitch";
 
-import type { ComplaintFormData } from '../../schemas/complaint';
-import { DOC_TYPES } from '../../schemas/constants';
+import type { ComplaintFormData } from "../../schemas/complaint";
+import { DOC_TYPES } from "../../schemas/constants";
+import { FIELD_CLASS, SELECT_CLASS } from "./fieldStyles";
 
-const MINOR_LABEL = 'Represento a un menor de edad';
+const MINOR_LABEL = "Represento a un menor de edad";
 
 interface ConsumerFieldsProps {
   errors: Record<string, string>;
@@ -27,6 +28,7 @@ export default function ConsumerFields({
     <div className="space-y-4">
       <FormField label="Nombre completo" required htmlFor="consumerName">
         <Input
+          className={FIELD_CLASS}
           id="consumerName"
           name="consumerName"
           defaultValue={values?.consumerName}
@@ -42,9 +44,10 @@ export default function ConsumerFields({
       <div className="grid gap-4 sm:grid-cols-2">
         <FormField label="Tipo de documento" required htmlFor="consumerDocType">
           <Select
+            className={SELECT_CLASS}
             id="consumerDocType"
             name="consumerDocType"
-            defaultValue={values?.consumerDocType ?? 'DNI'}
+            defaultValue={values?.consumerDocType ?? "DNI"}
           >
             {DOC_TYPES.map((t) => (
               <option key={t} value={t}>
@@ -55,6 +58,7 @@ export default function ConsumerFields({
         </FormField>
         <FormField label="N° de documento" required htmlFor="consumerDocNumber">
           <Input
+            className={FIELD_CLASS}
             id="consumerDocNumber"
             name="consumerDocNumber"
             defaultValue={values?.consumerDocNumber}
@@ -63,12 +67,16 @@ export default function ConsumerFields({
             aria-invalid={!!errors.consumerDocNumber}
             aria-describedby="err-consumerDocNumber"
           />
-          <FieldError id="err-consumerDocNumber" message={errors.consumerDocNumber} />
+          <FieldError
+            id="err-consumerDocNumber"
+            message={errors.consumerDocNumber}
+          />
         </FormField>
       </div>
 
       <FormField label="Domicilio" required htmlFor="consumerAddress">
         <Input
+          className={FIELD_CLASS}
           id="consumerAddress"
           name="consumerAddress"
           defaultValue={values?.consumerAddress}
@@ -82,8 +90,9 @@ export default function ConsumerFields({
       </FormField>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <FormField label="Teléfono" htmlFor="consumerPhone">
+        <FormField label="Teléfono (opcional)" htmlFor="consumerPhone">
           <Input
+            className={FIELD_CLASS}
             id="consumerPhone"
             name="consumerPhone"
             defaultValue={values?.consumerPhone}
@@ -96,6 +105,7 @@ export default function ConsumerFields({
         </FormField>
         <FormField label="Email" required htmlFor="consumerEmail">
           <Input
+            className={FIELD_CLASS}
             id="consumerEmail"
             name="consumerEmail"
             defaultValue={values?.consumerEmail}
@@ -111,7 +121,11 @@ export default function ConsumerFields({
       </div>
 
       <label className="flex min-h-11 w-fit cursor-pointer items-center gap-3 pt-1">
-        <ToggleSwitch checked={isMinor} onChange={onMinorChange} label={MINOR_LABEL} />
+        <ToggleSwitch
+          checked={isMinor}
+          onChange={onMinorChange}
+          label={MINOR_LABEL}
+        />
         <span className="text-sm text-(--color-dark)">{MINOR_LABEL}</span>
       </label>
 
@@ -122,6 +136,7 @@ export default function ConsumerFields({
           htmlFor="guardianName"
         >
           <Input
+            className={FIELD_CLASS}
             id="guardianName"
             name="guardianName"
             defaultValue={values?.guardianName}

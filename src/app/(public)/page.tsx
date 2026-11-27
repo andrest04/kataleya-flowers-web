@@ -1,3 +1,4 @@
+import ValuePropsBand from "@/components/shared/ValuePropsBand";
 import { getCategories } from "@/features/catalog/queries/getCategories";
 import BestSellersSection from "@/features/landing/components/BestSellersSection";
 import CatalogSection from "@/features/landing/components/CatalogSection";
@@ -18,10 +19,11 @@ export default async function Home() {
     <main id="main-content">
       <HeroSection />
       <CatalogSection categories={categories} title={settings.titles.catalog} />
+      <BestSellersSection categories={categories} />
       <TestimonialsSection location={settings.location} />
       <PromoBanners />
-      <BestSellersSection categories={categories} />
       <DiscoverMoreSection title={settings.titles.discover} />
+      <ValuePropsBand brandName={settings.name} id="nosotros" />
       <ContactSection settings={settings} />
     </main>
   );

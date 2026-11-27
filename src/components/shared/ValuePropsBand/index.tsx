@@ -9,14 +9,21 @@ function bandColumns(count: number): string {
   return 'grid-cols-1 md:grid-cols-3';
 }
 
-export default async function ValuePropsBand({ brandName }: { brandName: string }) {
+export default async function ValuePropsBand({
+  brandName,
+  id,
+}: {
+  brandName: string;
+  id?: string;
+}) {
   const items = await getPublishedValueProps();
   if (items.length === 0) return null;
 
   return (
     <section
+      id={id}
       aria-label={`Sobre ${brandName}`}
-      className="border-t border-(--color-primary) text-(--color-dark)"
+      className="scroll-mt-20 border-y border-(--color-primary) text-(--color-dark)"
     >
       <div className={`grid ${bandColumns(items.length)}`}>
         {items.map((item) => (

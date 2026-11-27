@@ -42,6 +42,7 @@ function LightboxInner({
   const safeImages = images.length > 0 ? images : [];
   const [index, setIndex] = useState(() => clampIndex(initialIndex, safeImages.length));
   const touchStartX = useRef<number | null>(null);
+  const restoreFocusRef = useRef<HTMLElement | null>(null);
 
   const total = safeImages.length;
   const hasMultiple = total > 1;
@@ -123,6 +124,16 @@ function LightboxInner({
               <DialogPrimitive.Content
                 asChild
                 aria-describedby={undefined}
+                onOpenAutoFocus={() => {
+                  restoreFocusRef.current =
+                    document.activeElement instanceof HTMLElement ? document.activeElement : null;
+                }}
+                onCloseAutoFocus={(event) => {
+                  const target = restoreFocusRef.current;
+                  if (!target?.isConnected) return;
+                  event.preventDefault();
+                  target.focus();
+                }}
               >
                 <m.div
                   initial={{ opacity: 0, scale: 0.96 }}

@@ -1,5 +1,11 @@
 # Product
 
+<!-- impeccable:product-schema 1 -->
+
+## Platform
+
+web
+
 ## Register
 
 brand
@@ -11,6 +17,31 @@ Clientes finales de una florería en Lima, Perú: parejas que regalan (amor y ro
 ## Product Purpose
 
 Landing + catálogo que convierte visitas en pedidos por WhatsApp para Kataleya Flowers, florería real con 32 años de trayectoria en Lima. Éxito = conversación de WhatsApp iniciada y confianza transmitida (negocio físico verificable, fotos reales de clientas). El repo incluye además un admin interno (registro: product) para gestionar el catálogo; la superficie primaria es la landing pública.
+
+## Positioning
+
+Combina dos cosas que una florería nueva o de plantilla no puede copiar con honestidad: **trayectoria verificable** (32 años en Lima y una tienda física en Barranco que se puede visitar) y **oficio de florista** (cada ramo se arma a mano, con selección tallo por tallo). La confianza viene de la trayectoria; la emoción, del oficio.
+
+## Operating Context
+
+- El cliente descubre la marca por Instagram o búsqueda local, navega en el celular y cierra el pedido conversando por WhatsApp.
+- El catálogo se explora por categoría y por búsqueda (`/catalogo`, `/buscar`); cada producto lleva al pedido por WhatsApp.
+- El equipo de la florería gestiona productos, categorías, testimonios y datos del sitio (ubicación, horarios, anuncio) desde un admin interno.
+- Los reclamos entran por el Libro de Reclamaciones digital (`/libro-de-reclamaciones`), requisito legal en Perú.
+
+## Capabilities and Constraints
+
+- Sin carrito, checkout ni pagos en línea: WhatsApp es el único canal de cierre.
+- Ubicación, horarios y texto de anuncio son editables desde el admin; no se deben fijar en el código ni en el diseño como valores permanentes.
+- Superficies: landing pública (primaria), catálogo, búsqueda, Libro de Reclamaciones, y admin con login y recuperación de contraseña.
+- Todo texto visible va en español peruano con tildes correctas.
+
+## Evidence on Hand
+
+- Fotos reales de clientas con sus ramos, servidas como testimonios publicados desde Appwrite Storage (`src/features/landing/queries/getPublishedTestimonials.ts`).
+- Fotos de producto del catálogo, también en Appwrite Storage y gestionadas desde el admin.
+- Trayectoria de 32 años y tienda física en Barranco.
+- No existen y no se deben inventar: reseñas con estrellas, cifras de clientes o pedidos, premios, prensa ni testimonios escritos que no estén en el admin.
 
 ## Brand Personality
 
