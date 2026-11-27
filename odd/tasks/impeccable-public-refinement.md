@@ -72,6 +72,8 @@ Each implementation task is delegated direct (one Sonnet writer via workflow; 2+
 - 2026-11-26: impeccable installed, PRODUCT.md updated, five public critiques done, branch `feat/impeccable-public-refinement` created from `dev`.
 - 2026-11-26: T1–T8 implemented by sequential Sonnet writers, each independently verified; T5 and T6 needed one correction each.
 
+- 2026-11-26: T9 re-critique done (snapshots `.impeccable/critique/2026-11-27T01-4*`). Landing 59% → 75%, catalog 69% → 75%, product 67% → 72%, search 63% → 68%, complaints 65% → 65%. Note: the runs scored different heuristic sets, so compare percentages.
+
 ## Next step
 
-T9: re-critique the five public surfaces, then polish the remaining findings.
+T9 polish round on the approval-free re-critique findings (catalog mobile fold, search live region and initial state, complaint textareas and labels, product sticky bar and price), then owner decisions listed above.
