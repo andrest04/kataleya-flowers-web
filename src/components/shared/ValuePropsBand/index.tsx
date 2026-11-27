@@ -23,7 +23,7 @@ export default async function ValuePropsBand({
     <section
       id={id}
       aria-label={`Sobre ${brandName}`}
-      className="scroll-mt-20 border-t border-(--color-primary) text-(--color-dark)"
+      className="scroll-mt-20 border-y border-(--color-primary) text-(--color-dark)"
     >
       <div className={`grid ${bandColumns(items.length)}`}>
         {items.map((item) => (
