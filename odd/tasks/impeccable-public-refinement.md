@@ -49,7 +49,7 @@ Critiques on 2026-11-26 scored the public surfaces between 59% and 69%: the visu
 - [x] T12 Libro de Reclamaciones regulatory notice and data-use line. Commit `ab5a6e5`.
 - [x] T13 Admin hero kicker wins, positioning fallback (test-first). Commit `4f8e1a1`; fallback slide kicker emptied in a follow-up commit. Appwrite: both hero slides' kicker set to "32 años en Barranco, Lima".
 - [x] T14 Appwrite: discover tile "Entrega el mismo día" set inactive (promo banner kept). Done by direct DB write, so cached pages refresh on revalidation.
-- [x] T15 Playwright `phase1-verify` 25/25 after fixing a stale h1 assertion (h1 text changed in `b39c8ae` on dev). `product-detail.spec.ts`: helper fixed (cards have no h3 since dev); 5/8 pass. Still failing: `.prose p` (no prose class on dev either), thumbnails (data: first product has one image), lightbox focus restore (gallery diff is class-only and LightboxDialog is unchanged, so likely pre-existing; not confirmed against dev).
+- [x] T15 Playwright `phase1-verify` 25/25 after fixing a stale h1 assertion (h1 text changed in `b39c8ae` on dev). `product-detail.spec.ts`: helper fixed (cards have no h3 since dev); pre-merge dev failed 5/8 with the same helper, so no regressions from this branch. Fixed afterwards on `dev`: description assertion targets the "Descripción" heading, the thumbnail test skips when the first product has fewer than 2 images (data), and `LightboxDialog` now restores focus to its trigger on close (pre-existing a11y bug). Result: phase1-verify + product-detail 32 passed, 1 skipped.
 - [x] T16 Merged into `dev` (owner works solo: merge, no PRs). Not pushed.
 
 ## Route per task
