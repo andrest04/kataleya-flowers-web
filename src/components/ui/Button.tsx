@@ -42,14 +42,20 @@ const variantMap: Record<ButtonVariant, ShadcnVariant> = {
   whatsapp: 'default',
 };
 
+const focusRing =
+  'focus-visible:ring-2 focus-visible:ring-(color:--color-primary) focus-visible:ring-offset-2 focus-visible:ring-offset-(color:--color-cream)';
+
+const orderClasses =
+  'rounded-sm font-bold uppercase tracking-[0.08em] bg-(--color-primary) text-(--color-white) shadow-md transition-colors duration-500 hover:!bg-[color-mix(in_srgb,var(--color-primary)_80%,var(--color-dark))] hover:!text-(--color-white)';
+
 const variantClasses: Record<ButtonVariant, string> = {
   primary:
-    'rounded-sm font-bold uppercase tracking-[0.08em] bg-(--color-white) text-(--color-dark) shadow-md transition-colors duration-500 hover:!bg-(--color-primary) hover:!text-(--color-white)',
+    orderClasses,
   secondary: 'rounded-full font-semibold border-primary text-primary bg-transparent hover:opacity-80',
   ghost: 'rounded-lg font-medium',
   destructive: 'rounded-lg font-medium',
   whatsapp:
-    'rounded-sm font-bold uppercase tracking-[0.08em] bg-(--color-white) text-(--color-dark) shadow-md transition-colors duration-500 hover:!bg-(--color-primary) hover:!text-(--color-white)',
+    orderClasses,
 };
 
 const sizeClasses: Record<ButtonSize, string> = {
@@ -72,6 +78,7 @@ export default function Button(props: ButtonProps) {
   const shadcnVariant: NonNullable<ShadcnVariant> = variantMap[variant] as NonNullable<ShadcnVariant>;
   const combinedClassName = cn(
     variantClasses[variant],
+    focusRing,
     sizeClasses[size],
     fullWidth && 'w-full',
     'gap-2',

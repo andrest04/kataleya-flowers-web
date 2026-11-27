@@ -87,7 +87,7 @@ Paleta fija de negocio (definida en `src/app/globals.css`, **prohibido modificar
 - **Crema** (`--color-cream`, #fdfcfa): fondo de página.
 - **Tinta** (`--color-dark`, #1a1a1a): texto body.
 - **Blanco** (`--color-white`, #ffffff): fondo de botones primary/whatsapp, popover.
-- **Derivados** (`color-mix` en `globals.css`, no redefinir en hex): `--color-surface` (~6% tinta sobre crema), `--color-border` (~12% tinta), `--color-muted` (50% tinta transparente), `--bg-about` (~10% dorado sobre crema).
+- **Derivados** (`color-mix` en `globals.css`, no redefinir en hex): `--color-surface` (~6% tinta sobre crema), `--color-border` (~12% tinta), `--color-muted` (72% tinta transparente, 6.4:1 o más sobre crema y superficie), `--bg-about` (~10% dorado sobre crema).
 
 ### Named Rules
 
