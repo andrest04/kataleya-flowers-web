@@ -88,7 +88,7 @@ export default function BestSellersTabs({ bestSellersByTab, tabCategories }: Bes
               type="button"
               onClick={() => selectCategory(null)}
               aria-current={activeCategoryId === null ? 'true' : undefined}
-              className="shrink-0 px-2 py-2.5 transition-colors hover:text-(--color-primary) focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-(--color-primary) aria-[current=true]:text-(--color-dark)"
+              className="inline-flex min-h-11 shrink-0 items-center border-b-2 border-transparent px-3 transition-colors hover:text-(--color-primary) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary) aria-[current=true]:border-(--color-primary) aria-[current=true]:text-(--color-dark)"
             >
               Todos
             </button>
@@ -98,7 +98,7 @@ export default function BestSellersTabs({ bestSellersByTab, tabCategories }: Bes
                 type="button"
                 onClick={() => selectCategory(category.id)}
                 aria-current={activeCategoryId === category.id ? 'true' : undefined}
-                className="shrink-0 px-2 py-2.5 transition-colors hover:text-(--color-primary) focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-(--color-primary) aria-[current=true]:text-(--color-dark)"
+                className="inline-flex min-h-11 shrink-0 items-center border-b-2 border-transparent px-3 transition-colors hover:text-(--color-primary) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary) aria-[current=true]:border-(--color-primary) aria-[current=true]:text-(--color-dark)"
               >
                 {category.name}
               </button>
@@ -111,7 +111,7 @@ export default function BestSellersTabs({ bestSellersByTab, tabCategories }: Bes
         </div>
         <Link
           href="/catalogo"
-          className="shrink-0 border-b border-(--color-primary) px-2 py-2.5 font-body text-xs font-semibold uppercase tracking-[0.14em] text-(--color-primary) transition-colors hover:border-(--color-accent) hover:text-(--color-accent) focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-(--color-primary) sm:text-sm"
+          className="inline-flex min-h-11 shrink-0 items-center border-b border-(--color-primary) px-2 font-body text-xs font-semibold uppercase tracking-[0.14em] text-(--color-primary) transition-colors hover:border-(--color-accent) hover:text-(--color-accent) focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-(--color-primary) sm:text-sm"
         >
           Ver todo
         </Link>

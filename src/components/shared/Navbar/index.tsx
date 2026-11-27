@@ -141,16 +141,13 @@ export default function Navbar({ settings }: NavbarProps) {
               </Link>
 
               <div className="flex items-center justify-end">
-                <button
-                  type="button"
-                  className="flex h-11 w-11 cursor-pointer items-center justify-center text-(--color-primary) transition-opacity hover:opacity-70 md:hidden"
+                <Link
+                  href="/buscar"
+                  className="flex h-11 w-11 items-center justify-center text-(--color-primary) transition-opacity hover:opacity-70 md:hidden"
                   aria-label="Buscar"
-                  onPointerEnter={prefetchMobileDrawer}
-                  onFocus={prefetchMobileDrawer}
-                  onClick={openDrawer}
                 >
                   <Search className="h-5 w-5" aria-hidden="true" strokeWidth={2} />
-                </button>
+                </Link>
 
                 <DesktopActions
                   whatsappHref={whatsappHref}

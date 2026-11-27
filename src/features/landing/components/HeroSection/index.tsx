@@ -1,4 +1,5 @@
 import { getPublishedHeroSlide } from '@/features/landing/queries/getPublishedHeroSlide';
+import { heroPositioningKicker } from '@/features/landing/rules/heroPositioning';
 import { getSiteSettings } from '@/features/settings/queries/getSiteSettings';
 
 import { HERO_MIN_HEIGHT_PX } from './frame';
@@ -28,7 +29,7 @@ export default async function HeroSection() {
         ctaExternal={slide.ctaExternal}
         ctaHref={resolveHeroHref(slide.ctaHref, settings)}
         ctaLabel={slide.ctaLabel}
-        kicker={slide.kicker}
+        kicker={heroPositioningKicker(settings)}
         title={slide.title}
       />
     </section>
