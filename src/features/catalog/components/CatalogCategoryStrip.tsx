@@ -1,39 +1,34 @@
 import Link from 'next/link';
 
-import Image from '@/components/ui/StoredImage';
+import { catalogPillClass } from '@/features/catalog/components/catalogPill';
 import type { Category } from '@/features/catalog/types';
 
 interface CatalogCategoryStripProps {
   categories: Category[];
+  activeSlug?: string;
 }
 
-export default function CatalogCategoryStrip({ categories }: CatalogCategoryStripProps) {
-  const visibleCategories = categories.filter((category) => category.slug !== 'condolencias');
-
+export default function CatalogCategoryStrip({
+  categories,
+  activeSlug,
+}: CatalogCategoryStripProps) {
   return (
-    <nav aria-label="Categorías del catálogo" className="overflow-hidden">
-      <ul className="flex gap-3 overflow-x-auto pb-3 pe-12 sm:grid sm:grid-cols-3 sm:pe-0 lg:grid-cols-5">
-        {visibleCategories.map((category) => (
-          <li key={category.id} className="w-[80vw] max-w-[22rem] shrink-0 sm:w-auto sm:max-w-none">
-            <Link
-              href={`/catalogo/${category.slug}`}
-              className="group block focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-(--color-primary)"
-            >
-              <span className="relative block aspect-[291/317] overflow-hidden rounded-xl bg-(--color-surface)">
-                <Image
-                  src={category.imageUrl || '/catalog-placeholder.svg'}
-                  alt=""
-                  fill
-                  className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-                  sizes="(max-width: 640px) 80vw, (max-width: 1024px) 30vw, 17vw"
-                />
-              </span>
-              <span className="mt-6 block text-center font-heading text-2xl leading-none text-(--color-dark)">
+    <nav aria-label="Categorías del catálogo">
+      <ul className="-mx-2 flex snap-x snap-mandatory gap-2 overflow-x-auto px-2 pb-1 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:justify-center sm:overflow-visible sm:px-0 [&::-webkit-scrollbar]:hidden">
+        {categories.map((category) => {
+          const isActive = category.slug === activeSlug;
+          return (
+            <li key={category.id} className="snap-start">
+              <Link
+                href={`/catalogo/${category.slug}`}
+                aria-current={isActive ? 'page' : undefined}
+                className={catalogPillClass(isActive ? 'active' : 'idle')}
+              >
                 {category.name}
-              </span>
-            </Link>
-          </li>
-        ))}
+              </Link>
+            </li>
+          );
+        })}
       </ul>
     </nav>
   );

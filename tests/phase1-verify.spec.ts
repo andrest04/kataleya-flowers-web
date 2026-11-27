@@ -390,7 +390,7 @@ test.describe("Phase 1 — E) Smoke + screenshots", () => {
     await page.goto("/catalogo", { waitUntil: "networkidle" });
 
     await expect(
-      page.getByRole("heading", { level: 1, name: "Flores para cada momento" }),
+      page.getByRole("heading", { level: 1, name: /Catálogo de flores y arreglos/ }),
     ).toBeVisible();
 
     await page.screenshot({

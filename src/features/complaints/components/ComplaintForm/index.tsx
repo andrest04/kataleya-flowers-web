@@ -30,14 +30,16 @@ interface FormState {
 
 const INITIAL: FormState = { attempt: 0, fieldErrors: {} };
 
+const TOTAL_STEPS = 3;
+
 function Section({ n, title, children }: { n: number; title: string; children: React.ReactNode }) {
   return (
-    <fieldset className="space-y-4 border-t border-(--color-border) pt-8 first:border-t-0 first:pt-0">
-      <legend className="w-full pb-2">
+    <fieldset className="space-y-5 [&>legend]:mb-0 border-t border-(--color-border) pt-8 first:border-t-0 first:pt-0">
+      <legend className="w-full pb-4">
         <span className="block font-body text-xs font-semibold tracking-[0.2em] text-accent uppercase">
-          Paso {n}
+          Paso {n} de {TOTAL_STEPS}
         </span>
-        <span className="mt-1 block font-heading text-2xl text-primary">{title}</span>
+        <h2 className="mt-1 font-heading text-2xl text-primary">{title}</h2>
       </legend>
       {children}
     </fieldset>
@@ -93,6 +95,12 @@ export default function ComplaintForm({ provider }: { provider: ComplaintProvide
   return (
     <form ref={formRef} action={formAction} className="space-y-10" aria-busy={isPending} noValidate>
       <FormError message={state.error} />
+      <p className="text-sm text-(--color-muted)">
+        <span className="text-primary" aria-hidden="true">
+          *
+        </span>{' '}
+        Campo obligatorio
+      </p>
       <Section n={1} title="Datos del consumidor">
         <ConsumerFields
           key={state.attempt}
@@ -103,7 +111,12 @@ export default function ComplaintForm({ provider }: { provider: ComplaintProvide
         />
       </Section>
       <Section n={2} title="Identificación del bien contratado">
-        <ItemFields key={state.attempt} errors={state.fieldErrors} values={state.values} />
+        <ItemFields
+          key={state.attempt}
+          errors={state.fieldErrors}
+          values={state.values}
+          complaintType={complaintType}
+        />
       </Section>
       <Section n={3} title="Detalle del reclamo o queja">
         <DetailFields

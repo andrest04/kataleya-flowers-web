@@ -26,11 +26,24 @@ export function getEffectivePrice(product: Pick<Product, 'price' | 'priceTable'>
   return product.price;
 }
 
-function matchesQuery(product: SearchableProduct, q: string): boolean {
-  return [product.name, product.description ?? '', ...(product.includes ?? []), product.occasion ?? '']
-    .join(' ')
-    .toLowerCase()
-    .includes(q);
+function normalizeText(value: string): string {
+  return value.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
+}
+
+function toSearchVariants(q: string): string[] {
+  const phrase = normalizeText(q).trim().replace(/\s+/g, ' ');
+  if (!phrase) return [];
+  const variants = [phrase];
+  if (phrase.length > 3 && phrase.endsWith('s')) variants.push(phrase.slice(0, -1));
+  if (phrase.length > 4 && phrase.endsWith('es')) variants.push(phrase.slice(0, -2));
+  return variants;
+}
+
+function matchesQuery(product: SearchableProduct, variants: string[]): boolean {
+  const haystack = normalizeText(
+    [product.name, product.description ?? '', ...(product.includes ?? []), product.occasion ?? ''].join(' '),
+  );
+  return variants.some((variant) => haystack.includes(variant));
 }
 
 function matchesAny(selected: Set<string>, values: string[] | undefined): boolean {
@@ -42,13 +55,13 @@ export function filterProducts<T extends FilterableEntry>(
   filters: ProductFilters,
   except?: FilterFacet,
 ): T[] {
-  const q = filters.q?.trim().toLowerCase() ?? '';
+  const queryVariants = toSearchVariants(filters.q ?? '');
   const categorySlugs = new Set(filters.categorySlugs);
   const colors = new Set(filters.colors);
   const flowerTypes = new Set(filters.flowerTypes);
 
   return entries.filter(({ product, categorySlug }) => {
-    if (q && !matchesQuery(product, q)) return false;
+    if (queryVariants.length > 0 && !matchesQuery(product, queryVariants)) return false;
     if (except !== 'category' && categorySlugs.size > 0 && !categorySlugs.has(categorySlug)) {
       return false;
     }

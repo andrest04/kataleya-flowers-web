@@ -6,7 +6,7 @@ import { Suspense } from "react";
 
 import Footer from "@/components/shared/Footer";
 import Navbar from "@/components/shared/Navbar";
-import ValuePropsBand from "@/components/shared/ValuePropsBand";
+import WhatsAppFloat from "@/components/shared/WhatsAppFloat";
 import { getSiteSettings } from "@/features/settings/queries/getSiteSettings";
 import { GA_MEASUREMENT_ID } from "@/lib/constants";
 
@@ -20,8 +20,8 @@ export default async function PublicLayout({ children }: { children: ReactNode }
         <Navbar settings={settings} />
       </Suspense>
       {children}
-      <ValuePropsBand brandName={settings.name} />
       <Footer settings={settings} />
+      <WhatsAppFloat settings={settings} />
       <Analytics />
       <SpeedInsights />
       {isProduction ? <GoogleAnalytics gaId={GA_MEASUREMENT_ID} /> : null}

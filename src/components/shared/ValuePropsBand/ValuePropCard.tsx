@@ -2,6 +2,7 @@ import type { LucideIcon } from 'lucide-react';
 import Link from 'next/link';
 
 import FooterAnchorLink from '@/components/shared/FooterAnchorLink';
+import { formatHours } from '@/lib/formatHours';
 
 const LINK_CLASS =
   'font-body text-xs font-semibold tracking-[0.15em] uppercase underline underline-offset-4 transition-colors hover:text-(--color-primary) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary)';
@@ -50,7 +51,7 @@ export default function ValuePropCard({
 
       <h2 className="font-heading text-2xl">{title}</h2>
 
-      <p className="max-w-xs font-body text-sm leading-relaxed opacity-80">{description}</p>
+      <p className="max-w-xs font-body text-sm leading-relaxed opacity-80">{formatHours(description)}</p>
 
       {cta}
     </div>

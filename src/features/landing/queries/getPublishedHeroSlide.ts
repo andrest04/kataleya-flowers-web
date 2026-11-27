@@ -45,7 +45,7 @@ export function fallbackHeroSlide(settings: SiteSettings): HeroSlideView {
     focus: HERO_IMAGE.focus,
     imageAlt: HERO_IMAGE.alt,
     imageSrc: HERO_IMAGE.src,
-    kicker: `Florería premium en ${settings.location}`,
+    kicker: '',
     title: 'Flores que emocionan',
   };
 }

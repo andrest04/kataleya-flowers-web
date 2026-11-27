@@ -13,7 +13,7 @@ export default async function DiscoverMoreSection({ title }: DiscoverMoreSection
   if (tiles.length === 0) return null;
 
   return (
-    <section id="nosotros" className="scroll-mt-20 px-4 py-12 sm:px-6 lg:px-8">
+    <section className="px-4 py-12 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-[90rem] space-y-10">
         <SectionHeader align="left" title={title} />
         <div className="flex flex-col gap-x-8 gap-y-10 md:flex-row md:flex-wrap md:justify-center md:gap-10">

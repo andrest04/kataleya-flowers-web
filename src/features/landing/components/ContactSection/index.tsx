@@ -1,4 +1,5 @@
 import SectionHeader from '@/components/ui/SectionHeader';
+import { STORE_LOCALITY } from '@/features/landing/rules/heroPositioning';
 import type { SiteSettings } from '@/lib/siteSettings';
 
 import ContactDetails from './ContactDetails';
@@ -15,7 +16,7 @@ export default function ContactSection({ settings }: ContactSectionProps) {
         <SectionHeader
           align="left"
           title={settings.titles.contact}
-          description={`Estamos en ${settings.location}. Pasa por la tienda o escríbenos y armamos tu pedido.`}
+          description={`Estamos en ${STORE_LOCALITY}. Pasa por la tienda o escríbenos y armamos tu pedido.`}
         />
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-2 lg:items-stretch">
           <ContactDetails settings={settings} />

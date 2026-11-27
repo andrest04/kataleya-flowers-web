@@ -1,14 +1,13 @@
 import type { ReactElement } from 'react';
 
-import Carousel from '@/components/ui/Carousel';
 import CatalogCollection, {
   type CatalogCollectionItem,
 } from '@/features/catalog/components/CatalogCollection';
-import CatalogCollectionCard from '@/features/catalog/components/CatalogCollectionCard';
 import type { CatalogColorFacet } from '@/features/catalog/components/CatalogFilterSheet';
 import SearchEmptyResults from '@/features/catalog/components/SearchPage/SearchEmptyResults';
 import SearchFrequentSearches from '@/features/catalog/components/SearchPage/SearchFrequentSearches';
 import SearchStoreForm from '@/features/catalog/components/SearchPage/SearchStoreForm';
+import SearchSuggestions from '@/features/catalog/components/SearchPage/SearchSuggestions';
 import type { Category } from '@/features/catalog/types';
 
 interface SearchPageProps {
@@ -16,9 +15,11 @@ interface SearchPageProps {
   results: CatalogCollectionItem[];
   suggestionItems: CatalogCollectionItem[];
   frequentCategories: Category[];
+  matchedCategory: Category | null;
   filterCategories: Category[];
   colors: CatalogColorFacet[];
   flowerTypes: string[];
+  whatsappHref: string;
   initialQuery: {
     category: string;
     priceMin: string;
@@ -35,27 +36,39 @@ export default function SearchPage({
   results,
   suggestionItems,
   frequentCategories,
+  matchedCategory,
   filterCategories,
   colors,
   flowerTypes,
+  whatsappHref,
   initialQuery,
 }: SearchPageProps): ReactElement {
   const hasQuery = query.length > 0;
+  const hasActiveFilters = Object.entries(initialQuery).some(
+    ([key, value]) => key !== 'density' && key !== 'sort' && value.length > 0,
+  );
+  const announcement = !hasQuery
+    ? ''
+    : results.length === 0
+      ? `Sin resultados para ${query}`
+      : `${results.length} ${results.length === 1 ? 'resultado' : 'resultados'} para ${query}`;
 
   return (
     <main
       id="main-content"
-      className="min-h-screen overflow-x-clip bg-(--color-cream) px-8 pb-28 pt-6 sm:px-12 lg:px-16"
+      className="min-h-screen overflow-x-clip bg-(--color-cream) px-4 pb-16 pt-6 sm:px-12 lg:px-16"
     >
       <header className="mx-auto max-w-8xl">
         <h1 className="text-center font-heading text-[28px] leading-[1.25] text-balance break-words text-(--color-dark) sm:text-[32px] lg:text-[40px]">
           {hasQuery ? `Resultados para “${query}”` : 'Busca en la tienda'}
         </h1>
-        <SearchStoreForm query={query} />
+        <SearchStoreForm query={query} announcement={announcement} />
       </header>
 
       {hasQuery ? (
-        <div className="mx-auto mt-16 max-w-[110rem] sm:mt-20">
+        <div
+          className={`mx-auto max-w-[110rem] ${results.length > 0 ? 'mt-16 sm:mt-20' : 'mt-10 sm:mt-12'}`}
+        >
           {results.length > 0 ? (
             <CatalogCollection
               items={results}
@@ -63,9 +76,19 @@ export default function SearchPage({
               colors={colors}
               flowerTypes={flowerTypes}
               initialQuery={initialQuery}
+              whatsappHref={whatsappHref}
             />
           ) : (
-            <SearchEmptyResults query={query} />
+            <>
+              <SearchEmptyResults
+                query={query}
+                categories={frequentCategories}
+                matchedCategory={matchedCategory}
+                hasActiveFilters={hasActiveFilters}
+                whatsappHref={whatsappHref}
+              />
+              <SearchSuggestions items={suggestionItems} />
+            </>
           )}
         </div>
       ) : (
@@ -73,35 +96,7 @@ export default function SearchPage({
           <div className="mx-auto mt-8 max-w-8xl">
             <SearchFrequentSearches categories={frequentCategories} />
           </div>
-          {suggestionItems.length > 0 && (
-            <section
-              aria-labelledby="buscar-sugeridos"
-              className="mt-16 overflow-x-hidden sm:mt-20"
-            >
-              <div className="relative left-1/2 w-screen -translate-x-1/2 border-t border-(--color-primary)" />
-              <div className="pt-16 sm:pt-20">
-                <h2
-                  id="buscar-sugeridos"
-                  className="px-8 font-heading text-[28px] leading-[1.25] text-(--color-dark) sm:px-12 sm:text-[32px] lg:px-16 lg:text-[40px]"
-                >
-                  También te puede gustar
-                </h2>
-                <Carousel ariaLabel="También te puede gustar">
-                  {suggestionItems.map(({ product, categorySlug }) => (
-                    <div
-                      key={product.id}
-                      className="w-[80vw] shrink-0 snap-start sm:w-[50vw] lg:w-[24rem]"
-                    >
-                      <CatalogCollectionCard
-                        product={product}
-                        categorySlug={categorySlug}
-                      />
-                    </div>
-                  ))}
-                </Carousel>
-              </div>
-            </section>
-          )}
+          <SearchSuggestions items={suggestionItems} />
         </>
       )}
     </main>

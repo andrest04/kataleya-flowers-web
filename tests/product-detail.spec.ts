@@ -36,7 +36,7 @@ async function navigateToFirstProduct(page: Page): Promise<{
   const firstCard = productCards.first();
   const productHref = (await firstCard.getAttribute("href")) ?? "";
   const productName =
-    (await firstCard.locator("h3").textContent())?.trim() ?? "";
+    (await firstCard.innerText()).split("\n").map((line) => line.trim()).find(Boolean) ?? "";
 
   await page.goto(productHref);
   await expect(page).toHaveURL(/\/catalogo\/[a-z0-9-]+\/[a-z0-9-]+$/);
@@ -244,8 +244,9 @@ test.describe("Phase 4B — Product detail", () => {
   }) => {
     const { productName } = await navigateToFirstProduct(page);
 
-    const whatsappSelector = `a[href*="wa.me/${BUSINESS.phone}"]`;
-    const whatsappLink = page.locator(whatsappSelector);
+    const whatsappLink = page.getByRole("link", {
+      name: "Pedir este ramo por WhatsApp",
+    });
     await expect(whatsappLink.first()).toBeVisible();
 
     const href = await whatsappLink.first().getAttribute("href");

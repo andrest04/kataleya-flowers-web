@@ -36,7 +36,23 @@ export default function EditorialTile({
             sizes="(max-width: 1023px) 100vw, 33vw"
             className="object-cover motion-safe:transition-transform motion-safe:duration-700 motion-safe:ease-out motion-safe:group-hover:scale-[1.03]"
           />
-        ) : null}
+        ) : (
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 flex items-center justify-center"
+            style={{
+              background:
+                'linear-gradient(160deg, color-mix(in srgb, var(--color-primary) 10%, var(--color-surface)), color-mix(in srgb, var(--color-primary) 22%, var(--color-surface)))',
+            }}
+          >
+            <span
+              className="flex size-28 items-center justify-center rounded-full border border-(--color-primary)/25 sm:size-32"
+              style={{ background: 'color-mix(in srgb, var(--color-cream) 70%, transparent)' }}
+            >
+              <Icon className="size-12 text-(--color-primary) sm:size-14" strokeWidth={1.4} />
+            </span>
+          </div>
+        )}
         {cover}
       </div>
       <div className="pt-7 text-center">
@@ -44,7 +60,7 @@ export default function EditorialTile({
           <Icon className="h-6 w-6 shrink-0 text-(--color-primary) sm:h-7 sm:w-7" aria-hidden="true" />
           <h3 className="font-heading text-2xl text-(--color-dark) lg:text-3xl">{title}</h3>
         </div>
-        <p className="mt-3 text-base text-(--color-muted) lg:text-lg">{description}</p>
+        <p className="mt-3 text-base text-balance text-(--color-muted) lg:text-lg">{description}</p>
       </div>
     </>
   );

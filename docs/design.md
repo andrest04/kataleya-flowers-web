@@ -87,7 +87,7 @@ Paleta fija de negocio (definida en `src/app/globals.css`, **prohibido modificar
 - **Crema** (`--color-cream`, #fdfcfa): fondo de página.
 - **Tinta** (`--color-dark`, #1a1a1a): texto body.
 - **Blanco** (`--color-white`, #ffffff): fondo de botones primary/whatsapp, popover.
-- **Derivados** (`color-mix` en `globals.css`, no redefinir en hex): `--color-surface` (~6% tinta sobre crema), `--color-border` (~12% tinta), `--color-muted` (50% tinta transparente), `--bg-about` (~10% dorado sobre crema).
+- **Derivados** (`color-mix` en `globals.css`, no redefinir en hex): `--color-surface` (~6% tinta sobre crema), `--color-border` (~12% tinta), `--color-muted` (72% tinta transparente, 6.4:1 o más sobre crema y superficie), `--bg-about` (~10% dorado sobre crema).
 
 ### Named Rules
 
@@ -165,7 +165,8 @@ A diferencia del sistema original ("plano por defecto, sombra solo en foto o est
 
 ### Badges / Chips
 - **BusinessHoursBadge:** pill, fondo `--color-accent` "ABIERTO" / `--color-primary` "CERRADO", texto crema, calcula hora de Perú.
-- **FilterChip:** pill, tinte 10% rojo tulipán, siempre en estado "activo/removible" (con X).
+- **FilterChip:** pill, tinte 10% rojo tulipán, siempre en estado "activo/removible" (con X); `min-h-11` (44px) y anillo `focus-visible` primario.
+- **Catalog pill** (`catalogPill.ts`; category strip and "Sigue explorando"): `min-h-11`, `px-4`, `rounded-full`, 1px border, `font-body text-sm font-semibold`. States: idle (border `--color-border`, text dark, hover primary), active (filled primary, white text, `aria-current="page"`), outline (primary border and text, fills on hover). Focus: 2px primary outline, 2px offset. The strip is one snap-scroll row on mobile and wraps from `sm`.
 - **PillToggle:** pill, 4 combinaciones de estado (activo/inactivo × filled/outline), color configurable (`primary`/`accent`) vía prop.
 
 ## 6. Do's and Don'ts
