@@ -15,6 +15,7 @@ import { getFlowerTypes } from '@/features/catalog/queries/getFlowerTypes';
 import { getProductColors } from '@/features/catalog/queries/getProductColors';
 import { getProducts } from '@/features/catalog/queries/getProducts';
 import { getEffectivePrice } from '@/features/catalog/utils/filterProducts';
+import { matchCategoryByQuery } from '@/features/catalog/utils/matchCategoryByQuery';
 import { getSiteSettings } from '@/features/settings/queries/getSiteSettings';
 import { defaultWhatsappHref } from '@/lib/siteSettings';
 
@@ -170,6 +171,7 @@ export default async function BuscarPage({
         results={results}
         suggestionItems={suggestionItems}
         frequentCategories={frequentCategories}
+        matchedCategory={results.length === 0 ? matchCategoryByQuery(categories, q) : null}
         filterCategories={filterCategories}
         colors={colors}
         flowerTypes={flowerTypes}

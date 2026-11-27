@@ -15,6 +15,7 @@ interface SearchPageProps {
   results: CatalogCollectionItem[];
   suggestionItems: CatalogCollectionItem[];
   frequentCategories: Category[];
+  matchedCategory: Category | null;
   filterCategories: Category[];
   colors: CatalogColorFacet[];
   flowerTypes: string[];
@@ -35,6 +36,7 @@ export default function SearchPage({
   results,
   suggestionItems,
   frequentCategories,
+  matchedCategory,
   filterCategories,
   colors,
   flowerTypes,
@@ -42,17 +44,25 @@ export default function SearchPage({
   initialQuery,
 }: SearchPageProps): ReactElement {
   const hasQuery = query.length > 0;
+  const hasActiveFilters = Object.entries(initialQuery).some(
+    ([key, value]) => key !== 'density' && key !== 'sort' && value.length > 0,
+  );
+  const announcement = !hasQuery
+    ? ''
+    : results.length === 0
+      ? `Sin resultados para ${query}`
+      : `${results.length} ${results.length === 1 ? 'resultado' : 'resultados'} para ${query}`;
 
   return (
     <main
       id="main-content"
-      className="min-h-screen overflow-x-clip bg-(--color-cream) px-8 pb-28 pt-6 sm:px-12 lg:px-16"
+      className="min-h-screen overflow-x-clip bg-(--color-cream) px-4 pb-16 pt-6 sm:px-12 lg:px-16"
     >
       <header className="mx-auto max-w-8xl">
         <h1 className="text-center font-heading text-[28px] leading-[1.25] text-balance break-words text-(--color-dark) sm:text-[32px] lg:text-[40px]">
           {hasQuery ? `Resultados para “${query}”` : 'Busca en la tienda'}
         </h1>
-        <SearchStoreForm query={query} />
+        <SearchStoreForm query={query} announcement={announcement} />
       </header>
 
       {hasQuery ? (
@@ -73,6 +83,8 @@ export default function SearchPage({
               <SearchEmptyResults
                 query={query}
                 categories={frequentCategories}
+                matchedCategory={matchedCategory}
+                hasActiveFilters={hasActiveFilters}
                 whatsappHref={whatsappHref}
               />
               <SearchSuggestions items={suggestionItems} />
