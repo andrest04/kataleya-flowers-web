@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import type { PointerEvent } from "react";
 
-import { type SiteSettings, visibleAnnouncement } from "@/lib/siteSettings";
+import { defaultWhatsappHref, type SiteSettings, visibleAnnouncement } from "@/lib/siteSettings";
 
 import AnnouncementBar from "./AnnouncementBar";
 import DesktopActions from "./DesktopActions";
@@ -68,6 +68,7 @@ export default function Navbar({ settings }: NavbarProps) {
   } = useNavbar();
 
   const announcement = visibleAnnouncement(settings);
+  const whatsappHref = defaultWhatsappHref(settings);
   const chromeHeight = announcement ? "h-26" : "h-16";
 
   return (
@@ -152,8 +153,7 @@ export default function Navbar({ settings }: NavbarProps) {
                 </button>
 
                 <DesktopActions
-                  brandName={settings.name}
-                  handleNavigate={handleNavigate}
+                  whatsappHref={whatsappHref}
                   openSearch={openSearch}
                   searchTriggerRef={searchTriggerRef}
                 />
@@ -203,6 +203,7 @@ export default function Navbar({ settings }: NavbarProps) {
       {hasDrawerOpened && (
         <MobileDrawer
           brandName={settings.name}
+          whatsappHref={whatsappHref}
           isDrawerOpen={isDrawerOpen}
           onClose={() => setIsDrawerOpen(false)}
           searchQuery={searchQuery}

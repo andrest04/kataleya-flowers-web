@@ -244,8 +244,9 @@ test.describe("Phase 4B — Product detail", () => {
   }) => {
     const { productName } = await navigateToFirstProduct(page);
 
-    const whatsappSelector = `a[href*="wa.me/${BUSINESS.phone}"]`;
-    const whatsappLink = page.locator(whatsappSelector);
+    const whatsappLink = page.getByRole("link", {
+      name: "Pedir este ramo por WhatsApp",
+    });
     await expect(whatsappLink.first()).toBeVisible();
 
     const href = await whatsappLink.first().getAttribute("href");

@@ -4,12 +4,12 @@ import { getSiteSettings } from '@/features/settings/queries/getSiteSettings';
 import { HERO_MIN_HEIGHT_PX } from './frame';
 import HeroBackground from './HeroBackground';
 import HeroContent from './HeroContent';
+import { resolveHeroHref } from './resolveHeroHref';
 
 export default async function HeroSection() {
-  const slide = await getPublishedHeroSlide();
+  const [slide, settings] = await Promise.all([getPublishedHeroSlide(), getSiteSettings()]);
 
   if (!slide) {
-    const settings = await getSiteSettings();
     return (
       <section id="hero" className="scroll-mt-20">
         <h1 className="sr-only">{`${settings.name} — Floristería en ${settings.location}`}</h1>
@@ -26,7 +26,7 @@ export default async function HeroSection() {
       <HeroBackground alt={slide.imageAlt} focus={slide.focus} src={slide.imageSrc} />
       <HeroContent
         ctaExternal={slide.ctaExternal}
-        ctaHref={slide.ctaHref}
+        ctaHref={resolveHeroHref(slide.ctaHref, settings)}
         ctaLabel={slide.ctaLabel}
         kicker={slide.kicker}
         title={slide.title}
