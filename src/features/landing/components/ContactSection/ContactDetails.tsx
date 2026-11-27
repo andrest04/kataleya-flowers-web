@@ -6,6 +6,8 @@ import Button from '@/components/ui/Button';
 import { whatsappWithMessage } from '@/lib/contactLinks';
 import type { SiteSettings } from '@/lib/siteSettings';
 
+import { mapsDirectionsHref } from './mapsDirectionsHref';
+
 interface ContactDetailsProps {
   settings: SiteSettings;
 }
@@ -18,7 +20,17 @@ export default function ContactDetails({ settings }: ContactDetailsProps) {
           <MapPin className="mt-0.5 size-5 shrink-0 text-(--color-primary)" aria-hidden="true" strokeWidth={1.8} />
           <dl>
             <dt className="text-sm font-semibold text-(--color-dark)">Dónde estamos</dt>
-            <dd className="mt-1 text-(--color-dark)">{settings.address}</dd>
+            <dd className="mt-1 text-pretty text-(--color-dark)">{settings.address}</dd>
+            <dd className="mt-2">
+              <a
+                href={mapsDirectionsHref(settings.address)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex min-h-11 items-center text-sm font-semibold text-(--color-primary) underline underline-offset-4 transition-opacity hover:opacity-70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-primary)"
+              >
+                Cómo llegar
+              </a>
+            </dd>
           </dl>
         </div>
 

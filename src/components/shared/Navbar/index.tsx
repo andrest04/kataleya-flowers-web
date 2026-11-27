@@ -69,7 +69,7 @@ export default function Navbar({ settings }: NavbarProps) {
 
   const announcement = visibleAnnouncement(settings);
   const whatsappHref = defaultWhatsappHref(settings);
-  const chromeHeight = announcement ? "h-26" : "h-16";
+  const chromeHeight = announcement ? "h-22 sm:h-26" : "h-14 sm:h-16";
 
   return (
     <>
@@ -88,7 +88,7 @@ export default function Navbar({ settings }: NavbarProps) {
           <header
             onPointerEnter={prefetchForPointer}
             onFocus={prefetchDesktopOverlays}
-            className={`h-16 border-b border-(--color-primary) ${
+            className={`h-14 sm:h-16 border-b border-(--color-primary) ${
               isSearchOpen ? "bg-(--color-overlay)" : "bg-(--color-cream)"
             } ${
               isSearchOpen || isCatalogMenuOpen ? "overflow-visible" : "overflow-hidden"
@@ -96,10 +96,10 @@ export default function Navbar({ settings }: NavbarProps) {
           >
           <nav
             aria-label="Navegación principal"
-            className="flex h-16 w-full items-center"
+            className="flex h-14 w-full items-center sm:h-16"
           >
             <div
-              className={`grid w-full grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 sm:px-6 lg:px-10 ${
+              className={`grid w-full grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 sm:gap-4 sm:px-6 lg:px-10 ${
                 isSearchOpen ? "md:hidden" : ""
               }`}
             >
@@ -135,7 +135,7 @@ export default function Navbar({ settings }: NavbarProps) {
 
               <Link
                 href="/"
-                className="font-heading text-[1.75rem] font-bold uppercase tracking-[0.1em] leading-none text-(--color-primary)"
+                className="font-heading text-xl font-bold whitespace-nowrap uppercase tracking-[0.06em] leading-none sm:text-[1.75rem] sm:tracking-[0.1em] text-(--color-primary)"
               >
                 {settings.name}
               </Link>
