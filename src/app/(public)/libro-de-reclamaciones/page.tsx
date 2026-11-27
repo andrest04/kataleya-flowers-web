@@ -46,18 +46,20 @@ export default async function LibroDeReclamacionesPage() {
         <SectionHeader
           align="left"
           as="h1"
-          subtitle="INDECOPI"
           title="Libro de Reclamaciones"
           description="Registra tu queja o reclamo. Te responderemos dentro del plazo legal."
         />
 
-        <div className="mt-8 flex flex-col gap-1 border-t border-(--color-secondary)/40 pt-6 text-sm text-(--color-dark)">
-          <p className="font-semibold">Datos del proveedor</p>
+        <div className="mt-8 flex flex-col gap-1 rounded-xl border border-(--color-border) bg-(--bg-about) p-5 text-sm text-(--color-dark)">
+          <div className="flex items-baseline justify-between gap-3">
+            <p className="font-semibold">Datos del proveedor</p>
+            <p className="text-xs font-semibold tracking-[0.2em] text-accent uppercase">INDECOPI</p>
+          </div>
           <p>
             {settings.razonSocial} · RUC {settings.ruc}
           </p>
           <p>{settings.address}</p>
-          <p className="mt-2 flex items-center gap-2" style={{ color: 'var(--color-accent)' }}>
+          <p className="mt-2 flex items-center gap-2 text-accent">
             <Clock size={16} aria-hidden="true" />
             Plazo de respuesta: {RESPONSE_BUSINESS_DAYS} días hábiles.
           </p>

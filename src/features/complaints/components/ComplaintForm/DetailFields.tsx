@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/Input";
 import type { ComplaintFormData } from "../../schemas/complaint";
 import type { ComplaintType } from "../../types";
 import FieldHint from "./FieldHint";
-import { FIELD_CLASS } from "./fieldStyles";
+import { TEXTAREA_CLASS } from "./fieldStyles";
 
 interface DetailFieldsProps {
   errors: Record<string, string>;
@@ -41,7 +41,7 @@ export default function DetailFields({
     <div className="space-y-4">
       <fieldset>
         <legend className="text-sm font-medium mb-2 text-(--color-dark)">
-          Tipo de reclamación <span className="text-primary">*</span>
+          Reclamo / Queja <span className="text-primary">*</span>
         </legend>
         <div className="grid gap-3 sm:grid-cols-2">
           {OPTIONS.map((opt) => {
@@ -51,8 +51,8 @@ export default function DetailFields({
                 key={opt.value}
                 className={`relative block min-h-11 cursor-pointer rounded-xl border p-4 text-left transition-colors has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-(--color-primary) ${
                   selected
-                    ? "border-2 border-(--color-dark) bg-(--color-white)"
-                    : "border-[color-mix(in_srgb,var(--color-dark)_55%,var(--color-cream))] bg-(--color-white) hover:border-(--color-dark)"
+                    ? "border-2 border-(--color-dark) bg-[color-mix(in_srgb,var(--color-secondary)_7%,var(--color-white))]"
+                    : "border-[color-mix(in_srgb,var(--color-dark)_55%,var(--color-cream))] bg-[color-mix(in_srgb,var(--color-secondary)_7%,var(--color-white))] hover:border-(--color-dark)"
                 }`}
               >
                 <input
@@ -80,7 +80,7 @@ export default function DetailFields({
 
       <FormField label="Detalle de lo ocurrido" required htmlFor="detail">
         <Textarea
-          className={FIELD_CLASS}
+          className={TEXTAREA_CLASS}
           id="detail"
           name="detail"
           defaultValue={values?.detail}
@@ -102,7 +102,7 @@ export default function DetailFields({
         htmlFor="consumerRequest"
       >
         <Textarea
-          className={FIELD_CLASS}
+          className={TEXTAREA_CLASS}
           id="consumerRequest"
           name="consumerRequest"
           defaultValue={values?.consumerRequest}
